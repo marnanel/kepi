@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class KepiConfig(AppConfig):
-    name = 'kepi'
+class KepiActivityConfig(AppConfig):
+    name = 'kepi_activity'

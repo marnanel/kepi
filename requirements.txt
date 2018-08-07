@@ -1,0 +1,6 @@
+setuptools
+wheel
+django
+django-rest-framework
+djangorestframework-xml
+djangorestframework-constant-field

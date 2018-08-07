@@ -1,3 +1,11 @@
-from django.test import TestCase
+from django.test import TestCase, Client
+from .views import User
 
-# Create your tests here.
+class UserTests(TestCase):
+
+    def test_user_activity(self):
+
+        c = Client()
+        activity = c.get('/users/alice/activity').json()
+        
+        raise ValueError(str(activity))
