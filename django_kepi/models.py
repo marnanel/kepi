@@ -4,19 +4,19 @@ object_type_registry = {
         'Object': None,
         }
 
-def register_type(type_name, type_class):
-    object_type_registry[type_name] = type_class
+def register_type(a_typename, a_typeclass):
+    object_type_registry[a_typename] = a_typeclass
 
 class ActivityObject(models.Model):
-    type_ = models.CharField(max_length=255,
+    a_type = models.CharField(max_length=255,
             default='Object')
     verified = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
 
-        if self.type_ not in object_type_registry:
+        if self.a_type not in object_type_registry:
             raise ValueError("Can't save object with unknown type {}".format(
-                self.type_,
+                self.a_type,
                 ))
 
         super().save(*args, **kwargs)
@@ -26,20 +26,20 @@ class ActivityObject(models.Model):
         result = {}
 
         try:
-            type_class = object_type_registry[self.type_]
+            a_typeclass = object_type_registry[self.a_type]
         except KeyError:
             raise ValueError("ActivityObject {} has unknown type {}".format(
                 self.pk,
-                self.type_,
+                self.a_type,
                 ))
 
-        if type_class is not None:
-            instance = type_class.objects.find(activity_object__pk=self.pk)
+        if a_typeclass is not None:
+            instance = a_typeclass.objects.find(activity_object__pk=self.pk)
 
             if instance is None:
                 raise ValueError("ActivityObject {} has no corresponding instance in type {}".format(
                     self.pk,
-                    self.type_,
+                    self.a_type,
                     ))
 
             result.update(
@@ -48,7 +48,7 @@ class ActivityObject(models.Model):
 
         result.update({
             'id': self.pk,
-            'type': self.type_,
+            'type': self.a_type,
             })
 
         return result

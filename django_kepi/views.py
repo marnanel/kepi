@@ -1,17 +1,11 @@
 from django.shortcuts import render, get_object_or_404
-from django.views import View
+import django.views
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import AnonymousUser
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import SuspiciousOperation
-import django_kepi.serializers as serializers
-from rest_framework import generics, response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
 import json
 import re
+from django_kepi.models import ActivityObject
 
 def render(data):
     # XXX merge in
@@ -27,34 +21,12 @@ def render(data):
 
     return result
 
-class UserView(generics.GenericAPIView):
+class ActivityObjectView(django.views.View):
 
-    serializer_class = serializers.User
-    permission_classes = ()
+    def get(self, request, *args, **kwargs):
 
-class FollowersView(generics.ListAPIView):
+        instance = ActivityObject.objects.get(pk=kwargs['id'])
 
-    serializer_class = serializers.ListFromUser
-    permission_classes = ()
+        result = instance.activity_fields()
 
-    def get_queryset(self):
-
-        username=self.kwargs['username']
-
-        return trilby.User.objects.filter(
-                followers__username=username,
-                ).order_by('date_joined')
-
-class FollowingView(generics.ListAPIView):
-
-    serializer_class = serializers.ListFromUser
-    permission_classes = ()
-
-    def get_queryset(self):
-
-        username=self.kwargs['username']
-
-        return trilby.User.objects.filter(
-                following__username=username,
-                ).order_by('date_joined')
-
+        return render(result)

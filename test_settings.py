@@ -1,3 +1,5 @@
+from django.urls import path, include
+
 INSTALLED_APPS = (
 
         'django.contrib.admin',
@@ -10,6 +12,8 @@ INSTALLED_APPS = (
         'rest_framework',
         'django_fields',
 
+        'django_kepi',
+
         )
 
 DATABASES = {
@@ -20,3 +24,5 @@ DATABASES = {
         }
 
 SECRET_KEY = "secret_key_for_testing"
+
+ROOT_URLCONF = 'test_urls'
