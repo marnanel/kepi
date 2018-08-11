@@ -1,16 +1,11 @@
-# XXX several of these are probably superfluous
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.http import HttpResponse, JsonResponse
-from oauth2_provider.models import Application
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import SuspiciousOperation
-from un_chapeau.config import config
-import trilby_api.models as trilby
-import kepi_activity.serializers as serializers
+import django_kepi.serializers as serializers
 from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

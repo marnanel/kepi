@@ -1,20 +1,39 @@
 import os
-from setuptools import setup
+import re
+from io import open
+from setuptools import find_packages, setup
+
+# much of this was cribbed from django_rest_framework
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.md')).read()
+README = open('README.md', 'r', encoding='utf-8').read()
+
+def get_version(package):
+    """
+    Return package version as listed in `__version__` in `init.py`.
+    """
+    init_py = open(os.path.join(package, '__init__.py')).read()
+    return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
+
+version = get_version('django_kepi')
 
 setup(
-        name='django-kepi',
-        version='0.1.0',
-        packages=['django-kepi'],
-        description='ActivityPub for Django',
-        long_description=README,
-        author='Marnanel Thurman',
-        author_email='marnanel@thurman.org.uk',
-        url='https://gitlab.com/marnanel/django-kepi',
-        license='GPL 2.0',
-        install_requires=[
-            'Django>=2.0',
-            ]
-        )
+    name='django_kepi',
+    version=version,
+    url='https://gitlab.com/marnanel/django-kepi/',
+    license='GPL-2',
+    description='ActivityPub for Django',
+    long_description=README,
+    long_description_content_type='text/markdown',
+    author='Marnanel Thurman',
+    author_email='marnanel@thurman.org.uk',
+    packages=['django_kepi'],
+    include_package_data=True,
+    install_requires=[],
+    python_requires=">=3.0",
+    #zip_safe=False,
+    classifiers=[
+        # XXX fixme
+    ]
+)
+

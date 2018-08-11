@@ -1,11 +1,11 @@
 from django.test import TestCase, Client
-from .views import User
+from django_kepi.views import User
 
 class UserTests(TestCase):
 
-    def test_user_activity(self):
+    def test_collections(self):
 
         c = Client()
-        activity = c.get('/users/alice/activity').json()
+        activity = c.get('/collections/0').json()
         
         raise ValueError(str(activity))

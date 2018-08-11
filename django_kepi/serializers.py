@@ -1,6 +1,4 @@
-from un_chapeau.config import config
-from un_chapeau.constants import ATSIGN_CONTEXT
-import trilby_api.models as trilby_models
+from . import ATSIGN_CONTEXT
 from rest_framework_constant.fields import ConstantField
 from rest_framework import serializers, mixins, pagination
 from rest_framework.response import Response
