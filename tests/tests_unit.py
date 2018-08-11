@@ -13,7 +13,6 @@ class UserTests(TestCase):
         
         # we can't use .json() because it doesn't accept
         # "application/activity+json" as a JSON content-type
-        # XXX raise a bug about that
         activity = json.loads(str(response.content, encoding='UTF-8'))
         
         raise ValueError(str(activity))
