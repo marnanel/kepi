@@ -1,0 +1,18 @@
+[
+{
+    "model": "django_kepi.ActivityObject",
+    "pk": 1,
+    "fields": {
+        "a_type": "Object",
+        "verified": true
+    }
+},
+{
+    "model": "django_kepi.ActivityObject",
+    "pk": 2,
+    "fields": {
+        "a_type": "Object",
+        "verified": false
+    }
+}
+]
