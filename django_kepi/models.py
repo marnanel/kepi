@@ -1,16 +1,15 @@
 from django.db import models
-
-object_type_registry = {
-        'Object': None,
-        }
-
-def register_type(a_typename, a_typeclass):
-    object_type_registry[a_typename] = a_typeclass
+from django_kepi import object_type_registry
 
 class ActivityObject(models.Model):
     a_type = models.CharField(max_length=255,
             default='Object')
     verified = models.BooleanField(default=False)
+
+    #  attachment | attributedTo | audience | content | context |
+    # name | endTime | generator | icon | image | inReplyTo |
+    # location | preview | published | replies | startTime |
+    # summary | tag | updated | url | to | bto | cc | bcc | mediaType | duration 
 
     def save(self, *args, **kwargs):
 
@@ -34,7 +33,7 @@ class ActivityObject(models.Model):
                 ))
 
         if a_typeclass is not None:
-            instance = a_typeclass.objects.find(activity_object__pk=self.pk)
+            instance = a_typeclass.objects.get(activity_object__pk=self.pk)
 
             if instance is None:
                 raise ValueError("ActivityObject {} has no corresponding instance in type {}".format(
@@ -52,3 +51,8 @@ class ActivityObject(models.Model):
             })
 
         return result
+
+class Activity(models.Model):
+    #  actor | object | target | result | origin | instrument 
+    pass
+

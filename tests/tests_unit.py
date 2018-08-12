@@ -34,3 +34,13 @@ class UserTests(TestCase):
 
         with self.assertRaises(ActivityObject.DoesNotExist):
             self._get_json('/obj/0')
+
+    def test_one_to_one(self):
+
+        activity = self._get_json('/obj/3')
+
+        self.assertEqual(activity['id'], 3)
+        self.assertEqual(activity['type'], 'Person')
+        self.assertEqual(activity['name'], 'Alice Test')
+
+ 

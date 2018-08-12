@@ -30,3 +30,12 @@ ATSIGN_CONTEXT = [
             "Emoji": "toot:Emoji"
             }
         ]
+
+
+object_type_registry = {
+        'Object': None,
+        }
+
+def register_type(a_typename, a_typeclass):
+    object_type_registry[a_typename] = a_typeclass
+

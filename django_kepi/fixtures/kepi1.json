@@ -14,5 +14,21 @@
         "a_type": "Object",
         "verified": false
     }
+},
+{
+    "model": "django_kepi.ActivityObject",
+    "pk": 3,
+    "fields": {
+        "a_type": "Person",
+        "verified": true
+    }
+},
+{
+    "model": "things_for_testing.ThingUser",
+    "pk": 1,
+    "fields": {
+        "name": "Alice Test",
+        "activity_object": 3
+    }
 }
 ]
