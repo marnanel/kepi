@@ -2,10 +2,8 @@ from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import SuspiciousOperation
 import json
 import re
-from django_kepi.models import ActivityObject
 
 def render(data):
     # XXX merge in
@@ -25,7 +23,8 @@ class ActivityObjectView(django.views.View):
 
     def get(self, request, *args, **kwargs):
 
-        instance = ActivityObject.objects.get(pk=kwargs['id'])
+        #instance = ActivityObject.objects.get(pk=kwargs['id'])
+        instance = None # XXX temp
 
         result = instance.activity_fields()
 

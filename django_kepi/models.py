@@ -1,58 +1,132 @@
 from django.db import models
 from django_kepi import object_type_registry
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+import datetime
 
-class ActivityObject(models.Model):
-    a_type = models.CharField(max_length=255,
-            default='Object')
+# Cobject is our name for the ActivityPub class named "Object".
+# fobject is our name for the field "object" within an ActivityPub class
+
+class Cobject(models.Model):
+
+    class Meta:
+        abstract = True
+
     verified = models.BooleanField(default=False)
+    remote_id = models.URLField(blank=True, default=None)
+    published = models.DateTimeField(default=datetime.datetime.now)
+    updated = models.DateTimeField(default=datetime.datetime.now)
 
-    #  attachment | attributedTo | audience | content | context |
-    # name | endTime | generator | icon | image | inReplyTo |
-    # location | preview | published | replies | startTime |
-    # summary | tag | updated | url | to | bto | cc | bcc | mediaType | duration 
-
-    def save(self, *args, **kwargs):
-
-        if self.a_type not in object_type_registry:
-            raise ValueError("Can't save object with unknown type {}".format(
-                self.a_type,
-                ))
-
-        super().save(*args, **kwargs)
+    def _related_name(self):
+        return self.model.__class__.__name__+'s'
 
     def activity_fields(self):
 
-        result = {}
-
-        try:
-            a_typeclass = object_type_registry[self.a_type]
-        except KeyError:
-            raise ValueError("ActivityObject {} has unknown type {}".format(
-                self.pk,
-                self.a_type,
-                ))
-
-        if a_typeclass is not None:
-            instance = a_typeclass.objects.get(activity_object__pk=self.pk)
-
-            if instance is None:
-                raise ValueError("ActivityObject {} has no corresponding instance in type {}".format(
-                    self.pk,
-                    self.a_type,
-                    ))
-
-            result.update(
-                    instance.activity_fields(),
-                    )
-
-        result.update({
+        result = {
             'id': self.pk,
-            'type': self.a_type,
-            })
+            'type': self.model._meta,
+            'published': self.published, # XXX format
+            'updated': self.updated, # XXX format
+            }
+
+        for (field, method_name) in [
+                ('actor', None),
+                ('object', 'fobject'),
+                ('published', None),
+                ('updated', None),
+                ('target', None),
+                ]:
+
+            if method_name==None:
+                method_name = field
+
+            if hasattr(self.__class__, method_name):
+                method = getattr(self.__class__, method_name)
+
+                if callable(method):
+                    result[field] = str(method())
+                else:
+                    result[field] = str(method)
 
         return result
 
-class Activity(models.Model):
-    #  actor | object | target | result | origin | instrument 
+class Activity_with_actor_and_fobject(Cobject):
+
+    class Meta:
+        abstract = True
+
+    actor_type = models.ForeignKey(ContentType,
+            on_delete=models.CASCADE,
+            related_name='+')
+    actor_id = models.PositiveIntegerField()
+    actor = GenericForeignKey('actor_type', 'actor_id')
+   
+    fobject_type = models.ForeignKey(ContentType,
+            on_delete=models.CASCADE,
+            related_name='+')
+    fobject_id = models.PositiveIntegerField()
+    fobject = GenericForeignKey('fobject_type', 'fobject_id')
+
+class Activity_with_target_and_fobject(Cobject):
+
+    class Meta:
+        abstract = True
+
+    target_type = models.ForeignKey(ContentType,
+            on_delete=models.CASCADE,
+            related_name='+')
+    target_id = models.PositiveIntegerField()
+    target = GenericForeignKey('target_type', 'target_id')
+   
+    fobject_type = models.ForeignKey(ContentType,
+            on_delete=models.CASCADE,
+            related_name='+')
+    fobject_id = models.PositiveIntegerField()
+    fobject = GenericForeignKey('fobject_type', 'fobject_id')
+
+class Activity_with_fobject(Cobject):
+
+    class Meta:
+        abstract = True
+
+    fobject_type = models.ForeignKey(ContentType,
+            on_delete=models.CASCADE,
+            related_name='+')
+    fobject_id = models.PositiveIntegerField()
+    fobject = GenericForeignKey('fobject_type', 'fobject_id')
+
+class Create(Activity_with_actor_and_fobject):
     pass
 
+class Update(Activity_with_actor_and_fobject):
+    # XXX note we're only doing server-to-server here,
+    # so the fobject is a complete rewrite.
+    # in client-to-server, the fobject is a patch.
+    pass
+
+class Delete(Activity_with_actor_and_fobject):
+    pass
+
+class Tombstone(Cobject):
+    deleted = models.DateTimeField(default=datetime.datetime.now)
+
+class Follow(Activity_with_actor_and_fobject):
+    pass
+
+class Add(Activity_with_target_and_fobject):
+    pass
+
+class Remove(Activity_with_target_and_fobject):
+    pass
+
+class Like(Activity_with_actor_and_fobject):
+    pass
+
+class Undo(Activity_with_fobject):
+    pass
+
+class Accept(Activity_with_fobject):
+    pass
+
+class Reject(Activity_with_fobject):
+    pass
