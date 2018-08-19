@@ -3,9 +3,14 @@ from django_kepi import object_type_registry
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 import datetime
+import warnings
 
 # Cobject is our name for the ActivityPub class named "Object".
 # fobject is our name for the field "object" within an ActivityPub class
+
+RESOLVE_FAILSAFE = 10
+SERIALIZE = 'serialize'
+URL_IDENTIFIER = 'url_identifier'
 
 class Cobject(models.Model):
 
@@ -26,7 +31,7 @@ class Cobject(models.Model):
             'updated': self.updated, # XXX format
             }
 
-        for (field, method_name) in [
+        for (field, field_name) in [
                 ('actor', None),
                 ('object', 'fobject'),
                 ('published', None),
@@ -34,16 +39,39 @@ class Cobject(models.Model):
                 ('target', None),
                 ]:
 
-            if method_name==None:
-                method_name = field
+            if field_name==None:
+                field_name = field
 
-            if hasattr(self, method_name):
-                method = getattr(self, method_name)
-
-                if callable(method):
-                    result[field] = str(method())
+            try:
+                if getattr(self.__class__, field_name+'_as_url')()==True:
+                    method_name = URL_IDENTIFIER
                 else:
-                    result[field] = str(method)
+                    method_name = SERIALIZE
+            except AttributeError:
+                method_name = SERIALIZE
+
+            if hasattr(self, field_name):
+                value = getattr(self, field_name)
+
+                iterations = 0
+
+                while callable(value) or hasattr(value.__class__, method_name):
+
+                    if callable(value):
+                        value = value()
+                    elif hasattr(value.__class__, method_name):
+                        value = value.serialize()
+
+                    iterations += 1
+
+                    if iterations >= RESOLVE_FAILSAFE:
+                        warnings.warn('serializing {} for {} took too many iterations'.format(
+                            self,
+                            field_name,
+                            ))
+                        break
+
+                result[field] = value
 
         return result
 
@@ -57,6 +85,7 @@ class Activity_with_actor_and_fobject(Cobject):
             related_name='+')
     actor_id = models.PositiveIntegerField()
     actor = GenericForeignKey('actor_type', 'actor_id')
+    actor_as_url = lambda: True
    
     fobject_type = models.ForeignKey(ContentType,
             on_delete=models.CASCADE,
