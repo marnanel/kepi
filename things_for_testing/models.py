@@ -14,3 +14,7 @@ class ThingUser(models.Model):
                 'name': self.name,
                 }
 
+    def url_identifier(self):
+        return 'https://example.com/user/{}'.format(
+                self.name,
+                )
