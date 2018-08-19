@@ -18,4 +18,4 @@ class UserTests(TestCase):
                 )
         activity.save()
 
-        raise ValueError(str(activity.activity_fields()))
+        raise ValueError(str(activity.serialize()))

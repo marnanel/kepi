@@ -26,6 +26,6 @@ class ActivityObjectView(django.views.View):
         #instance = ActivityObject.objects.get(pk=kwargs['id'])
         instance = None # XXX temp
 
-        result = instance.activity_fields()
+        result = instance.serialize()
 
         return render(result)

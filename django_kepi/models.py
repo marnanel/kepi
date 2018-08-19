@@ -17,7 +17,7 @@ class Cobject(models.Model):
     published = models.DateTimeField(default=datetime.datetime.now)
     updated = models.DateTimeField(default=datetime.datetime.now)
 
-    def activity_fields(self):
+    def serialize(self):
 
         result = {
             'id': self.pk,

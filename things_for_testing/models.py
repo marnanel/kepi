@@ -9,10 +9,8 @@ class ThingUser(models.Model):
     #        on_delete=models.CASCADE,
     #        )
 
-    def activity_fields(self):
+    def serialize(self):
         return {
                 'name': self.name,
                 }
-
-register_type('Person', ThingUser)
 
