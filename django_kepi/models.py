@@ -20,13 +20,27 @@ class Cobject(models.Model):
     class Meta:
         abstract = True
 
-    def random_number():
-        return randint(0, 2**32)
+    def random_slug():
+        result = ''
 
-    numeric_id = models.PositiveIntegerField(
+        for i in range(6):
+            digit = randint(0, 35)
+            
+            # yes, I know this can be done more efficiently.
+            # I want it to be readable.
+
+            if digit<10:
+                result += chr(ord('0')+digit)
+            else:
+                result += chr(ord('a')+(digit-10))
+
+        return result
+
+    slug = models.SlugField(
             primary_key = True,
-            default = random_number,
-            editable = False)
+            default = random_slug,
+            editable = False,
+            )
 
     verified = models.BooleanField(default=False)
     remote_id = models.URLField(blank=True, null=True, default=None)
@@ -39,7 +53,7 @@ class Cobject(models.Model):
         else:
             return settings.KEPI['URL_FORMAT'] % {
                     'type': self.__class__.__name__.lower(),
-                    'id': self.numeric_id,
+                    'slug': self.slug,
                     }
 
     def is_local(self):
