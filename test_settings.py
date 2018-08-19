@@ -1,5 +1,9 @@
 from django.urls import path, include
 
+KEPI = {
+        'URL_FORMAT': 'https://example.com/activities/%(type)s/%(pk)d',
+        }
+
 INSTALLED_APPS = (
 
         'django.contrib.admin',

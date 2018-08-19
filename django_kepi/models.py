@@ -2,6 +2,7 @@ from django.db import models
 from django_kepi import object_type_registry
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
 import datetime
 import warnings
 
@@ -22,10 +23,19 @@ class Cobject(models.Model):
     published = models.DateTimeField(default=datetime.datetime.now)
     updated = models.DateTimeField(default=datetime.datetime.now)
 
+    def url_identifier(self):
+        if self.remote_id is not None:
+            return self.remote_id
+        else:
+            return settings.KEPI['URL_FORMAT'] % {
+                    'type': self.__class__.__name__.lower(),
+                    'pk': self.pk,
+                    }
+
     def serialize(self):
 
         result = {
-            'id': self.pk,
+            'id': self.url_identifier(),
             'type': self.__class__.__name__,
             'published': self.published, # XXX format
             'updated': self.updated, # XXX format
