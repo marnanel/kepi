@@ -17,14 +17,11 @@ class Cobject(models.Model):
     published = models.DateTimeField(default=datetime.datetime.now)
     updated = models.DateTimeField(default=datetime.datetime.now)
 
-    def _related_name(self):
-        return self.model.__class__.__name__+'s'
-
     def activity_fields(self):
 
         result = {
             'id': self.pk,
-            'type': self.model._meta,
+            'type': self.__class__.__name__,
             'published': self.published, # XXX format
             'updated': self.updated, # XXX format
             }

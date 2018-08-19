@@ -1,11 +1,21 @@
 from django.test import TestCase, Client
 from django_kepi.models import Create
+from things_for_testing.models import ThingUser
 import json
 
 class UserTests(TestCase):
 
     def test_basic_objects(self):
 
-        c = Create()
-        c.save()
+        actor = ThingUser(
+                name='Fred',
+                )
+        actor.save()
 
+        activity = Create(
+                actor=actor,
+                fobject=actor,
+                )
+        activity.save()
+
+        raise ValueError(str(activity.activity_fields()))
