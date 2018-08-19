@@ -32,6 +32,9 @@ class Cobject(models.Model):
                     'pk': self.pk,
                     }
 
+    def is_local(self):
+        return self.remote_id is None
+
     def serialize(self):
 
         result = {
