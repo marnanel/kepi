@@ -37,8 +37,8 @@ class Cobject(models.Model):
             if method_name==None:
                 method_name = field
 
-            if hasattr(self.__class__, method_name):
-                method = getattr(self.__class__, method_name)
+            if hasattr(self, method_name):
+                method = getattr(self, method_name)
 
                 if callable(method):
                     result[field] = str(method())
