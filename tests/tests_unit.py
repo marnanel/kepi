@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from django_kepi.models import Create, Like
+from django_kepi.models import Create, Like, Update
 from things_for_testing.models import ThingUser, ThingArticle
 
 class UserTests(TestCase):

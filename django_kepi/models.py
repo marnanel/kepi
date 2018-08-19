@@ -3,6 +3,7 @@ from django_kepi import object_type_registry
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+from random import randint
 import json
 import datetime
 import warnings
@@ -13,11 +14,19 @@ import warnings
 RESOLVE_FAILSAFE = 10
 SERIALIZE = 'serialize'
 URL_IDENTIFIER = 'url_identifier'
- 
+
 class Cobject(models.Model):
 
     class Meta:
         abstract = True
+
+    def random_number():
+        return randint(0, 2**32)
+
+    numeric_id = models.PositiveIntegerField(
+            primary_key = True,
+            default = random_number,
+            editable = False)
 
     verified = models.BooleanField(default=False)
     remote_id = models.URLField(blank=True, null=True, default=None)
@@ -30,7 +39,7 @@ class Cobject(models.Model):
         else:
             return settings.KEPI['URL_FORMAT'] % {
                     'type': self.__class__.__name__.lower(),
-                    'pk': self.pk,
+                    'id': self.numeric_id,
                     }
 
     def is_local(self):
@@ -104,6 +113,9 @@ class Cobject(models.Model):
                 default=json_default,
                 )
 
+    def matches_type(self, t):
+        return t==self.__class__.__name__.lower()
+
 class Activity_with_actor_and_fobject(Cobject):
 
     class Meta:
@@ -165,6 +177,9 @@ class Delete(Activity_with_actor_and_fobject):
 class Tombstone(Cobject):
     deleted = models.DateTimeField(default=datetime.datetime.now)
 
+    def matches_type(self, t):
+        return True # XXX probably more complicated than that
+
 class Follow(Activity_with_actor_and_fobject):
     pass
 
@@ -184,4 +199,19 @@ class Accept(Activity_with_fobject):
     pass
 
 class Reject(Activity_with_fobject):
+    pass
+
+def deserialize(s):
+
+    try:
+        del s['id']
+    except AttributeError:
+        pass
+
+    if 'type' not in s:
+        raise ValueError("can't deserialize without a type")
+
+    raise ValueError("nyi")
+
+def lookup(ftype, pk):
     pass
