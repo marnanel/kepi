@@ -11,6 +11,8 @@ class ThingUser(models.Model):
 
     def serialize(self):
         return {
+                'id': self.url_identifier(),
+                'type': 'Person',
                 'name': self.name,
                 }
 
@@ -18,3 +20,21 @@ class ThingUser(models.Model):
         return 'https://example.com/user/{}'.format(
                 self.name,
                 )
+
+class ThingArticle(models.Model):
+
+    title = models.CharField(max_length=256)
+
+    def serialize(self):
+        return {
+                'id': self.url_identifier(),
+                'type': 'Article',
+                'title': self.title,
+                }
+        
+    def url_identifier(self):
+        return 'https://articles.example.com/{}'.format(
+                self.title,
+                )
+
+

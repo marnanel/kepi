@@ -3,6 +3,7 @@ from django_kepi import object_type_registry
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+import json
 import datetime
 import warnings
 
@@ -12,7 +13,7 @@ import warnings
 RESOLVE_FAILSAFE = 10
 SERIALIZE = 'serialize'
 URL_IDENTIFIER = 'url_identifier'
-
+ 
 class Cobject(models.Model):
 
     class Meta:
@@ -40,8 +41,6 @@ class Cobject(models.Model):
         result = {
             'id': self.url_identifier(),
             'type': self.__class__.__name__,
-            'published': self.published, # XXX format
-            'updated': self.updated, # XXX format
             }
 
         for (field, field_name) in [
@@ -87,6 +86,23 @@ class Cobject(models.Model):
                 result[field] = value
 
         return result
+
+    def serialize_as_str(self):
+
+        def json_default(obj):
+
+            if isinstance(obj, datetime.datetime):
+                return obj.isoformat()+'Z'
+            else:
+                raise TypeError("{} is not serializable".format(
+                    type(obj)))
+
+        return json.dumps(
+                self.serialize(),
+                sort_keys=True,
+                indent=2, # no reason not to be pretty
+                default=json_default,
+                )
 
 class Activity_with_actor_and_fobject(Cobject):
 
