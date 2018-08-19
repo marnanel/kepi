@@ -13,7 +13,7 @@ class Cobject(models.Model):
         abstract = True
 
     verified = models.BooleanField(default=False)
-    remote_id = models.URLField(blank=True, default=None)
+    remote_id = models.URLField(blank=True, null=True, default=None)
     published = models.DateTimeField(default=datetime.datetime.now)
     updated = models.DateTimeField(default=datetime.datetime.now)
 
