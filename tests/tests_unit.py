@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
-from django_kepi.models import Create, Like, Update, lookup
+from django_kepi.models import Create, Like, Update, Delete, lookup
 from things_for_testing.models import ThingUser, ThingArticle
+import datetime
 
 class UserTests(TestCase):
 
@@ -16,15 +17,50 @@ class UserTests(TestCase):
                 )
         article.save()
 
-        activity = Create(
+        create = Create(
                 actor=actor,
                 fobject=article,
                 )
-        activity.save()
-        raise ValueError(str(activity.serialize()))
-        #{'id': 'https://example.com/activities/create/iuv1nt', 'type': 'Create', 'object': {'id': 'https://articles.example.com/Go To statement considered harmful', 'type': 'Article', 'title': 'Go To statement considered harmful'}, 'published': datetime.datetime(2018, 8, 20, 10, 5, 39, 213955), 'actor': 'https://example.com/user/Dijkstra', 'updated': datetime.datetime(2018, 8, 20, 10, 5, 39, 213990)}
+        create.save()
 
-        looked_up = lookup('create', activity.slug)
+        serialized = create.serialize()
+
+        for field in [
+                'id', 'type',
+                'object', 'actor',
+                'published', 'updated',
+                ]:
+
+            self.assertIn(field, serialized)
+
+        self.assertIsInstance(
+                serialized['id'],
+                str)
+        self.assertEqual(
+                serialized['type'],
+                'Create')
+        self.assertDictEqual(
+                serialized['object'],
+                article.serialize(),
+                )
+        self.assertEqual(
+                serialized['actor'],
+                'https://example.com/user/Dijkstra')
+        self.assertIsInstance(
+                serialized['published'],
+                datetime.datetime,
+                )
+        self.assertIsInstance(
+                serialized['updated'],
+                datetime.datetime,
+                )
+
+        looked_up = lookup('create', create.slug)
+
+        self.assertEqual(
+                looked_up,
+                create,
+                )
 
     def test_update(self):
 
@@ -38,24 +74,22 @@ class UserTests(TestCase):
                 )
         article.save()
 
-        activity = Create(
+        create = Create(
                 actor=actor,
                 fobject=article,
                 )
-        activity.save()
+        create.save()
 
         article2 = ThingArticle(
                 title='Actually I rather like spaghetti code',
                 )
         article2.save()
 
-        activity = Update(
+        update = Update(
                 actor=actor,
                 fobject=article2,
                 )
-        activity.save()
-
-        #raise ValueError(str(activity.serialize()))
+        update.save()
 
     def test_delete(self):
 
@@ -69,13 +103,13 @@ class UserTests(TestCase):
                 )
         article.save()
 
-        activity = Create(
+        create = Create(
                 actor=actor,
                 fobject=article,
                 )
-        activity.save()
+        create.save()
 
-        delete = Update(
+        delete = Delete(
                 actor=actor,
                 fobject=article,
                 )
@@ -114,4 +148,4 @@ class UserTests(TestCase):
                 )
         like.save()
 
-        raise ValueError(like.serialize_as_str())
+        #raise ValueError(like.serialize_as_str())

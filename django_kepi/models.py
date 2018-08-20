@@ -269,7 +269,7 @@ ACTIVITY_TYPES = {
 
 def lookup(ftype, slug):
 
-    if not ACTIVITY_TYPES.has_key(ftype):
+    if ftype not in ACTIVITY_TYPES:
         raise TypeError("{} is not an Activity type".format(
             ftype,
             ))
@@ -284,7 +284,7 @@ def lookup(ftype, slug):
 def create(ftype,
         remote_id=None):
 
-    if not ACTIVITY_TYPES.has_key(ftype):
+    if ftype not in ACTIVITY_TYPES:
         raise TypeError("{} is not an Activity type".format(
             ftype,
             ))
