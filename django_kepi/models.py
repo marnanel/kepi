@@ -15,10 +15,21 @@ RESOLVE_FAILSAFE = 10
 SERIALIZE = 'serialize'
 URL_IDENTIFIER = 'url_identifier'
 
+class VerifiedObjectsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().exclude(
+                # Local objects are necessarily verified
+                remote_id__isnull=False,
+                verified=False,
+                )
+
 class Cobject(models.Model):
 
     class Meta:
         abstract = True
+
+    objects = VerifiedObjectsManager()
+    all_objects = models.Manager()
 
     def random_slug():
         result = ''
@@ -127,8 +138,14 @@ class Cobject(models.Model):
                 default=json_default,
                 )
 
-    def matches_type(self, t):
-        return t==self.__class__.__name__.lower()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.remote_id is None:
+            self.deploy()
+
+    def deploy(self):
+        pass
 
 class Activity_with_actor_and_fobject(Cobject):
 
@@ -180,19 +197,27 @@ class Create(Activity_with_actor_and_fobject):
     pass
 
 class Update(Activity_with_actor_and_fobject):
-    # XXX note we're only doing server-to-server here,
-    # so the fobject is a complete rewrite.
-    # in client-to-server, the fobject is a patch.
+    # True in client-to-server, where the fobject is a patch.
+    partial = models.BooleanField(default=False)
+
     pass
 
 class Delete(Activity_with_actor_and_fobject):
     pass
 
-class Tombstone(Cobject):
-    deleted = models.DateTimeField(default=datetime.datetime.now)
+class Tombstone(models.Model):
 
-    def matches_type(self, t):
-        return True # XXX probably more complicated than that
+    class Meta:
+        indexes = [
+                models.Index(fields=['ftype', 'slug']),
+                ]
+
+    ftype = models.CharField(max_length=20)
+    slug = models.SlugField()
+
+    published = models.DateTimeField()
+    updated = models.DateTimeField(default=datetime.datetime.now)
+    deleted = models.DateTimeField(default=datetime.datetime.now)
 
 class Follow(Activity_with_actor_and_fobject):
     pass
@@ -227,5 +252,44 @@ def deserialize(s):
 
     raise ValueError("nyi")
 
-def lookup(ftype, pk):
-    pass
+# TODO there are better ways to do this
+ACTIVITY_TYPES = {
+        "create": Create,
+        "update": Update,
+        "delete": Delete,
+        # Tombstone can't be accessed directly
+        "follow": Follow,
+        "add": Add,
+        "remove": Remove,
+        "like": Like,
+        "undo": Undo,
+        "accept": Accept,
+        "reject": Reject,
+        }
+
+def lookup(ftype, slug):
+
+    if not ACTIVITY_TYPES.has_key(ftype):
+        raise TypeError("{} is not an Activity type".format(
+            ftype,
+            ))
+
+    result = ACTIVITY_TYPES[ftype].objects.get(slug=slug)
+
+    if result is None:
+        result = Tombstone.objects.get(ftype=ftype, slug=slug)
+
+    return result
+
+def create(ftype,
+        remote_id=None):
+
+    if not ACTIVITY_TYPES.has_key(ftype):
+        raise TypeError("{} is not an Activity type".format(
+            ftype,
+            ))
+
+    result = ACTIVITY_TYPES[ftype](remote_id=remote_id)
+
+    return result
+
