@@ -9,6 +9,8 @@ class ThingUser(models.Model):
     #        on_delete=models.CASCADE,
     #        )
 
+    ftype = 'Person'
+
     def serialize(self):
         return {
                 'id': self.url_identifier(),
@@ -21,9 +23,12 @@ class ThingUser(models.Model):
                 self.name,
                 )
 
+register_type('Person', ThingUser)
+
 class ThingArticle(models.Model):
 
     title = models.CharField(max_length=256)
+    ftype = 'Article'
 
     def serialize(self):
         return {
@@ -37,4 +42,9 @@ class ThingArticle(models.Model):
                 self.title,
                 )
 
+    @classmethod
+    def activity_create(cls, type_name, actor, fields):
+        raise ValueError('testing: '+str(fields))
 
+
+register_type('Article', ThingArticle)

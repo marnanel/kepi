@@ -194,16 +194,36 @@ class Activity_with_fobject(Cobject):
     fobject = GenericForeignKey('fobject_type', 'fobject_id')
 
 class Create(Activity_with_actor_and_fobject):
-    pass
+
+    def deploy(self):
+        object_type_registry[self.fobject.ftype].activity_create(
+                type_name = self.fobject.ftype,
+                fields = self.fobject,
+                actor = self.actor,
+                )
 
 class Update(Activity_with_actor_and_fobject):
     # True in client-to-server, where the fobject is a patch.
     partial = models.BooleanField(default=False)
 
-    pass
+    def deploy(self):
+        object_type_registry[self.fobject.ftype].activity_update(
+                type_name = self.fobject.ftype,
+                fields = self.fobject,
+                actor = self.actor,
+                partial = self.partial,
+                )
 
 class Delete(Activity_with_actor_and_fobject):
-    pass
+
+    def deploy(self):
+
+        if object_type_registry[self.fobject.ftype].activity_delete(
+                type_name = self.fobject.ftype,
+                actor = self.actor,
+                ):
+
+            pass # XXX create Tombstone
 
 class Tombstone(models.Model):
 
@@ -293,3 +313,13 @@ def create(ftype,
 
     return result
 
+class Actor(models.Model):
+    name = models.CharField(max_length=256) # probably won't stay this way
+
+class Following(models.Model):
+    follower = models.ForeignKey(Actor,
+            on_delete = models.CASCADE,
+            related_name = 'followers')
+    following = models.ForeignKey(Actor,
+            on_delete = models.CASCADE,
+            related_name = 'following')
