@@ -48,7 +48,7 @@ class CollectionView(django.views.View):
         items = self.get_collection_items(*args, **kwargs)
 
         our_url = request.build_absolute_uri()
-        our_url = urllib.parse.urldefrag(our_url)
+        our_url, fragment = urllib.parse.urldefrag(our_url)
         
         if PAGE_FIELD in request.GET:
             page_number = int(request.GET[PAGE_FIELD])
