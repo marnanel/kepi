@@ -3,11 +3,13 @@ from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
+from django_kepi.models import Following
 import urllib.parse
 import json
 import re
 
 PAGE_LENGTH = 50
+PAGE_FIELD = 'page'
 
 def render(data):
     # XXX merge in
@@ -45,8 +47,8 @@ class CollectionView(django.views.View):
 
         items = self.get_collection_items(*args, **kwargs)
 
-        our_url = request.build_absolute_url()
-        our_url = urllib.parse.defrag(our_url)
+        our_url = request.build_absolute_uri()
+        our_url = urllib.parse.urldefrag(our_url)
         
         if PAGE_FIELD in request.GET:
             page_number = int(request.GET[PAGE_FIELD])
@@ -59,7 +61,7 @@ class CollectionView(django.views.View):
                     "@context": ATSIGN_CONTEXT,
                     "type" : "OrderedCollectionPage",
                     "id" : our_url,
-                    "totalItems" : items.count,
+                    "totalItems" : items.count(),
                     "orderedItems" : listed_items,
                     "partOf": our_url,
                     }
@@ -71,11 +73,14 @@ class CollectionView(django.views.View):
                result["next"] = "{}?page={}".format(our_url, page_number+1)
 
         else:
+
+            # Index page.
+
             result = {
                     "@context": ATSIGN_CONTEXT,
                     "type": "OrderedCollection",
-                    "id": urldecode.defrag(our_url),
-                    "totalItems" : items.count,
+                    "id": our_url,
+                    "totalItems" : items.count(),
                     }
 
             if items.count!=0:
@@ -89,5 +94,5 @@ class CollectionView(django.views.View):
 class FollowersView(CollectionView):
 
     def get_collection_items(self, *args, **kwargs):
-        return Following.objects.find(following=kwargs['username'])
+        return Following.objects.filter(following__name=kwargs['username'])
 

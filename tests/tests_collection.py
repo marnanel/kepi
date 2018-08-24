@@ -11,6 +11,6 @@ class CollectionTests(TestCase):
                 HTTP_ACCEPT = 'application/activity+json',
                 )
 
-        response = c.get('user/alice/followers')
+        response = c.get('/user/alice/followers/')
 
         raise ValueError(str(response.content))
