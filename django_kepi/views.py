@@ -86,8 +86,8 @@ class CollectionView(django.views.View):
     def get_collection_items(self, *args, **kwargs):
         return RuntimeError("not in the superclass")
 
-class FollowersView(django.views.View):
+class FollowersView(CollectionView):
 
     def get_collection_items(self, *args, **kwargs):
-        return Following.objects.find(following=who)
+        return Following.objects.find(following=kwargs['username'])
 
