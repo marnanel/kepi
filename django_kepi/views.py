@@ -38,6 +38,31 @@ class ActivityObjectView(django.views.View):
 
 ########################
 
+def _make_query_page(
+        request,
+        page_number,
+        ):
+    
+    fields = dict(request.GET)
+
+    if page_number is None:
+        if PAGE_FIELD in fields:
+            del fields[PAGE_FIELD]
+    else:
+        fields[PAGE_FIELD] = page_number
+
+    encoded = urllib.parse.urlencode(fields)
+
+    if encoded!='':
+        encoded = '?'+encoded
+
+    return '{}://{}{}{}'.format(
+            request.scheme,
+            request.get_host(),
+            request.path,
+            encoded,
+            )
+
 class CollectionView(django.views.View):
 
     class Meta:
@@ -49,29 +74,30 @@ class CollectionView(django.views.View):
         # XXX assert that items.ordered
 
         our_url = request.build_absolute_uri()
-        our_url, fragment = urllib.parse.urldefrag(our_url)
+        index_url = _make_query_page(request, None)
         
         if PAGE_FIELD in request.GET:
+
             page_number = int(request.GET[PAGE_FIELD])
 
             start = (page_number-1) * PAGE_LENGTH
 
-            listed_items = all_items[start: start+PAGE_LENGTH]
+            listed_items = items[start: start+PAGE_LENGTH]
 
             result = {
                     "@context": ATSIGN_CONTEXT,
                     "type" : "OrderedCollectionPage",
                     "id" : our_url,
                     "totalItems" : items.count(),
-                    "orderedItems" : listed_items,
-                    "partOf": our_url,
+                    "orderedItems" : [str(x) for x in listed_items],
+                    "partOf": index_url,
                     }
 
             if page_number > 1:
-               result["prev"] = "{}?page={}".format(our_url, page_number-1)
+               result["prev"] = _make_query_page(request, page_number-1)
 
-            if items.count < (page_number*PAGE_LENGTH):
-               result["next"] = "{}?page={}".format(our_url, page_number+1)
+            if items.count() < (page_number*PAGE_LENGTH):
+               result["next"] = _make_query_page(request, page_number+1)
 
         else:
 
@@ -80,7 +106,7 @@ class CollectionView(django.views.View):
             result = {
                     "@context": ATSIGN_CONTEXT,
                     "type": "OrderedCollection",
-                    "id": our_url,
+                    "id": index_url,
                     "totalItems" : items.count(),
                     }
 

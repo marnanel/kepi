@@ -19,7 +19,6 @@ class CollectionTests(TestCase):
 
         response = c.get(path)
         self.assertEqual(response['Content-Type'], JSON_TYPE)
-        # XXX check Content-Type
 
         result = json.loads(response.content.decode(encoding='UTF-8'))
 
@@ -40,6 +39,24 @@ class CollectionTests(TestCase):
         self.assertEqual(result['id'], EXAMPLE_SERVER+path)
         self.assertEqual(result['totalItems'], expectedTotalItems)
         self.assertEqual(result['type'], 'OrderedCollection')
+
+    def check_collection_page(self,
+            path,
+            page_number,
+            expectedTotalItems):
+
+        c = Client(
+                HTTP_ACCEPT = JSON_TYPE,
+                )
+
+        full_path = '{}?page={}'.format(path, page_number)
+
+        response = c.get(full_path)
+        self.assertEqual(response['Content-Type'], JSON_TYPE)
+
+        result = json.loads(response.content.decode(encoding='UTF-8'))
+
+        raise ValueError(str(result))
 
     def test_followers(self):
 
@@ -62,7 +79,15 @@ class CollectionTests(TestCase):
 
             self.check_collection(
                     path='/user/alice/followers/',
-                    expectedTotalItems=i)
+                    expectedTotalItems=i,
+                    )
+
+            if i!=0:
+                self.check_collection_page(
+                        path='/user/alice/followers/',
+                        page_number=1,
+                        expectedTotalItems=i,
+                        )
 
 
 
