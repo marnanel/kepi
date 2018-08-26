@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from django_kepi.models import Following
+from django_kepi.models import Actor, Following
 from django_kepi.views import FollowersView
 import datetime
 import json
@@ -32,9 +32,9 @@ class CollectionTests(TestCase):
             self.assertIn(field, result)
 
         if expectedTotalItems==0:
-            self.assertNotIn(field, 'first')
+            self.assertNotIn('first', result)
         else:
-            self.assertIn(field, 'first')
+            self.assertIn('first', result)
             self.assertEqual(result['first'], EXAMPLE_SERVER+path+'?page=1')
 
         self.assertEqual(result['id'], EXAMPLE_SERVER+path)
@@ -42,7 +42,27 @@ class CollectionTests(TestCase):
         self.assertEqual(result['type'], 'OrderedCollection')
 
     def test_followers(self):
-        self.check_collection(
-                path='/user/alice/followers/',
-                expectedTotalItems=0)
+
+        alice = Actor(name='alice')
+        alice.save()
+
+        for i in range(100):
+
+            if i!=0:
+                a = Actor(
+                        name='user%02d' % (i,),
+                        )
+                a.save()
+
+                f = Following(
+                        follower = a,
+                        following = alice,
+                        )
+                f.save()
+
+            self.check_collection(
+                    path='/user/alice/followers/',
+                    expectedTotalItems=i)
+
+
 
