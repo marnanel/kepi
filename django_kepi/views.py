@@ -97,7 +97,7 @@ class CollectionView(django.views.View):
             if page_number > 1:
                result["prev"] = _make_query_page(request, page_number-1)
 
-            if items.count() < (page_number*PAGE_LENGTH):
+            if start+PAGE_LENGTH < items.count():
                result["next"] = _make_query_page(request, page_number+1)
 
         else:
