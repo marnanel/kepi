@@ -317,6 +317,9 @@ class Actor(models.Model):
     name = models.CharField(max_length=256) # probably won't stay this way
 
 class Following(models.Model):
+
+    # XXX Meta.ordering
+
     follower = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
             related_name = 'followers')

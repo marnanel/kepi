@@ -46,6 +46,7 @@ class CollectionView(django.views.View):
     def get(self, request, *args, **kwargs):
 
         items = self.get_collection_items(*args, **kwargs)
+        # XXX assert that items.ordered
 
         our_url = request.build_absolute_uri()
         our_url, fragment = urllib.parse.urldefrag(our_url)
@@ -83,7 +84,7 @@ class CollectionView(django.views.View):
                     "totalItems" : items.count(),
                     }
 
-            if items.count!=0:
+            if items.exists():
                     result["first"] = "{}?page=1".format(our_url,)
 
         return render(result)
