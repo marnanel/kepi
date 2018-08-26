@@ -6,6 +6,7 @@ import json
 
 EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json'
+PAGE_LENGTH = 50
 
 class CollectionTests(TestCase):
 
@@ -86,7 +87,7 @@ class CollectionTests(TestCase):
 
             if i!=0:
 
-                friend_name = 'user%02d' % (i,)
+                friend_name = 'user%03d' % (i,)
 
                 friends.append(friend_name)
 
@@ -107,12 +108,14 @@ class CollectionTests(TestCase):
                     )
 
             if i!=0:
-                self.check_collection_page(
-                        path='/user/alice/followers/',
-                        page_number=1,
-                        expectedTotalItems=i,
-                        expectedOnPage=friends,
-                        )
 
+                pages = int((i+1)/PAGE_LENGTH)
 
-
+                for page in range(pages):
+                    self.check_collection_page(
+                            path='/user/alice/followers/',
+                            page_number=page+1,
+                            expectedTotalItems=i,
+                            expectedOnPage=
+                                friends[page*PAGE_LENGTH:(page+1)*PAGE_LENGTH],
+                            )
