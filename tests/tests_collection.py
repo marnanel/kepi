@@ -48,18 +48,28 @@ class CollectionTests(TestCase):
             expectedOnPage,
             ):
 
+        def full_path(page):
+            if page is None:
+                query = ''
+            else:
+                query = '?page={}'.format(page)
+
+            return EXAMPLE_SERVER + path + query
+
         c = Client(
                 HTTP_ACCEPT = JSON_TYPE,
                 )
 
-        full_path = '{}{}?page={}'.format(
-                EXAMPLE_SERVER,
-                path,
-                page_number,
-                )
+        response = c.get(full_path(page_number))
 
-        response = c.get(full_path)
+        if response['Content-Type']=='text/html':
+            # let's just give up here so they have a chance
+            # of figuring out the error message from the server.
+            raise RuntimeError(response.content)
+
         self.assertEqual(response['Content-Type'], JSON_TYPE)
+
+        # TODO check Link headers
 
         result = json.loads(response.content.decode(encoding='UTF-8'))
 
@@ -68,13 +78,27 @@ class CollectionTests(TestCase):
                 'id',
                 'totalItems',
                 'type',
+                'partOf',
                 ]:
             self.assertIn(field, result)
 
-        self.assertEqual(result['id'], full_path)
+        self.assertEqual(result['id'], full_path(page_number))
         self.assertEqual(result['totalItems'], expectedTotalItems)
         self.assertEqual(result['type'], 'OrderedCollectionPage')
         self.assertEqual(result['orderedItems'], expectedOnPage)
+        self.assertEqual(result['partOf'], full_path(None))
+
+        if page_number!=1:
+            self.assertIn('prev', result)
+            self.assertEqual(result['prev'], full_path(page_number-1))
+        else:
+            self.assertNotIn('prev', result)
+
+        if (page_number-1)<int((expectedTotalItems-1)/PAGE_LENGTH):
+            self.assertIn('next', result)
+            self.assertEqual(result['next'], full_path(page_number+1))
+        else:
+            self.assertNotIn('next', result)
 
     def test_followers(self):
 
