@@ -128,4 +128,4 @@ class FollowersView(CollectionView):
         return Following.objects.filter(following__name=kwargs['username'])
 
     def _stringify_object(self, obj):
-        return obj.following.name
+        return obj.follower.name
