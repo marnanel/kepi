@@ -89,7 +89,8 @@ class CollectionView(django.views.View):
                     "type" : "OrderedCollectionPage",
                     "id" : our_url,
                     "totalItems" : items.count(),
-                    "orderedItems" : [str(x) for x in listed_items],
+                    "orderedItems" : [self._stringify_object(x)
+                        for x in listed_items],
                     "partOf": index_url,
                     }
 
@@ -118,8 +119,13 @@ class CollectionView(django.views.View):
     def get_collection_items(self, *args, **kwargs):
         return RuntimeError("not in the superclass")
 
+    def _stringify_object(self, obj):
+        return str(obj)
+
 class FollowersView(CollectionView):
 
     def get_collection_items(self, *args, **kwargs):
         return Following.objects.filter(following__name=kwargs['username'])
 
+    def _stringify_object(self, obj):
+        return obj.following.name
