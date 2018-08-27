@@ -1,6 +1,8 @@
 from django.test import TestCase, Client
 from django_kepi.models import Actor, Following
 from django_kepi.views import FollowersView
+from things_for_testing.models import ThingUser
+from things_for_testing.views import ThingUserCollection
 import datetime
 import json
 
@@ -19,6 +21,10 @@ class CollectionTests(TestCase):
                 )
 
         response = c.get(path)
+
+        if response.status_code!=200:
+            raise RuntimeError(response.content)
+
         self.assertEqual(response['Content-Type'], JSON_TYPE)
 
         result = json.loads(response.content.decode(encoding='UTF-8'))
@@ -141,3 +147,35 @@ class CollectionTests(TestCase):
                             expectedOnPage=
                                 friends[page*PAGE_LENGTH:(page+1)*PAGE_LENGTH],
                             )
+
+    def test_usageByOtherApps(self):
+
+        PATH = '/thing-users'
+        EXPECTED_SERIALIZATION = [
+                {'id': 'https://example.com/user/alice', 'name': 'alice', 'type': 'Person'},
+                {'id': 'https://example.com/user/bob', 'name': 'bob', 'type': 'Person'},
+                {'id': 'https://example.com/user/carol', 'name': 'carol', 'type': 'Person'},
+                ]
+
+        users = [
+                ThingUser(name='alice'),
+                ThingUser(name='bob'),
+                ThingUser(name='carol'),
+                ]
+
+        for user in users:
+            user.save()
+
+        self.check_collection(
+                path=PATH,
+                expectedTotalItems=len(users),
+                )
+
+        self.check_collection_page(
+                path=PATH,
+                page_number=1,
+                expectedTotalItems=len(users),
+                expectedOnPage=EXPECTED_SERIALIZATION,
+                )
+
+
