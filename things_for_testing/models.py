@@ -44,8 +44,19 @@ class ThingArticle(models.Model):
 
     @classmethod
     def activity_create(cls, type_name, actor, fields):
-        raise ValueError('testing: '+str(fields))
+        pass
 
+    @classmethod
+    def activity_update(cls, type_name, actor, fields, partial):
+        pass
+
+    @classmethod
+    def activity_delete(cls, type_name, actor):
+        pass
+
+    @classmethod
+    def activity_like(cls, type_name, actor, fobject):
+        pass
 
 register_type('Article', ThingArticle)
 
