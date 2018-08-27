@@ -11,7 +11,7 @@ class ThingUser(models.Model):
 
     ftype = 'Person'
 
-    def serialize(self):
+    def as_activity(self):
         return {
                 'id': self.url_identifier(),
                 'type': 'Person',
@@ -48,3 +48,4 @@ class ThingArticle(models.Model):
 
 
 register_type('Article', ThingArticle)
+

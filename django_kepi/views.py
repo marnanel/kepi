@@ -129,3 +129,4 @@ class FollowersView(CollectionView):
 
     def _stringify_object(self, obj):
         return obj.follower.name
+

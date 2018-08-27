@@ -69,8 +69,6 @@ class CollectionTests(TestCase):
 
         self.assertEqual(response['Content-Type'], JSON_TYPE)
 
-        # TODO check Link headers
-
         result = json.loads(response.content.decode(encoding='UTF-8'))
 
         for field in [
