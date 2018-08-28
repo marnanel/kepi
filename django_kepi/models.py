@@ -313,12 +313,19 @@ def create(ftype,
 
     return result
 
+###############################
+
 class Actor(models.Model):
     name = models.CharField(max_length=256) # probably won't stay this way
 
-class Following(models.Model):
+###############################
 
-    # XXX Meta.ordering
+class UserRelationship(models.Model):
+
+    class Meta:
+        abstract = True
+
+class Following(UserRelationship):
 
     follower = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
@@ -327,9 +334,13 @@ class Following(models.Model):
             on_delete = models.CASCADE,
             related_name = 'following')
 
-class Blocking(models.Model):
+    def __str__(self):
+        return '({} follows {})'.format(
+                self.follower.username,
+                self.following.username,
+                )
 
-    # XXX Meta.ordering
+class Blocking(UserRelationship):
 
     blocker = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
@@ -337,3 +348,26 @@ class Blocking(models.Model):
     blocking = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
             related_name = 'blocking')
+
+    def __str__(self):
+        return '({} blocks {})'.format(
+                self.follower.username,
+                self.following.username,
+                )
+
+class RequestingAccess(UserRelationship):
+
+    hopefuls = models.ForeignKey(Actor,
+            on_delete = models.CASCADE,
+            related_name = 'hopefuls')
+    grantor = models.ForeignKey(Actor,
+            on_delete = models.CASCADE,
+            related_name = 'grantor')
+
+    def __str__(self):
+        return '({} requests {})'.format(
+                self.follower.username,
+                self.following.username,
+                )
+
+
