@@ -1,3 +1,5 @@
 from django.contrib import admin
+from django_kepi import models
 
-# Register your models here.
+admin.site.register(models.Actor)
+admin.site.register(models.Following)
