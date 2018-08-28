@@ -336,8 +336,8 @@ class Following(UserRelationship):
 
     def __str__(self):
         return '({} follows {})'.format(
-                self.follower.username,
-                self.following.username,
+                self.follower.name,
+                self.following.name,
                 )
 
 class Blocking(UserRelationship):
@@ -351,8 +351,8 @@ class Blocking(UserRelationship):
 
     def __str__(self):
         return '({} blocks {})'.format(
-                self.follower.username,
-                self.following.username,
+                self.follower.name,
+                self.following.name,
                 )
 
 class RequestingAccess(UserRelationship):
@@ -366,8 +366,8 @@ class RequestingAccess(UserRelationship):
 
     def __str__(self):
         return '({} requests {})'.format(
-                self.follower.username,
-                self.following.username,
+                self.follower.name,
+                self.following.name,
                 )
 
 
