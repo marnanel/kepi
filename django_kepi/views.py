@@ -11,20 +11,6 @@ import re
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
 
-def render(data):
-    # XXX merge in
-    result = JsonResponse(
-            data=data,
-            json_dumps_params={
-                'sort_keys': True,
-                'indent': 2,
-                }
-            )
-
-    result['Content-Type'] = 'application/activity+json'
-
-    return result
-
 class ActivityObjectView(django.views.View):
 
     def get(self, request, *args, **kwargs):
@@ -34,36 +20,49 @@ class ActivityObjectView(django.views.View):
 
         result = instance.serialize()
 
-        return render(result)
+        return self._render(result)
 
-########################
-
-def _make_query_page(
-        request,
-        page_number,
-        ):
+    def _make_query_page(
+            self,
+            request,
+            page_number,
+            ):
     
-    fields = dict(request.GET)
+        fields = dict(request.GET)
 
-    if page_number is None:
-        if PAGE_FIELD in fields:
-            del fields[PAGE_FIELD]
-    else:
-        fields[PAGE_FIELD] = page_number
+        if page_number is None:
+            if PAGE_FIELD in fields:
+                del fields[PAGE_FIELD]
+        else:
+            fields[PAGE_FIELD] = page_number
 
-    encoded = urllib.parse.urlencode(fields)
+        encoded = urllib.parse.urlencode(fields)
 
-    if encoded!='':
-        encoded = '?'+encoded
+        if encoded!='':
+            encoded = '?'+encoded
 
-    return '{}://{}{}{}'.format(
-            request.scheme,
-            request.get_host(),
-            request.path,
-            encoded,
-            )
+        return '{}://{}{}{}'.format(
+                request.scheme,
+                request.get_host(),
+                request.path,
+                encoded,
+                )
 
-class CollectionView(django.views.View):
+    def _render(self, data):
+        result = JsonResponse(
+                data=data,
+                json_dumps_params={
+                    'sort_keys': True,
+                    'indent': 2,
+                    }
+                )
+
+        result['Content-Type'] = 'application/activity+json'
+
+        return result
+
+
+class CollectionView(ActivityObjectView):
 
     class Meta:
         abstract = True
@@ -74,7 +73,7 @@ class CollectionView(django.views.View):
         # XXX assert that items.ordered
 
         our_url = request.build_absolute_uri()
-        index_url = _make_query_page(request, None)
+        index_url = self._make_query_page(request, None)
         
         if PAGE_FIELD in request.GET:
 
@@ -95,10 +94,10 @@ class CollectionView(django.views.View):
                     }
 
             if page_number > 1:
-               result["prev"] = _make_query_page(request, page_number-1)
+               result["prev"] = self._make_query_page(request, page_number-1)
 
             if start+PAGE_LENGTH < items.count():
-               result["next"] = _make_query_page(request, page_number+1)
+               result["next"] = self._make_query_page(request, page_number+1)
 
         else:
 
@@ -114,7 +113,7 @@ class CollectionView(django.views.View):
             if items.exists():
                     result["first"] = "{}?page=1".format(our_url,)
 
-        return render(result)
+        return self._render(result)
 
     def get_collection_items(self, *args, **kwargs):
         return RuntimeError("not in the superclass")
