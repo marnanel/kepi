@@ -331,9 +331,9 @@ class Blocking(models.Model):
 
     # XXX Meta.ordering
 
-    follower = models.ForeignKey(Actor,
+    blocker = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
             related_name = 'blockers')
-    following = models.ForeignKey(Actor,
+    blocking = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
             related_name = 'blocking')
