@@ -326,3 +326,14 @@ class Following(models.Model):
     following = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
             related_name = 'following')
+
+class Blocking(models.Model):
+
+    # XXX Meta.ordering
+
+    follower = models.ForeignKey(Actor,
+            on_delete = models.CASCADE,
+            related_name = 'blockers')
+    following = models.ForeignKey(Actor,
+            on_delete = models.CASCADE,
+            related_name = 'blocking')
