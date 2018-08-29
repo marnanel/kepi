@@ -316,7 +316,18 @@ def create(ftype,
 ###############################
 
 class Actor(models.Model):
-    name = models.CharField(max_length=256) # probably won't stay this way
+    name = models.URLField(max_length=256)
+
+    @classmethod
+    def get_or_make(cls, name):
+        result = ThingUser.objects.get(name=name)
+
+        if result is None:
+            result = ThingUser(name=name)
+            result.save()
+
+        return result
+
 
 ###############################
 

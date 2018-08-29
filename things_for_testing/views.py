@@ -7,5 +7,5 @@ class ThingUserCollection(CollectionView):
         return ThingUser.objects.all()
 
     def _stringify_object(self, obj):
-        return obj.as_activity()
+        return obj.serialize()
 

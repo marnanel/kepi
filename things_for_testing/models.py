@@ -3,15 +3,10 @@ from django_kepi import register_type
 
 class ThingUser(models.Model):
 
-    name = models.CharField(max_length=256)
-    #activity_object = models.OneToOneField(
-    #        ActivityObject,
-    #        on_delete=models.CASCADE,
-    #        )
-
+    name = models.URLField(max_length=256)
     ftype = 'Person'
 
-    def as_activity(self):
+    def serialize(self):
         return {
                 'id': self.url_identifier(),
                 'type': 'Person',
