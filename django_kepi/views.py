@@ -124,7 +124,7 @@ class CollectionView(ActivityObjectView):
 class FollowersView(CollectionView):
 
     def get_collection_items(self, *args, **kwargs):
-        return Following.objects.filter(following__name=kwargs['username'])
+        return Following.objects.filter(following__url=kwargs['url'])
 
     def _stringify_object(self, obj):
         return obj.follower.name

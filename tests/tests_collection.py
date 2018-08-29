@@ -104,63 +104,22 @@ class CollectionTests(TestCase):
         else:
             self.assertNotIn('next', result)
 
-    def test_followers(self):
-
-        alice = Actor(name='alice')
-        alice.save()
-
-        friends = []
-
-        for i in range(100):
-
-            if i!=0:
-
-                friend_name = 'user%03d' % (i,)
-
-                friends.append(friend_name)
-
-                a = Actor(
-                        name=friend_name,
-                        )
-                a.save()
-
-                f = Following(
-                        follower = a,
-                        following = alice,
-                        )
-                f.save()
-
-            self.check_collection(
-                    path='/user/alice/followers/',
-                    expectedTotalItems=i,
-                    )
-
-            if i!=0:
-
-                pages = int((i+1)/PAGE_LENGTH)
-
-                for page in range(pages):
-                    self.check_collection_page(
-                            path='/user/alice/followers/',
-                            page_number=page+1,
-                            expectedTotalItems=i,
-                            expectedOnPage=
-                                friends[page*PAGE_LENGTH:(page+1)*PAGE_LENGTH],
-                            )
-
     def test_usageByOtherApps(self):
 
         PATH = '/thing-users'
         EXPECTED_SERIALIZATION = [
-                {'id': 'https://example.com/user/alice', 'name': 'alice', 'type': 'Person'},
-                {'id': 'https://example.com/user/bob', 'name': 'bob', 'type': 'Person'},
-                {'id': 'https://example.com/user/carol', 'name': 'carol', 'type': 'Person'},
+                {'id': 'https://example.com/user/alice', 'name': 'alice', 'type': 'Person',
+                    'favourite_colour': 'red'},
+                {'id': 'https://example.com/user/bob', 'name': 'bob', 'type': 'Person',
+                    'favourite_colour': 'green'},
+                {'id': 'https://example.com/user/carol', 'name': 'carol', 'type': 'Person',
+                    'favourite_colour': 'blue'},
                 ]
 
         users = [
-                ThingUser(name='alice'),
-                ThingUser(name='bob'),
-                ThingUser(name='carol'),
+                ThingUser(name='alice', favourite_colour='red'),
+                ThingUser(name='bob', favourite_colour='green'),
+                ThingUser(name='carol', favourite_colour='blue'),
                 ]
 
         for user in users:

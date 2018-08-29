@@ -1,22 +1,20 @@
 from django.db import models
 from django_kepi import register_type
+from django_kepi import models as kepi_models
 
-class ThingUser(models.Model):
+class ThingUser(kepi_models.YourPerson):
 
-    name = models.URLField(max_length=256)
-    ftype = 'Person'
+    favourite_colour = models.CharField(
+            max_length=256,
+            default='chartreuse',
+            )
 
     def serialize(self):
-        return {
-                'id': self.url_identifier(),
-                'type': 'Person',
-                'name': self.name,
-                }
 
-    def url_identifier(self):
-        return 'https://example.com/user/{}'.format(
-                self.name,
-                )
+        result = super().serialize()
+        result['favourite_colour'] = self.favourite_colour
+
+        return result
 
 register_type('Person', ThingUser)
 

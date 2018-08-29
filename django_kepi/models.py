@@ -316,18 +316,44 @@ def create(ftype,
 ###############################
 
 class Actor(models.Model):
+    url = models.URLField(max_length=256)
+
+###############################
+
+class YourPerson(models.Model):
+
+    class Meta:
+        abstract = True
+
     name = models.URLField(max_length=256)
+    ftype = 'Person'
 
-    @classmethod
-    def get_or_make(cls, name):
-        result = ThingUser.objects.get(name=name)
+    def serialize(self):
+        return {
+                'id': self.url_identifier(),
+                'type': 'Person',
+                'name': self.name,
+                }
 
-        if result is None:
-            result = ThingUser(name=name)
+    def url_identifier(self):
+        return 'https://example.com/user/{}'.format(
+                self.name,
+                )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        self.get_or_make_actor()
+
+    def get_or_make_actor(self):
+
+        try:
+            result = Actor.objects.get(url=self.url_identifier())
+        except Actor.DoesNotExist:
+            result = Actor(url=self.url_identifier())
             result.save()
 
         return result
-
 
 ###############################
 
