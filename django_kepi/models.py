@@ -394,12 +394,12 @@ class Blocking(UserRelationship):
 
 class RequestingAccess(UserRelationship):
 
-    hopefuls = models.ForeignKey(Actor,
+    hopeful = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
             related_name = 'hopefuls')
     grantor = models.ForeignKey(Actor,
             on_delete = models.CASCADE,
-            related_name = 'grantor')
+            related_name = 'grantors')
 
     def __str__(self):
         return '({} requests {})'.format(
