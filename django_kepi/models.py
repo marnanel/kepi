@@ -318,6 +318,9 @@ def create(ftype,
 class Actor(models.Model):
     url = models.URLField(max_length=256)
 
+    def __str__(self):
+        return '[Actor {}]'.format(url)
+
 ###############################
 
 class YourPerson(models.Model):

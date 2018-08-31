@@ -1,6 +1,5 @@
 from django.test import TestCase, Client
 from django_kepi.models import Actor, Following
-from django_kepi.views import FollowersView
 from things_for_testing.models import ThingUser
 from things_for_testing.views import ThingUserCollection
 import datetime

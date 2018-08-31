@@ -15,10 +15,7 @@ class ActivityObjectView(django.views.View):
 
     def get(self, request, *args, **kwargs):
 
-        #instance = ActivityObject.objects.get(pk=kwargs['id'])
-        instance = None # XXX temp
-
-        result = instance.serialize()
+        result = self.objectDetails(*args, **kwargs)
 
         return self._render(result)
 
@@ -120,12 +117,4 @@ class CollectionView(ActivityObjectView):
 
     def _stringify_object(self, obj):
         return str(obj)
-
-class FollowersView(CollectionView):
-
-    def get_collection_items(self, *args, **kwargs):
-        return Following.objects.filter(following__url=kwargs['url'])
-
-    def _stringify_object(self, obj):
-        return obj.follower.name
 
