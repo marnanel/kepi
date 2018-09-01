@@ -136,4 +136,23 @@ class CollectionTests(TestCase):
                 expectedOnPage=EXPECTED_SERIALIZATION,
                 )
 
+    def test_followers(self):
+
+        people = {}
+
+        for name in ['alice', 'bob', 'carol']:
+            people[name] = ThingUser(name=name)
+            people[name].save()
+
+            reln = Following(
+                    follower = people[name].get_actor(),
+                    following = people['alice'].get_actor(),
+                    )
+            reln.save()
+
+        self.check_collection(
+                path='/users/alice/followers',
+                expectedTotalItems=3,
+                )
+
 

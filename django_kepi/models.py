@@ -346,9 +346,9 @@ class YourPerson(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        self.get_or_make_actor()
+        self.get_actor()
 
-    def get_or_make_actor(self):
+    def get_actor(self):
 
         try:
             result = Actor.objects.get(url=self.url_identifier())
