@@ -323,43 +323,6 @@ class Actor(models.Model):
 
 ###############################
 
-class YourPerson(models.Model):
-
-    class Meta:
-        abstract = True
-
-    name = models.URLField(max_length=256)
-    ftype = 'Person'
-
-    def serialize(self):
-        return {
-                'id': self.url_identifier(),
-                'type': 'Person',
-                'name': self.name,
-                }
-
-    def url_identifier(self):
-        return 'https://example.com/user/{}'.format(
-                self.name,
-                )
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        self.get_actor()
-
-    def get_actor(self):
-
-        try:
-            result = Actor.objects.get(url=self.url_identifier())
-        except Actor.DoesNotExist:
-            result = Actor(url=self.url_identifier())
-            result.save()
-
-        return result
-
-###############################
-
 class UserRelationship(models.Model):
 
     class Meta:

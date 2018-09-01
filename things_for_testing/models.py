@@ -2,19 +2,46 @@ from django.db import models
 from django_kepi import register_type
 from django_kepi import models as kepi_models
 
-class ThingUser(kepi_models.YourPerson):
+class ThingUser(models.Model):
+
+    actor = models.OneToOneField(
+            kepi_models.Actor,
+            on_delete = models.CASCADE,
+            primary_key = True)
+
+    ftype = 'Person'
+
+    name = models.URLField(max_length=256)
 
     favourite_colour = models.CharField(
             max_length=256,
             default='chartreuse',
             )
 
+    def save(self):
+        if self.actor_id is None:
+            self.actor = kepi_models.Actor(
+                    url=self.url_identifier(),
+                    )
+            self.actor.save()
+
+            # IDK why I have to do this explicitly:
+            self.actor_id = self.actor.pk
+
+        super().save(self)
+
     def serialize(self):
+        return {
+                'id': self.url_identifier(),
+                'type': self.ftype,
+                'name': self.name,
+                'favourite_colour': self.favourite_colour,
+                }
 
-        result = super().serialize()
-        result['favourite_colour'] = self.favourite_colour
-
-        return result
+    def url_identifier(self):
+        return 'https://example.com/user/{}'.format(
+                self.name,
+                )
 
 register_type('Person', ThingUser)
 
