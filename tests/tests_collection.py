@@ -136,7 +136,7 @@ class CollectionTests(TestCase):
                 expectedOnPage=EXPECTED_SERIALIZATION,
                 )
 
-    def test_followers(self):
+    def test_followers_and_following(self):
 
         people = {}
 
@@ -145,14 +145,39 @@ class CollectionTests(TestCase):
             people[name].save()
 
             reln = Following(
-                    follower = people[name].get_actor(),
-                    following = people['alice'].get_actor(),
+                    follower = people[name].actor,
+                    following = people['alice'].actor,
                     )
             reln.save()
 
+        path = '/users/alice/followers'
+
         self.check_collection(
-                path='/users/alice/followers',
+                path=path,
                 expectedTotalItems=3,
                 )
+
+        self.check_collection_page(
+                path=path,
+                page_number=1,
+                expectedTotalItems=3,
+                expectedOnPage=['alice', 'bob', 'carol'],
+                )
+
+        for name in ['alice', 'bob', 'carol']:
+
+            path='/users/{}/following'.format(name)
+
+            self.check_collection(
+                    path=path,
+                    expectedTotalItems=1,
+                    )
+
+            self.check_collection_page(
+                    path=path,
+                    page_number=1,
+                    expectedTotalItems=1,
+                    expectedOnPage=['alice'],
+                    )
 
 
