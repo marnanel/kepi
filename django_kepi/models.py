@@ -319,7 +319,7 @@ class Actor(models.Model):
     url = models.URLField(max_length=256)
 
     def __str__(self):
-        return '[Actor {}]'.format(url)
+        return '[Actor {}]'.format(self.url)
 
 ###############################
 
