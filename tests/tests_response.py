@@ -16,6 +16,7 @@ class ResponseTests(TestCase):
     #  - response(various objects)
     #  - response(thing that throws Tombstone)
     #  - default CollectionResponse, passing in items
+    #  - CollectionResponse if one of the items is a Tombstone
     #  - specialised CollectionResponses with overridden _transform_item 
 
     ################ unfixed below this line
