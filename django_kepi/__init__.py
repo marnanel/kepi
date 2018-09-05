@@ -39,3 +39,10 @@ object_type_registry = {
 def register_type(a_typename, a_typeclass):
     object_type_registry[a_typename] = a_typeclass
 
+class TombstoneException(Exception):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(self)
+
+        self.activity = kwargs.copy()
+        self.activity['type'] = 'Tombstone'
