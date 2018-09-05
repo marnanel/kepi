@@ -57,6 +57,9 @@ d.u.resolve() gets us a view function. They need to be the same.)
 
 Lastly, XXX fallback.
 
+XXX explain about how remote objects will have local proxy objects
+XXX explain how these proxy objects should never be served
+
 django_kepi.models.QuarantinedMessage
 -------------------------------------
 An activity message we've received from another server, but
@@ -83,9 +86,21 @@ django_kepi.models.Activity.
 
 django_kepi.models.NamedObject
 ------------------------------
-....
+This table maps URL identifiers to Django objects,
+using the contenttypes mechanism.
+It also keeps track of the object's ActivityObject type.
+
+Any object we know about on a remote server must be listed in
+this table. Objects on this server *may* be listed
+in this table; if they're not django_kepi.models.resolve()
+can also find them through following the URL path.
 
 django_kepi.models.Activity
 ---------------------------
-...
+All our own Activities, and all the remote Activities we know about,
+are listed here. Each is identified by a UUID.
+
+Saving an Activity to this table may have side-effects, based
+on the Activity type. For example, saving a Follow activity
+constitutes a Follow request.
 
