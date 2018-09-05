@@ -104,3 +104,5 @@ Saving an Activity to this table may have side-effects, based
 on the Activity type. For example, saving a Follow activity
 constitutes a Follow request.
 
+Activities have a "valid" flag, because they can be undone
+by subsequent Activities of type Undo.
