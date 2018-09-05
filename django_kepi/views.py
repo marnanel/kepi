@@ -61,9 +61,6 @@ class ActivityObjectView(django.views.View):
 
 class CollectionView(ActivityObjectView):
 
-    class Meta:
-        abstract = True
-
     def get(self, request, *args, **kwargs):
 
         items = self.get_collection_items(*args, **kwargs)
@@ -113,7 +110,7 @@ class CollectionView(ActivityObjectView):
         return self._render(result)
 
     def get_collection_items(self, *args, **kwargs):
-        return RuntimeError("not in the superclass")
+        return kwargs['items']
 
     def _stringify_object(self, obj):
         return str(obj)
