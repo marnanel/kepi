@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from django_kepi import TombstoneException
 from django_kepi.models import Actor, Following
 from things_for_testing.models import ThingUser
 from things_for_testing.views import ThingUserCollection
@@ -18,6 +19,36 @@ class ResponseTests(TestCase):
     #  - default CollectionResponse, passing in items
     #  - CollectionResponse if one of the items is a Tombstone
     #  - specialised CollectionResponses with overridden _transform_item 
+
+    def test_tombstone_exception(self):
+
+        te = TombstoneException(
+                fred = 'jim',
+                sheila = 'hazel',
+                )
+
+        self.assertEqual(
+                te.activity,
+                {
+                    'fred': 'jim',
+                    'sheila': 'hazel',
+                    'type': 'Tombstone',
+                    })
+
+    def test_object_response(self):
+        pass
+
+    def test_tombstone_object_response(self):
+        pass
+
+    def test_collection_response(self):
+        pass
+
+    def test_tombstone_collection_response(self):
+        pass
+
+    def test_collection_with_overridden_transform(self):
+        pass
 
     ################ unfixed below this line
 
