@@ -54,8 +54,9 @@ class ResponseTests(TestCase):
                         }
 
         rwt = RandomWeirdThing()
-
         aor = ActivityObjectResponse(item=rwt)
+
+        self.assertEqual(aor.status_code, 200)
 
         content_value = json.loads(aor.content.decode(encoding='UTF-8'))
 
@@ -64,7 +65,22 @@ class ResponseTests(TestCase):
                 content_value)
 
     def test_tombstone_object_response(self):
-        pass
+
+        class RandomWeirdGoneAwayThing(object):
+            @property
+            def activity(self):
+                raise TombstoneException(former_type='Article')
+
+        rwgat = RandomWeirdGoneAwayThing()
+        aor = ActivityObjectResponse(item=rwgat)
+
+        self.assertEqual(aor.status_code, 410)
+
+        content_value = json.loads(aor.content.decode(encoding='UTF-8'))
+        self.assertEqual(
+                {'former_type': 'Article', 'type': 'Tombstone'},
+                content_value)
+
 
     def test_collection_response(self):
         pass
