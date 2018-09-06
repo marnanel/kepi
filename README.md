@@ -1,7 +1,7 @@
 django-kepi
 ===========
 
-This is a Django library for ActivitySub. It's still at an
+This is a Django library for ActivityPub. It's still at an
 early stage, and you shouldn't particularly expect anything
 to work properly. Its primary purpose is as part of the
 un_chapeau Mastodon server.
@@ -14,8 +14,8 @@ Not everything described herein has actually been implemented.
 django_kepi.responses.ActivityObjectResponse
 --------------------------------------------
 This renders a Django object into ActivityStreams form.
-It calls the object's activity_get() method in order to
-serialise it. If that method throws TombstoneException,
+It reads the object's activity property in order to
+serialise it. If that property throws TombstoneException,
 a Tombstone will be generated instead, and the HTTP
 result code will be set to 410 (Gone).
 
@@ -30,21 +30,21 @@ These are based on ordinary Django ordered querysets.
 Each subclass must reimplement get_queryset() to return
 the relevant queryset. It may also reimplement serialize_object(),
 which will serialize objects found in the queryset. If
-you don't reimplement serialize_object(), activity_get() will
-be called on the object as usual.
+you don't reimplement serialize_object(), the object's activity property
+will be used as usual.
 
 Objects which throw TombstoneException will be represented
 with Tombstones, but this won't affect the HTTP result code.
 
 django_kepi.TombstoneException
 ------------------------------
-If ActivityObjectResponse calls an object's activity_get() method to ask it
-to render itself, and that method throws TombstoneException,
+If ActivityObjectResponse reads an object's activity property,
+and that property throws TombstoneException,
 ActivityObjectResponse will produce an HTTP status of 410 (Gone)
 and return a Tombstone object (as specified in ActivityPub).
 
-If activity_get() is called during producing a Collection,
-and throws TombstoneException, the object will be represented
+If an activity property is read while producing a Collection,
+and it throws TombstoneException, the object will be represented
 by a Tombstone object, but the HTTP status code will be unaffected.
 
 Throwing TombstoneException doesn't remove the object's record from
