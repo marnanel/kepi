@@ -7,6 +7,7 @@ from things_for_testing.models import ThingUser
 from things_for_testing.views import ThingUserCollection
 import datetime
 import json
+import math
 
 EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json'
@@ -140,7 +141,36 @@ class ResponseTests(TestCase):
             expectedItems = [str(x) for x in queryset]
             self.assertEqual(content_value['orderedItems'], expectedItems)
 
-    # TODO: need another test here where we keep adding items until it spills to page 2
+    def test_collection_response_spills(self):
+
+        rf = RequestFactory()
+        PATH = '/something?page=%d'
+
+        for i in range(1, PAGE_LENGTH*3):
+            someone = ThingUser(name='Person %03d' % (i,))
+            someone.save()
+
+            expected_page_count = math.ceil(i/PAGE_LENGTH)
+
+            queryset = ThingUser.objects.all()
+
+            for p in range(1, expected_page_count+1):
+                request_page = rf.get(PATH % (p,))
+                cr = CollectionResponse(queryset, request_page)
+                content_value = json.loads(cr.content.decode(encoding='UTF-8'))
+
+                self.assertEqual(content_value['totalItems'], i)
+                self.assertEqual(content_value['id'], EXAMPLE_SERVER+PATH % (p,))
+
+                if p==1:
+                    self.assertNotIn('prev', content_value)
+                else:
+                    self.assertEqual(content_value['prev'], EXAMPLE_SERVER+PATH % (p-1))
+
+                if p==expected_page_count:
+                    self.assertNotIn('next', content_value)
+                else:
+                    self.assertEqual(content_value['next'], EXAMPLE_SERVER+PATH % (p+1))
 
     def test_tombstone_collection_response(self):
         pass
