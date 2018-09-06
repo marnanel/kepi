@@ -18,7 +18,7 @@ class ActivityObjectResponse(django.http.HttpResponse):
             try:
                 result = item.activity
 
-            except TombstoneException as tombstone:
+            except django_kepi.TombstoneException as tombstone:
                 result = tombstone.activity
                 self.status_code = 410 # Gone
 
