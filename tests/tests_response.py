@@ -104,6 +104,8 @@ class ResponseTests(TestCase):
                 ThingUser.objects.all(),
                 ]:
 
+            ################ check the index
+
             cr = CollectionResponse(queryset, request_index)
 
             self.assertEqual(cr.status_code, 200)
@@ -119,8 +121,24 @@ class ResponseTests(TestCase):
             else:
                 self.assertEqual(content_value['first'], EXAMPLE_SERVER+PATH_PAGE1)
 
+            ################ check the first page
 
-            # TODO: Test contents of page1
+            if queryset.count()==0:
+                continue
+
+            cr = CollectionResponse(queryset, request_page1)
+
+            self.assertEqual(cr.status_code, 200)
+
+            content_value = json.loads(cr.content.decode(encoding='UTF-8'))
+
+            self.assertEqual(content_value['totalItems'], queryset.count())
+            self.assertEqual(content_value['type'], 'OrderedCollectionPage')
+            self.assertEqual(content_value['partOf'], EXAMPLE_SERVER+PATH_INDEX)
+            self.assertEqual(content_value['id'], EXAMPLE_SERVER+PATH_PAGE1)
+
+            expectedItems = [str(x) for x in queryset]
+            self.assertEqual(content_value['orderedItems'], expectedItems)
 
     # TODO: need another test here where we keep adding items until it spills to page 2
 
