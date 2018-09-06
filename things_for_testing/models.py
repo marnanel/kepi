@@ -18,6 +18,9 @@ class ThingUser(models.Model):
             default='chartreuse',
             )
 
+    def __str__(self):
+        return '[ThingUser {}]'.format(self.name)
+
     def save(self):
         if self.actor_id is None:
             self.actor = kepi_models.Actor(
