@@ -25,7 +25,6 @@ Other kinds, such as Persons and Articles, will belong to other apps.
 django_kepi.responses.CollectionResponse
 ----------------------------------------
 These are based on ordinary Django ordered querysets.
-(Responses? Views?)
 
 Each subclass must reimplement get_queryset() to return
 the relevant queryset. It may also reimplement serialize_object(),
