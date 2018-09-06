@@ -41,7 +41,6 @@ class CollectionResponse(ActivityObjectResponse):
         super().__init__()
 
         self.items = items
-        # assert that self.items is ordered
 
         our_url = request.build_absolute_uri()
         index_url = self._make_query_page(request, None)
