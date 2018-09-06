@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from django.test.client import RequestFactory
 from django_kepi import TombstoneException
 from django_kepi.models import Actor, Following
 from django_kepi.responses import *
@@ -81,9 +82,47 @@ class ResponseTests(TestCase):
                 {'former_type': 'Article', 'type': 'Tombstone'},
                 content_value)
 
-
     def test_collection_response(self):
-        pass
+
+        people = {}
+
+        for name in ['alice', 'albert', 'bob']:
+            people[name] = ThingUser(name=name)
+            people[name].save()
+
+        PATH_INDEX = '/users/something'
+        PATH_PAGE1 = PATH_INDEX+'?page=1'
+
+        rf = RequestFactory()
+        request_index = rf.get(PATH_INDEX)
+        request_page1 = rf.get(PATH_PAGE1)
+
+        for queryset in [
+                ThingUser.objects.none(),
+                ThingUser.objects.filter(name='alice'),
+                ThingUser.objects.filter(name__startswith='al'),
+                ThingUser.objects.all(),
+                ]:
+
+            cr = CollectionResponse(queryset, request_index)
+
+            self.assertEqual(cr.status_code, 200)
+
+            content_value = json.loads(cr.content.decode(encoding='UTF-8'))
+
+            self.assertEqual(content_value['totalItems'], queryset.count())
+            self.assertEqual(content_value['type'], 'OrderedCollection')
+            self.assertEqual(content_value['id'], EXAMPLE_SERVER+PATH_INDEX)
+
+            if queryset.count()==0:
+                self.assertNotIn('first', content_value)
+            else:
+                self.assertEqual(content_value['first'], EXAMPLE_SERVER+PATH_PAGE1)
+
+
+            # TODO: Test contents of page1
+
+    # TODO: need another test here where we keep adding items until it spills to page 2
 
     def test_tombstone_collection_response(self):
         pass
