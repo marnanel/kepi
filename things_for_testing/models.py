@@ -1,5 +1,5 @@
 from django.db import models
-from django_kepi import register_type
+from django_kepi import register_type, TombstoneException
 from django_kepi import models as kepi_models
 
 class ThingUser(models.Model):
