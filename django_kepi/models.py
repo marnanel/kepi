@@ -373,48 +373,4 @@ class RequestingAccess(UserRelationship):
                 self.following.name,
                 )
 
-class UnexpiredNamedObjectsManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().exclude(
-                #expiry==datetime.datetime.now(),
-                )
 
-class NamedObject(models.Model):
-    """
-    This table maps URL identifiers to Django objects, using the
-    contenttypes mechanism. It also keeps track of the object's
-    ActivityObject type.
-
-    Any object we know about on a remote server must be listed
-    here. Objects on this server *may* be listed here; if they're not,
-    django_kepi.resolve() can also find them
-    through following the URL path.
-    """
-
-    url = models.URLField(
-            max_length=255,
-            primary_key=True,
-            )
-
-    activity_type = models.CharField(
-            max_length=255,
-            )
-
-    expiry = models.DateTimeField(default=None)
-
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    objects = UnexpiredNamedObjectsManager()
-    all_objects = models.Manager()
-
-def resolve(identifier):
-
-    try:
-        result = NamedObject.objects.get(url=identifier)
-        return result
-    except NamedObject.DoesNotExist:
-        pass
-
-    return None

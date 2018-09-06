@@ -1,3 +1,5 @@
+from collections import Iterable
+
 __title__ = 'django_kepi'
 __version__ = '0.0.16'
 VERSION = __version__
@@ -31,13 +33,30 @@ ATSIGN_CONTEXT = [
             }
         ]
 
-
 object_type_registry = {
-        'Object': None,
         }
 
-def register_type(a_typename, a_typeclass):
-    object_type_registry[a_typename] = a_typeclass
+def register_type(atype, handler):
+    object_type_registry[atype] = handler
+
+def resolve(identifier, atype=None):
+
+    if atype is None:
+        atype = object_type_registry.keys()
+    elif not isinstance(atype, Iterable):
+        atype = [atype]
+
+    for t in atype:
+
+        if t not in object_type_registry:
+            continue
+
+        result = object_type_registry[t].find_activity(url=identifier)
+
+        if result is not None:
+            return result
+
+    return None
 
 class TombstoneException(Exception):
 

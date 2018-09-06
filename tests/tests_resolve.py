@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django_kepi.models import resolve
+from django_kepi import resolve
 
 class ResolveTests(TestCase):
 

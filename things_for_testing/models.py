@@ -51,6 +51,10 @@ class ThingUser(models.Model):
                 self.name,
                 )
 
+    @classmethod
+    def find_activity(self, url):
+        return None # XXX stub
+
 register_type('Person', ThingUser)
 
 class ThingArticle(models.Model):
@@ -85,6 +89,11 @@ class ThingArticle(models.Model):
     @classmethod
     def activity_like(cls, type_name, actor, fobject):
         pass
+
+    @classmethod
+    def find_activity(self, url):
+        return None # XXX stub
+
 
 register_type('Article', ThingArticle)
 
