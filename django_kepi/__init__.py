@@ -46,3 +46,6 @@ class TombstoneException(Exception):
 
         self.activity = kwargs.copy()
         self.activity['type'] = 'Tombstone'
+
+    def __str__(self):
+        return str(self.activity)
