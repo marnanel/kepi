@@ -33,7 +33,12 @@ class ThingUser(models.Model):
 
         super().save(self)
 
-    def serialize(self):
+    @property
+    def activity(self):
+
+        if self.name=='Queen Anne':
+            raise TombstoneException(original_type=self.ftype)
+
         return {
                 'id': self.url_identifier(),
                 'type': self.ftype,
