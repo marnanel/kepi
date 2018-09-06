@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django_kepi import TombstoneException
 from django_kepi.models import Actor, Following
+from django_kepi.responses import *
 from things_for_testing.models import ThingUser
 from things_for_testing.views import ThingUserCollection
 import datetime
@@ -35,8 +36,32 @@ class ResponseTests(TestCase):
                     'type': 'Tombstone',
                     })
 
+    def test_empty_response(self):
+
+        aor = ActivityObjectResponse()
+        self.assertEqual(
+                aor.content,
+                 b'')
+
     def test_object_response(self):
-        pass
+
+        class RandomWeirdThing(object):
+            @property
+            def activity(self):
+                return {
+                        'where': 'there',
+                        'what': 'that',
+                        }
+
+        rwt = RandomWeirdThing()
+
+        aor = ActivityObjectResponse(item=rwt)
+
+        content_value = json.loads(aor.content.decode(encoding='UTF-8'))
+
+        self.assertEqual(
+                rwt.activity,
+                content_value)
 
     def test_tombstone_object_response(self):
         pass
