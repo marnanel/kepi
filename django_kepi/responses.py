@@ -1,6 +1,7 @@
 import django.http
 import json
 import django_kepi
+import urllib
 
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
@@ -37,7 +38,7 @@ class CollectionResponse(ActivityObjectResponse):
             items,
             request):
 
-        super().__init__(self)
+        super().__init__()
 
         self.items = items
         # assert that self.items is ordered
@@ -91,4 +92,30 @@ class CollectionResponse(ActivityObjectResponse):
 
     def _transform_object(self, obj):
         return str(obj)
+
+    def _make_query_page(
+            self,
+            request,
+            page_number,
+            ):
+
+        fields = dict(request.GET)
+
+        if page_number is None:
+            if PAGE_FIELD in fields:
+                del fields[PAGE_FIELD]
+        else:
+            fields[PAGE_FIELD] = page_number
+
+        encoded = urllib.parse.urlencode(fields)
+
+        if encoded!='':
+            encoded = '?'+encoded
+
+        return '{}://{}{}{}'.format(
+                request.scheme,
+                request.get_host(),
+                request.path,
+                encoded,
+                )
 
