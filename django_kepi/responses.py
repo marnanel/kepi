@@ -58,7 +58,7 @@ class CollectionResponse(ActivityObjectResponse):
                     "type" : "OrderedCollectionPage",
                     "id" : our_url,
                     "totalItems" : items.count(),
-                    "orderedItems" : [self._transform_object(x)
+                    "orderedItems" : [self.__transform_and_catch(x)
                         for x in listed_items],
                     "partOf": index_url,
                     }
@@ -89,8 +89,14 @@ class CollectionResponse(ActivityObjectResponse):
         # XXX use an actual abstract superclass
         return RuntimeError("not in the superclass")
 
+    def __transform_and_catch(self, obj):
+        try:
+            return self._transform_object(obj)
+        except django_kepi.TombstoneException as te:
+            return te.activity
+
     def _transform_object(self, obj):
-        return str(obj)
+        return obj.activity
 
     def _make_query_page(
             self,

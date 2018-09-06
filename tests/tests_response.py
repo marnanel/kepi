@@ -138,7 +138,7 @@ class ResponseTests(TestCase):
             self.assertEqual(content_value['partOf'], EXAMPLE_SERVER+PATH_INDEX)
             self.assertEqual(content_value['id'], EXAMPLE_SERVER+PATH_PAGE1)
 
-            expectedItems = [str(x) for x in queryset]
+            expectedItems = [x.activity for x in queryset]
             self.assertEqual(content_value['orderedItems'], expectedItems)
 
     def test_collection_response_spills(self):
@@ -173,7 +173,23 @@ class ResponseTests(TestCase):
                     self.assertEqual(content_value['next'], EXAMPLE_SERVER+PATH % (p+1))
 
     def test_tombstone_collection_response(self):
-        pass
+        for name in ['King William', 'Queen Anne', 'Queen Elizabeth']:
+            # "Queen Anne" is a magic name which causes ThingUser.activity
+            # to throw TombstoneException
+            # XXX this is not elegant
+            someone = ThingUser(name=name)
+            someone.save()
+
+        queryset = ThingUser.objects.all()
+        rf = RequestFactory()
+        request_page = rf.get('/something?page=1')
+        cr = CollectionResponse(queryset, request_page)
+        content_value = json.loads(cr.content.decode(encoding='UTF-8'))
+
+        self.assertEqual(
+                [p['type'] for p in content_value['orderedItems']],
+                ['Person', 'Tombstone', 'Person'],
+                )
 
     def test_collection_with_overridden_transform(self):
         pass
