@@ -374,3 +374,45 @@ class RequestingAccess(UserRelationship):
                 )
 
 
+#######################
+
+class Activity(models.Model):
+
+    identifier = models.URLField(
+            max_length=255,
+            primary_key=True,
+            )
+
+    atype = models.CharField(
+            max_length=1,
+    # FIXME: an enum of
+    # C=create
+    # U=update
+    # D=delete
+    # F=follow
+    # +=add
+    # -=remove
+    # L=like
+    # U=undo
+    # A=accept
+    # R=reject
+            )
+
+    actor = models.URLField(
+            max_length=255,
+            blank=True,
+            )
+
+    fobject = models.URLField(
+            max_length=255,
+            blank=True,
+            )
+
+    valid = models.BooleanField(
+            default=True,
+            )
+
+    def __str__(self):
+        pass # XXX FIXME
+
+
