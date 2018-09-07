@@ -1,5 +1,3 @@
-from collections import Iterable
-
 __title__ = 'django_kepi'
 __version__ = '0.0.16'
 VERSION = __version__
@@ -43,7 +41,7 @@ def resolve(identifier, atype=None):
 
     if atype is None:
         atype = object_type_registry.keys()
-    elif not isinstance(atype, Iterable):
+    elif not isinstance(atype, list):
         atype = [atype]
 
     for t in atype:
