@@ -1,9 +1,9 @@
 from django.db import models
-from django_kepi import object_type_registry
+from django_kepi import object_type_registry, resolve
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
-from random import randint
+import random
 import json
 import datetime
 import warnings
@@ -35,7 +35,7 @@ class Cobject(models.Model):
         result = ''
 
         for i in range(6):
-            digit = randint(0, 35)
+            digit = random.randint(0, 35)
             
             # yes, I know this can be done more efficiently.
             # I want it to be readable.
@@ -62,10 +62,7 @@ class Cobject(models.Model):
         if self.remote_id is not None:
             return self.remote_id
         else:
-            return settings.KEPI['URL_FORMAT'] % {
-                    'type': self.__class__.__name__.lower(),
-                    'slug': self.slug,
-                    }
+            return settings.KEPI['ACTIVITY_URL_FORMAT'] % (self.slug, )
 
     def is_local(self):
         return self.remote_id is None
@@ -376,29 +373,54 @@ class RequestingAccess(UserRelationship):
 
 #######################
 
+def new_activity_identifier():
+    template = settings.KEPI['ACTIVITY_URL_FORMAT']
+    slug = '%08x' % (random.randint(0, 0xffffffff),)
+    return template % (slug,)
+
 class Activity(models.Model):
+
+    CREATE='C'
+    UPDATE='U'
+    DELETE='D'
+    FOLLOW='F'
+    ADD='+'
+    REMOVE='-'
+    LIKE='L'
+    UNDO='U'
+    ACCEPT='A'
+    REJECT='R'
+
+    ACTIVITY_TYPE_CHOICES = (
+            (CREATE, 'Create'),
+            (UPDATE, 'Update'),
+            (DELETE, 'Delete'),
+            (FOLLOW, 'Follow'),
+            (ADD, 'Add'),
+            (REMOVE, 'Remove'),
+            (LIKE, 'Like'),
+            (UNDO, 'Undo'),
+            (ACCEPT, 'Accept'),
+            (REJECT, 'Reject'),
+            )
+
+    atype = models.URLField(
+            max_length=1,
+            choices=ACTIVITY_TYPE_CHOICES,
+            )
 
     identifier = models.URLField(
             max_length=255,
             primary_key=True,
-            )
-
-    atype = models.CharField(
-            max_length=1,
-    # FIXME: an enum of
-    # C=create
-    # U=update
-    # D=delete
-    # F=follow
-    # +=add
-    # -=remove
-    # L=like
-    # U=undo
-    # A=accept
-    # R=reject
+            default=new_activity_identifier,
             )
 
     actor = models.URLField(
+            max_length=255,
+            blank=True,
+            )
+
+    fobject_type = models.CharField(
             max_length=255,
             blank=True,
             )
@@ -408,11 +430,144 @@ class Activity(models.Model):
             blank=True,
             )
 
-    valid = models.BooleanField(
+    target = models.URLField(
+            max_length=255,
+            blank=True,
+            )
+
+    active = models.BooleanField(
             default=True,
             )
 
-    def __str__(self):
-        pass # XXX FIXME
+    # XXX Updates from clients are partial,
+    # but updates from remote sites are total.
+    # We don't currently let clients create Activities,
+    # but if we ever do, we should flag which it was.
 
+    def __str__(self):
+
+        if self.active:
+            inactive_warning = ''
+        else:
+            inactive_warning = ' INACTIVE'
+
+        result = '[%s %s%s]' % (
+                self.atype,
+                self.identifier,
+                inactive_warning,
+                )
+        return result
+
+    @property
+    def activity(self):
+        result = {
+            'id': self.identifier,
+            'type': self.get_atype_display(),
+            }
+
+        for optional in ['actor', 'object', 'published', 'updated', 'target']:
+            if optional=='object':
+                fieldname='fobject'
+            else:
+                fieldname=optional
+
+            value = getattr(self, fieldname)
+            if value is not None:
+                result[optional] = value
+
+        # XXX should we mark "inactive" somehow?
+
+        return result
+
+    TYPES = {
+            #          actor  object  target
+            'Create': (True,  True,   False),
+            'Update': (True,  True,   False),
+            'Delete': (True,  True,   False),
+            'Follow': (True,  True,   False),
+            'Add':    (True,  False,  True),
+            'Remove': (True,  False,  True),
+            'Like':   (True,  True,   False),
+            'Undo':   (False, True,   False),
+            'Accept': (False, True,   False),
+            'Reject': (False, True,   False),
+            }
+
+    @classmethod
+    def deserialize(cls, value,
+            local=False):
+
+        if 'type' not in value:
+            raise ValueError("Activities must have a type")
+
+        if 'id' not in value and not local:
+            raise ValueError("Remote activities must have an id")
+
+        fields = {
+                'identifier': value.get('id', None),
+                'type': value['type'],
+                'active': True,
+                }
+
+        try:
+            need_actor, need_object, need_target = TYPES[value['type']]
+        except KeyError:
+            raise ValueError('{} is not an Activity type'.format(value['type']))
+
+        if need_actor!=('actor' in value) or \
+                need_object!=('object' in value) or \
+                need_target!=('target' in value):
+
+                    raise ValueError('Wrong parameters for type')
+
+        # TODO: Sometimes an incoming Activity is trustworthy in
+        # telling us about a remote object. At present, for
+        # simplicity, we don't trust anybody. If we don't have
+        # the object in the cache, we must fetch it.
+
+        # In each case, the field is either specified as
+        # a Link or as an Object. If it's a Link, it will
+        # consist of a single string, which is our URL.
+        # If it's an Object, it will be a dict whose 'id'
+        # field is our URL.
+
+        for atype in ('actor', 'object', 'target'):
+
+            if atype not in value:
+                # if it's not there, it's not supposed to be there:
+                # we checked for that earlier.
+                continue
+
+            if isinstance(value[atype], str):
+                check_url = value[atype]
+                check_type = None # check everything
+            else:
+                try:
+                    check_url = value[atype]['id']
+                except KeyError:
+                    raise ValueError('Explicit objects must have an id')
+
+                try:
+                    check_type = value[atype]['type']
+                except KeyError:
+                    check_type = None # check everything
+
+                referent = resolve(
+                        identifier=check_url,
+                        atype=check_type,
+                        )
+
+                if referent is None:
+                    # we don't know about it,
+                    # but we need to.
+                    raise NeedToFetchException(check_url)
+
+                # okay, we can let them use it
+                fields[atype] = check_url
+
+        result = cls(**fields)
+        return result
+
+    # TODO: there should be a clean() method with the same
+    # checks as deserialize().
 

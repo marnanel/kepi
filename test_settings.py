@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 KEPI = {
-        'URL_FORMAT': 'https://example.com/activities/%(type)s/%(slug)s',
+        'ACTIVITY_URL_FORMAT': 'https://example.com/activities/%s',
         }
 
 INSTALLED_APPS = (

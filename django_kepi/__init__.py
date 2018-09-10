@@ -59,7 +59,7 @@ def resolve(identifier, atype=None):
 class TombstoneException(Exception):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(self)
+        super().__init__()
 
         self.activity = kwargs.copy()
         self.activity['type'] = 'Tombstone'
@@ -67,4 +67,13 @@ class TombstoneException(Exception):
     def __str__(self):
         return str(self.activity)
 
+class NeedToFetchException(Exception):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+        self.url = kwargs['url']
+
+    def __str__(self):
+        return self.url
 
