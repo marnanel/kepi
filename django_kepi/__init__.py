@@ -49,7 +49,12 @@ def resolve(identifier, atype=None):
         if t not in object_type_registry:
             continue
 
-        result = object_type_registry[t].find_activity(url=identifier)
+        cls = object_type_registry[t]
+
+        try:
+            result = cls.find_activity(url=identifier)
+        except cls.DoesNotExist:
+            result = None
 
         if result is not None:
             return result
@@ -69,10 +74,10 @@ class TombstoneException(Exception):
 
 class NeedToFetchException(Exception):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, url, *args, **kwargs):
         super().__init__()
 
-        self.url = kwargs['url']
+        self.url = url
 
     def __str__(self):
         return self.url
