@@ -1,5 +1,5 @@
 from django.db import models
-from django_kepi import object_type_registry, resolve
+from django_kepi import object_type_registry, resolve, NeedToFetchException
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -462,7 +462,7 @@ class Activity(models.Model):
     def activity(self):
         result = {
             'id': self.identifier,
-            'type': self.get_atype_display(),
+            'atype': self.get_atype_display(),
             }
 
         for optional in ['actor', 'object', 'published', 'updated', 'target']:
@@ -505,7 +505,7 @@ class Activity(models.Model):
 
         fields = {
                 'identifier': value.get('id', None),
-                'type': value['type'],
+                'atype': value['type'],
                 'active': True,
                 }
 
@@ -531,24 +531,24 @@ class Activity(models.Model):
         # If it's an Object, it will be a dict whose 'id'
         # field is our URL.
 
-        for atype in ('actor', 'object', 'target'):
+        for ftype in ('actor', 'object', 'target'):
 
-            if atype not in value:
+            if ftype not in value:
                 # if it's not there, it's not supposed to be there:
                 # we checked for that earlier.
                 continue
 
-            if isinstance(value[atype], str):
-                check_url = value[atype]
+            if isinstance(value[ftype], str):
+                check_url = value[ftype]
                 check_type = None # check everything
             else:
                 try:
-                    check_url = value[atype]['id']
+                    check_url = value[ftype]['id']
                 except KeyError:
                     raise ValueError('Explicit objects must have an id')
 
                 try:
-                    check_type = value[atype]['type']
+                    check_type = value[ftype]['type']
                 except KeyError:
                     check_type = None # check everything
 
@@ -563,9 +563,17 @@ class Activity(models.Model):
                     raise NeedToFetchException(check_url)
 
                 # okay, we can let them use it
-                fields[atype] = check_url
+
+                if ftype=='object':
+                    fieldname='fobject'
+                else:
+                    fieldname=ftype
+
+                fields[fieldname] = check_url
 
         result = cls(**fields)
+        result.save()
+
         return result
 
     # TODO: there should be a clean() method with the same
