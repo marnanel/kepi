@@ -510,7 +510,7 @@ class Activity(models.Model):
                 }
 
         try:
-            need_actor, need_object, need_target = TYPES[value['type']]
+            need_actor, need_object, need_target = cls.TYPES[value['type']]
         except KeyError:
             raise ValueError('{} is not an Activity type'.format(value['type']))
 
