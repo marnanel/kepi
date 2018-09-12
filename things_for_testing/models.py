@@ -4,14 +4,9 @@ from django_kepi import models as kepi_models
 
 class ThingUser(models.Model):
 
-    actor = models.OneToOneField(
-            kepi_models.Actor,
-            on_delete = models.CASCADE,
-            primary_key = True)
-
     ftype = 'Person'
 
-    name = models.URLField(max_length=256)
+    name = models.CharField(max_length=256)
 
     favourite_colour = models.CharField(
             max_length=256,
@@ -20,18 +15,6 @@ class ThingUser(models.Model):
 
     def __str__(self):
         return '[ThingUser {}]'.format(self.name)
-
-    def save(self):
-        if self.actor_id is None:
-            self.actor = kepi_models.Actor(
-                    url=self.url_identifier(),
-                    )
-            self.actor.save()
-
-            # IDK why I have to do this explicitly:
-            self.actor_id = self.actor.pk
-
-        super().save(self)
 
     @property
     def activity(self):
@@ -52,8 +35,14 @@ class ThingUser(models.Model):
                 )
 
     @classmethod
-    def find_activity(self, url):
-        return None # XXX stub
+    def find_activity(cls, url):
+        PREFIX = "https://example.com/user/"
+        if not url.startswith(PREFIX):
+            return None
+
+        name = url[len(PREFIX):]
+
+        return cls.objects.get(name=name)
 
 register_type('Person', ThingUser)
 
@@ -91,9 +80,14 @@ class ThingArticle(models.Model):
         pass
 
     @classmethod
-    def find_activity(self, url):
-        return None # XXX stub
+    def find_activity(cls, url):
+        PREFIX = "https://articles.example.com/"
+        if not url.startswith(PREFIX):
+            return None
 
+        title = url[len(PREFIX):]
+
+        return cls.objects.get(title=title)
 
 register_type('Article', ThingArticle)
 
