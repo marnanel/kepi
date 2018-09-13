@@ -370,6 +370,25 @@ class RequestingAccess(UserRelationship):
                 self.following.name,
                 )
 
+#######################
+
+class QuarantinedMessage(models.Model):
+
+    username = models.CharField(
+            max_length=255,
+            blank=True,
+            null=True,
+            default=None)
+
+    headers = models.TextField()
+    body = models.TextField()
+
+    signature_verified = models.BooleanField(
+            default=False,
+            )
+
+    def deploy(self):
+        pass
 
 #######################
 

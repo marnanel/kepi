@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django_kepi.models import Following
+from django_kepi.models import Following, QuarantinedMessage
 import urllib.parse
 import json
 import re
@@ -131,4 +131,29 @@ class FollowersView(CollectionView):
     def _stringify_object(self, obj):
         return obj.follower.url
 
+########################################
 
+class InboxView(django.views.View):
+
+    def post(self, request, name=None, *args, **kwargs):
+
+        # username is None for the shared inbox.
+
+        capture = QuarantinedMessage(
+                username = name,
+                body = str(request.body, encoding='UTF-8'),
+                headers = '\n'.join(
+                    ["%s: %s" for (f,v) in request.META.items() if f.startswith("HTTP_")],
+                    ),
+                )
+        capture.save()
+
+        return HttpResponse(
+                status = 200,
+                reason = 'Thank you',
+                content = '',
+                content_type = 'text/plain',
+                )
+
+    # We need to support GET (as a collection)
+    # but we don't yet.
