@@ -4,8 +4,6 @@ from django_kepi import models as kepi_models
 
 class ThingUser(models.Model):
 
-    ftype = 'Person'
-
     name = models.CharField(max_length=256)
 
     favourite_colour = models.CharField(
@@ -20,16 +18,21 @@ class ThingUser(models.Model):
     def activity(self):
 
         if self.name=='Queen Anne':
-            raise TombstoneException(original_type=self.ftype)
+            raise TombstoneException(original_type=self.activity_type)
 
         return {
-                'id': self.url_identifier(),
-                'type': self.ftype,
+                'id': self.activity_id,
+                'type': self.activity_type,
                 'name': self.name,
                 'favourite_colour': self.favourite_colour,
                 }
 
-    def url_identifier(self):
+    @property
+    def activity_type(self):
+        return 'Person'
+
+    @property
+    def activity_id(self):
         return 'https://example.com/user/{}'.format(
                 self.name,
                 )

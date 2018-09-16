@@ -34,17 +34,17 @@ ATSIGN_CONTEXT = [
 object_type_registry = {
         }
 
-def register_type(atype, handler):
-    object_type_registry[atype] = handler
+def register_type(f_type, handler):
+    object_type_registry[f_type] = handler
 
-def resolve(identifier, atype=None):
+def resolve(identifier, f_type=None):
 
-    if atype is None:
-        atype = object_type_registry.keys()
-    elif not isinstance(atype, list):
-        atype = [atype]
+    if f_type is None:
+        f_type = object_type_registry.keys()
+    elif not isinstance(f_type, list):
+        f_type = [f_type]
 
-    for t in atype:
+    for t in f_type:
 
         if t not in object_type_registry:
             continue

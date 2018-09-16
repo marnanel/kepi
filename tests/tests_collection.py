@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from django_kepi.models import Actor, Following
+from django_kepi.models import *
 from things_for_testing.models import ThingUser
 from things_for_testing.views import ThingUserCollection
 import datetime
@@ -144,11 +144,12 @@ class CollectionTests(TestCase):
             people[name] = ThingUser(name=name)
             people[name].save()
 
-            reln = Following(
-                    follower = people[name].actor,
-                    following = people['alice'].actor,
-                    )
-            reln.save()
+            Activity.create({
+                    'type': 'Follow',
+                    'actor': people[name],
+                    'object': people['alice'],
+                },
+                local=True)
 
         path = '/users/alice/followers'
 

@@ -1,7 +1,6 @@
 from django.test import TestCase, Client
 from django.test.client import RequestFactory
 from django_kepi import TombstoneException
-from django_kepi.models import Actor, Following
 from django_kepi.responses import *
 from things_for_testing.models import ThingUser
 from things_for_testing.views import ThingUserCollection

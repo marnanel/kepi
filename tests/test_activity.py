@@ -8,24 +8,24 @@ class TestActivity(TestCase):
     def test_parameters(self):
 
         with self.assertRaisesMessage(ValueError, "is not an Activity type"):
-            Activity.deserialize({
+            Activity.create({
                 "id": "https://example.com/id/1",
                 "type": "Wombat",
                 })
 
         with self.assertRaisesMessage(ValueError, "Remote activities must have an id"):
-            Activity.deserialize({
+            Activity.create({
                 "type": "Create",
                 })
 
         with self.assertRaisesMessage(ValueError, "Wrong parameters for type"):
-            Activity.deserialize({
+            Activity.create({
                 "id": "https://example.com/id/1",
                 "type": "Create",
                 })
 
         with self.assertRaisesMessage(ValueError, "Explicit objects must have an id"):
-            Activity.deserialize({
+            Activity.create({
                 "id": "https://example.com/id/1",
                 "type": "Create",
                 "actor": "https://example.com/user/fred",
@@ -47,18 +47,18 @@ class TestActivity(TestCase):
                 }
 
         with self.assertRaises(NeedToFetchException):
-            Activity.deserialize(test_activity)
+            Activity.create(test_activity)
 
         fred = ThingUser(name="fred")
         fred.save()
 
         with self.assertRaisesMessage(NeedToFetchException, "https://articles.example.com/bananas"):
-            Activity.deserialize(test_activity)
+            Activity.create(test_activity)
 
         article = ThingArticle(title="bananas")
         article.save()
 
         self.assertIsNotNone(
-            Activity.deserialize(test_activity),
+            Activity.create(test_activity),
             )
 

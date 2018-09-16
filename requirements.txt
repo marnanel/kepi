@@ -1,3 +1,6 @@
 setuptools
 wheel
 django
+requests
+requests-http-signature
+cryptography

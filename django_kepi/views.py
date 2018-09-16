@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django_kepi.models import Following, QuarantinedMessage
+from django_kepi.models import QuarantinedMessage
 import urllib.parse
 import json
 import re
