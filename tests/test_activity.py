@@ -24,6 +24,9 @@ class TestActivity(TestCase):
                 "type": "Create",
                 })
 
+        fred = ThingUser(name="fred")
+        fred.save()
+
         with self.assertRaisesMessage(ValueError, "Explicit objects must have an id"):
             Activity.create({
                 "id": "https://example.com/id/1",
