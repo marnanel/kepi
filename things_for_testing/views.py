@@ -14,8 +14,9 @@ class ThingUserFollowingView(CollectionView):
 
     def get_collection_items(self, *args, **kwargs):
         return Activity.objects.filter(
-                f_type='Accept',
+                f_type='Follow',
                 f_actor=ThingUser(name=kwargs['name']),
+                accepted=True,
                 )
 
     def _stringify_object(self, obj):
@@ -25,8 +26,9 @@ class ThingUserFollowersView(CollectionView):
 
     def get_collection_items(self, *args, **kwargs):
         return Activity.objects.filter(
-                f_type='Accept',
+                f_type='Follow',
                 f_object=ThingUser(name=kwargs['name']),
+                accepted=True,
                 )
 
     def _stringify_object(self, obj):
