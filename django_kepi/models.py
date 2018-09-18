@@ -1,5 +1,5 @@
 from django.db import models
-from django_kepi import object_type_registry, resolve, NeedToFetchException
+from django_kepi import object_type_registry, resolve, NeedToFetchException, register_type
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -112,7 +112,7 @@ class Activity(models.Model):
             (REJECT, 'Reject'),
             )
 
-    f_type = models.URLField(
+    f_type = models.CharField(
             max_length=1,
             choices=ACTIVITY_TYPE_CHOICES,
             )
@@ -147,6 +147,10 @@ class Activity(models.Model):
             default=True,
             )
 
+    accepted = models.BooleanField(
+            default=False,
+            )
+
     # XXX Updates from clients are partial,
     # but updates from remote sites are total.
     # We don't currently let clients create Activities,
@@ -165,6 +169,14 @@ class Activity(models.Model):
                 inactive_warning,
                 )
         return result
+
+    @property
+    def activity_id(self):
+        return self.identifier
+
+    @property
+    def activity_type(self):
+        return self.f_type
 
     @property
     def activity(self):
@@ -197,9 +209,18 @@ class Activity(models.Model):
             'Remove': (True,  False,  True),
             'Like':   (True,  True,   False),
             'Undo':   (False, True,   False),
-            'Accept': (False, True,   False),
-            'Reject': (False, True,   False),
+            'Accept': (True,  True,   False),
+            'Reject': (True,  True,   False),
             }
+
+    @classmethod
+    def register_all_activity_types(cls):
+        for t in cls.TYPES.keys():
+            register_type(t, cls)
+
+    @classmethod
+    def find_activity(cls, url):
+        return cls.objects.get(identifier=url)
 
     @classmethod
     def create(cls, value,
@@ -299,4 +320,6 @@ class Activity(models.Model):
 
     # TODO: there should be a clean() method with the same
     # checks as create().
+
+Activity.register_all_activity_types()
 
