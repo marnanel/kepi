@@ -1,5 +1,5 @@
 __title__ = 'django_kepi'
-__version__ = '0.0.16'
+__version__ = '0.0.17'
 VERSION = __version__
 __author__ = 'Marnanel Thurman'
 __license__ = 'GPL-2'
