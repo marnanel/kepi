@@ -226,7 +226,29 @@ class Activity(models.Model):
                 need_object!=('object' in value) or \
                 need_target!=('target' in value):
 
-                    raise ValueError('Wrong parameters for type')
+                    def params(a, o, t):
+                        result = []
+                        if a: result.append('actor')
+                        if o: result.append('object')
+                        if t: result.append('target')
+
+                        return '['+' '.join(result)+']'
+
+                    we_have = params(
+                            'actor' in value,
+                            'object' in value,
+                            'target' in value,
+                            )
+
+                    we_need = params(
+                            need_actor,
+                            need_object,
+                            need_target,
+                            )
+
+                    raise ValueError('Wrong parameters for type {}: we have {}, we need {}'.format(
+                        value['type'],
+                        we_have, we_need))
 
         # TODO: Sometimes an incoming Activity is trustworthy in
         # telling us about a remote object. At present, for
