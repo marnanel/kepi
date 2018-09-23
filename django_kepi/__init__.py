@@ -74,11 +74,11 @@ class TombstoneException(Exception):
 
 class NeedToFetchException(Exception):
 
-    def __init__(self, url, *args, **kwargs):
+    def __init__(self, urls, *args, **kwargs):
         super().__init__()
 
-        self.url = url
+        self.urls = urls
 
     def __str__(self):
-        return self.url
+        return '\n'.join(self.urls)
 
