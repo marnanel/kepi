@@ -1,4 +1,4 @@
-from django_kepi import ATSIGN_CONTEXT
+from django_kepi import ATSIGN_CONTEXT, NeedToFetchException
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse
@@ -147,6 +147,12 @@ class InboxView(django.views.View):
                     ),
                 )
         capture.save()
+
+        try:
+            capture.deploy()
+        except NeedToFetchException:
+            # we'll work it out later
+            pass
 
         return HttpResponse(
                 status = 200,
