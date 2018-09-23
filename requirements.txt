@@ -4,3 +4,4 @@ django
 requests
 requests-http-signature
 cryptography
+django-celery
