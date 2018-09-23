@@ -1,7 +1,6 @@
 from django.test import TestCase, Client
-from django_kepi import NeedToFetchException
 from django_kepi.views import InboxView
-from django_kepi.models import QuarantinedMessage
+from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds
 
 class TestInbox(TestCase):
 
@@ -15,7 +14,9 @@ class TestInbox(TestCase):
                 content_type = 'application/activity+json',
                 data = {
                     "id": "https://example.net/hello-world",
-                    "type": "Article",
+                    "actor": "https://users.example.net/mary",
+                    "object": "https://things.example.org/lamb",
+                    "type": "Like",
                     },
                 )
 
@@ -32,9 +33,14 @@ class TestInbox(TestCase):
                 content_type = 'application/activity+json',
                 data = {
                     "id": "https://example.net/hello-world",
-                    "type": "Article",
+                    "actor": "https://users.example.net/mary",
+                    "object": "https://things.example.org/lamb",
+                    "type": "Like",
                     },
                 )
 
         self.assertTrue(
                 QuarantinedMessage.objects.filter(username=None).exists())
+
+        # XXX assert the existence of QuarantinedMessageNeeds objects
+
