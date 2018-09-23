@@ -57,6 +57,9 @@ class QuarantinedMessage(models.Model):
 
 class QuarantinedMessageNeeds(models.Model):
 
+    class Meta:
+        index_together = ["message", "needs_to_fetch"]
+
     id = models.UUIDField(
             primary_key=True,
             default=uuid.uuid4,
