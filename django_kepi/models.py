@@ -1,5 +1,5 @@
 from django.db import models
-from django_kepi import object_type_registry, resolve, NeedToFetchException, register_type
+from django_kepi import object_type_registry, resolve, register_type, NeedToFetchException
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -7,6 +7,7 @@ import random
 import json
 import datetime
 import warnings
+import uuid
 
 #######################
 
@@ -26,7 +27,57 @@ class QuarantinedMessage(models.Model):
             )
 
     def deploy(self):
-        pass
+
+        try:
+            value = json.loads(self.body)
+        except json.decoder.JSONDecodeError:
+            self.delete()
+            return None
+
+        try:
+            activity = Activity.create(
+                    value = value,
+                    local = False,
+                    )
+        except NeedToFetchException as ntfe:
+            for need in ntfe.urls:
+                qmn = QuarantinedMessageNeeds(
+                        message=self,
+                        needs_to_fetch=need,
+                        )
+                qmn.save()
+                qmn.start_looking()
+
+            return None
+
+        return activity
+
+    def __str__(self):
+        return '[QuarantinedMessage {}]'.format(self.body[:20])
+
+class QuarantinedMessageNeeds(models.Model):
+
+    id = models.UUIDField(
+            primary_key=True,
+            default=uuid.uuid4,
+            editable=False,
+            )
+
+    message = models.ForeignKey(QuarantinedMessage,
+            on_delete=models.CASCADE)
+
+    # TODO: add indexing when we have tests working
+
+    needs_to_fetch = models.URLField()
+
+    def start_looking(self):
+        pass # XXX
+
+    def __str__(self):
+        return '[QM {} needs {}]'.format(
+                self.message.pk,
+                self.needs_to_fetch,
+                )
 
 #######################
 
@@ -282,6 +333,8 @@ class Activity(models.Model):
         # If it's an Object, it will be a dict whose 'id'
         # field is our URL.
 
+        unresolved_references = set()
+
         for fieldname in ('actor', 'object', 'target'):
 
             if fieldname not in value:
@@ -305,13 +358,14 @@ class Activity(models.Model):
                     )
 
                 if referent is None:
-                    # we don't know about it,
-                    # but we need to.
-                    raise NeedToFetchException(obj_id)
+                    unresolved_references.add(obj_id)
 
             # okay, we can let them use it
 
             fields['f_'+fieldname] = obj_id
+
+        if unresolved_references:
+            raise NeedToFetchException(unresolved_references)
 
         result = cls(**fields)
         result.save()
