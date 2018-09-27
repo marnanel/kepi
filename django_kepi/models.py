@@ -267,6 +267,36 @@ class Activity(models.Model):
             'Reject': (True,  True,   False),
             }
 
+    def deploy(self):
+        """
+        Some kinds of Activity have side-effects
+        when they're created. This method carries out
+        those side-effects.
+        """
+        if self.f_type=='Accept':
+
+            referent = resolve(
+                identifier=self.f_object,
+                f_type='Follow',
+                )
+
+            if referent is not None:
+                referent.accepted = True
+                referent.save()
+
+        elif self.f_type=='Reject':
+
+            referent = resolve(
+                identifier=self.f_object,
+                f_type='Follow',
+                )
+
+            if referent is not None:
+                referent.accepted = False
+                referent.active = False
+                referent.save()
+
+
     @classmethod
     def register_all_activity_types(cls):
         for t in cls.TYPES.keys():
@@ -372,6 +402,7 @@ class Activity(models.Model):
 
         result = cls(**fields)
         result.save()
+        result.deploy()
 
         return result
 
