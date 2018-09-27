@@ -15,23 +15,23 @@ class ThingUserFollowingView(CollectionView):
     def get_collection_items(self, *args, **kwargs):
         return Activity.objects.filter(
                 f_type='Follow',
-                f_actor=ThingUser(name=kwargs['name']),
+                f_actor=ThingUser(name=kwargs['name']).url,
                 accepted=True,
                 )
 
     def _stringify_object(self, obj):
-        return ThingUser.objects.get(actor=obj.following).name
+        return ThingUser.objects.get(actor=obj.following).url
 
 class ThingUserFollowersView(CollectionView):
 
     def get_collection_items(self, *args, **kwargs):
         return Activity.objects.filter(
                 f_type='Follow',
-                f_object=ThingUser(name=kwargs['name']),
+                f_object=ThingUser(name=kwargs['name']).url,
                 accepted=True,
                 )
 
     def _stringify_object(self, obj):
-        return ThingUser.objects.get(actor=obj.follower).name
+        return ThingUser.objects.get(actor=obj.follower).url
 
 
