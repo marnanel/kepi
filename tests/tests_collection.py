@@ -169,7 +169,11 @@ class CollectionTests(TestCase):
                 path=path,
                 page_number=1,
                 expectedTotalItems=3,
-                expectedOnPage=['alice', 'bob', 'carol'],
+                expectedOnPage=[
+                    'https://example.com/user/alice',
+                    'https://example.com/user/bob',
+                    'https://example.com/user/carol',
+                    ],
                 )
 
         for name in ['alice', 'bob', 'carol']:
@@ -185,7 +189,9 @@ class CollectionTests(TestCase):
                     path=path,
                     page_number=1,
                     expectedTotalItems=1,
-                    expectedOnPage=['alice'],
-                    )
+                    expectedOnPage=[
+                        'https://example.com/user/alice',
+                    ],
+                     )
 
 
