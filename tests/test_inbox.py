@@ -42,5 +42,3 @@ class TestInbox(TestCase):
         self.assertTrue(
                 QuarantinedMessage.objects.filter(username=None).exists())
 
-        # XXX assert the existence of QuarantinedMessageNeeds objects
-
