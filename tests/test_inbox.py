@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.views import InboxView
-from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds
+from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds, Activity
 from things_for_testing.models import ThingArticle, ThingUser
 
 class TestInbox(TestCase):
@@ -113,6 +113,9 @@ class TestInbox(TestCase):
 
         # This should go through immediately, because
         # all parts are known and verifiable.
+
+        self.assertTrue(
+                Activity.objects.filter(identifier='https://example.net/hello-world').exists())
 
         self.assertFalse(
                 QuarantinedMessage.objects.all().exists())
