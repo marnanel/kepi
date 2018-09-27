@@ -37,20 +37,24 @@ ROOT_URLCONF = 'test_urls'
 
 #CELERY_ACCEPT_CONTENT = ['json']
 
-LOGGING = {
+if False:
+    LOGGING = {
 
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
+            'version': 1,
+            'disable_existing_loggers': False,
+            'handlers': {
+                'console': {
+                    'level': 'DEBUG',
+                    'class': 'logging.StreamHandler',
+                    },
                 },
-            },
-        'loggers': {
-            'django_kepi': {
-                'handlers': ['console'],
-                'level': 'DEBUG',
+            'loggers': {
+                'django_kepi': {
+                    'handlers': ['console'],
+                    'level': 'DEBUG',
+                    },
                 },
-            },
-        }
+            }
+
+TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+
