@@ -4,12 +4,15 @@ import django.views
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django_kepi.models import QuarantinedMessage
+import logging
 import urllib.parse
 import json
 import re
 
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
+
+logger = logging.getLogger(__name__)
 
 class ActivityObjectView(django.views.View):
 
@@ -139,6 +142,9 @@ class InboxView(django.views.View):
 
         # username is None for the shared inbox.
 
+        logger.debug('Received: message %s at inbox for %s',
+                str(request.body, encoding='UTF-8'),
+                name)
         capture = QuarantinedMessage(
                 username = name,
                 body = str(request.body, encoding='UTF-8'),

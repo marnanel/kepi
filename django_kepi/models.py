@@ -3,11 +3,14 @@ from django_kepi import object_type_registry, resolve, register_type, NeedToFetc
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+import logging
 import random
 import json
 import datetime
 import warnings
 import uuid
+
+logger = logging.getLogger(__name__)
 
 #######################
 
@@ -49,6 +52,8 @@ class QuarantinedMessage(models.Model):
                 qmn.start_looking()
 
             return None
+        else:
+            self.delete()
 
         return activity
 
@@ -310,6 +315,8 @@ class Activity(models.Model):
     def create(cls, value,
             local=False):
 
+        logger.debug('Creating Activity from %s', str(value))
+
         if 'type' not in value:
             raise ValueError("Activities must have a type")
 
@@ -398,6 +405,7 @@ class Activity(models.Model):
             fields['f_'+fieldname] = obj_id
 
         if unresolved_references:
+            logger.debug('Unresolved references: %s', str(unresolved_references))
             raise NeedToFetchException(unresolved_references)
 
         result = cls(**fields)

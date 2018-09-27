@@ -36,3 +36,21 @@ SECRET_KEY = "secret_key_for_testing"
 ROOT_URLCONF = 'test_urls'
 
 #CELERY_ACCEPT_CONTENT = ['json']
+
+LOGGING = {
+
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                },
+            },
+        'loggers': {
+            'django_kepi': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                },
+            },
+        }
