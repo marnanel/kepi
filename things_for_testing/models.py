@@ -56,12 +56,13 @@ class ThingArticle(models.Model):
 
     def serialize(self):
         return {
-                'id': self.url_identifier(),
+                'id': self.activity_id,
                 'type': 'Article',
                 'title': self.title,
                 }
         
-    def url_identifier(self):
+    @property
+    def activity_id(self):
         return 'https://articles.example.com/{}'.format(
                 self.title,
                 )
