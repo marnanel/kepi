@@ -37,7 +37,7 @@ ROOT_URLCONF = 'test_urls'
 
 #CELERY_ACCEPT_CONTENT = ['json']
 
-if False:
+if True:
     LOGGING = {
 
             'version': 1,
