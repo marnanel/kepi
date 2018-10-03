@@ -11,6 +11,10 @@ class ThingUser(models.Model):
             default='chartreuse',
             )
 
+    remote = models.BooleanField(
+            default=True,
+            )
+
     def __str__(self):
         return '[ThingUser {}]'.format(self.name)
 
@@ -33,23 +37,32 @@ class ThingUser(models.Model):
 
     @property
     def activity_id(self):
-        return 'https://example.com/user/{}'.format(
-                self.name,
-                )
+        if self.remote:
+            return self.name
+        else:
+            return 'https://example.com/user/{}'.format(
+                    self.name,
+                    )
 
     @classmethod
     def find_activity(cls, url):
         PREFIX = "https://example.com/user/"
-        if not url.startswith(PREFIX):
-            return None
 
-        name = url[len(PREFIX):]
+        if url.startswith(PREFIX):
+            name = url[len(PREFIX):]
+        else:
+            name = url
 
         return cls.objects.get(name=name)
 
     @classmethod
     def activitypub_create(cls, fields):
-        raise NotImplementedError()
+        result = cls(
+            name=fields['id'],
+            remote=True,
+            )
+        result.save()
+        return result
 
 register_type('Person', ThingUser)
 
