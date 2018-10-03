@@ -1,22 +1,22 @@
 from django.test import TestCase, Client
 from django_kepi.models import Activity, QuarantinedMessage, QuarantinedMessageNeeds
-from django_kepi import create
+from django_kepi import create, resolve
 
 class TestAsyncResult(TestCase):
 
     def test_simple(self):
         
-        mary = create({
-            'id': 'https://example.net/mary',
+        polly = create({
+            'id': 'https://example.net/polly',
             'type': 'Person',
             })
 
-        ARTICLE_URL = 'https://example.com/articles/lambs-are-nice'
+        ARTICLE_URL = 'https://example.com/articles/kettles-are-nice'
         QUARANTINED_BODY = """{
-            "id": 'https://example.com/id/1',
-            "type": 'Like',
-            "actor": 'https://example.net/mary',
-            "object": '%s',
+            "id": "https://example.com/id/1",
+            "type": "Like",
+            "actor": "https://example.net/polly",
+            "object": "%s"
             }""" % (ARTICLE_URL,)
 
         qlike = QuarantinedMessage(
@@ -25,21 +25,18 @@ class TestAsyncResult(TestCase):
                 body=QUARANTINED_BODY,
             )
         qlike.save()
-
-        need = QuarantinedMessageNeeds(
-                message = qlike,
-                needs_to_fetch = ARTICLE_URL,
-                )
-        need.save()
+        qlike.deploy()
 
         c = Client()
 
-        c.post('/asyncResult?success=True&uuid=%s' % (need.id,),
+        need_article_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=ARTICLE_URL).id
+
+        c.post('/asyncResult?success=True&uuid=%s' % (need_article_uuid,),
                 content_type = 'application/activity+json',
                 data = {
                     'id': ARTICLE_URL,
                     "type": "Article",
-                    "title": "Lambs are nice",
+                    "title": "Kettles are nice",
                     },
                 )
 
@@ -48,3 +45,63 @@ class TestAsyncResult(TestCase):
         self.assertFalse(
                 QuarantinedMessageNeeds.objects.filter(needs_to_fetch=ARTICLE_URL).exists())
 
+        self.assertIsNone(
+                resolve(
+                    identifier=ARTICLE_URL,
+                    ))
+
+    def test_partial(self):
+        
+        PERSON_URL = 'https://example.net/mary'
+        ARTICLE_URL = 'https://example.com/articles/lambs-are-nice'
+        QUARANTINED_BODY = """{
+            "id": "https://example.com/id/1",
+            "type": "Like",
+            "actor": "%s",
+            "object": "%s"
+            }""" % (PERSON_URL, ARTICLE_URL,)
+
+        qlike = QuarantinedMessage(
+                username=None,
+                headers='',
+                body=QUARANTINED_BODY,
+            )
+        qlike.save()
+        qlike.deploy()
+
+        c = Client()
+
+        need_article_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=ARTICLE_URL).id
+
+        c.post('/asyncResult?success=True&uuid=%s' % (need_article_uuid,),
+                content_type = 'application/activity+json',
+                data = {
+                    'id': ARTICLE_URL,
+                    "type": "Article",
+                    "title": "Lambs are nice",
+                    },
+                )
+
+        self.assertTrue(
+                QuarantinedMessage.objects.filter(body=QUARANTINED_BODY).exists())
+        self.assertFalse(
+                QuarantinedMessageNeeds.objects.filter(needs_to_fetch=ARTICLE_URL).exists())
+        self.assertTrue(
+                QuarantinedMessageNeeds.objects.filter(needs_to_fetch=PERSON_URL).exists())
+
+        need_person_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=PERSON_URL).id
+
+        c.post('/asyncResult?success=True&uuid=%s' % (need_person.id,),
+                content_type = 'application/activity+json',
+                data = {
+                    'id': PERSON_URL,
+                    "type": "Person",
+                    },
+                )
+
+        self.assertFalse(
+                QuarantinedMessage.objects.filter(body=QUARANTINED_BODY).exists())
+        self.assertFalse(
+                QuarantinedMessageNeeds.objects.filter(needs_to_fetch=ARTICLE_URL).exists())
+        self.assertFalse(
+                QuarantinedMessageNeeds.objects.filter(needs_to_fetch=PERSON_URL).exists())
