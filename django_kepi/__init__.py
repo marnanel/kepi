@@ -66,8 +66,10 @@ def create(fields):
     if 'type' not in fields:
         raise ValueError('objects must have a type')
 
-    if fields['type'] not in object_type_registry:
-        raise ValueError('type {} is unknown'.format(fields['type'],))
+    t = fields['type']
+
+    if t not in object_type_registry:
+        raise ValueError('type {} is unknown'.format(t,))
 
     cls = object_type_registry[t]
 
