@@ -31,9 +31,11 @@ class QuarantinedMessage(models.Model):
 
     def deploy(self):
 
+        logger.debug('%s: attempting to deploy', self)
         try:
             value = json.loads(self.body)
         except json.decoder.JSONDecodeError:
+            logger.info('%s: JSON was invalid; deleting', self)
             self.delete()
             return None
 
@@ -43,16 +45,20 @@ class QuarantinedMessage(models.Model):
                     local = False,
                     )
         except NeedToFetchException as ntfe:
+            logger.debug('%s: deployment failed because we need to fetch:', self)
             for need in ntfe.urls:
                 qmn = QuarantinedMessageNeeds(
                         message=self,
                         needs_to_fetch=need,
                         )
                 qmn.save()
+                logger.debug('%s:   -- we need %s', self, need)
                 qmn.start_looking()
+            logger.debug('%s: end of list', self)
 
             return None
         else:
+            logger.info('%s: deployment was successful', self)
             self.delete()
 
         return activity
