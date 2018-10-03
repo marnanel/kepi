@@ -71,6 +71,9 @@ class ThingArticle(models.Model):
     title = models.CharField(max_length=256)
     ftype = 'Article'
 
+    remote_url = models.URLField(max_length=256,
+            null=True, default=None)
+
     def serialize(self):
         return {
                 'id': self.activity_id,
@@ -103,12 +106,20 @@ class ThingArticle(models.Model):
     @classmethod
     def find_activity(cls, url):
         PREFIX = "https://articles.example.com/"
-        if not url.startswith(PREFIX):
-            return None
+        if url.startswith(PREFIX):
+            title = url[len(PREFIX):]
+            return cls.objects.get(title=title)
+        else:
+            return cls.objects.get(remote_url=url)
 
-        title = url[len(PREFIX):]
-
-        return cls.objects.get(title=title)
+    @classmethod
+    def activitypub_create(cls, fields):
+        result = cls(
+            remote_url=fields['id'],
+            title=fields['title'],
+            )
+        result.save()
+        return result
 
 register_type('Article', ThingArticle)
 
