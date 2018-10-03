@@ -9,5 +9,6 @@ urlpatterns = [
     path('users/<name>/following', ThingUserFollowingView.as_view()),
     path('users/<name>/inbox', InboxView.as_view()),
     path('sharedInbox', InboxView.as_view()),
+    path('asyncResult', AsyncResultView.as_view()),
 ]
 

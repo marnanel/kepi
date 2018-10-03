@@ -61,6 +61,20 @@ def resolve(identifier, f_type=None):
 
     return None
 
+def create(fields):
+
+    if 'type' not in fields:
+        raise ValueError('objects must have a type')
+
+    if fields['type'] not in object_type_registry:
+        raise ValueError('type {} is unknown'.format(fields['type'],))
+
+    cls = object_type_registry[t]
+
+    result = cls.activitypub_create(fields)
+
+    return result
+
 class TombstoneException(Exception):
 
     def __init__(self, *args, **kwargs):

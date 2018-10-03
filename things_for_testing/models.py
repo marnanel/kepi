@@ -47,6 +47,10 @@ class ThingUser(models.Model):
 
         return cls.objects.get(name=name)
 
+    @classmethod
+    def activitypub_create(cls, fields):
+        raise NotImplementedError()
+
 register_type('Person', ThingUser)
 
 class ThingArticle(models.Model):

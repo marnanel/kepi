@@ -312,6 +312,10 @@ class Activity(models.Model):
         return cls.objects.get(identifier=url)
 
     @classmethod
+    def activitypub_create(cls, fields):
+        return cls.create(value, local=False)
+
+    @classmethod
     def create(cls, value,
             local=False):
 
@@ -416,6 +420,8 @@ class Activity(models.Model):
 
     # TODO: there should be a clean() method with the same
     # checks as create().
+
+########################################
 
 Activity.register_all_activity_types()
 

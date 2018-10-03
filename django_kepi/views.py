@@ -1,9 +1,10 @@
-from django_kepi import ATSIGN_CONTEXT, NeedToFetchException
+from django_kepi import ATSIGN_CONTEXT, NeedToFetchException, create
+from django_kepi import create as kepi_create
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django_kepi.models import QuarantinedMessage
+from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds
 import logging
 import urllib.parse
 import json
@@ -169,3 +170,73 @@ class InboxView(django.views.View):
 
     # We need to support GET (as a collection)
     # but we don't yet.
+
+########################################
+
+class AsyncResultView(django.views.View):
+
+    def post(self, request, *args, **kwargs):
+
+        uuid_passcode = request.GET['uuid']
+        success = bool(request.GET['result'])
+
+        if success:
+
+            if 'body' not in request.POST:
+                logger.warn('Batch notification had success==True but no body')
+                raise ValueError()
+
+            body = str(request.POST['body'], encoding='UTF-8')
+        else:
+
+            if 'body' in request.POST:
+                logger.warn('Batch notification had success==False but supplied a body')
+                raise ValueError()
+
+            body = None
+
+        try:
+            message_need = get_object_or_404(QuarantinedMessageNeeds, uuid_passcode)
+        except Exception as e:
+            logger.warn('Batch notification for unknown UUID: %s',
+                    uuid_passcode)
+            raise e
+
+        if success:
+            logger.info('Batch processing has retrieved %s:',
+                    message_need.needs_to_fetch)
+            logger.debug(' -- its contents are %s', body)
+        else:
+            logger.debug('Batch processing has failed to retrieve %s:',
+                    message_need.needs_to_fetch)
+
+        if body is not None:
+            try:
+                fields = json.loads(body)
+            except json.decoder.JSONDecodeError:
+                fields = None
+                success = False
+                logger.warn('Body was not JSON. Treating as failure.')
+
+        kepi_create(json.loads(body))
+
+        logger.debug(' -- trying to deploy all matching messages again')
+        for need in list(QuarantinedMessageNeeds.objects.filter(
+            needs_to_fetch = message_need.needs_to_fetch)):
+
+            logger.debug('    -- %s', str(need.message))
+            if success:
+                need.message.deploy()
+            else:
+                need.message.delete()
+
+            need.delete()
+        logger.debug(' -- finished deployment attempts')
+
+        return HttpResponse(
+                status = 200,
+                reason = 'All is well',
+                content = '',
+                content_type = 'text/plain',
+                )
+
