@@ -2,9 +2,10 @@ from django_kepi import ATSIGN_CONTEXT, NeedToFetchException, create
 from django_kepi import create as kepi_create
 from django.shortcuts import render, get_object_or_404
 import django.views
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds
+from django.core.exceptions import ValidationError
 import logging
 import urllib.parse
 import json
@@ -178,26 +179,38 @@ class AsyncResultView(django.views.View):
     def post(self, request, *args, **kwargs):
 
         uuid_passcode = request.GET['uuid']
-        success = bool(request.GET['result'])
+        success = bool(request.GET['success'])
 
         if success:
 
-            if 'body' not in request.POST:
+            if not request.body:
                 logger.warn('Batch notification had success==True but no body')
-                raise ValueError()
+                return django.http.HttpResponseBadRequest()
 
-            body = str(request.POST['body'], encoding='UTF-8')
+            body = str(request.body, encoding='UTF-8')
+
+            # Why not use request.POST? Because the batch process might
+            # reasonably use Content-Type: application/activity+json,
+            # which Django wouldn't recognise as proper JSON, so
+            # request.POST wouldn't get populated.
+
+            # XXX we might want to check the Content-Type here
+
         else:
 
-            if 'body' in request.POST:
+            if request.POST:
                 logger.warn('Batch notification had success==False but supplied a body')
-                raise ValueError()
+                return django.http.HttpResponseBadRequest()
 
             body = None
 
+        print(uuid_passcode)
         try:
-            message_need = get_object_or_404(QuarantinedMessageNeeds, uuid_passcode)
-        except Exception as e:
+            message_need = get_object_or_404(QuarantinedMessageNeeds, id=uuid_passcode)
+        except ValidationError as e:
+            logger.warn('Invalid UUID supplied: %s', uuid_passcode)
+            raise e
+        except QuarantinedMessageNeeds.NotFound as e:
             logger.warn('Batch notification for unknown UUID: %s',
                     uuid_passcode)
             raise e
