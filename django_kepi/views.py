@@ -204,7 +204,6 @@ class AsyncResultView(django.views.View):
 
             body = None
 
-        print(uuid_passcode)
         try:
             message_need = get_object_or_404(QuarantinedMessageNeeds, id=uuid_passcode)
         except ValidationError as e:
