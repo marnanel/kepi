@@ -157,7 +157,7 @@ class InboxView(django.views.View):
         capture.save()
 
         try:
-            capture.deploy()
+            capture.deploy(retrying=False)
         except NeedToFetchException:
             # we'll work it out later
             pass
@@ -219,31 +219,34 @@ class AsyncResultView(django.views.View):
                     message_need.needs_to_fetch)
             logger.debug(' -- its contents are %s', body)
         else:
-            logger.debug('Batch processing has failed to retrieve %s:',
+            logger.info('Batch processing has failed to retrieve %s:',
                     message_need.needs_to_fetch)
 
         if body is not None:
             try:
                 fields = json.loads(body)
+                kepi_create(fields)
             except json.decoder.JSONDecodeError:
                 fields = None
                 success = False
                 logger.warn('Body was not JSON. Treating as failure.')
 
-        kepi_create(json.loads(body))
+        if success:
+            logger.debug(' -- trying to deploy all matching messages again')
+        else:
+            logger.debug(' -- deleting all messages which relied on it')
 
-        logger.debug(' -- trying to deploy all matching messages again')
         for need in list(QuarantinedMessageNeeds.objects.filter(
             needs_to_fetch = message_need.needs_to_fetch)):
 
             logger.debug('    -- %s', str(need.message))
             if success:
-                need.message.deploy()
+                need.message.deploy(retrying=True)
             else:
                 need.message.delete()
 
             need.delete()
-        logger.debug(' -- finished deployment attempts')
+        logger.debug(' -- finished')
 
         return HttpResponse(
                 status = 200,

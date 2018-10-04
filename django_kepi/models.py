@@ -29,9 +29,23 @@ class QuarantinedMessage(models.Model):
             default=False,
             )
 
-    def deploy(self):
+    def deploy(self,
+            retrying=False):
 
-        logger.debug('%s: attempting to deploy', self)
+        if retrying:
+            logger.debug('%s: re-attempting to deploy', self)
+
+            remaining_qmns = QuarantinedMessageNeeds.objects.filter(
+                    message=self.pk,
+                    )
+            
+            if remaining_qmns.exists():
+                logger.debug('%s:  -- but there are dependencies remaining: %s',
+                        self, remaining_qmns)
+                return None
+        else:
+            logger.debug('%s: attempting to deploy', self)
+
         try:
             value = json.loads(self.body)
         except json.decoder.JSONDecodeError:
@@ -45,17 +59,21 @@ class QuarantinedMessage(models.Model):
                     local = False,
                     )
         except NeedToFetchException as ntfe:
-            logger.debug('%s: deployment failed because we need to fetch:', self)
+            logger.debug('%s: deployment failed because we need to fetch: %s',
+                    self, ntfe.urls)
+
+            if retrying:
+                logger.error("%s: dependencies remaining when all dependency records were gone; this should never happen")
+                raise RuntimeError("dependencies remaining on retry")
+
             for need in ntfe.urls:
                 qmn = QuarantinedMessageNeeds(
                         message=self,
                         needs_to_fetch=need,
                         )
                 qmn.save()
-                logger.debug('%s:   -- we need %s', self, need)
                 qmn.start_looking()
-            logger.debug('%s: end of list', self)
-
+                
             return None
         else:
             logger.info('%s: deployment was successful', self)
