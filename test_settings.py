@@ -35,9 +35,13 @@ SECRET_KEY = "secret_key_for_testing"
 
 ROOT_URLCONF = 'test_urls'
 
-#CELERY_ACCEPT_CONTENT = ['json']
+CELERY = {
+        'task_ignore_result': True,
+        }
 
-if False:
+DEBUG = True
+
+if DEBUG:
     LOGGING = {
 
             'version': 1,

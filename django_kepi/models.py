@@ -103,7 +103,12 @@ class QuarantinedMessageNeeds(models.Model):
     needs_to_fetch = models.URLField()
 
     def start_looking(self):
-        pass # XXX
+        tasks.fetch(
+                fetch_url = self.needs_to_fetch,
+                post_data = None,
+                result_url = '/wombats', # XXX
+                result_id = self.id,
+                )
 
     def __str__(self):
         return '[QM {} needs {}]'.format(
