@@ -12,7 +12,7 @@ class ThingUser(models.Model):
             )
 
     remote = models.BooleanField(
-            default=True,
+            default=False,
             )
 
     def __str__(self):
