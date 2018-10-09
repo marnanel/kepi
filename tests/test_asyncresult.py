@@ -2,9 +2,6 @@ from django.test import TestCase, Client
 from django_kepi.models import Activity, QuarantinedMessage, QuarantinedMessageNeeds
 from django_kepi import create, resolve
 
-# XXX bug is:
-# XXX   attempts to redeploy cause duplicate "needs" records
-
 class TestAsyncResult(TestCase):
 
     def test_simple(self):
