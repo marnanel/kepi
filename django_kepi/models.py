@@ -83,7 +83,7 @@ class QuarantinedMessage(models.Model):
         return activity
 
     def __str__(self):
-        return '[QuarantinedMessage {}]'.format(self.body[:20])
+        return 'QM{}'.format(self.pk)
 
 class QuarantinedMessageNeeds(models.Model):
 
@@ -112,7 +112,7 @@ class QuarantinedMessageNeeds(models.Model):
                 )
 
     def __str__(self):
-        return '[QM {} needs {}]'.format(
+        return 'QM{} needs {}'.format(
                 self.message.pk,
                 self.needs_to_fetch,
                 )
