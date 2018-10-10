@@ -3,6 +3,7 @@ from django_kepi import object_type_registry, resolve, register_type, NeedToFetc
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+import django_kepi.tasks
 import logging
 import random
 import json
@@ -103,10 +104,10 @@ class QuarantinedMessageNeeds(models.Model):
     needs_to_fetch = models.URLField()
 
     def start_looking(self):
-        tasks.fetch(
+        django_kepi.tasks.fetch.delay(
                 fetch_url = self.needs_to_fetch,
                 post_data = None,
-                result_url = '/wombats', # XXX
+                result_url = 'https://localhost/async_result', # XXX
                 result_id = self.id,
                 )
 
