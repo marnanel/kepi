@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger('django_kepi.tasks')
 
-@shared_task
+@shared_task()
 def fetch(
         fetch_url,
         post_data,
