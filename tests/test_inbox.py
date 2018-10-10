@@ -2,12 +2,20 @@ from django.test import TestCase, Client
 from django_kepi.views import InboxView
 from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds, Activity
 from things_for_testing.models import ThingArticle, ThingUser
+from things_for_testing import KepiTestCase
+import json
+import httpretty
 
-class TestInbox(TestCase):
+class TestInbox(KepiTestCase):
 
+    @httpretty.activate
     def test_specific_post(self):
 
-        QuarantinedMessage.objects.all().delete()
+        HUMAN_URL = 'https://users.example.net/mary'
+        ANIMAL_URL = 'https://things.example.org/lamb'
+
+        self._mock_remote_object(HUMAN_URL, ftype='Person')
+        self._mock_remote_object(ANIMAL_URL, ftype='Person')
 
         c = Client()
 
@@ -15,8 +23,8 @@ class TestInbox(TestCase):
                 content_type = 'application/activity+json',
                 data = {
                     "id": "https://example.net/hello-world",
-                    "actor": "https://users.example.net/mary",
-                    "object": "https://things.example.org/lamb",
+                    "actor": HUMAN_URL,
+                    "object": ANIMAL_URL,
                     "type": "Like",
                     },
                 )
@@ -26,7 +34,11 @@ class TestInbox(TestCase):
 
     def test_shared_post(self):
 
-        QuarantinedMessage.objects.all().delete()
+        HUMAN_URL = 'https://users.example.net/mary'
+        ANIMAL_URL = 'https://things.example.org/another-lamb'
+
+        self._mock_remote_object(HUMAN_URL, ftype='Person')
+        self._mock_remote_object(ANIMAL_URL, ftype='Person')
 
         c = Client()
 
@@ -34,8 +46,8 @@ class TestInbox(TestCase):
                 content_type = 'application/activity+json',
                 data = {
                     "id": "https://example.net/hello-world",
-                    "actor": "https://users.example.net/mary",
-                    "object": "https://things.example.org/lamb",
+                    "actor": HUMAN_URL,
+                    "object": ANIMAL_URL,
                     "type": "Like",
                     },
                 )
@@ -59,16 +71,20 @@ class TestInbox(TestCase):
 
     def test_malformed_json(self):
 
-        QuarantinedMessage.objects.all().delete()
+        PERSON_URL = 'https://users.example.com/my-dame'
+        ANIMAL_URL = 'https://animals.example.com/a-lame-tame-crane'
+
+        self._mock_remote_object(HUMAN_URL, ftype='Person')
+        self._mock_remote_object(ANIMAL_URL, ftype='Person')
 
         c = Client()
 
-        text = """{
+        text = json.dumps({
                     "id": "https://example.net/hello-world",
-                    "actor": "https://users.example.net/mary",
-                    "object": "https://things.example.org/lamb",
-                    "type": "Like"
-                    }"""
+                    "actor": PERSON_URL,
+                    "object": ANIMAL_URL,
+                    "type": "Like",
+                    })
 
         c.post('/sharedInbox',
                 content_type = 'application/activity+json',

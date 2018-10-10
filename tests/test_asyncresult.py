@@ -1,23 +1,35 @@
 from django.test import TestCase, Client
 from django_kepi.models import Activity, QuarantinedMessage, QuarantinedMessageNeeds
 from django_kepi import create, resolve
+from things_for_testing import KepiTestCase
+import logging
+import httpretty
+import json
 
-class TestAsyncResult(TestCase):
+logger = logging.Logger(name=__name__)
 
+class TestAsyncResult(KepiTestCase):
+
+    @httpretty.activate
     def test_simple(self):
         
+        PERSON_URL = 'https://example.net/polly'
+        ARTICLE_URL = 'https://example.com/articles/kettles-are-nice'
+        
         polly = create({
-            'id': 'https://example.net/polly',
+            'id': PERSON_URL,
             'type': 'Person',
             })
 
-        ARTICLE_URL = 'https://example.com/articles/kettles-are-nice'
-        QUARANTINED_BODY = """{
+        QUARANTINED_BODY = json.dumps({
             "id": "https://example.com/id/1",
             "type": "Like",
-            "actor": "https://example.net/polly",
-            "object": "%s"
-            }""" % (ARTICLE_URL,)
+            "actor": PERSON_URL,
+            "object": ARTICLE_URL,
+            })
+
+        self._mock_remote_object(PERSON_URL, ftype='Person')
+        self._mock_remote_object(ARTICLE_URL, ftype='Article')
 
         qlike = QuarantinedMessage(
                 username=None,
@@ -50,16 +62,20 @@ class TestAsyncResult(TestCase):
                     identifier=ARTICLE_URL,
                     ))
 
+    @httpretty.activate
     def test_partial(self):
         
         PERSON_URL = 'https://example.net/mary'
         ARTICLE_URL = 'https://example.com/articles/lambs-are-nice'
-        QUARANTINED_BODY = """{
+        QUARANTINED_BODY = json.dumps({
             "id": "https://example.com/id/2",
             "type": "Like",
-            "actor": "%s",
-            "object": "%s"
-            }""" % (PERSON_URL, ARTICLE_URL,)
+            "actor": PERSON_URL,
+            "object": ARTICLE_URL,
+            })
+
+        self._mock_remote_object(PERSON_URL, ftype='Person')
+        self._mock_remote_object(ARTICLE_URL, ftype='Article')
 
         qlike = QuarantinedMessage(
                 username=None,
@@ -108,6 +124,7 @@ class TestAsyncResult(TestCase):
 
         # XXX assert that the activity now exists
 
+    @httpretty.activate
     def test_failure(self):
         
         PERSON_URL = 'https://example.net/lucy'
@@ -118,6 +135,17 @@ class TestAsyncResult(TestCase):
             "actor": "%s",
             "object": "%s"
             }""" % (PERSON_URL, ARTICLE_URL,)
+
+        self._mock_remote_object(PERSON_URL, ftype='Person', status=404)
+        self._mock_remote_object(ARTICLE_URL, ftype='Article')
+
+        # XXX For some reason, this allows Celery to
+        # access /async_result in the test version;
+        # without it, the socket library throws an error.
+        httpretty.register_uri(
+                httpretty.POST,
+                'https://localhost/async_result',
+                body='something')
 
         qlike = QuarantinedMessage(
                 username=None,
@@ -161,3 +189,4 @@ class TestAsyncResult(TestCase):
                 QuarantinedMessageNeeds.objects.filter(needs_to_fetch=PERSON_URL).exists())
 
         # XXX assert that the activity does NOT exist
+
