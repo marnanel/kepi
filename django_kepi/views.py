@@ -240,12 +240,15 @@ class AsyncResultView(django.views.View):
             needs_to_fetch = message_need.needs_to_fetch)):
 
             logger.debug('    -- %s', str(need.message))
-            if success:
-                need.message.deploy(retrying=True)
-            else:
-                need.message.delete()
 
+            message = need.message
             need.delete()
+
+            if success:
+                message.deploy(retrying=True)
+            else:
+                message.delete()
+
         logger.debug(' -- finished')
 
         return HttpResponse(

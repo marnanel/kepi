@@ -39,7 +39,7 @@ CELERY = {
         'task_ignore_result': True,
         }
 
-DEBUG = True
+DEBUG = False
 
 if DEBUG:
     LOGGING = {
