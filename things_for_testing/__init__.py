@@ -6,17 +6,21 @@ import logging
 
 __all__ = ('celery_app',)
 
-logger = logging.Logger('things_for_testing')
+logger = logging.Logger('django_kepi')
 
 class KepiTestCase(TestCase):
     def _mock_remote_object(self,
             url,
             ftype = 'Object',
-            fields = {},
+            fields = None,
             status = 200):
+
+        if fields is None:
+            fields = {}
 
         if 'id' not in fields:
             fields['id'] = url
+
         if 'type' not in fields:
             fields['type'] = ftype
 
