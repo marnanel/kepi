@@ -1,8 +1,9 @@
 from django.db import models
-from django_kepi import register_type, TombstoneException
+from django_kepi import activity_type, TombstoneException
 from django_kepi import models as kepi_models
 from django_kepi import logger
 
+@activity_type('Person')
 class ThingUser(models.Model):
 
     name = models.CharField(max_length=256)
@@ -65,8 +66,7 @@ class ThingUser(models.Model):
         result.save()
         return result
 
-register_type('Person', ThingUser)
-
+@activity_type('Article')
 class ThingArticle(models.Model):
 
     title = models.CharField(max_length=256)
@@ -106,6 +106,4 @@ class ThingArticle(models.Model):
             )
         result.save()
         return result
-
-register_type('Article', ThingArticle)
 

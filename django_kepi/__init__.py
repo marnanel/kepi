@@ -41,6 +41,13 @@ object_type_registry = {
 def register_type(f_type, handler):
     object_type_registry[f_type] = handler
 
+# Decorator
+def activity_type(f_type):
+    def register(cls):
+        register_type(f_type, cls)
+        return cls
+    return register
+
 def find(identifier, f_type=None):
 
     if f_type is None:
