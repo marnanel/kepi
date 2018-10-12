@@ -1,4 +1,4 @@
-from django_kepi import ATSIGN_CONTEXT, NeedToFetchException, create
+from django_kepi import ATSIGN_CONTEXT, create
 from django_kepi import create as kepi_create, logger
 from django.shortcuts import render, get_object_or_404
 import django.views
@@ -154,11 +154,7 @@ class InboxView(django.views.View):
                 )
         capture.save()
 
-        try:
-            capture.deploy(retrying=False)
-        except NeedToFetchException:
-            # we'll work it out later
-            pass
+        capture.deploy(retrying=False)
 
         return HttpResponse(
                 status = 200,

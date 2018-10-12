@@ -1,5 +1,5 @@
 from django.db import models
-from django_kepi import object_type_registry, resolve, register_type, NeedToFetchException, logger
+from django_kepi import object_type_registry, resolve, register_type, logger
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -52,27 +52,20 @@ class QuarantinedMessage(models.Model):
             self.delete()
             return None
 
-        try:
-            activity = Activity.create(
+        activity = Activity.create(
                     value = value,
                     local = False,
+                    from_message = self,
                     )
-        except NeedToFetchException as ntfe:
-            logger.debug('%s: deployment failed because we need to fetch: %s',
-                    self, ntfe.urls)
+    
+        if activity is None:
+            logger.debug('%s: deployment failed because dependencies remain',
+                    self)
 
             if retrying:
                 logger.error("%s: dependencies remaining when all dependency records were gone; this should never happen")
                 raise RuntimeError("dependencies remaining on retry")
-
-            for need in ntfe.urls:
-                qmn = QuarantinedMessageNeeds(
-                        message=self,
-                        needs_to_fetch=need,
-                        )
-                qmn.save()
-                qmn.start_looking()
-                
+               
             return None
         else:
             logger.info('%s: deployment was successful', self)
@@ -345,7 +338,8 @@ class Activity(models.Model):
 
     @classmethod
     def create(cls, value,
-            local=False):
+            local=False,
+            from_message=None):
 
         logger.debug('Creating Activity from %s', str(value))
 
@@ -438,8 +432,21 @@ class Activity(models.Model):
 
         if unresolved_references:
             logger.debug('Unresolved references: %s', str(unresolved_references))
-            raise NeedToFetchException(unresolved_references)
 
+            if from_message is None:
+                logger.warn('Unresolved references in Activity with no parent message: %s',
+                        str(unresolved_references))
+                return None
+            else:
+                for need in unresolved_references:
+                    qmn = QuarantinedMessageNeeds(
+                            message=from_message,
+                            needs_to_fetch=need,
+                            )
+                    qmn.save()
+                    logger.info('  -- %s', qmn)
+                    qmn.start_looking()
+     
         result = cls(**fields)
         result.save()
         result.deploy()

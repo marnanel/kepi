@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django_kepi import NeedToFetchException
 from django_kepi.models import Activity
 from things_for_testing.models import ThingArticle, ThingUser
 
@@ -49,14 +48,14 @@ class TestActivity(TestCase):
                     }
                 }
 
-        with self.assertRaises(NeedToFetchException):
-            Activity.create(test_activity)
+        created = Activity.create(test_activity)
+        self.assertEqual(created, None)
 
         fred = ThingUser(name="fred")
         fred.save()
 
-        with self.assertRaisesMessage(NeedToFetchException, "https://articles.example.com/bananas"):
-            Activity.create(test_activity)
+        created = Activity.create(test_activity)
+        self.assertEqual(created, None)
 
         article = ThingArticle(title="bananas")
         article.save()

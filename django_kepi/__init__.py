@@ -92,13 +92,4 @@ class TombstoneException(Exception):
     def __str__(self):
         return str(self.activity)
 
-class NeedToFetchException(Exception):
-
-    def __init__(self, urls, *args, **kwargs):
-        super().__init__()
-
-        self.urls = urls
-
-    def __str__(self):
-        return '\n'.join(self.urls)
 
