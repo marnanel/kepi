@@ -1,12 +1,10 @@
 from django.test import TestCase, Client
 from django_kepi.models import Activity, QuarantinedMessage, QuarantinedMessageNeeds
-from django_kepi import create, resolve
+from django_kepi import create, resolve, logger
 from things_for_testing import KepiTestCase
 import logging
 import httpretty
 import json
-
-logger = logging.Logger(name=__name__)
 
 class TestAsyncResult(KepiTestCase):
 
@@ -43,7 +41,7 @@ class TestAsyncResult(KepiTestCase):
 
         need_article_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=ARTICLE_URL).id
 
-        c.post('/asyncResult?success=True&uuid=%s' % (need_article_uuid,),
+        c.post('/asyncResult?success=1&uuid=%s' % (need_article_uuid,),
                 content_type = 'application/activity+json',
                 data = {
                     'id': ARTICLE_URL,
@@ -89,7 +87,7 @@ class TestAsyncResult(KepiTestCase):
 
         need_article_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=ARTICLE_URL).id
 
-        c.post('/asyncResult?success=True&uuid=%s' % (need_article_uuid,),
+        c.post('/asyncResult?success=1&uuid=%s' % (need_article_uuid,),
                 content_type = 'application/activity+json',
                 data = {
                     'id': ARTICLE_URL,
@@ -107,7 +105,7 @@ class TestAsyncResult(KepiTestCase):
 
         need_person_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=PERSON_URL).id
 
-        c.post('/asyncResult?success=True&uuid=%s' % (need_person_uuid,),
+        c.post('/asyncResult?success=1&uuid=%s' % (need_person_uuid,),
                 content_type = 'application/activity+json',
                 data = {
                     'id': PERSON_URL,
@@ -139,14 +137,6 @@ class TestAsyncResult(KepiTestCase):
         self._mock_remote_object(PERSON_URL, ftype='Person', status=404)
         self._mock_remote_object(ARTICLE_URL, ftype='Article')
 
-        # XXX For some reason, this allows Celery to
-        # access /async_result in the test version;
-        # without it, the socket library throws an error.
-        httpretty.register_uri(
-                httpretty.POST,
-                'https://localhost/async_result',
-                body='something')
-
         qlike = QuarantinedMessage(
                 username=None,
                 headers='',
@@ -159,7 +149,7 @@ class TestAsyncResult(KepiTestCase):
 
         need_article_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=ARTICLE_URL).id
 
-        c.post('/asyncResult?success=True&uuid=%s' % (need_article_uuid,),
+        c.post('/asyncResult?success=1&uuid=%s' % (need_article_uuid,),
                 content_type = 'application/activity+json',
                 data = {
                     'id': ARTICLE_URL,
@@ -178,7 +168,7 @@ class TestAsyncResult(KepiTestCase):
         # But the person check fails!
         need_person_uuid = QuarantinedMessageNeeds.objects.get(needs_to_fetch=PERSON_URL).id
 
-        c.post('/asyncResult?success=False&uuid=%s' % (need_person_uuid,),
+        c.post('/asyncResult?success=0&uuid=%s' % (need_person_uuid,),
                 )
 
         self.assertFalse(
