@@ -1,5 +1,5 @@
 from django_kepi import ATSIGN_CONTEXT, NeedToFetchException, create
-from django_kepi import create as kepi_create
+from django_kepi import create as kepi_create, logger
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
@@ -13,8 +13,6 @@ import re
 
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
-
-logger = logging.getLogger(__name__)
 
 class ActivityObjectView(django.views.View):
 
@@ -179,12 +177,12 @@ class AsyncResultView(django.views.View):
     def post(self, request, *args, **kwargs):
 
         uuid_passcode = request.GET['uuid']
-        success = bool(request.GET['success'])
+        success = int(request.GET['success'])!=0
 
         if success:
 
             if not request.body:
-                logger.warn('Batch notification had success==True but no body')
+                logger.warn('Batch notification had success==1 but no body')
                 return django.http.HttpResponseBadRequest()
 
             body = str(request.body, encoding='UTF-8')
@@ -199,7 +197,7 @@ class AsyncResultView(django.views.View):
         else:
 
             if request.POST:
-                logger.warn('Batch notification had success==False but supplied a body')
+                logger.warn('Batch notification had success==0 but supplied a body')
                 return django.http.HttpResponseBadRequest()
 
             body = None
@@ -222,7 +220,7 @@ class AsyncResultView(django.views.View):
             logger.info('Batch processing has failed to retrieve %s:',
                     message_need.needs_to_fetch)
 
-        if body is not None:
+        if success and body is not None:
             try:
                 fields = json.loads(body)
                 kepi_create(fields)
@@ -239,14 +237,14 @@ class AsyncResultView(django.views.View):
         for need in list(QuarantinedMessageNeeds.objects.filter(
             needs_to_fetch = message_need.needs_to_fetch)):
 
-            logger.debug('    -- %s', str(need.message))
-
             message = need.message
             need.delete()
 
             if success:
+                logger.debug('    -- trying to deploy %s', str(need.message))
                 message.deploy(retrying=True)
             else:
+                logger.debug('    -- deleting %s', str(need.message))
                 message.delete()
 
         logger.debug(' -- finished')
