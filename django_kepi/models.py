@@ -446,6 +446,7 @@ class Activity(models.Model):
                     qmn.save()
                     logger.info('  -- %s', qmn)
                     qmn.start_looking()
+                return None
      
         result = cls(**fields)
         result.save()
