@@ -17,10 +17,10 @@ class ActivityObjectResponse(django.http.HttpResponse):
 
         if item is not None:
             try:
-                result = item.activity
+                result = item.activity_form
 
             except django_kepi.TombstoneException as tombstone:
-                result = tombstone.activity
+                result = tombstone.activity_form
                 self.status_code = 410 # Gone
 
             self._render(result)
@@ -93,10 +93,10 @@ class CollectionResponse(ActivityObjectResponse):
         try:
             return self._transform_object(obj)
         except django_kepi.TombstoneException as te:
-            return te.activity
+            return te.activity_form
 
     def _transform_object(self, obj):
-        return obj.activity
+        return obj.activity_form
 
     def _make_query_page(
             self,

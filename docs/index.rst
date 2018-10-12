@@ -9,7 +9,8 @@ Welcome to django_kepi's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   modules.rst
+   django_kepi.rst
 
 
 Indices and tables

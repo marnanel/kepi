@@ -30,7 +30,7 @@ class ResponseTests(TestCase):
                 )
 
         self.assertEqual(
-                te.activity,
+                te.activity_form,
                 {
                     'fred': 'jim',
                     'sheila': 'hazel',
@@ -48,7 +48,7 @@ class ResponseTests(TestCase):
 
         class RandomWeirdThing(object):
             @property
-            def activity(self):
+            def activity_form(self):
                 return {
                         'where': 'there',
                         'what': 'that',
@@ -62,14 +62,14 @@ class ResponseTests(TestCase):
         content_value = json.loads(aor.content.decode(encoding='UTF-8'))
 
         self.assertEqual(
-                rwt.activity,
+                rwt.activity_form,
                 content_value)
 
     def test_tombstone_object_response(self):
 
         class RandomWeirdGoneAwayThing(object):
             @property
-            def activity(self):
+            def activity_form(self):
                 raise TombstoneException(former_type='Article')
 
         rwgat = RandomWeirdGoneAwayThing()
@@ -137,7 +137,7 @@ class ResponseTests(TestCase):
             self.assertEqual(content_value['partOf'], EXAMPLE_SERVER+PATH_INDEX)
             self.assertEqual(content_value['id'], EXAMPLE_SERVER+PATH_PAGE1)
 
-            expectedItems = [x.activity for x in queryset]
+            expectedItems = [x.activity_form for x in queryset]
             self.assertEqual(content_value['orderedItems'], expectedItems)
 
     def test_collection_response_spills(self):
@@ -173,7 +173,7 @@ class ResponseTests(TestCase):
 
     def test_tombstone_collection_response(self):
         for name in ['King William', 'Queen Anne', 'Queen Elizabeth']:
-            # "Queen Anne" is a magic name which causes ThingUser.activity
+            # "Queen Anne" is a magic name which causes ThingUser.activity_form
             # to throw TombstoneException
             # XXX this is not elegant
             someone = ThingUser(name=name)

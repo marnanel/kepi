@@ -1,5 +1,5 @@
 from django.db import models
-from django_kepi import object_type_registry, resolve, register_type, logger
+from django_kepi import object_type_registry, find, register_type, logger
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -301,7 +301,7 @@ class Activity(models.Model):
         """
         if self.f_type=='Accept':
 
-            referent = resolve(
+            referent = find(
                 identifier=self.f_object,
                 f_type='Follow',
                 )
@@ -312,7 +312,7 @@ class Activity(models.Model):
 
         elif self.f_type=='Reject':
 
-            referent = resolve(
+            referent = find(
                 identifier=self.f_object,
                 f_type='Follow',
                 )
@@ -329,11 +329,11 @@ class Activity(models.Model):
             register_type(t, cls)
 
     @classmethod
-    def find_activity(cls, url):
+    def activity_find(cls, url):
         return cls.objects.get(identifier=url)
 
     @classmethod
-    def activitypub_create(cls, fields):
+    def activity_create(cls, fields):
         return cls.create(value, local=False)
 
     @classmethod
@@ -410,7 +410,7 @@ class Activity(models.Model):
 
             obj_id, obj_type = _object_to_id_and_type(value[fieldname])
 
-            referent = resolve(
+            referent = find(
                 identifier=obj_id,
                 f_type=obj_type,
                 )
@@ -418,7 +418,7 @@ class Activity(models.Model):
             if referent is None:
 
                 # oh, weird. Maybe they got the type wrong.
-                referent = resolve(
+                referent = find(
                     identifier=obj_id,
                     f_type=None,
                     )

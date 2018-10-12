@@ -8,7 +8,7 @@ class ThingUserCollection(CollectionView):
         return ThingUser.objects.all()
 
     def _stringify_object(self, obj):
-        return obj.activity
+        return obj.activity_form
 
 class ThingUserFollowingView(CollectionView):
 

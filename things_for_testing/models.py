@@ -20,7 +20,7 @@ class ThingUser(models.Model):
         return '[ThingUser {}]'.format(self.name)
 
     @property
-    def activity(self):
+    def activity_form(self):
 
         if self.name=='Queen Anne':
             raise TombstoneException(original_type=self.activity_type)
@@ -46,7 +46,7 @@ class ThingUser(models.Model):
                     )
 
     @classmethod
-    def find_activity(cls, url):
+    def activity_find(cls, url):
         PREFIX = "https://example.com/user/"
 
         if url.startswith(PREFIX):
@@ -57,7 +57,7 @@ class ThingUser(models.Model):
         return cls.objects.get(name=name)
 
     @classmethod
-    def activitypub_create(cls, fields):
+    def activity_create(cls, fields):
         result = cls(
             name=fields['id'],
             remote=True,
@@ -75,7 +75,8 @@ class ThingArticle(models.Model):
     remote_url = models.URLField(max_length=256,
             null=True, default=None)
 
-    def serialize(self):
+    @property
+    def activity_form(self):
         return {
                 'id': self.activity_id,
                 'type': 'Article',
@@ -89,23 +90,7 @@ class ThingArticle(models.Model):
                 )
 
     @classmethod
-    def activity_create(cls, type_name, actor, fields):
-        pass
-
-    @classmethod
-    def activity_update(cls, type_name, actor, fields, partial):
-        pass
-
-    @classmethod
-    def activity_delete(cls, type_name, actor):
-        pass
-
-    @classmethod
-    def activity_like(cls, type_name, actor, fobject):
-        pass
-
-    @classmethod
-    def find_activity(cls, url):
+    def activity_find(cls, url):
         PREFIX = "https://articles.example.com/"
         if url.startswith(PREFIX):
             title = url[len(PREFIX):]
@@ -114,7 +99,7 @@ class ThingArticle(models.Model):
             return cls.objects.get(remote_url=url)
 
     @classmethod
-    def activitypub_create(cls, fields):
+    def activity_create(cls, fields):
         result = cls(
             remote_url=fields['id'],
             title=fields['title'],

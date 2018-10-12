@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.models import Activity, QuarantinedMessage, QuarantinedMessageNeeds
-from django_kepi import create, resolve, logger
+from django_kepi import create, logger
 from things_for_testing import KepiTestCase
 import logging
 import httpretty

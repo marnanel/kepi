@@ -41,7 +41,7 @@ object_type_registry = {
 def register_type(f_type, handler):
     object_type_registry[f_type] = handler
 
-def resolve(identifier, f_type=None):
+def find(identifier, f_type=None):
 
     if f_type is None:
         f_type = object_type_registry.keys()
@@ -56,7 +56,7 @@ def resolve(identifier, f_type=None):
         cls = object_type_registry[t]
 
         try:
-            result = cls.find_activity(url=identifier)
+            result = cls.activity_find(url=identifier)
         except cls.DoesNotExist:
             result = None
 
@@ -77,7 +77,7 @@ def create(fields):
 
     cls = object_type_registry[t]
 
-    result = cls.activitypub_create(fields)
+    result = cls.activity_create(fields)
 
     return result
 
@@ -86,10 +86,10 @@ class TombstoneException(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-        self.activity = kwargs.copy()
-        self.activity['type'] = 'Tombstone'
+        self.activity_form = kwargs.copy()
+        self.activity_form['type'] = 'Tombstone'
 
     def __str__(self):
-        return str(self.activity)
+        return str(self.activity_form)
 
 
