@@ -29,7 +29,7 @@ def fetch(
         response = requests.post(
                 result_url,
                 params={
-                    'success': fetch.status_code==200,
+                    'success': int(fetch.status_code==200),
                     'uuid': result_id,
                     },
                 data=fetch.text,
