@@ -39,26 +39,29 @@ CELERY = {
         'task_ignore_result': True,
         }
 
-DEBUG = False
+LOGGING = {
 
-if DEBUG:
-    LOGGING = {
-
-            'version': 1,
-            'disable_existing_loggers': False,
-            'handlers': {
-                'console': {
-                    'level': 'DEBUG',
-                    'class': 'logging.StreamHandler',
-                    },
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'require_debug_true': {
+                '()': 'django.utils.log.RequireDebugTrue',
                 },
-            'loggers': {
-                'django_kepi': {
-                    'handlers': ['console'],
-                    'level': 'DEBUG',
-                    },
+            },
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'filters': ['require_debug_true'],
+                'class': 'logging.StreamHandler',
                 },
-            }
+            },
+        'loggers': {
+            'django_kepi': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                },
+            },
+        }
 
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 
