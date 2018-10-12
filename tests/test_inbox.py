@@ -33,6 +33,7 @@ class TestInbox(KepiTestCase):
         self.assertTrue(
                 QuarantinedMessage.objects.filter(username='alice').exists())
 
+    @httpretty.activate
     def test_shared_post(self):
 
         HUMAN_URL = 'https://users.example.net/mary'
@@ -70,13 +71,8 @@ class TestInbox(KepiTestCase):
         self.assertFalse(
                 QuarantinedMessage.objects.all().exists())
 
+    @httpretty.activate
     def test_malformed_json(self):
-
-        # XXX There seems to be a state problem. At present
-        # this test fails even if it's identical to test_shared_post().
-        # So while we work that out, it *is* identical.
-        self.test_shared_post()
-        return
 
         HUMAN_URL = 'https://users.example.com/my-dame'
         ANIMAL_URL = 'https://animals.example.com/a-lame-tame-crane'
