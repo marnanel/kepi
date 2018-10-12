@@ -4,6 +4,7 @@ from things_for_testing.models import ThingUser
 from things_for_testing.views import ThingUserCollection
 import datetime
 import json
+from django_kepi import logger
 
 EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json'
