@@ -55,11 +55,6 @@ class TestAsyncResult(KepiTestCase):
         self.assertFalse(
                 QuarantinedMessageNeeds.objects.filter(needs_to_fetch=ARTICLE_URL).exists())
 
-        self.assertIsNone(
-                resolve(
-                    identifier=ARTICLE_URL,
-                    ))
-
     @httpretty.activate
     def test_partial(self):
         
