@@ -434,7 +434,7 @@ class Activity(models.Model):
             logger.debug('Unresolved references: %s', str(unresolved_references))
 
             if from_message is None:
-                logger.warn('Unresolved references in Activity with no parent message: %s',
+                logger.info('Unresolved references in Activity with no parent message: %s',
                         str(unresolved_references))
                 return None
             else:
