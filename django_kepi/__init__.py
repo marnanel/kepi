@@ -1,11 +1,12 @@
 __title__ = 'django_kepi'
-__version__ = '0.0.18'
+__version__ = '0.0.19'
 VERSION = __version__
 __author__ = 'Marnanel Thurman'
 __license__ = 'GPL-2'
 __copyright__ = 'Copyright (c) 2018 Marnanel Thurman'
 
 import logging
+from collections import defaultdict
 
 # XXX this is mastodon-specific; it will be generalised later
 ATSIGN_CONTEXT = [
@@ -35,14 +36,13 @@ ATSIGN_CONTEXT = [
 
 logger = logging.Logger('django_kepi')
 
-object_type_registry = {
-        }
+object_type_registry = defaultdict(list)
 
 def register_type(f_type, handler):
-    object_type_registry[f_type] = handler
+    object_type_registry[f_type].append(handler)
 
 # Decorator
-def activity_type(f_type):
+def implements_activity_type(f_type):
     def register(cls):
         register_type(f_type, cls)
         return cls
@@ -60,15 +60,14 @@ def find(identifier, f_type=None):
         if t not in object_type_registry:
             continue
 
-        cls = object_type_registry[t]
+        for cls in object_type_registry[t]:
+            try:
+                result = cls.activity_find(url=identifier)
+            except cls.DoesNotExist:
+                result = None
 
-        try:
-            result = cls.activity_find(url=identifier)
-        except cls.DoesNotExist:
-            result = None
-
-        if result is not None:
-            return result
+            if result is not None:
+                return result
 
     return None
 
@@ -82,9 +81,8 @@ def create(fields):
     if t not in object_type_registry:
         raise ValueError('type {} is unknown'.format(t,))
 
-    cls = object_type_registry[t]
-
-    result = cls.activity_create(fields)
+    for cls in object_type_registry[t]:
+        result = cls.activity_create(fields)
 
     return result
 

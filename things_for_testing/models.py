@@ -1,9 +1,9 @@
 from django.db import models
-from django_kepi import activity_type, TombstoneException
+from django_kepi import implements_activity_type, TombstoneException
 from django_kepi import models as kepi_models
 from django_kepi import logger
 
-@activity_type('Person')
+@implements_activity_type('Person')
 class ThingUser(models.Model):
 
     name = models.CharField(max_length=256)
@@ -24,17 +24,17 @@ class ThingUser(models.Model):
     def activity_form(self):
 
         if self.name=='Queen Anne':
-            raise TombstoneException(original_type=self.activity_type)
+            raise TombstoneException(original_type=self.implements_activity_type)
 
         return {
                 'id': self.activity_id,
-                'type': self.activity_type,
+                'type': self.implements_activity_type,
                 'name': self.name,
                 'favourite_colour': self.favourite_colour,
                 }
 
     @property
-    def activity_type(self):
+    def implements_activity_type(self):
         return 'Person'
 
     @property
@@ -66,7 +66,7 @@ class ThingUser(models.Model):
         result.save()
         return result
 
-@activity_type('Article')
+@implements_activity_type('Article')
 class ThingArticle(models.Model):
 
     title = models.CharField(max_length=256)
