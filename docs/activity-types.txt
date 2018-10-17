@@ -1,0 +1,99 @@
+We will have to parse the @context of incoming messages properly.
+
+When other libraries call django_kepi.take(), they pass a dict
+of the same format as would be received from a client.
+
+"Addressing fields" are to, bto, cc, bcc, and audience.
+
+== From django_kepi.take()
+
+"attributedTo" and "type" must be set.
+Check blocking, and reject if they're blocked.
+Strip the "id" and generate our own.
+Store Activity (which will add it to the user's outbox.
+Perform side-effects.
+Perform delivery.
+
+== From client
+
+If the type is a valid ActivityStreams type but not an Activity, wrap it in a Create activity before continuing.
+Check blocking, and reject if they're blocked.
+Strip the "id" and generate our own.
+Return 201 Created, Location: (our id).
+Set "attributedTo" to the client's ID.
+Store Activity (which will add it to the user's outbox.
+Perform side-effects.
+Perform delivery.
+
+== From server
+
+Check blocking, and reject if they're blocked.
+Store Activity.
+Perform side-effects.
+Forward, if necessary.
+
+===== Delivery
+
+...
+
+===== Blocking
+
+...
+
+===== Side-effects
+
+== Create
+
+The new object is in "object".
+Copy the addressing fields from the Activity to the object, and vice versa.
+Send the object to the activity_create class method of each of the delegates listed. If any returns None,
+  go on to the next one. If they all return None, we have to reject the activity.
+  When a delegate returns non-None, that's the id of the object.
+
+== Update
+
+Find the object listed in "object" -> "id".
+Call that object's activity_update method. Pass partial=False from server, partial=True (the default) from client.
+In either case, don't pass in the "id" field.
+
+== Delete
+
+Find the object listed in "object" -> "id".
+Call that object's activity_delete method.
+
+== Follow
+
+...
+
+== Accept
+
+...
+
+== Reject
+
+...
+
+== Like
+
+Find the object listed in "object" -> "id".
+Call that object's activity_liked method, if it exists.
+
+== Block
+
+From client: no immediate side-effect. From server: reject.
+
+== Announce
+
+From client: XXX what?
+
+From server:
+  Find the object listed in "object" -> "id".
+  Call that object's activity_shared method, if it exists.
+
+===== Models
+
+== Activity
+
+== Tombstone
+
+If a django_kepi.find() finds no response, we check Tombstone. Records found therein are returned with 410 Gone.
