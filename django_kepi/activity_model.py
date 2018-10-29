@@ -73,6 +73,7 @@ class Activity(models.Model):
 
     CREATE='C'
     UPDATE='U'
+    PARTIAL_UPDATE='P'
     DELETE='D'
     FOLLOW='F'
     ADD='+'
@@ -85,6 +86,7 @@ class Activity(models.Model):
     ACTIVITY_TYPE_CHOICES = (
             (CREATE, 'Create'),
             (UPDATE, 'Update'),
+            (PARTIAL_UPDATE, 'p Update'),
             (DELETE, 'Delete'),
             (FOLLOW, 'Follow'),
             (ADD, 'Add'),
@@ -130,9 +132,14 @@ class Activity(models.Model):
             default=True,
             )
 
-    accepted = models.BooleanField(
+    pending = models.BooleanField(
             default=False,
             )
+
+    source = models.CharField(
+            max_length=255,
+            null=True,
+            default=None)
 
     # XXX Updates from clients are partial,
     # but updates from remote sites are total.
@@ -162,7 +169,7 @@ class Activity(models.Model):
         return self.f_type
 
     @property
-    def activity(self):
+    def activity_form(self):
         result = {
             'id': self.identifier,
             'f_type': self.get_f_type_display(),
@@ -177,8 +184,6 @@ class Activity(models.Model):
             value = getattr(self, fieldname)
             if value is not None:
                 result[optional] = value
-
-        # XXX should we mark "inactive" somehow?
 
         return result
 
@@ -196,35 +201,66 @@ class Activity(models.Model):
             'Reject': (True,  True,   False),
             }
 
-    def deploy(self):
-        """
-        Some kinds of Activity have side-effects
-        when they're created. This method carries out
-        those side-effects.
-        """
+    def send_notifications(self):
+        recipients = set()
+
         if self.f_type=='Accept':
-
-            referent = find(
-                identifier=self.f_object,
-                f_type='Follow',
-                )
-
-            if referent is not None:
-                referent.accepted = True
-                referent.save()
-
+            # XXX This gets complicated;
+            # f_object should have been resolved to an Activity by now!
+            recipients.add(self.f_object)
+        elif self.f_type=='Add':
+            # This is used for pinning a status,
+            # but that's not something we're supporting
+            # in the first version.
+            #
+            # XXX When we *do* support it, this will
+            # require checking that the actor has the
+            # right to update that collection (but we'll
+            # only support the "featured" collection
+            # listed in their own profile), fetching
+            # the listed status if we don't already have it,
+            # and setting that to be the pinned status of
+            # their account.
+            pass
+        elif self.f_type=='Announce':
+            # XXX if f_object is remote,
+            # ensure we have it, and fetch if not.
+            # If f_object is local,
+            # notify it.
+            pass
+        elif self.f_type=='Block':
+            # Nobody gets notified about blocks
+            pass
+        elif self.f_type=='Create':
+            # XXX this is very complicated
+            pass
+        elif self.f_type=='Delete':
+            # XXX
+            pass
+        elif self.f_type=='Follow':
+            # XXX if the user is one of ours, and they
+            # auto-accept, and they're not already following...
+            pass
+        elif self.f_type=='Like':
+            recipients.add(self.f_object)
         elif self.f_type=='Reject':
+            # XXX This gets complicated;
+            # f_object should have been resolved to an Activity by now!
+            recipients.add(self.f_object)
+        elif self.f_type=='Remove':
+            # see comment for 'Add'
+            pass
+        elif self.f_type=='Undo':
+            # XXX
+            pass
+        elif self.f_type=='Update':
+            # XXX
+            pass
 
-            referent = find(
-                identifier=self.f_object,
-                f_type='Follow',
-                )
 
-            if referent is not None:
-                referent.accepted = False
-                referent.active = False
-                referent.save()
 
+        for recipient in recipients:
+            recipient.activity_notified(self)
 
     @classmethod
     def register_all_activity_types(cls):
@@ -241,15 +277,14 @@ class Activity(models.Model):
 
     @classmethod
     def create(cls, value,
-            local=False,
-            from_message=None):
+            sender=None):
 
         logger.debug('Creating Activity from %s', str(value))
 
         if 'type' not in value:
             raise ValueError("Activities must have a type")
 
-        if 'id' not in value and not local:
+        if 'id' not in value and sender is not None:
             raise ValueError("Remote activities must have an id")
 
         fields = {
@@ -291,69 +326,9 @@ class Activity(models.Model):
                         value['type'],
                         we_have, we_need))
 
-        # TODO: Sometimes an incoming Activity is trustworthy in
-        # telling us about a remote object. At present, for
-        # simplicity, we don't trust anybody. If we don't have
-        # the object in the cache, we must fetch it.
-
-        # In each case, the field is either specified as
-        # a Link or as an Object. If it's a Link, it will
-        # consist of a single string, which is our URL.
-        # If it's an Object, it will be a dict whose 'id'
-        # field is our URL.
-
-        unresolved_references = set()
-
-        for fieldname in ('actor', 'object', 'target'):
-
-            if fieldname not in value:
-                # if it's not there, it's not supposed to be there:
-                # we checked for that earlier.
-                continue
-
-            obj_id, obj_type = _object_to_id_and_type(value[fieldname])
-
-            referent = find(
-                identifier=obj_id,
-                f_type=obj_type,
-                )
-
-            if referent is None:
-
-                # oh, weird. Maybe they got the type wrong.
-                referent = find(
-                    identifier=obj_id,
-                    f_type=None,
-                    )
-
-                if referent is None:
-                    unresolved_references.add(obj_id)
-
-            # okay, we can let them use it
-
-            fields['f_'+fieldname] = obj_id
-
-        if unresolved_references:
-            logger.debug('Unresolved references: %s', str(unresolved_references))
-
-            if from_message is None:
-                logger.info('Unresolved references in Activity with no parent message: %s',
-                        str(unresolved_references))
-                return None
-            else:
-                for need in unresolved_references:
-                    qmn = QuarantinedMessageNeeds(
-                            message=from_message,
-                            needs_to_fetch=need,
-                            )
-                    qmn.save()
-                    logger.info('  -- %s', qmn)
-                    qmn.start_looking()
-                return None
-     
         result = cls(**fields)
         result.save()
-        result.deploy()
+        result.send_notifications()
 
         return result
 

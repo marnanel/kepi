@@ -5,6 +5,10 @@ of the same format as would be received from a client.
 
 "Addressing fields" are to, bto, cc, bcc, and audience.
 
+Check what integration tests Mastodon runs for Activities.
+
+Is it reasonable to have multiple Activity-type handling classes representing a single object?
+
 == From django_kepi.take()
 
 "attributedTo" and "type" must be set.
@@ -13,6 +17,7 @@ Strip the "id" and generate our own.
 Store Activity (which will add it to the user's outbox.
 Perform side-effects.
 Perform delivery.
+Call activity_notify on relevant objects.
 
 == From client
 
@@ -24,6 +29,7 @@ Set "attributedTo" to the client's ID.
 Store Activity (which will add it to the user's outbox.
 Perform side-effects.
 Perform delivery.
+Call activity_notify on relevant objects.
 
 == From server
 
@@ -31,10 +37,26 @@ Check blocking, and reject if they're blocked.
 Store Activity.
 Perform side-effects.
 Forward, if necessary.
+Call activity_notify on relevant objects.
+
+== From background processing
+
+Check the UUID to see what to do.
+XXX What are the options?
+
+ - We wanted this file because it was referenced in an Activity
+    (such as is needed by the policy of trusting nobody)
+ - We wanted this file because it describes the target of a particular delivery
+
+Note that we can't just deliver the moment we've found details of an Actor.
+If there are many of them, we might choose to deliver to their sharedInbox instead.
 
 ===== Delivery
 
-...
+Make a list of recipients: the union of "to", "bto", "cc", "bcc", and "audience".
+XXX We will really need caching here.
+XXX But cache the contents of collections according to the user requesting them.
+Also, delivery needs to be done as a background task.
 
 ===== Blocking
 
@@ -67,16 +89,15 @@ Call that object's activity_delete method.
 
 == Accept
 
-...
+If the activity linked in "object" is known, set its "followResult" to "accepted".
 
 == Reject
 
-...
+If the activity linked in "object" is known, set its "followResult" to "rejected".
 
 == Like
 
-Find the object listed in "object" -> "id".
-Call that object's activity_liked method, if it exists.
+none
 
 == Block
 
@@ -84,11 +105,34 @@ From client: no immediate side-effect. From server: reject.
 
 == Announce
 
-From client: XXX what?
+Can we get these from the client?
 
-From server:
-  Find the object listed in "object" -> "id".
-  Call that object's activity_shared method, if it exists.
+== Undo
+
+
+
+Activities we don't accept: Create, Delete, Add, and Remove.
+I don't know whether we can undo an Undo, but let's assume not.
+We don't accept undo for Update because we don't keep records of the previous state.
+
+== other
+
+Non-Activities that we can accept from a client:
+
+Article
+Audio
+Document
+Event
+Image
+Note
+Page
+Place
+Profile
+Relationship
+Tombstone
+Video
+
+Non-Activities from a server get rejected.
 
 ===== Models
 
@@ -97,3 +141,7 @@ From server:
 == Tombstone
 
 If a django_kepi.find() finds no response, we check Tombstone. Records found therein are returned with 410 Gone.
+
+== Following
+
+This is complicated enough to derive from the Activity objects that ...?
