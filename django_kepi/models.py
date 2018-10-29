@@ -12,6 +12,8 @@ import warnings
 import uuid
 
 from django_kepi.activity_model import *
+from django_kepi.cache_model import *
+from django_kepi.something_model import *
 
 #######################
 
@@ -114,6 +116,8 @@ class QuarantinedMessageNeeds(models.Model):
 
 __all__ = [
         'Activity',
+        'Cache',
+        'Person',
         'QuarantinedMessage',
         'QuarantinedMessageNeeds',
         'new_activity_identifier',

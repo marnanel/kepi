@@ -6,15 +6,12 @@ from django_kepi import logger
 @implements_activity_type('Person')
 class ThingUser(models.Model):
 
+    url = models.URLField(max_length=256)
     name = models.CharField(max_length=256)
 
     favourite_colour = models.CharField(
             max_length=256,
             default='chartreuse',
-            )
-
-    remote = models.BooleanField(
-            default=False,
             )
 
     def __str__(self):
@@ -27,7 +24,7 @@ class ThingUser(models.Model):
             raise TombstoneException(original_type=self.implements_activity_type)
 
         return {
-                'id': self.activity_id,
+                'id': self.url,
                 'type': self.implements_activity_type,
                 'name': self.name,
                 'favourite_colour': self.favourite_colour,
@@ -39,12 +36,7 @@ class ThingUser(models.Model):
 
     @property
     def activity_id(self):
-        if self.remote:
-            return self.name
-        else:
-            return 'https://example.com/user/{}'.format(
-                    self.name,
-                    )
+        return self.url
 
     @classmethod
     def activity_find(cls, url):
@@ -60,8 +52,8 @@ class ThingUser(models.Model):
     @classmethod
     def activity_create(cls, fields):
         result = cls(
+            url=fields['id'],
             name=fields['id'],
-            remote=True,
             )
         result.save()
         return result
