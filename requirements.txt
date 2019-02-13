@@ -6,3 +6,4 @@ requests-http-signature
 cryptography
 django-celery
 httpretty
+django-celery-results
