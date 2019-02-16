@@ -17,6 +17,21 @@ from django_kepi.something_model import *
 
 #######################
 
+class CachedText(models.Model):
+
+    key = models.UUIDField(
+            primary_key = True,
+            default = uuid.uuid4,
+            )
+
+    source = models.URLField()
+
+    contents = models.TextField()
+
+    # FIXME expiry datetime
+
+#######################
+
 class QuarantinedMessage(models.Model):
 
     username = models.CharField(
