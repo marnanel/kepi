@@ -24,9 +24,13 @@ class CachedText(models.Model):
             default = uuid.uuid4,
             )
 
-    source = models.URLField()
+    source = models.URLField(
+            )
 
-    contents = models.TextField()
+    contents = models.TextField(
+            default = None,
+            null = True,
+            )
 
     # FIXME expiry datetime
 

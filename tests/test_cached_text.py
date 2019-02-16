@@ -28,4 +28,29 @@ class TestCachedText(TestCase):
                     source = INCORRECT_URL,
                     )
 
+    def test_uuid_retrieve(self):
+
+        TEST_URL = "https://example.com/wombats"
+        TEST_CONTENTS = "Certainly wombats are interesting creatures"
+        
+        c1 = CachedText(
+                source = TEST_URL,
+                )
+        c1.save()
+        key = c1.key
+
+        self.assertEqual(
+                CachedText.objects.get(key=key).contents,
+                None,
+                )
+
+        c2 = CachedText.objects.get(key=key)
+        c2.contents = TEST_CONTENTS
+        c2.save()
+
+        self.assertEqual(
+                CachedText.objects.get(key=key).contents,
+                TEST_CONTENTS,
+                )
+
 
