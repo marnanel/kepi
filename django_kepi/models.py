@@ -77,7 +77,6 @@ class QuarantinedMessage(models.Model):
 
         activity = Activity.create(
                     value = value,
-                    local = False,
                     from_message = self,
                     )
     
@@ -134,10 +133,5 @@ class QuarantinedMessageNeeds(models.Model):
 #######################
 
 __all__ = [
-        'Activity',
-        'Cache',
-        'Person',
-        'QuarantinedMessage',
-        'QuarantinedMessageNeeds',
-        'new_activity_identifier',
+        'CachedText',
         ]
