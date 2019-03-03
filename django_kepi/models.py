@@ -133,5 +133,10 @@ class QuarantinedMessageNeeds(models.Model):
 #######################
 
 __all__ = [
-        'CachedText',
+        'Activity',
+        'Cache',
+        'Person',
+        'QuarantinedMessage',
+        'QuarantinedMessageNeeds',
+        'new_activity_identifier',
         ]

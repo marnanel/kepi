@@ -15,7 +15,12 @@ class TestActivity(TestCase):
         with self.assertRaisesMessage(ValueError, "Remote activities must have an id"):
             Activity.create({
                 "type": "Create",
-                })
+                "actor": "https://example.com/user/fred",
+                "object": {
+                    "type": "Article",
+                    },
+                },
+                sender="https://remote.example.com")
 
         with self.assertRaisesMessage(ValueError, "Wrong parameters for type"):
             Activity.create({
@@ -35,32 +40,3 @@ class TestActivity(TestCase):
                     "type": "Article",
                     }
                 })
-
-    def test_fetching(self):
-
-        test_activity = {
-                "id": "https://example.com/id/1",
-                "type": "Create",
-                "actor": "https://example.com/user/fred",
-                "object": {
-                    "id": "https://articles.example.com/bananas",
-                    "type": "Article",
-                    }
-                }
-
-        created = Activity.create(test_activity)
-        self.assertEqual(created, None)
-
-        fred = ThingUser(name="fred")
-        fred.save()
-
-        created = Activity.create(test_activity)
-        self.assertEqual(created, None)
-
-        article = ThingArticle(title="bananas")
-        article.save()
-
-        self.assertIsNotNone(
-            Activity.create(test_activity),
-            )
-
