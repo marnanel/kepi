@@ -30,13 +30,3 @@ class TestActivity(TestCase):
 
         fred = ThingUser(name="fred")
         fred.save()
-
-        with self.assertRaisesMessage(ValueError, "Explicit objects must have an id"):
-            Activity.create({
-                "id": "https://example.com/id/1",
-                "type": "Create",
-                "actor": "https://example.com/user/fred",
-                "object": {
-                    "type": "Article",
-                    }
-                })
