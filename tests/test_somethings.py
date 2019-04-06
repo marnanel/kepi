@@ -14,6 +14,7 @@ class SomethingTests(TestCase):
         result.save()
         return result
 
+    # XXX these both fail
     def test_cached(self):
 
         self.add_to_cache({
