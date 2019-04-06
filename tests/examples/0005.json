@@ -1,0 +1,11 @@
+{
+    "Content-Type": "application/activity+json",
+    "Date": "Thu, 04 Apr 2019 21:56:54 GMT",
+    "Digest": "SHA-256=zHfMGRShxh71tVIn1nOycCLgjnV7r6pAwl7uygkkRkc=",
+    "Host": "marnanel.org",
+    "Signature": "keyId=\"https://queer.party/users/marnanel#main-key\",algorithm=\"rsa-sha256\",headers=\"(request-target) host date digest content-type\",signature=\"jIBYfh/W9wNF6zBJqKdC5PdX2mHGqUI8srIM3S7eI13sr5w+n2PUWCZXJX6wkt6QdCURt+sVNR0WLSQBCoyABVfLIcPpmAQWhbhItgF1xeRati/VryMISsDeDRV1a5ICx4ppnM0RBH9QHXX4zbESp7gfnY3URXAkT6qSICHC8jcBIN7eQrplOUhwnlUsX/q3xKuo/aJkhr3tNgHuuPi+IA434qjaJ/P2roM2PQ4PrlziMXlorNQYSv3vO1fkvcay+OdOhBxCruU3M/fJOj4+Ch/0AObzuNBp5Tm9idG0QkdbWzEpCfLpuFcZN/RYKY42NON26HTOnIfPOlgIM5rV4Q==\"",
+    "content": "{\"@context\":[\"https://www.w3.org/ns/activitystreams\",\"https://w3id.org/security/v1\",{\"manuallyApprovesFollowers\":\"as:manuallyApprovesFollowers\",\"sensitive\":\"as:sensitive\",\"movedTo\":{\"@id\":\"as:movedTo\",\"@type\":\"@id\"},\"alsoKnownAs\":{\"@id\":\"as:alsoKnownAs\",\"@type\":\"@id\"},\"Hashtag\":\"as:Hashtag\",\"ostatus\":\"http://ostatus.org#\",\"atomUri\":\"ostatus:atomUri\",\"inReplyToAtomUri\":\"ostatus:inReplyToAtomUri\",\"conversation\":\"ostatus:conversation\",\"toot\":\"http://joinmastodon.org/ns#\",\"Emoji\":\"toot:Emoji\",\"focalPoint\":{\"@container\":\"@list\",\"@id\":\"toot:focalPoint\"},\"featured\":{\"@id\":\"toot:featured\",\"@type\":\"@id\"},\"schema\":\"http://schema.org#\",\"PropertyValue\":\"schema:PropertyValue\",\"value\":\"schema:value\"}],\"id\":\"https://queer.party/32e5d556-9bb9-4cb7-a2a4-dd2b09ad73d9\",\"type\":\"Follow\",\"actor\":\"https://queer.party/users/marnanel\",\"object\":\"https://marnanel.org/users/marnanel\"}",
+    "keyFilename": "keys/marnanel.pem",
+    "keyId": "https://queer.party/users/marnanel",
+    "url": "/inbox"
+}
