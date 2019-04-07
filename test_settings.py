@@ -33,6 +33,11 @@ DATABASES = {
 
 SECRET_KEY = "secret_key_for_testing"
 
+ALLOWED_HOSTS = [
+        'altair.example.com',
+        'sirius.example.com',
+        ]
+
 ROOT_URLCONF = 'test_urls'
 
 CELERY = {

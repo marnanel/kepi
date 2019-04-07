@@ -14,6 +14,7 @@ import uuid
 from django_kepi.activity_model import *
 from django_kepi.cache_model import *
 from django_kepi.something_model import *
+from django_kepi.validation import *
 
 #######################
 
