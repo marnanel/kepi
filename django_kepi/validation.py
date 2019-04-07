@@ -6,7 +6,7 @@ from django.conf import settings
 from urllib.parse import urlparse
 from django_kepi import find
 
-logger = logging.Logger(name='django_kepi.validation')
+logger = logging.getLogger(name='django_kepi')
 
 # When we receive a message, M, in an inbox, we call validate(M).
 #
@@ -102,7 +102,7 @@ class IncomingMessage(models.Model):
     waiting_for = models.URLField(default=None)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
     @property
     def fields(self):
