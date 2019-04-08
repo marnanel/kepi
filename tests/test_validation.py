@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.db.models.query import QuerySet
 from django_kepi.models import IncomingMessage, validate
 from unittest.mock import patch
 import django_kepi.validation
@@ -19,8 +20,13 @@ def _test_message():
 class TestValidation(TestCase):
 
     @patch('django_kepi.validation._kick_off_background_fetch')
-    def test_local_lookup(self, mock_fetch):
+    @patch('django_kepi.validation.CachedPublicKey.objects.get')
+    def test_local_lookup(self, mock_key_get, mock_fetch):
+        
+        mock_key_get.return_value = None
+
         message = _test_message()
         validate(message)
         mock_fetch.assert_called_once_with('https://queer.party/users/marnanel')
+        mock_key_get.assert_called_once_with(owner='https://queer.party/users/marnanel')
 
