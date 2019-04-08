@@ -1,5 +1,7 @@
 from django.test import TestCase
 from django_kepi.models import IncomingMessage, validate
+from unittest.mock import patch
+import django_kepi.validation
 
 def _test_message():
     result = IncomingMessage(
@@ -16,7 +18,9 @@ def _test_message():
 
 class TestValidation(TestCase):
 
-    def test_local_lookup(self):
+    @patch('django_kepi.validation._kick_off_background_fetch')
+    def test_local_lookup(self, mock_fetch):
         message = _test_message()
         validate(message)
+        mock_fetch.assert_called_once_with('https://queer.party/users/marnanel')
 
