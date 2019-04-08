@@ -34,7 +34,7 @@ ATSIGN_CONTEXT = [
             }
         ]
 
-logger = logging.Logger('django_kepi')
+logger = logging.Logger(name='django_kepi')
 
 object_type_registry = defaultdict(list)
 
@@ -67,22 +67,29 @@ def find(identifier, f_type=None):
                 result = None
 
             if result is not None:
+                logger.debug('find: %s(%s)==%s', identifier, str(f_type),
+                        result)
                 return result
 
+    logger.debug('find: %s(%s) was not found', identifier, str(f_type))
     return None
 
 def create(fields):
 
     if 'type' not in fields:
+        logger.debug('create: no "type" in %s', str(fields))
         raise ValueError('objects must have a type')
 
     t = fields['type']
 
     if t not in object_type_registry:
+        logger.debug('create: unknown "type" in %s', str(fields))
         raise ValueError('type {} is unknown'.format(t,))
 
+    logger.debug('create: for %s...', str(fields))
     for cls in object_type_registry[t]:
         result = cls.activity_create(fields)
+        logger.debug('    ...created %s', str(result))
 
     return result
 
