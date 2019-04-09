@@ -5,6 +5,7 @@ import uuid
 from django.conf import settings
 from urllib.parse import urlparse
 from django_kepi import find
+from httpsig.verify import HeaderVerifier
 
 logger = logging.getLogger(name='django_kepi')
 
