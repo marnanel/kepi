@@ -34,6 +34,7 @@ INBOX_HOST = 'europa.example.com'
 INBOX_PATH = '/inbox'
 
 REMOTE_FRED = 'https://remote.example.org/users/fred'
+REMOTE_JIM = 'https://remote.example.org/users/jim'
 
 LOCAL_ALICE = 'https://altair.example.com/alice'
 LOCAL_BOB = 'https://altair.example.com/bob'
@@ -109,10 +110,11 @@ class TestValidation(TestCase):
         mock_fetch.assert_not_called()
         mock_key_get.assert_not_called()
 
-    def test_remote_lookup(self, mock_key_get, mock_fetch, mock_find):
+    def test_remote_user_known(self, mock_key_get, mock_fetch, mock_find):
 
-        keys = json.load(open('tests/keys/keys-0000.json', 'r'))
-        mock_key_get.return_value = None
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        mock_key_get.return_value = django_kepi.validation.CachedPublicKey(
+                key=keys['public'])
 
         message = _test_message(
                 f_id=ACTIVITY_ID,
@@ -124,6 +126,62 @@ class TestValidation(TestCase):
         validate(message)
 
         mock_find.assert_not_called()
-        mock_fetch.assert_called_once_with(REMOTE_FRED)
+        mock_fetch.assert_not_called()
         mock_key_get.assert_called_once_with(owner=REMOTE_FRED)
+
+    def test_remote_user_gone(self, mock_key_get, mock_fetch, mock_find):
+
+        keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+        mock_key_get.return_value = django_kepi.validation.CachedPublicKey(
+                key=None)
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_JIM,
+                f_object=LOCAL_ALICE,
+                secret = keys['private'],
+                )
+        validate(message)
+
+        mock_find.assert_not_called()
+        mock_fetch.assert_not_called()
+        mock_key_get.assert_called_once_with(owner=REMOTE_JIM)
+
+    def test_remote_user_spoofed(self, mock_key_get, mock_fetch, mock_find):
+
+        keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+        mock_key_get.return_value = None
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_JIM,
+                f_object=LOCAL_ALICE,
+                secret = keys['private'],
+                key_id = REMOTE_FRED+'#main-key',
+                )
+        validate(message)
+
+        mock_find.assert_not_called()
+        mock_fetch.assert_not_called()
+        mock_key_get.assert_not_called()
+
+    def test_remote_user_unknown(self, mock_key_get, mock_fetch, mock_find):
+
+        keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+        mock_key_get.return_value = None
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_JIM,
+                f_object=LOCAL_ALICE,
+                secret = keys['private'],
+                )
+        validate(message)
+
+        mock_find.assert_not_called()
+        mock_fetch.assert_called_once_with(REMOTE_JIM)
+        mock_key_get.assert_called_once_with(owner=REMOTE_JIM)
 

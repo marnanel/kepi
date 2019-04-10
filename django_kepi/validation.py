@@ -171,6 +171,12 @@ def validate(message,
         _do_validation(message, key)
         return
 
+    if not _obviously_belongs_to(actor, key_id):
+        logger.info('%s: key_id %s is not obviously owned by '+\
+                'actor %s; dropping message',
+                message, key_id, actor)
+        return
+
     try:
         remote_key = CachedPublicKey.objects.get(owner=actor)
     except CachedPublicKey.DoesNotExist:
@@ -186,13 +192,7 @@ def validate(message,
             return
 
         logger.debug('%s: we have the remote key', message)
-        _do_validation(message, remote_key)
-        return
-
-    if not _obviously_belongs_to(actor, key_id):
-        logger.info('%s: key_id %s is not obviously owned by '+\
-                'actor %s; dropping message',
-                message, key_id, actor)
+        _do_validation(message, remote_key.key)
         return
 
     logger.debug('%s: we don\'t have the key', message)
