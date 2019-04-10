@@ -95,6 +95,7 @@ class IncomingMessage(models.Model):
     date = models.CharField(max_length=255, default='')
     digest = models.CharField(max_length=255, default='')
     host = models.CharField(max_length=255, default='')
+    path = models.CharField(max_length=255, default='')
     signature = models.CharField(max_length=255, default='')
     body = models.TextField(default='')
     actor = models.CharField(max_length=255, default='')
@@ -123,11 +124,15 @@ def _do_validation(message, key):
     logger.debug('%s: running actual validation', message)
     fields = message.fields
     hv = HeaderVerifier(
-            headers = fields,
+            headers = {
+                'Content-Type': message.content_type,
+                'Date': message.date,
+                'Signature': message.signature,
+                },
             secret = key,
             method = 'POST',
-            path = fields['url'],
-            host = fields['Host'],
+            path = message.path,
+            host = message.host,
             sign_header = 'Signature',
         )
 
@@ -147,6 +152,8 @@ def validate(message,
 
     logger.debug('%s: begin validation; key_id is %s',
             message, key_id)
+    logger.debug('%s: message signature is: %s',
+            message, message.signature)
     logger.debug('%s: message body is: %s',
             message, message.body)
 

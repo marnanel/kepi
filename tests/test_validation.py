@@ -3,7 +3,7 @@ import httpsig
 from django.test import TestCase
 from django.db.models.query import QuerySet
 from django_kepi.models import IncomingMessage, validate
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import django_kepi.validation
 
 MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
@@ -29,15 +29,25 @@ MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
             "PropertyValue":"schema:PropertyValue",
             "value":"schema:value"}]
 
+ACTIVITY_ID = "https://example.com/04b065f8-81c4-408e-bec3-9fb1f7c06408",
+INBOX_HOST = 'europa.example.com'
+INBOX_PATH = '/inbox'
+
+REMOTE_FRED = 'https://remote.example.org/users/fred'
+
+LOCAL_ALICE = 'https://altair.example.com/alice'
+LOCAL_BOB = 'https://altair.example.com/bob'
+
 def _test_message(secret='', **fields):
 
     body = dict([(f[2:],v) for f,v in fields.items() if f.startswith('f_')])
     body['@context'] = MESSAGE_CONTEXT
+    body['Host'] = INBOX_HOST
 
     headers = {
             'content-type': "application/activity+json",
             'date': "Thu, 04 Apr 2019 21:12:11 GMT",
-            'host': "europa.example.org",
+            'host': INBOX_HOST,
             }
 
     if 'key_id' in fields:
@@ -55,7 +65,7 @@ def _test_message(secret='', **fields):
     headers = signer.sign(
             headers,
             method='POST',
-            path='/inbox',
+            path=INBOX_PATH,
             )
 
     SIGNATURE = 'Signature'
@@ -67,30 +77,53 @@ def _test_message(secret='', **fields):
             date = headers['date'],
             digest = '', # FIXME ???
             host = headers['host'],
+            path = INBOX_PATH,
             signature = headers['Signature'],
             body = json.dumps(body, sort_keys=True),
             actor = body['actor'],
             key_id = key_id,
             )
 
+@patch('django_kepi.validation.find')
+@patch('django_kepi.validation._kick_off_background_fetch')
+@patch('django_kepi.validation.CachedPublicKey.objects.get')
 class TestValidation(TestCase):
 
-    @patch('django_kepi.validation._kick_off_background_fetch')
-    @patch('django_kepi.validation.CachedPublicKey.objects.get')
-    def test_local_lookup(self, mock_key_get, mock_fetch):
+    def test_local_lookup(self, mock_key_get, mock_fetch, mock_find):
         
-        mock_key_get.return_value = None
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
+        mock_find.return_value = Mock()
+        mock_find.return_value.key = keys['public']
 
-        FRED = "https://remote.example.com/users/fred"
         message = _test_message(
-                f_id="https://queer.party/04b065f8-81c4-408e-bec3-9fb1f7c06408",
+                f_id=ACTIVITY_ID,
                 f_type="Follow",
-                f_actor=FRED,
-                f_object="https://local.example.org/users/alice",
+                f_actor=LOCAL_ALICE,
+                f_object=LOCAL_BOB,
+                secret = keys['private'],
+                )
+
+        validate(message)
+
+        mock_find.assert_called_once_with(LOCAL_ALICE, 'Actor')
+        mock_fetch.assert_not_called()
+        mock_key_get.assert_not_called()
+
+    def test_remote_lookup(self, mock_key_get, mock_fetch, mock_find):
+
+        keys = json.load(open('tests/keys/keys-0000.json', 'r'))
+        mock_key_get.return_value = None
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_FRED,
+                f_object=LOCAL_ALICE,
                 secret = keys['private'],
                 )
         validate(message)
-        mock_fetch.assert_called_once_with(FRED)
-        mock_key_get.assert_called_once_with(owner=FRED)
+
+        mock_find.assert_not_called()
+        mock_fetch.assert_called_once_with(REMOTE_FRED)
+        mock_key_get.assert_called_once_with(owner=REMOTE_FRED)
 
