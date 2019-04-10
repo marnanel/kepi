@@ -4,12 +4,12 @@ from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
-from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds
 from django.core.exceptions import ValidationError
 import logging
 import urllib.parse
 import json
 import re
+from collections import defaultdict
 
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
@@ -142,19 +142,22 @@ class InboxView(django.views.View):
 
         # username is None for the shared inbox.
 
-        logger.debug('Received: message %s at inbox for %s',
-                str(request.body, encoding='UTF-8'),
-                name)
-        capture = QuarantinedMessage(
-                username = name,
+        headers = defaultdict(lambda anything: None,
+                [(f[5:],v) for f,v in request.META.items() if f.startswith("HTTP_")])
+
+        capture = IncomingMessage(
+                date = headers['DATE'],
+                host = headers[''],
+                path = request.path,
+                signature = headers['SIGNATURE'],
                 body = str(request.body, encoding='UTF-8'),
-                headers = '\n'.join(
-                    ["%s: %s" for (f,v) in request.META.items() if f.startswith("HTTP_")],
-                    ),
                 )
         capture.save()
-
-        capture.deploy(retrying=False)
+        logger.debug('%s: received %s at %s',
+                capture,
+                str(request.body, encoding='UTF-8'),
+                request.path,
+                )
 
         return HttpResponse(
                 status = 200,
