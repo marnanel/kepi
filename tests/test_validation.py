@@ -81,8 +81,6 @@ def _test_message(secret='', **fields):
             path = INBOX_PATH,
             signature = headers['Signature'],
             body = json.dumps(body, sort_keys=True),
-            actor = body['actor'],
-            key_id = key_id,
             )
 
 @patch('django_kepi.validation.find')

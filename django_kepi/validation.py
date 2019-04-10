@@ -2,6 +2,7 @@ from django.db import models
 import logging
 import json
 import uuid
+import re
 from django.conf import settings
 from urllib.parse import urlparse
 from django_kepi import find
@@ -103,6 +104,14 @@ class IncomingMessage(models.Model):
 
     waiting_for = models.URLField(default=None)
 
+    @property
+    def actor(self):
+        return self.fields['actor']
+
+    @property
+    def key_id(self):
+        return re.findall(r'keyId="([^"]*)"', self.signature)[0]
+
     def __str__(self):
         return str(self.id)
 
@@ -158,7 +167,7 @@ def validate(message,
             message, message.body)
 
     if is_local_user(actor):
-        logger.debug('%s: actor is local', message)
+        logger.debug('%s: actor %s is local', message, actor)
 
         local_user = find(actor, 'Actor')
 
