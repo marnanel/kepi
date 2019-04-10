@@ -1,5 +1,5 @@
-from django_kepi import ATSIGN_CONTEXT, create
-from django_kepi import create as kepi_create, logger
+from django_kepi import ATSIGN_CONTEXT, create as kepi_create
+from django_kepi.validation import IncomingMessage
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
@@ -10,6 +10,8 @@ import urllib.parse
 import json
 import re
 from collections import defaultdict
+
+logger = logging.getLogger(name='django_kepi')
 
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
@@ -142,7 +144,7 @@ class InboxView(django.views.View):
 
         # username is None for the shared inbox.
 
-        headers = defaultdict(lambda anything: None,
+        headers = defaultdict(lambda: '',
                 [(f[5:],v) for f,v in request.META.items() if f.startswith("HTTP_")])
 
         capture = IncomingMessage(

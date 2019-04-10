@@ -102,7 +102,7 @@ class IncomingMessage(models.Model):
     actor = models.CharField(max_length=255, default='')
     key_id = models.CharField(max_length=255, default='')
 
-    waiting_for = models.URLField(default=None)
+    waiting_for = models.URLField(default=None, null=True)
 
     @property
     def actor(self):

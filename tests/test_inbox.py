@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.views import InboxView
-from django_kepi.models import QuarantinedMessage, QuarantinedMessageNeeds, Activity
+from django_kepi.models import Activity
 from things_for_testing.models import ThingArticle, ThingUser
 from things_for_testing import KepiTestCase
 import json
