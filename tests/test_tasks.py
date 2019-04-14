@@ -1,12 +1,25 @@
 from django.test import TestCase, Client
-from django_kepi.models import Activity, QuarantinedMessage, QuarantinedMessageNeeds
+from django_kepi.models import Activity
+from django_kepi.validation import CachedPublicKey, IncomingMessage
 from django_kepi import create
 from things_for_testing import KepiTestCase
 import logging
 import httpretty
 import json
 
-class TestAsyncResult(KepiTestCase):
+#########################
+# Cases:
+#    - Request information; success
+#    - Request information; not found
+#    - Request information; GONE
+#    - Submit information; success
+#    - Submit information; fail
+#
+#########################
+
+logger = logging.getLogger(name='django_kepi')
+
+class TestTasks(KepiTestCase):
 
     @httpretty.activate
     def test_simple(self):

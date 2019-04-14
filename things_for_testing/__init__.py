@@ -11,17 +11,8 @@ class KepiTestCase(TestCase):
     def _mock_remote_object(self,
             url,
             ftype = 'Object',
-            fields = None,
+            content = '',
             status = 200):
-
-        if fields is None:
-            fields = {}
-
-        if 'id' not in fields:
-            fields['id'] = url
-
-        if 'type' not in fields:
-            fields['type'] = ftype
 
         headers = {
                 'Content-Type': 'application/activity+json',
@@ -32,12 +23,12 @@ class KepiTestCase(TestCase):
                 url,
                 status=status,
                 headers=headers,
-                body=bytes(str(fields), encoding='UTF-8'))
+                body=bytes(content, encoding='UTF-8'))
 
         logger.debug('Mocking %s as %d: %s',
                 url,
                 status,
-                fields)
+                content)
 
         # For some reason, this allows Celery to
         # access /async_result in the test version;
