@@ -8,6 +8,8 @@ __copyright__ = 'Copyright (c) 2018 Marnanel Thurman'
 import logging
 from collections import defaultdict
 
+logger = logging.getLogger(name='django_kepi')
+
 # XXX this is mastodon-specific; it will be generalised later
 ATSIGN_CONTEXT = [
         "https://www.w3.org/ns/activitystreams", 
