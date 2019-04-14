@@ -3,6 +3,7 @@ from .celery import app as celery_app
 from django.test import TestCase
 import httpretty
 import logging
+from django_kepi.tasks import fetch
 
 logger = logging.getLogger(name='things_for_testing')
 

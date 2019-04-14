@@ -10,7 +10,6 @@ def fetch(
         fetch_url,
         post_data,
         result_url,
-        result_id,
         ):
 
     if post_data is None:
@@ -28,11 +27,12 @@ def fetch(
             fetch_url, fetch.status_code, fetch.text)
 
     if result_url is not None:
+
         response = requests.post(
                 result_url,
                 params={
-                    'success': int(fetch.status_code==200),
-                    'uuid': result_id,
+                    'code': int(fetch.status_code),
+                    'url': fetch_url,
                     },
                 data=fetch.text,
                 )
