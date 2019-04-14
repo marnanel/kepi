@@ -1,7 +1,9 @@
 from django.db import models
 from django_kepi import implements_activity_type, TombstoneException
 from django_kepi import models as kepi_models
-from django_kepi import logger
+import logging
+
+logger = logging.getLogger(name='things_for_testing')
 
 @implements_activity_type('Person')
 class ThingUser(models.Model):

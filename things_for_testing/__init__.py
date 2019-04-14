@@ -1,9 +1,10 @@
 from __future__ import absolute_import, unicode_literals
 from .celery import app as celery_app
 from django.test import TestCase
-from django_kepi import logger
 import httpretty
 import logging
+
+logger = logging.getLogger(name='things_for_testing')
 
 class KepiTestCase(TestCase):
 

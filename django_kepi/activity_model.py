@@ -1,5 +1,5 @@
 from django.db import models
-from django_kepi import object_type_registry, find, register_type, logger
+from django_kepi import object_type_registry, find, register_type
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -10,6 +10,8 @@ import json
 import datetime
 import warnings
 import uuid
+
+logger = logging.getLogger(name='django_kepi')
 
 #######################
 

@@ -34,8 +34,6 @@ ATSIGN_CONTEXT = [
             }
         ]
 
-logger = logging.Logger(name='django_kepi')
-
 object_type_registry = defaultdict(list)
 
 def register_type(f_type, handler):
