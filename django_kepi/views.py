@@ -5,11 +5,13 @@ import django.views
 from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.conf import settings
 import logging
 import urllib.parse
 import json
 import re
 from collections import defaultdict
+from . import find
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -20,7 +22,18 @@ class ActivityObjectView(django.views.View):
 
     def get(self, request, *args, **kwargs):
 
-        result = self.objectDetails(*args, **kwargs)
+        url = 'https://' + \
+                settings.KEPI['LOCAL_OBJECT_HOSTNAME'] + \
+                request.path
+        f_type = kwargs.get('f_type', None)
+
+        activity_object = find(url, f_type)
+
+        if activity_object is None:
+            logger.info('%s(%s) is unknown', url, f_type)
+            raise Http404('Unknown object')
+
+        result = activity_object.activity_form(*args, **kwargs)
 
         return self._render(result)
 
@@ -62,7 +75,6 @@ class ActivityObjectView(django.views.View):
         result['Content-Type'] = 'application/activity+json'
 
         return result
-
 
 class CollectionView(ActivityObjectView):
 

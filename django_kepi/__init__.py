@@ -39,6 +39,8 @@ ATSIGN_CONTEXT = [
 object_type_registry = defaultdict(list)
 
 def register_type(f_type, handler):
+    logger.debug('Added handler for %s: %s',
+            f_type, handler)
     object_type_registry[f_type].append(handler)
 
 # Decorator
@@ -55,12 +57,15 @@ def find(identifier, f_type=None):
     elif not isinstance(f_type, list):
         f_type = [f_type]
 
+    logger.debug('Here we go: %s %s', identifier, f_type)
     for t in f_type:
 
+        logger.debug('How about %s? %s', t, str(object_type_registry[t]))
         if t not in object_type_registry:
             continue
 
         for cls in object_type_registry[t]:
+            logging.info('finding %s for %s', identifier, str(cls))
             try:
                 result = cls.activity_find(url=identifier)
             except cls.DoesNotExist:

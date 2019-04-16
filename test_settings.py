@@ -5,6 +5,7 @@ djcelery.setup_loader()
 
 KEPI = {
         'ACTIVITY_URL_FORMAT': 'https://example.com/activities/%s',
+        'LOCAL_OBJECT_HOSTNAME': 'example.com',
         }
 
 INSTALLED_APPS = (

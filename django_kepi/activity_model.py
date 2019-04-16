@@ -170,22 +170,17 @@ class Activity(models.Model):
     def activity_type(self):
         return self.f_type
 
-    @property
-    def activity_form(self):
+    def activity_form(self, *args, **kwargs):
         result = {
             'id': self.identifier,
-            'f_type': self.get_f_type_display(),
+            'type': self.get_f_type_display(),
             }
 
-        for optional in ['actor', 'object', 'published', 'updated', 'target']:
-            if optional=='object':
-                fieldname='fobject'
-            else:
-                fieldname=optional
+        for fieldname in ['actor', 'object', 'target']:
 
-            value = getattr(self, fieldname)
+            value = getattr(self, 'f_'+fieldname)
             if value is not None:
-                result[optional] = value
+                result[fieldname] = value
 
         return result
 
@@ -268,9 +263,11 @@ class Activity(models.Model):
     def register_all_activity_types(cls):
         for t in cls.TYPES.keys():
             register_type(t, cls)
+        register_type('Activity', cls)
 
     @classmethod
     def activity_find(cls, url):
+        logger.info('a_f %s', str(url))
         return cls.objects.get(identifier=url)
 
     @classmethod
