@@ -29,7 +29,7 @@ MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
             "PropertyValue":"schema:PropertyValue",
             "value":"schema:value"}]
 
-ACTIVITY_ID = "https://example.com/04b065f8-81c4-408e-bec3-9fb1f7c06408",
+ACTIVITY_ID = "https://example.com/04b065f8-81c4-408e-bec3-9fb1f7c06408"
 INBOX_HOST = 'europa.example.com'
 INBOX_PATH = '/inbox'
 
