@@ -61,15 +61,19 @@ logger = logging.getLogger(name='django_kepi')
 #       If there's been fewer than "n" tries, recreate the background task.
 #       Otherwise, report the error and drop the message.
 
-class CachedPublicKey(models.Model):
+class CachedRemoteUser(models.Model):
 
     owner = models.URLField(
+            primary_key = True,
             )
 
     key = models.TextField(
             default = None,
             null = True,
             )
+
+    inbox = models.URLField()
+    outbox = models.URLField()
 
     # XXX We should probably also have a cache timeout
 
@@ -187,8 +191,8 @@ def validate(message,
         return
 
     try:
-        remote_key = CachedPublicKey.objects.get(owner=actor)
-    except CachedPublicKey.DoesNotExist:
+        remote_key = CachedRemoteUser.objects.get(owner=actor)
+    except CachedRemoteUser.DoesNotExist:
         remote_key = None
 
     if remote_key is not None:

@@ -85,7 +85,7 @@ def _test_message(secret='', **fields):
 
 @patch('django_kepi.validation.find')
 @patch('django_kepi.validation._kick_off_background_fetch')
-@patch('django_kepi.validation.CachedPublicKey.objects.get')
+@patch('django_kepi.validation.CachedRemoteUser.objects.get')
 class TestValidation(TestCase):
 
     def test_local_lookup(self, mock_key_get, mock_fetch, mock_find):
@@ -111,7 +111,7 @@ class TestValidation(TestCase):
     def test_remote_user_known(self, mock_key_get, mock_fetch, mock_find):
 
         keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        mock_key_get.return_value = django_kepi.validation.CachedPublicKey(
+        mock_key_get.return_value = django_kepi.validation.CachedRemoteUser(
                 key=keys['public'])
 
         message = _test_message(
@@ -130,7 +130,7 @@ class TestValidation(TestCase):
     def test_remote_user_gone(self, mock_key_get, mock_fetch, mock_find):
 
         keys = json.load(open('tests/keys/keys-0002.json', 'r'))
-        mock_key_get.return_value = django_kepi.validation.CachedPublicKey(
+        mock_key_get.return_value = django_kepi.validation.CachedRemoteUser(
                 key=None)
 
         message = _test_message(

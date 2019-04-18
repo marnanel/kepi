@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from django_kepi.validation import CachedPublicKey, IncomingMessage
+from django_kepi.validation import CachedRemoteUser, IncomingMessage
 from django_kepi.tasks import fetch
 from things_for_testing import KepiTestCase
 import logging
