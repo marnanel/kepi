@@ -68,7 +68,7 @@ class ThingUser(models.Model):
 class ThingNote(kepi_models.ActivityModel):
 
     title = models.CharField(max_length=256)
-    ftype = 'Note'
+    f_type = 'Note'
 
     remote_url = models.URLField(max_length=256,
             null=True, default=None)
