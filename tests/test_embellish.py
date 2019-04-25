@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(name='django_kepi')
 
 class TestEmbellish(TestCase):
-    def test_embellish(self):
+    def test_embellish_note(self):
 
         SOURCE = {
                 'id': 'https://example.com/users/fred/status/1234',
