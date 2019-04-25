@@ -3,7 +3,54 @@ from django_kepi import object_type_registry
 from django_kepi.cache_model import Cache
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django_kepi.models import Activity
+import logging
 
+logger = logging.getLogger(name='django_kepi')
+
+#######################
+
+class ActivityModel(models.Model):
+    def save(self, *args, **kwargs):
+
+        we_are_new = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if we_are_new:
+            logger.debug('New activity: %s',
+                    str(self.activity_form))
+            logger.debug('We must create a Create wrapper for it.')
+
+            wrapper = Activity.create({
+                'type': 'Create',
+                'actor': self.activity_actor,
+                'to': self.activity_to,
+                'cc': self.activity_cc,
+                'object': self.activity_id,
+                })
+
+            wrapper.save()
+            logger.debug('Created wrapper %s',
+                    str(wrapper.activity_form))
+
+            # XXX We copy "to" and "cc" per
+            # https://www.w3.org/TR/activitypub/#object-without-create
+            # which also requires us to copy
+            # the two blind versions, and "audience".
+            # We don't support those (atm), but
+            # we should probably copy them anyway.
+
+    @property
+    def activity_to(self):
+        # FIXME
+        return ["https://www.w3.org/ns/activitystreams#Public"]
+
+    @property
+    def activity_cc(self):
+        # FIXME
+        return ["https://marnanel.org/users/marnanel/followers"]
+ 
 #######################
 
 class SomethingManager(models.Manager):

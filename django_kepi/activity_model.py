@@ -170,7 +170,8 @@ class Activity(models.Model):
     def activity_type(self):
         return self.f_type
 
-    def activity_form(self, *args, **kwargs):
+    @property
+    def activity_form(self):
         result = {
             'id': self.identifier,
             'type': self.get_f_type_display(),
@@ -287,10 +288,16 @@ class Activity(models.Model):
             raise ValueError("Remote activities must have an id")
 
         fields = {
-                'identifier': value.get('id', None),
-                'f_type': value['type'],
                 'active': True,
                 }
+
+        for f,v in value.items():
+            fields['f_'+f] = v
+
+        # XXX nasty temporary hack which will go away soon
+        for name in ['f_to', 'f_cc']:
+            if name in fields:
+                del fields[name]
 
         try:
             need_actor, need_object, need_target = cls.TYPES[value['type']]

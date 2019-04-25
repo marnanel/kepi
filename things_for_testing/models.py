@@ -33,10 +33,6 @@ class ThingUser(models.Model):
                 }
 
     @property
-    def implements_activity_type(self):
-        return 'Person'
-
-    @property
     def activity_id(self):
         return self.url
 
@@ -60,27 +56,33 @@ class ThingUser(models.Model):
         result.save()
         return result
 
-@implements_activity_type('Article')
-class ThingArticle(models.Model):
+@implements_activity_type('Note')
+class ThingNote(kepi_models.ActivityModel):
 
     title = models.CharField(max_length=256)
-    ftype = 'Article'
+    ftype = 'Note'
 
     remote_url = models.URLField(max_length=256,
             null=True, default=None)
+
+    owner = models.URLField(max_length=256)
+
+    @property
+    def activity_actor(self):
+        return self.owner
 
     @property
     def activity_form(self):
         return {
                 'id': self.activity_id,
-                'type': 'Article',
+                'type': 'Note',
                 'title': self.title,
                 }
         
     @property
     def activity_id(self):
         return 'https://articles.example.com/{}'.format(
-                self.title,
+                self.title.replace(' ','-').lower(),
                 )
 
     @classmethod
@@ -100,4 +102,3 @@ class ThingArticle(models.Model):
             )
         result.save()
         return result
-
