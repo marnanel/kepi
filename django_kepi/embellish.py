@@ -1,5 +1,6 @@
 import logging
 from django.conf import settings
+import datetime
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -24,6 +25,9 @@ def _embellish_Note(thing, user=None):
 
     if 'inReplyTo' not in thing:
         thing['inReplyTo'] = None
+
+    # XXX Not sure about the 'conversation' tag.
+    # See https://github.com/tootsuite/mastodon/issues/4213 .
 
     ## Content map
 
@@ -66,7 +70,10 @@ def embellish(thing, user=None):
     if 'url' not in thing:
         thing['url'] = thing['id']
 
-    # XXX 'published' date: format?
+    if 'published' not in thing:
+        thing['published'] = datetime.datetime.now().isoformat(
+                timespec='seconds',
+                )+'Z'
 
     ###### special embellishments per "type"
 
