@@ -44,6 +44,7 @@ class TestEmbellish(TestCase):
 
         self.maxDiff = None
         self.assertDictContainsSubset(
+                EXPECTING,
                 result,
-                EXPECTING)
+                )
 
