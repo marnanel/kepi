@@ -1,5 +1,9 @@
 from django.test import TestCase
 from django_kepi.embellish import embellish
+from things_for_testing.models import ThingUser
+import logging
+
+logger = logging.getLogger(name='django_kepi')
 
 class TestEmbellish(TestCase):
     def test_embellish(self):
@@ -23,14 +27,23 @@ class TestEmbellish(TestCase):
                 "sensitive": False,
                 "inReplyTo": None,
                 "inReplyToAtomUri": None,
-                "contentMap":{"en": 'Hello world',},
+                "contentMap":{"en-us": 'Hello world',},
                 "attachment":[],
                 "tag":[],
                 }
                 # (plus "published")
                 # (plus "conversation", wtf?)
 
-        self.assertEqual(
-                embellish(SOURCE),
+        user = ThingUser(
+                name = 'Fred',
+                url = 'https://example.com/users/fred',
+                )
+
+        result = embellish(SOURCE,
+                user=user)
+
+        self.maxDiff = None
+        self.assertDictContainsSubset(
+                result,
                 EXPECTING)
 

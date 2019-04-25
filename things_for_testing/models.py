@@ -36,6 +36,14 @@ class ThingUser(models.Model):
     def activity_id(self):
         return self.url
 
+    @property
+    def activity_followers(self):
+        return self.url+'/followers'
+
+    @property
+    def activity_following(self):
+        return self.url+'/following'
+
     @classmethod
     def activity_find(cls, url):
         PREFIX = "https://example.com/user/"
