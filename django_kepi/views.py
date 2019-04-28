@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django_kepi.models import Activity
 import logging
 import urllib.parse
 import json
@@ -18,23 +19,35 @@ logger = logging.getLogger(name='django_kepi')
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
 
-class ActivityObjectView(django.views.View):
+class KepiView(django.views.View):
 
-    def get(self, request, *args, **kwargs):
+    def __init__(self):
+        super().__init__()
 
-        url = 'https://' + \
-                settings.KEPI['LOCAL_OBJECT_HOSTNAME'] + \
-                request.path
-        f_type = kwargs.get('f_type', None)
+        self.http_method_names.append('activity')
 
-        activity_object = find(url, f_type)
+class ActivityObjectView(KepiView):
+
+    def activity(self, request, *args, **kwargs):
+
+        url = settings.KEPI['ACTIVITY_URL_FORMAT'] % (kwargs['id'],)
+        logger.debug('url:%s', url)
+
+        activity_object = Activity.objects.get(
+                identifier=url,
+                )
 
         if activity_object is None:
-            logger.info('%s(%s) is unknown', url, f_type)
+            logger.info('%s: unknown', url, f_type)
             raise Http404('Unknown object')
 
         result = activity_object.activity_form(*args, **kwargs)
 
+        return result
+
+    def get(self, request, *args, **kwargs):
+
+        result = self.activity(request, *args, **kwargs)
         return self._render(result)
 
     def _make_query_page(

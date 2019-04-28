@@ -50,35 +50,6 @@ def implements_activity_type(f_type):
         return cls
     return register
 
-def find(identifier, f_type=None):
-
-    if f_type is None:
-        f_type = object_type_registry.keys()
-    elif not isinstance(f_type, list):
-        f_type = [f_type]
-
-    logger.debug('Here we go: %s %s', identifier, f_type)
-    for t in f_type:
-
-        logger.debug('How about %s? %s', t, str(object_type_registry[t]))
-        if t not in object_type_registry:
-            continue
-
-        for cls in object_type_registry[t]:
-            logging.info('finding %s for %s', identifier, str(cls))
-            try:
-                result = cls.activity_find(url=identifier)
-            except cls.DoesNotExist:
-                result = None
-
-            if result is not None:
-                logger.debug('find: %s(%s)==%s', identifier, str(f_type),
-                        result)
-                return result
-
-    logger.debug('find: %s(%s) was not found', identifier, str(f_type))
-    return None
-
 def create(fields):
 
     if 'type' not in fields:

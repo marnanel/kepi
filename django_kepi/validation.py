@@ -7,6 +7,7 @@ from django.conf import settings
 from urllib.parse import urlparse
 from django_kepi import find
 from httpsig.verify import HeaderVerifier
+import django_kepi.tasks
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -61,31 +62,6 @@ logger = logging.getLogger(name='django_kepi')
 #       If there's been fewer than "n" tries, recreate the background task.
 #       Otherwise, report the error and drop the message.
 
-class CachedRemoteUser(models.Model):
-
-    owner = models.URLField(
-            primary_key = True,
-            )
-
-    key = models.TextField(
-            default = None,
-            null = True,
-            )
-
-    inbox = models.URLField()
-    outbox = models.URLField()
-
-    # XXX We should probably also have a cache timeout
-
-    def is_gone(self):
-        return self.key is None
-
-    def __str__(self):
-        if self.key is None:
-            return '(%s: public key)' % (self.owner)
-        else:
-            return '(%s is GONE)' % (self.owner)
-
 class IncomingMessage(models.Model):
 
     id = models.UUIDField(
@@ -123,15 +99,11 @@ class IncomingMessage(models.Model):
     def fields(self):
         return json.loads(self.body)
 
+    def validate(self):
+        tasks.validate(self)
+
 def is_local_user(url):
     return urlparse(url).hostname in settings.ALLOWED_HOSTS
-
-def _obviously_belongs_to(actor, key_id):
-    return key_id.startswith(actor+'#')
-
-def _kick_off_background_fetch(url):
-    # XXX actually do it
-    pass
 
 def _do_validation(message, key):
     logger.debug('%s: running actual validation', message)

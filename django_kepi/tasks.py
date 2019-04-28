@@ -1,42 +1,79 @@
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-import requests
+from django_kepi.validation import IncomingMessage
+from django_kepi import find
 import logging
 
 logger = logging.getLogger(name='django_kepi')
 
 @shared_task()
-def fetch(
-        fetch_url,
-        post_data,
-        result_url,
+def validate(
+        message_id,
         ):
+    logger.info('%s: begin validation',
+            message_id)
 
-    if post_data is None:
-        logger.info('batch %s: GET', fetch_url)
+    message = IncomingMessage.objects.find(id=message_id)
 
-        fetch = requests.get(fetch_url)
+    actor = message.actor
+    key_id = message.key_id
+
+    logger.debug('%s: message signature is: %s',
+            message, message.signature)
+    logger.debug('%s: message body is: %s',
+            message, message.body)
+
+    if _is_local_user(actor):
+        logger.debug('%s: actor %s is local', message, actor)
+
+        local_user = find(actor, 'Actor')
+
+        if local_user is None:
+            logger.info('%s: local actor %s does not exist; dropping message',
+                message, actor)
+            return
+
+        key = local_user.key
+        _do_validation(message, key)
+        return
+
+    if not _obviously_belongs_to(actor, key_id):
+        logger.info('%s: key_id %s is not obviously owned by '+\
+                'actor %s; dropping message',
+                message, key_id, actor)
+        return
+
+    try:
+        remote_key = CachedRemoteUser.objects.get(owner=actor)
+    except CachedRemoteUser.DoesNotExist:
+        remote_key = None
+
+    if remote_key is not None:
+
+        if remote_key.is_gone():
+            # XXX This should probably trigger a clean-out of everything
+            # we know about that user
+            logger.info('%s: remote actor %s is gone; dropping message',
+                    actor, message)
+            return
+
+        logger.debug('%s: we have the remote key', message)
+        _do_validation(message, remote_key.key)
+        return
+
+    logger.debug('%s: we don\'t have the key', message)
+
+    if second_pass:
+        logger.warning('%s: we apparently both do and don\'t have the key',
+                message)
+        return
+
+    message.waiting_for = actor
+    message.save()
+
+    if len(IncomingMessage.objects.filter(waiting_for=actor))==1:
+        logger.debug('%s: starting background task', message)
+        _kick_off_background_fetch(actor)
     else:
-        logger.info('batch %s: POST with form data: %s',
-                fetch_url, post_data)
+        logger.debug('%s: not starting background task', message)
 
-        fetch = requests.post(fetch_url,
-                data=post_data)
-
-    logger.info('batch %s: response code was %d, body was %s',
-            fetch_url, fetch.status_code, fetch.text)
-
-    if result_url is not None:
-
-        response = requests.post(
-                result_url,
-                params={
-                    'code': int(fetch.status_code),
-                    'url': fetch_url,
-                    },
-                data=fetch.text,
-                )
-
-        if response.status_code!=200:
-            logger.warn('batch %s: notifying %s FAILED with code %d',
-                    fetch_url, result_url, response.status_code)
