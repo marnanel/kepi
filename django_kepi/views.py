@@ -30,18 +30,19 @@ class ActivityObjectView(KepiView):
 
     def activity(self, request, *args, **kwargs):
 
-        url = settings.KEPI['ACTIVITY_URL_FORMAT'] % (kwargs['id'],)
-        logger.debug('url:%s', url)
+        try:
+            activity_object = Activity.objects.get(
+                    uuid=kwargs['id'],
+                    )
+        except Activity.DoesNotExist:
+            logger.info('unknown: %s', kwargs['id'])
+            return None
+        except django.core.exceptions.ValidationError:
+            logger.info('invalid: %s', kwargs['id'])
+            return None
 
-        activity_object = Activity.objects.get(
-                identifier=url,
-                )
-
-        if activity_object is None:
-            logger.info('%s: unknown', url, f_type)
-            raise Http404('Unknown object')
-
-        result = activity_object.activity_form(*args, **kwargs)
+        result = activity_object.activity_form
+        logger.debug('found object: %s', str(result))
 
         return result
 

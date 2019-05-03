@@ -135,7 +135,7 @@ def find_local(path):
             **resolved.kwargs)
     logger.debug('%s: resulting in %s', path, str(result))
 
-    return None # XXX
+    return result
 
 def find_remote(url):
     logger.debug('%s: find remote', url)

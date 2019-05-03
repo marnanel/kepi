@@ -12,14 +12,6 @@ import warnings
 import uuid
 
 logger = logging.getLogger(name='django_kepi')
-
-#######################
-
-def new_activity_identifier():
-    template = settings.KEPI['ACTIVITY_URL_FORMAT']
-    slug = '%08x' % (random.randint(0, 0xffffffff),)
-    return template % (slug,)
-
 #######################
 
 def _object_to_id_and_type(obj):
@@ -99,15 +91,21 @@ class Activity(models.Model):
             (REJECT, 'Reject'),
             )
 
+    uuid = models.UUIDField(
+            default=uuid.uuid4,
+            primary_key=True,
+            )
+
     f_type = models.CharField(
             max_length=1,
             choices=ACTIVITY_TYPE_CHOICES,
             )
 
-    identifier = models.URLField(
+    remote_url = models.URLField(
             max_length=255,
-            primary_key=True,
-            default=new_activity_identifier,
+            unique=True,
+            null=True,
+            default=None,
             )
 
     f_actor = models.URLField(
@@ -143,6 +141,13 @@ class Activity(models.Model):
             null=True,
             default=None)
 
+    @property
+    def url(self):
+        if self.remote_url is not None:
+            return self.remote_url
+
+        return settings.KEPI['ACTIVITY_URL_FORMAT'] % (self.uuid,)
+
     # XXX Updates from clients are partial,
     # but updates from remote sites are total.
     # We don't currently let clients create Activities,
@@ -173,7 +178,7 @@ class Activity(models.Model):
     @property
     def activity_form(self):
         result = {
-            'id': self.identifier,
+            'id': self.url,
             'type': self.get_f_type_display(),
             }
 
