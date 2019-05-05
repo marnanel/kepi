@@ -5,6 +5,7 @@ from django.conf import settings
 import django.urls
 from urllib.parse import urlparse
 from django.http.request import HttpRequest
+import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -66,14 +67,23 @@ class CachedRemoteText(models.Model):
 
             # This is a GET, so the answer might be cached.
             # (FIXME: honour HTTP caching headers etc)
-            existing = cls.objects.find(address==fetch_url)
+
+            try:
+                existing = cls.objects.get(address=fetch_url)
+            except cls.DoesNotExist:
+                existing = None
+
             if existing is not None:
                 logger.info('fetch %s: in cache', fetch_url)
-                return existing
+
+                if existing is not None:
+                    return json.loads(existing)
+                else:
+                    return None
 
             logger.info('fetch %s: GET', fetch_url)
-
             fetch = requests.get(fetch_url)
+
         else:
             logger.info('fetch %s: POST', fetch_url)
             logger.debug('fetch %s: with data: %s',
@@ -83,29 +93,32 @@ class CachedRemoteText(models.Model):
                     data=post_data)
 
         logger.info('fetch %s: response code was %d',
-                fetch_url, fetch.status_code, fetch.text)
-        logger.debug('fetch %s: body was %d',
+                fetch_url, fetch.status_code)
+        logger.debug('fetch %s: body was %s',
                 fetch_url, fetch.text)
 
-        result = None
+        if post_data is not None:
+            return None
 
-        if post_data is None:
-            # This was a GET, so cache it
-            # (FIXME: honour HTTP caching headers etc)
-            # XXX: race condition: catch duplicate entry exception and ignore
+        # This was a GET, so cache it
+        # (FIXME: honour HTTP caching headers etc)
+        # XXX: race condition: catch duplicate entry exception and ignore
 
-            if fetch.status_code==200:
-                content = fetch.text
-            else:
-                content = None
+        if fetch.status_code==200:
+            content = fetch.text
+        else:
+            content = ''
 
-            result = cls(
-                    address = fetch_url,
-                    content = content,
-                    )
-            result.save()
+        result = cls(
+                address = fetch_url,
+                content = content,
+                )
+        result.save()
 
-        return result
+        if content!='':
+            return json.loads(content)
+        else:
+            return None
 
     def _obviously_belongs_to(self, actor):
         return self.address.startswith(actor+'#')
@@ -139,7 +152,13 @@ def find_local(path):
 
 def find_remote(url):
     logger.debug('%s: find remote', url)
-    return None # XXX
+
+    result = CachedRemoteText.fetch(
+            fetch_url=url,
+            post_data=None,
+            )
+
+    return result
 
 def find(url):
     """

@@ -27,9 +27,15 @@ class TestFind(KepiTestCase):
                 STUFF,
                 )
 
+    @httpretty.activate
     def test_find_remote_404(self):
 
-        found = find(REMOTE_URL+'/nothing')
+        self._mock_remote_object(
+                REMOTE_URL,
+                content = '',
+                )
+
+        found = find(REMOTE_URL)
 
         self.assertIsNone(found)
 
