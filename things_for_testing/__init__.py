@@ -29,13 +29,3 @@ class KepiTestCase(TestCase):
                 url,
                 status,
                 content)
-
-        # For some reason, this allows Celery to
-        # access /async_result in the test version;
-        # without it, the socket library throws an error.
-        httpretty.register_uri(
-                httpretty.POST,
-                'https://localhost/async_result',
-                body='something')
-
-
