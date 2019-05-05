@@ -2,9 +2,8 @@ import json
 import httpsig
 from django.test import TestCase
 from django.db.models.query import QuerySet
-from django_kepi.models import IncomingMessage, validate
 from unittest.mock import Mock, patch
-import django_kepi.validation
+import django_kepi.tasks
 
 MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
         "https://w3id.org/security/v1",
@@ -83,12 +82,12 @@ def _test_message(secret='', **fields):
             body = json.dumps(body, sort_keys=True),
             )
 
-@patch('django_kepi.validation.find')
+@patch('requests.get')
 @patch('django_kepi.validation._kick_off_background_fetch')
 @patch('django_kepi.validation.CachedRemoteUser.objects.get')
 class TestValidation(TestCase):
 
-    def test_local_lookup(self, mock_key_get, mock_fetch, mock_find):
+    def test_local_lookup(self, mock_get, mock_fetch, mock_find):
         
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
         mock_find.return_value = Mock()
@@ -104,8 +103,7 @@ class TestValidation(TestCase):
 
         validate(message)
 
-        mock_find.assert_called_once_with(LOCAL_ALICE, 'Actor')
-        mock_fetch.assert_not_called()
+        mock_get.assert_not_called()
         mock_key_get.assert_not_called()
 
     def test_remote_user_known(self, mock_key_get, mock_fetch, mock_find):

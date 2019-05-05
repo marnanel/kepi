@@ -7,10 +7,10 @@ urlpatterns = [
         { 'f_type': 'Activity',
             }),
     path('thing-users', ThingUserCollection.as_view()),
+    path('users/<name>', ThingUserView.as_view()),
     path('users/<name>/followers', ThingUserFollowersView.as_view()),
     path('users/<name>/following', ThingUserFollowingView.as_view()),
     path('users/<name>/inbox', InboxView.as_view()),
     path('sharedInbox', InboxView.as_view()),
-    path('asyncResult', AsyncResultView.as_view()),
 ]
 

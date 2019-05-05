@@ -10,6 +10,7 @@ class ThingUser(models.Model):
 
     url = models.URLField(max_length=256)
     name = models.CharField(max_length=256)
+    public_key = models.CharField(max_length=256)
 
     favourite_colour = models.CharField(
             max_length=256,

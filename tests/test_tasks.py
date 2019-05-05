@@ -1,9 +1,13 @@
 from django.test import TestCase, Client
-from django_kepi.validation import CachedRemoteUser, IncomingMessage
-from django_kepi.tasks import fetch
+from django_kepi.validation import IncomingMessage
+from django_kepi.tasks import validate
+from django_kepi.activity_model import Activity
 from things_for_testing import KepiTestCase
+from things_for_testing.models import ThingUser
+from unittest.mock import Mock, patch
 import logging
 import httpretty
+import httpsig
 import json
 
 logger = logging.getLogger(name='django_kepi')
@@ -13,6 +17,86 @@ SUKI_URL = 'https://remote.example.net/services/suki/kettle'
 PUT_THE_KETTLE_ON = "Let's put the kettle on"
 SUKI_TAKE_IT_OFF = "Suki, take it off again"
 RESULT_URL = 'https://localhost/async_result'
+
+ACTIVITY_ID = "https://example.com/04b065f8-81c4-408e-bec3-9fb1f7c06408"
+INBOX_HOST = 'europa.example.com'
+INBOX_PATH = '/inbox'
+
+REMOTE_FRED = 'https://remote.example.org/users/fred'
+REMOTE_JIM = 'https://remote.example.org/users/jim'
+
+LOCAL_ALICE = 'https://altair.example.com/users/alice'
+LOCAL_BOB = 'https://altair.example.com/users/bob'
+
+MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
+        "https://w3id.org/security/v1",
+        {"manuallyApprovesFollowers":"as:manuallyApprovesFollowers",
+            "sensitive":"as:sensitive",
+            "movedTo":{"@id":"as:movedTo",
+                "@type":"@id"},
+            "alsoKnownAs":{"@id":"as:alsoKnownAs",
+                "@type":"@id"},
+            "Hashtag":"as:Hashtag",
+            "ostatus":"http://ostatus.org#",
+            "atomUri":"ostatus:atomUri",
+            "inReplyToAtomUri":"ostatus:inReplyToAtomUri",
+            "conversation":"ostatus:conversation",
+            "toot":"http://joinmastodon.org/ns#",
+            "Emoji":"toot:Emoji",
+            "focalPoint":{"@container":"@list",
+                "@id":"toot:focalPoint"},
+            "featured":{"@id":"toot:featured",
+                "@type":"@id"},
+            "schema":"http://schema.org#",
+            "PropertyValue":"schema:PropertyValue",
+            "value":"schema:value"}]
+
+def _test_message(secret='', **fields):
+
+    body = dict([(f[2:],v) for f,v in fields.items() if f.startswith('f_')])
+    body['@context'] = MESSAGE_CONTEXT
+    body['Host'] = INBOX_HOST
+
+    headers = {
+            'content-type': "application/activity+json",
+            'date': "Thu, 04 Apr 2019 21:12:11 GMT",
+            'host': INBOX_HOST,
+            }
+
+    if 'key_id' in fields:
+        key_id = fields['key_id']
+    else:
+        key_id = body['actor']+'#main-key'
+
+    signer = httpsig.HeaderSigner(
+            secret=secret,
+            algorithm='rsa-sha256',
+            key_id = key_id,
+            headers=['(request-target)', 'host', 'date', 'content-type'],
+            )
+
+    headers = signer.sign(
+            headers,
+            method='POST',
+            path=INBOX_PATH,
+            )
+
+    SIGNATURE = 'Signature'
+    if headers['Authorization'].startswith(SIGNATURE):
+        headers['Signature'] = headers['Authorization'][len(SIGNATURE)+1:]
+
+    result = IncomingMessage(
+            content_type = headers['content-type'],
+            date = headers['date'],
+            digest = '', # FIXME ???
+            host = headers['host'],
+            path = INBOX_PATH,
+            signature = headers['Signature'],
+            body = json.dumps(body, sort_keys=True),
+            )
+
+    result.save()
+    return result
 
 class TestTasks(TestCase):
 
@@ -74,6 +158,36 @@ class TestTasks(TestCase):
                 RESULT_URL,
                 body=local_endpoint)
 
+    @patch('requests.get')
+    def test_validation(self, mock_get):
+        keys = json.load(open('tests/keys/keys-0000.json', 'r'))
+
+        alice = ThingUser(
+                url = LOCAL_ALICE,
+                name = 'alice',
+                favourite_colour = 'puce',
+                public_key = keys['public'],
+                )
+        alice.save()
+        logger.debug('%s', alice.url)
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=LOCAL_ALICE,
+                f_object=LOCAL_BOB,
+                secret = keys['private'],
+                )
+
+        validate(message.id)
+
+        try:
+            result = Activity.objects.get(remote_url=ACTIVITY_ID)
+        except Activity.DoesNotExist:
+            result = None
+
+        self.assertIsNotNone(result)
+        mock_get.assert_not_called()
 
     @httpretty.activate
     def test_request_success(self):

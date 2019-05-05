@@ -3,6 +3,13 @@ from django_kepi.views import *
 from django_kepi.models import *
 from things_for_testing.models import *
 
+class ThingUserView(KepiView):
+    def activity(self, *args, **kwargs):
+        try:
+            return ThingUser.objects.get(name=kwargs['name'])
+        except ThingUser.DoesNotExist:
+            return None
+
 class ThingUserCollection(CollectionView):
     def get_collection_items(self, *args, **kwargs):
         return ThingUser.objects.all()

@@ -3,7 +3,6 @@ from django_kepi import object_type_registry, find, register_type
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
-import django_kepi.tasks
 import logging
 import random
 import json
@@ -12,6 +11,20 @@ import warnings
 import uuid
 
 logger = logging.getLogger(name='django_kepi')
+
+TYPE_NAMES = {
+        'Create': 'C',
+        'Update': 'U',
+        'Delete': 'D',
+        'Follow': 'F',
+        'Add': '+',
+        'Remove': '-',
+        'Like': 'L',
+        'Undo': 'U',
+        'Accept': 'A',
+        'Reject': 'R',
+        }
+
 #######################
 
 def _object_to_id_and_type(obj):
@@ -162,7 +175,7 @@ class Activity(models.Model):
 
         result = '[%s %s%s]' % (
                 self.f_type,
-                self.identifier,
+                self.url,
                 inactive_warning,
                 )
         return result
@@ -260,8 +273,6 @@ class Activity(models.Model):
             # XXX
             pass
 
-
-
         for recipient in recipients:
             recipient.activity_notified(self)
 
@@ -297,17 +308,18 @@ class Activity(models.Model):
                 }
 
         for f,v in value.items():
-            fields['f_'+f] = v
-
-        # XXX nasty temporary hack which will go away soon
-        for name in ['f_to', 'f_cc']:
-            if name in fields:
-                del fields[name]
+            if f in [
+                    'actor', 'object', 'target',
+                    # 'to', 'cc',
+                    ]:
+                fields['f_'+f] = v
 
         try:
             need_actor, need_object, need_target = cls.TYPES[value['type']]
         except KeyError:
             raise ValueError('{} is not an Activity type'.format(value['type']))
+
+        fields['f_type'] = TYPE_NAMES[value['type']]
 
         if need_actor!=('actor' in value) or \
                 need_object!=('object' in value) or \
@@ -336,6 +348,9 @@ class Activity(models.Model):
                     raise ValueError('Wrong parameters for type {}: we have {}, we need {}'.format(
                         value['type'],
                         we_have, we_need))
+
+        if 'id' in value:
+            fields['remote_url'] = value['id']
 
         result = cls(**fields)
         result.save()

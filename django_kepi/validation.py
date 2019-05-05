@@ -7,7 +7,6 @@ from django.conf import settings
 from urllib.parse import urlparse
 from django_kepi import find
 from httpsig.verify import HeaderVerifier
-import django_kepi.tasks
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -99,8 +98,9 @@ class IncomingMessage(models.Model):
     def fields(self):
         return json.loads(self.body)
 
-    def validate(self):
-        tasks.validate(self)
+    @property
+    def activity_form(self):
+        return self.fields
 
 def is_local_user(url):
     return urlparse(url).hostname in settings.ALLOWED_HOSTS
