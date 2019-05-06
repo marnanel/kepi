@@ -9,6 +9,22 @@ import json
 
 logger = logging.getLogger(name='django_kepi')
 
+class RemoteItem(object):
+    def __init__(self, body):
+        self.content = json.loads(body)
+        logger.debug('RemoteItem created')
+
+    def __getitem__(self, key):
+        return self.content[key]
+
+    def __str__(self):
+        return str(self.content)
+
+    # XXX this is specific to actors!
+    @property
+    def public_key(self):
+        return self.content['publicKey']['publicKeyPem']
+
 class CachedRemoteText(models.Model):
 
     address = models.URLField(
@@ -77,7 +93,7 @@ class CachedRemoteText(models.Model):
                 logger.info('fetch %s: in cache', fetch_url)
 
                 if existing is not None:
-                    return json.loads(existing)
+                    return RemoteItem(existing)
                 else:
                     return None
 
@@ -116,7 +132,7 @@ class CachedRemoteText(models.Model):
         result.save()
 
         if content!='':
-            return json.loads(content)
+            return RemoteItem(content)
         else:
             return None
 
