@@ -10,6 +10,9 @@ import httpretty
 import httpsig
 import json
 
+# FIXME test caching
+# FIXME test invalid keys
+
 logger = logging.getLogger(name='django_kepi')
 
 ACTIVITY_ID = "https://example.com/04b065f8-81c4-408e-bec3-9fb1f7c06408"
@@ -112,9 +115,16 @@ def _remote_user(url, name, public_key):
                 }
         return result
 
+def _message_became_activity(url=ACTIVITY_ID):
+    try:
+        result = Activity.objects.get(remote_url=url)
+        return True
+    except Activity.DoesNotExist:
+        return False
+
 class ResultWrapper(object):
     def __init__(self,
-            text,
+            text='',
             status_code=200,
             ):
         self.text = json.dumps(text)
@@ -203,12 +213,7 @@ class TestTasks(TestCase):
 
         validate(message.id)
 
-        try:
-            result = Activity.objects.get(remote_url=ACTIVITY_ID)
-        except Activity.DoesNotExist:
-            result = None
-
-        self.assertIsNotNone(result)
+        self.assertTrue(_message_became_activity())
         mock_get.assert_not_called()
 
     @patch('requests.get')
@@ -230,6 +235,71 @@ class TestTasks(TestCase):
                 secret = keys['private'],
                 )
         validate(message.id)
+
+        self.assertTrue(_message_became_activity())
+        mock_get.assert_called_once_with(REMOTE_FRED)
+
+    @patch('requests.get')
+    def test_remote_user_spoofed(self, mock_get):
+        keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys2 = json.load(open('tests/keys/keys-0002.json', 'r'))
+        mock_get.return_value = ResultWrapper(
+                text = _remote_user(
+                    url = REMOTE_FRED,
+                    name = 'Fred',
+                    public_key=keys2['public'],
+                ))
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_FRED,
+                f_object=LOCAL_ALICE,
+                secret = keys1['private'],
+                )
+        validate(message.id)
+
+        self.assertFalse(_message_became_activity())
+
+        mock_get.assert_called_once_with(REMOTE_FRED)
+
+    @patch('requests.get')
+    def test_remote_user_gone(self, mock_get):
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        mock_get.return_value = ResultWrapper(
+                status_code = 410,
+                )
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_FRED,
+                f_object=LOCAL_ALICE,
+                secret = keys['private'],
+                )
+        validate(message.id)
+
+        self.assertFalse(_message_became_activity())
+
+        mock_get.assert_called_once_with(REMOTE_FRED)
+
+    @patch('requests.get')
+    def test_remote_user_unknown(self, mock_get):
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        mock_get.return_value = ResultWrapper(
+                status_code = 404,
+                )
+
+        message = _test_message(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_FRED,
+                f_object=LOCAL_ALICE,
+                secret = keys['private'],
+                )
+        validate(message.id)
+
+        self.assertFalse(_message_became_activity())
 
         mock_get.assert_called_once_with(REMOTE_FRED)
 
