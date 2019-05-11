@@ -246,13 +246,35 @@ class TestValidationTasks(TestCase):
 
 class TestDeliverTasks(TestCase):
 
-    def test_deliver(self):
-        a = Activity.create({
-            'type': 'Follow',
-            'actor': LOCAL_ALICE,
-            'object': REMOTE_FRED,
-            'to': [REMOTE_FRED],
-            })
+    def _run_delivery(
+            self,
+            activity_fields,
+            ):
+
+        a = Activity.create(activity_fields)
         a.save()
 
-        deliver(a.uuid)
+        mock_get = Mock(
+                return_value = ResultWrapper(
+                    status_code = 404,
+                    ),
+                )
+
+        mock_post = Mock(
+                return_value = None,
+                )
+
+        with patch('requests.get', mock_get):
+            with patch('requests.post', mock_post):
+                deliver(a.uuid)
+
+    def test_deliver(self):
+
+        self._run_delivery(
+                activity_fields = {
+                    'type': 'Follow',
+                    'actor': LOCAL_ALICE,
+                    'object': REMOTE_FRED,
+                    'to': [REMOTE_FRED],
+                    },
+                )

@@ -5,6 +5,7 @@ from django_kepi.find import find
 from django_kepi.activity_model import Activity
 from httpsig.verify import HeaderVerifier
 import logging
+import requests
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -86,10 +87,55 @@ def deliver(
     logger.info('%s: begin delivery',
             activity)
 
+    activity_form = activity.activity_form
+    logger.debug('%s: full form is %s',
+            activity, activity_form)
+
     recipients = set()
     for field in ['to', 'bto', 'cc', 'bcc', 'audience']:
-        recipients.update(activity[field])
+        if field in activity_form:
+            recipients.update(activity_form[field])
+
+    # Actors don't get told about their own activities
+    if activity_form['actor'] in recipients:
+        recipients.remove(activity_form['actor'])
+
+    if not recipients:
+        logger.debug('%s: there are no recipients; giving up',
+                activity)
+        return
 
     logger.debug('%s: recipients are %s',
             activity, recipients)
+
+    inboxes = set()
+
+    for recipient in recipients:
+        actor_details = find(recipient)
+
+        if actor_details is None:
+            logger.debug('%s: recipient "%s" doesn\'t exist; dropping',
+                    activity, recipient)
+            continue
+
+        if 'endpoints' in actor_details and 'sharedInbox' in actor_details['endpoints']:
+            logger.debug('%s: recipient "%s" has a shared inbox at %s',
+                    activity, recipient, actor_details['endpoints']['sharedInbox'])
+            inboxes.add(actor_details['endpoints']['sharedInbox'])
+
+        elif 'inbox' in actor_details:
+            logger.debug('%s: recipient "%s" has a sole inbox at %s',
+                    activity, recipient, actor_details['inbox'])
+
+        else:
+            logger.debug('%s: recipient "%s" has no obvious inbox; dropping',
+                    activity, recipient)
+
+    if not inboxes:
+        logger.debug('%s: there are no inboxes to send to; giving up',
+                activity)
+        return
+
+    logger.debug('%s: inboxes are %s',
+            activity, inboxes)
 
