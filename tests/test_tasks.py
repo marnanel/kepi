@@ -21,6 +21,10 @@ INBOX_PATH = '/inbox'
 REMOTE_FRED = 'https://remote.example.org/users/fred'
 REMOTE_JIM = 'https://remote.example.org/users/jim'
 
+FREDS_INBOX = REMOTE_FRED+'/inbox'
+JIMS_INBOX = REMOTE_JIM+'/inbox'
+REMOTE_SHARED_INBOX = 'https://remote.example.org/shared-inbox'
+
 LOCAL_ALICE = 'https://altair.example.com/users/alice'
 LOCAL_BOB = 'https://altair.example.com/users/bob'
 
@@ -94,14 +98,17 @@ def _test_message(secret='', **fields):
     result.save()
     return result
 
-def _remote_user(url, name, public_key):
+def _remote_user(url, name,
+        public_key='',
+        inbox=None,
+        sharedInbox=None,
+        ):
         result = {
                 '@context': MESSAGE_CONTEXT,
                 'id': url,
                 'type': 'Person',
                 'following': '',
                 'followers': '',
-                'inbox': '',
                 'outbox': '',
                 'featured': '',
                 'preferredUsername': name,
@@ -112,6 +119,16 @@ def _remote_user(url, name, public_key):
                     'publicKeyPem': public_key,
                     },
                 }
+
+        if inbox is not None:
+            result['inbox'] = inbox
+
+        if sharedInbox is not None:
+            result['endpoints'] = {
+                    'sharedInbox': sharedInbox,
+                    }
+
+
         return result
 
 def _message_became_activity(url=ACTIVITY_ID):
@@ -249,15 +266,24 @@ class TestDeliverTasks(TestCase):
     def _run_delivery(
             self,
             activity_fields,
+            remote_user_details,
             ):
 
         a = Activity.create(activity_fields)
         a.save()
 
-        mock_get = Mock(
-                return_value = ResultWrapper(
+        def _get(url):
+            if url in remote_user_details:
+                return ResultWrapper(
+                        text=remote_user_details[url],
+                        )
+            else:
+                return ResultWrapper(
                     status_code = 404,
-                    ),
+                    )
+
+        mock_get = Mock(
+                side_effect = _get,
                 )
 
         mock_post = Mock(
@@ -277,4 +303,11 @@ class TestDeliverTasks(TestCase):
                     'object': REMOTE_FRED,
                     'to': [REMOTE_FRED],
                     },
+                remote_user_details = {
+                    REMOTE_FRED: _remote_user(
+                        url=REMOTE_FRED,
+                        name='Fred',
+                        sharedInbox=REMOTE_SHARED_INBOX,
+                        ),
+                    }
                 )

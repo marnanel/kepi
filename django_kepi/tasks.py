@@ -6,6 +6,7 @@ from django_kepi.activity_model import Activity
 from httpsig.verify import HeaderVerifier
 import logging
 import requests
+import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -126,6 +127,7 @@ def deliver(
         elif 'inbox' in actor_details:
             logger.debug('%s: recipient "%s" has a sole inbox at %s',
                     activity, recipient, actor_details['inbox'])
+            inboxes.add(actor_details['endpoints']['sharedInbox'])
 
         else:
             logger.debug('%s: recipient "%s" has no obvious inbox; dropping',
@@ -139,3 +141,33 @@ def deliver(
     logger.debug('%s: inboxes are %s',
             activity, inboxes)
 
+    format_for_delivery = activity_form.copy()
+    for blind_field in ['bto', 'bcc']:
+        if blind_field in format_for_delivery: 
+            del format_for_delivery[blind_field]
+
+    # FIXME
+    # FIXME This is where we sign the message!
+    # FIXME
+
+    message = json.dumps(
+            format_for_delivery,
+            sort_keys = True,
+            indent = 2,
+            )
+
+    for inbox in inboxes:
+        logger.debug('%s: %s: begin delivery',
+                activity, inbox)
+        requests.post(
+                inbox,
+                data=message,
+                headers={
+                    'Content-Type': 'application/activity+json',
+                    },
+                )
+        logger.debug('%s: %s: posted',
+                activity, inbox)
+
+    logger.debug('%s: message posted to all inboxes',
+            activity)

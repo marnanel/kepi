@@ -17,6 +17,9 @@ class RemoteItem(object):
     def __getitem__(self, key):
         return self.content[key]
 
+    def __contains__(self, item):
+        return item in self.content
+
     def __str__(self):
         return str(self.content)
 
