@@ -141,18 +141,12 @@ class Activity(models.Model):
             blank=True,
             )
 
+    other_fields = models.TextField(
+            )
+
     active = models.BooleanField(
             default=True,
             )
-
-    pending = models.BooleanField(
-            default=False,
-            )
-
-    source = models.CharField(
-            max_length=255,
-            null=True,
-            default=None)
 
     @property
     def url(self):
@@ -303,23 +297,16 @@ class Activity(models.Model):
         if 'id' not in value and sender is not None:
             raise ValueError("Remote activities must have an id")
 
-        fields = {
+        record_fields = {
                 'active': True,
                 }
-
-        for f,v in value.items():
-            if f in [
-                    'actor', 'object', 'target',
-                    # 'to', 'cc',
-                    ]:
-                fields['f_'+f] = v
+        other_fields = value.copy()
 
         try:
             need_actor, need_object, need_target = cls.TYPES[value['type']]
         except KeyError:
+            logger.debug('Unknown Activity type: %s', value['type'])
             raise ValueError('{} is not an Activity type'.format(value['type']))
-
-        fields['f_type'] = TYPE_NAMES[value['type']]
 
         if need_actor!=('actor' in value) or \
                 need_object!=('object' in value) or \
@@ -331,7 +318,10 @@ class Activity(models.Model):
                         if o: result.append('object')
                         if t: result.append('target')
 
-                        return '['+' '.join(result)+']'
+                        if not result:
+                            return 'none'
+
+                        return '+'.join(result)
 
                     we_have = params(
                             'actor' in value,
@@ -345,15 +335,36 @@ class Activity(models.Model):
                             need_target,
                             )
 
-                    raise ValueError('Wrong parameters for type {}: we have {}, we need {}'.format(
-                        value['type'],
-                        we_have, we_need))
+                    message = 'Wrong parameters for Activity type {}: we have {}, we need {}'.format(
+                        value['type'], we_have, we_need)
+                    logger.warn(message)
+                    raise ValueError(message)
+
+        for f,v in value.items():
+            if f in [
+                    'actor'
+                    ]:
+                fields['f_'+f] = v
+                del other_fields[f]
+
+        fields['f_type'] = TYPE_NAMES[value['type']]
 
         if 'id' in value:
-            fields['remote_url'] = value['id']
+            # FIXME this allows people to create "remote" Activities
+            # with local URLs, which is weird and shouldn't happen.
+            record_fields['remote_url'] = value['id']
 
-        result = cls(**fields)
+        for f in ['id', 'type']:
+            if f in other_fields:
+                del other_fields[f]
+
+        record_fields['other_fields'] = other_fields
+
+        logger.debug('About to create Activity with fields: %s', record_fields)
+
+        result = cls(**record_fields)
         result.save()
+        logger.debug('Activity created: %s', record_fields)
         result.send_notifications()
 
         return result

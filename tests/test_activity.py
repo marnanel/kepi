@@ -1,14 +1,11 @@
 from django.test import TestCase
 from django_kepi.models import Activity
-from things_for_testing.models import ThingNote, ThingUser
 
 FRED_URL = 'https://users.example.com/user/fred'
 
 class TestActivity(TestCase):
 
     def test_parameters(self):
-
-        return # XXX
 
         with self.assertRaisesMessage(ValueError, "is not an Activity type"):
             Activity.create({
@@ -26,19 +23,8 @@ class TestActivity(TestCase):
                 },
                 sender="https://remote.example.com")
 
-        with self.assertRaisesMessage(ValueError, "Wrong parameters for type"):
+        with self.assertRaisesMessage(ValueError, "Wrong parameters for Activity type"):
             Activity.create({
                 "id": "https://example.com/id/1",
                 "type": "Create",
                 })
-
-        fred = ThingUser(name="fred")
-        fred.save()
-
-    def test_note_creation(self):
-
-        note = ThingNote(
-                title='Hello world',
-                owner=FRED_URL,
-                )
-        note.save()
