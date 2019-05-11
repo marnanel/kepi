@@ -6,7 +6,6 @@ from things_for_testing import KepiTestCase
 from things_for_testing.models import ThingUser
 from unittest.mock import Mock, patch
 import logging
-import httpretty
 import httpsig
 import json
 
@@ -132,64 +131,6 @@ class ResultWrapper(object):
 
 class TestValidationTasks(TestCase):
 
-    def _mock_remote_object(self,
-            url,
-            ftype = 'Object',
-            content = '',
-            status = 200):
-
-        headers = {
-                'Content-Type': 'application/activity+json',
-                }
-
-        httpretty.register_uri(
-                httpretty.GET,
-                url,
-                status=status,
-                headers=headers,
-                body=bytes(content, encoding='UTF-8'))
-
-        logger.debug('Mocking %s as %d: %s',
-                url,
-                status,
-                content)
-
-    def _mock_remote_service(self,
-            url,
-            ):
-
-        def remote_service(request, uri, response_headers):
-
-            self._sent_body = request.body.decode(encoding='ASCII')
-
-            return [200, response_headers, 'Thank you.']
-
-        self._sent_body = None
-
-        httpretty.register_uri(
-                httpretty.POST,
-                url,
-                body=remote_service)
-
-    def _mock_local_endpoint(self):
-
-        def local_endpoint(request, uri, response_headers):
-
-            self._received_code = int(request.querystring['code'][0])
-            self._received_url = request.querystring['url'][0]
-            self._received_body = request.body.decode(encoding='ASCII')
-
-            return [200, response_headers, '']
-
-        self._received_code = None
-        self._received_url = None
-        self._received_body = None
-
-        httpretty.register_uri(
-                httpretty.POST,
-                RESULT_URL,
-                body=local_endpoint)
-
     @patch('requests.get')
     def test_local_lookup(self, mock_get):
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
@@ -306,11 +247,12 @@ class TestValidationTasks(TestCase):
 class TestDeliverTasks(TestCase):
 
     def test_deliver(self):
-        a = Activity(
-                f_type='F',
-                f_actor=LOCAL_ALICE,
-                f_object=REMOTE_FRED,
-                )
+        a = Activity.create({
+            'type': 'Follow',
+            'actor': LOCAL_ALICE,
+            'object': REMOTE_FRED,
+            'to': [REMOTE_FRED],
+            })
         a.save()
 
         deliver(a.uuid)
