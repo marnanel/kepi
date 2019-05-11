@@ -126,21 +126,6 @@ class Activity(models.Model):
             blank=True,
             )
 
-    f_object_type = models.CharField(
-            max_length=255,
-            blank=True,
-            )
-
-    f_object = models.URLField(
-            max_length=255,
-            blank=True,
-            )
-
-    f_target = models.URLField(
-            max_length=255,
-            blank=True,
-            )
-
     other_fields = models.TextField(
             )
 
@@ -189,11 +174,14 @@ class Activity(models.Model):
             'type': self.get_f_type_display(),
             }
 
-        for fieldname in ['actor', 'object', 'target']:
+        for fieldname in ['actor']:
 
             value = getattr(self, 'f_'+fieldname)
             if value is not None:
                 result[fieldname] = value
+
+        for f,v in json.loads(self.other_fields).items():
+            result[f] = v
 
         return result
 
@@ -344,10 +332,10 @@ class Activity(models.Model):
             if f in [
                     'actor'
                     ]:
-                fields['f_'+f] = v
+                record_fields['f_'+f] = v
                 del other_fields[f]
 
-        fields['f_type'] = TYPE_NAMES[value['type']]
+        record_fields['f_type'] = TYPE_NAMES[value['type']]
 
         if 'id' in value:
             # FIXME this allows people to create "remote" Activities
@@ -358,7 +346,10 @@ class Activity(models.Model):
             if f in other_fields:
                 del other_fields[f]
 
-        record_fields['other_fields'] = other_fields
+        record_fields['other_fields'] = json.dumps(
+                other_fields,
+                sort_keys=True,
+                )
 
         logger.debug('About to create Activity with fields: %s', record_fields)
 
