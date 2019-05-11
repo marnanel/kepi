@@ -71,3 +71,25 @@ def validate(
             )
     logger.debug('%s: produced new Activity %s', message, result )
     return result
+
+@shared_task()
+def deliver(
+        activity_id,
+        ):
+    try:
+        activity = Activity.objects.get(uuid=activity_id)
+    except Activity.DoesNotExist:
+        logger.warn("Can't deliver activity %s because it doesn't exist",
+                activity_id)
+        return None
+
+    logger.info('%s: begin delivery',
+            activity)
+
+    recipients = set()
+    for field in ['to', 'bto', 'cc', 'bcc', 'audience']:
+        recipients.update(activity[field])
+
+    logger.debug('%s: recipients are %s',
+            activity, recipients)
+

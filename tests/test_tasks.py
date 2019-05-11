@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.validation import IncomingMessage
-from django_kepi.tasks import validate
+from django_kepi.tasks import validate, deliver
 from django_kepi.activity_model import Activity
 from things_for_testing import KepiTestCase
 from things_for_testing.models import ThingUser
@@ -130,7 +130,7 @@ class ResultWrapper(object):
         self.text = json.dumps(text)
         self.status_code = status_code
 
-class TestTasks(TestCase):
+class TestValidationTasks(TestCase):
 
     def _mock_remote_object(self,
             url,
@@ -303,4 +303,14 @@ class TestTasks(TestCase):
 
         mock_get.assert_called_once_with(REMOTE_FRED)
 
+class TestDeliverTasks(TestCase):
 
+    def test_deliver(self):
+        a = Activity(
+                f_type='F',
+                f_actor=LOCAL_ALICE,
+                f_object=REMOTE_FRED,
+                )
+        a.save()
+
+        deliver(a.uuid)
