@@ -8,9 +8,9 @@ logger = logging.getLogger(name='things_for_testing')
 @implements_activity_type('Person')
 class ThingUser(models.Model):
 
-    url = models.URLField(max_length=256)
     name = models.CharField(max_length=256)
     public_key = models.CharField(max_length=256)
+    private_key = models.CharField(max_length=256)
 
     favourite_colour = models.CharField(
             max_length=256,
@@ -19,6 +19,16 @@ class ThingUser(models.Model):
 
     def __str__(self):
         return '[ThingUser {}]'.format(self.name)
+
+    @property
+    def url(self):
+        return 'https://altair.example.com/users/{}'.format(
+                self.name,
+                )
+
+    @property
+    def key_name(self):
+        return self.url+'#main-key'
 
     @property
     def activity_form(self):

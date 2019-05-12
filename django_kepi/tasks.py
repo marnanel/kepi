@@ -1,14 +1,30 @@
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 from django_kepi.validation import IncomingMessage
-from django_kepi.find import find
+from django_kepi.find import find, find_local
 from django_kepi.activity_model import Activity
 from httpsig.verify import HeaderVerifier
+from urllib.parse import urlparse
 import logging
 import requests
 import json
+import datetime
+import pytz
+import httpsig
 
 logger = logging.getLogger(name='django_kepi')
+
+def _rfc822_datetime(when=None):
+    if when is None:
+        when = datetime.datetime.utcnow()
+    else:
+        when.replace(tzinfo=pytz.UTC)
+
+    return datetime.datetime.utcnow().strftime("%a, %d %b %Y %T GMT")
+
+def _find_local_actor(activity_form):
+    path = urlparse(activity_form['actor']).path
+    return find_local(path)
 
 @shared_task()
 def validate(
@@ -92,6 +108,10 @@ def deliver(
     logger.debug('%s: full form is %s',
             activity, activity_form)
 
+    local_actor = _find_local_actor(activity_form)
+    logger.debug('%s: local actor is %s',
+            activity, local_actor)
+
     recipients = set()
     for field in ['to', 'bto', 'cc', 'bcc', 'audience']:
         if field in activity_form:
@@ -146,9 +166,17 @@ def deliver(
         if blind_field in format_for_delivery: 
             del format_for_delivery[blind_field]
 
-    # FIXME
-    # FIXME This is where we sign the message!
-    # FIXME
+    if local_actor is not None:
+        signer = httpsig.HeaderSigner(
+                key_id=local_actor.key_name,
+                secret=local_actor.private_key,
+                algorithm='rsa-sha256',
+                headers=['(request-target)', 'host', 'date', 'content-type'],
+                )
+    else:
+        signer = None
+        logger.info('%s: not signing outgoing messages because we have no known actor',
+            activity)
 
     message = json.dumps(
             format_for_delivery,
@@ -159,15 +187,37 @@ def deliver(
     for inbox in inboxes:
         logger.debug('%s: %s: begin delivery',
                 activity, inbox)
-        requests.post(
+
+        parsed_inbox_url = urlparse(inbox,
+                allow_fragments = False,
+                )
+
+        headers = {
+                'Date': _rfc822_datetime(),
+                'Host': parsed_inbox_url.netloc,
+                # lowercase is deliberate, to work around
+                # an infelicity of the signer library
+                'content-type': "application/activity+json",
+                }
+
+        if signer is not None:
+            headers = signer.sign(
+                    headers,
+                    method='POST',
+                    path = parsed_inbox_url.path,
+                    )
+
+        logger.debug('%s: %s: headers are %s',
+                activity, inbox, headers)
+
+        response = requests.post(
                 inbox,
                 data=message,
-                headers={
-                    'Content-Type': 'application/activity+json',
-                    },
+                headers=headers,
                 )
-        logger.debug('%s: %s: posted',
-                activity, inbox)
+
+        logger.debug('%s: %s: posted. Server replied: %s',
+                activity, inbox, response)
 
     logger.debug('%s: message posted to all inboxes',
             activity)

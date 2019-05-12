@@ -296,6 +296,15 @@ class TestDeliverTasks(TestCase):
 
     def test_deliver(self):
 
+        keys = json.load(open('tests/keys/keys-0000.json', 'r'))
+        alice = ThingUser(
+                name = 'alice',
+                favourite_colour = 'puce',
+                public_key = keys['public'],
+                private_key = keys['private'],
+                )
+        alice.save()
+
         self._run_delivery(
                 activity_fields = {
                     'type': 'Follow',
