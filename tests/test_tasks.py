@@ -294,7 +294,7 @@ class TestDeliverTasks(TestCase):
             with patch('requests.post', mock_post):
                 deliver(a.uuid)
 
-    def test_deliver(self):
+    def test_deliver_remote(self):
 
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
         alice = ThingUser(
@@ -320,3 +320,34 @@ class TestDeliverTasks(TestCase):
                         ),
                     }
                 )
+
+    def test_deliver_local(self):
+
+        keys0 = json.load(open('tests/keys/keys-0000.json', 'r'))
+        keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
+        alice = ThingUser(
+                name = 'alice',
+                favourite_colour = 'puce',
+                public_key = keys0['public'],
+                private_key = keys0['private'],
+                )
+        alice.save()
+        bob = ThingUser(
+                name = 'bob',
+                favourite_colour = 'taupe',
+                public_key = keys1['public'],
+                private_key = keys1['private'],
+                )
+        bob.save()
+
+        self._run_delivery(
+                activity_fields = {
+                    'type': 'Follow',
+                    'actor': LOCAL_ALICE,
+                    'object': LOCAL_BOB,
+                    'to': [LOCAL_BOB],
+                    },
+                remote_user_details = {
+                    }
+                )
+
