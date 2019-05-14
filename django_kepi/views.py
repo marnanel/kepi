@@ -73,7 +73,7 @@ class KepiView(django.views.View):
 
             if isinstance(result, Iterable):
                 logger.debug(' -- it\'s an iterable')
-                return self._collection_get(result)
+                return self._collection_get(request, result)
 
             try:
                 result = result.activity_form
