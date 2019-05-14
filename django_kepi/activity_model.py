@@ -275,7 +275,8 @@ class Activity(models.Model):
 
     @classmethod
     def create(cls, value,
-            sender=None):
+            sender=None,
+            run_side_effects=True):
 
         logger.debug('Creating Activity from %s', str(value))
 
@@ -356,7 +357,9 @@ class Activity(models.Model):
         result = cls(**record_fields)
         result.save()
         logger.debug('Activity created: %s', record_fields)
-        result.send_notifications()
+
+        if run_side_effects:
+            result.send_notifications()
 
         return result
 
