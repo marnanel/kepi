@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django_kepi.models import Activity
+from collections.abc import Iterable
 import logging
 import urllib.parse
 import json
@@ -26,56 +27,61 @@ class KepiView(django.views.View):
 
         self.http_method_names.append('activity')
 
-class ActivityObjectView(KepiView):
-
     def activity(self, request, *args, **kwargs):
+        """
+        Returns this view in a form suitable for ActivityPub.
 
-        try:
-            activity_object = Activity.objects.get(
-                    uuid=kwargs['id'],
-                    )
-        except Activity.DoesNotExist:
-            logger.info('unknown: %s', kwargs['id'])
-            return None
-        except django.core.exceptions.ValidationError:
-            logger.info('invalid: %s', kwargs['id'])
-            return None
+        It may return:
+         - a dict, suitable for turning into JSON
+         - an iterable, such as a list or QuerySet;
+              this will be turned into an OrderedCollection.
+              Every member will be passed through
+              _modify_list_item before rendering.
+         - anything with a property called "activity_form";
+           this value should be either an iterable or a dict,
+           as above.
 
-        result = activity_object.activity_form
-        logger.debug('found object: %s', str(result))
+         This method is usually called by a KepiView's get() handler.
+         By default, its args and kwargs will be passed in unchanged.
 
-        return result
+         It's also used to retrieve the ActivityPub form within
+         the rest of the program, rather than as a response to
+         a particular HTTP request. In that case, "request" will
+         not be a real HttpRequest. (XXX so, what *will* it be?)
+
+         Override this method in your subclass. In KepiView
+         it's abstract.
+        """
+        raise NotImplementedError("implement activity() in a subclass")
 
     def get(self, request, *args, **kwargs):
+        """
+        Returns a rendered HttpResult for a GET request.
 
+        By default, KepiViews call self.activity() to get
+        the data to render.
+        """
         result = self.activity(request, *args, **kwargs)
-        return self._render(result)
 
-    def _make_query_page(
-            self,
-            request,
-            page_number,
-            ):
-    
-        fields = dict(request.GET)
+        logger.debug('About to render object: %s',
+                result)
 
-        if page_number is None:
-            if PAGE_FIELD in fields:
-                del fields[PAGE_FIELD]
-        else:
-            fields[PAGE_FIELD] = page_number
+        while True:
+            if isinstance(result, dict):
+                logger.debug(' -- it\'s a dict')
+                return self._render(result)
 
-        encoded = urllib.parse.urlencode(fields)
+            if isinstance(result, Iterable):
+                logger.debug(' -- it\'s an iterable')
+                return self._collection_get(result)
 
-        if encoded!='':
-            encoded = '?'+encoded
-
-        return '{}://{}{}{}'.format(
-                request.scheme,
-                request.get_host(),
-                request.path,
-                encoded,
-                )
+            try:
+                result = result.activity_form
+                logger.debug(' -- it has an activity_form, %s; recurring',
+                        result)
+            except AttributeError:
+                result.warn("I don't know how to render objects like %s.", result)
+                raise ValueError("I don't know how to render objects like %s." % (result,))
 
     def _render(self, data):
         result = JsonResponse(
@@ -90,11 +96,8 @@ class ActivityObjectView(KepiView):
 
         return result
 
-class CollectionView(ActivityObjectView):
+    def _collection_get(self, request, items):
 
-    def get(self, request, *args, **kwargs):
-
-        items = self.get_collection_items(*args, **kwargs)
         # XXX assert that items.ordered
 
         our_url = request.build_absolute_uri()
@@ -113,7 +116,7 @@ class CollectionView(ActivityObjectView):
                     "type" : "OrderedCollectionPage",
                     "id" : our_url,
                     "totalItems" : items.count(),
-                    "orderedItems" : [self._stringify_object(x)
+                    "orderedItems" : [self._modify_list_item(x)
                         for x in listed_items],
                     "partOf": index_url,
                     }
@@ -140,26 +143,68 @@ class CollectionView(ActivityObjectView):
 
         return self._render(result)
 
-    def get_collection_items(self, *args, **kwargs):
-        return kwargs['items']
+    def _make_query_page(
+            self,
+            request,
+            page_number,
+            ):
+        fields = dict(request.GET)
 
-    def _stringify_object(self, obj):
+        if page_number is None:
+            if PAGE_FIELD in fields:
+                del fields[PAGE_FIELD]
+        else:
+            fields[PAGE_FIELD] = page_number
+
+        encoded = urllib.parse.urlencode(fields)
+
+        if encoded!='':
+            encoded = '?'+encoded
+
+        return '{}://{}{}{}'.format(
+                request.scheme,
+                request.get_host(),
+                request.path,
+                encoded,
+                )
+
+    def _modify_list_item(self, obj):
         return str(obj)
 
-class FollowingView(CollectionView):
+class ActivityObjectView(KepiView):
+
+    def activity(self, request, *args, **kwargs):
+
+        try:
+            activity_object = Activity.objects.get(
+                    uuid=kwargs['id'],
+                    )
+        except Activity.DoesNotExist:
+            logger.info('unknown: %s', kwargs['id'])
+            return None
+        except django.core.exceptions.ValidationError:
+            logger.info('invalid: %s', kwargs['id'])
+            return None
+
+        result = activity_object.activity_form
+        logger.debug('found object: %s', str(result))
+
+        return result
+
+class FollowingView(KepiView):
 
     def get_collection_items(self, *args, **kwargs):
         return Following.objects.filter(follower__url=kwargs['url'])
 
-    def _stringify_object(self, obj):
+    def _modify_list_item(self, obj):
         return obj.following.url
 
-class FollowersView(CollectionView):
+class FollowersView(KepiView):
 
     def get_collection_items(self, *args, **kwargs):
         return Following.objects.filter(following__url=kwargs['url'])
 
-    def _stringify_object(self, obj):
+    def _modify_list_item(self, obj):
         return obj.follower.url
 
 ########################################

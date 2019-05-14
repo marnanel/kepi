@@ -38,7 +38,6 @@ class ThingUser(models.Model):
 
         return {
                 'id': self.url,
-                'type': self.implements_activity_type,
                 'name': self.name,
                 'favourite_colour': self.favourite_colour,
                 }

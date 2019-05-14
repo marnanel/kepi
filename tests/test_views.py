@@ -1,21 +1,31 @@
-import django_kepi.activity_model
+from django_kepi.activity_model import Activity
 from django.test import TestCase, Client
+from things_for_testing.models import ThingUser
 import logging
+import json
 
 logger = logging.getLogger(name='django_kepi')
 
-class TestActivityObjectView(TestCase):
+class TestSingleKepiView(TestCase):
 
-    def test_activity_object_view(self):
+    def test_single_kepi_view(self):
 
-        a = django_kepi.activity_model.Activity(
-                f_actor = 'https://example.net/users/fred',
-                f_object = 'https://example.net/articles/i-like-jam',
-                f_type = 'L',
-                identifier = 'https://example.com/obj/1234',
+        alice = ThingUser(
+                name = 'alice',
+                favourite_colour = 'magenta',
                 )
-        a.save()
+        alice.save()
 
         c = Client()
-        result = c.get('/obj/1234')
-        logger.info('Content: %s', result.content)
+        response = c.get('/users/alice')
+        logger.info('Response: %s', response.content.decode('utf-8'))
+        result = json.loads(response.content.decode('utf-8'))
+
+        self.assertDictEqual(
+                result,
+                {
+                    'name': 'alice',
+                    'favourite_colour': 'magenta',
+                    'id': 'https://altair.example.com/users/alice',
+                    },
+                )
