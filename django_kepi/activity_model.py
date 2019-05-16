@@ -12,69 +12,7 @@ import uuid
 
 logger = logging.getLogger(name='django_kepi')
 
-TYPE_NAMES = {
-        'Create': 'C',
-        'Update': 'U',
-        'Delete': 'D',
-        'Follow': 'F',
-        'Add': '+',
-        'Remove': '-',
-        'Like': 'L',
-        'Undo': 'U',
-        'Accept': 'A',
-        'Reject': 'R',
-        }
-
-#######################
-
-def _object_to_id_and_type(obj):
-    """
-    Takes an object passed in to Activity.create(),
-    and returns a (url, type) pair to find it with
-    lookup().
-    
-    "type" may be None if we can't determine a type,
-    so lookup() will have to check everything.
-    """
-
-    # Is it a string?
-    if isinstance(obj, str):
-        return obj, None
-
-    # Maybe it has an activity_id property.
-    try:
-        check_url = obj.activity_id
-
-        try:
-            check_type = obj.activity_type
-        except AttributeError:
-            check_type = None
-
-        return check_url, check_type
-
-    except AttributeError:
-        pass # nope, try something else
-
-    # Maybe it's a dict with 'id' and 'type' fields.
-    try:
-        check_url = obj['id']
-
-        try:
-            check_type = obj['type']
-        except KeyError:
-            check_type = None
-
-        return check_url, check_type
-
-    except KeyError:
-        # So it *does* have fields, but "id" isn't
-        # one of them. This breaks preconditions.
-        raise ValueError('Explicit objects must have an id')
-
-    except TypeError:
-        pass # Can't subscript at all.
-
-#######################
+######################
 
 ACTIVITY_TYPES = set([
             'Create',
