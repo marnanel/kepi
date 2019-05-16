@@ -26,9 +26,9 @@ class ThingUserFollowingView(KepiView):
 
     def activity(self, *args, **kwargs):
         return Activity.objects.filter(
-                f_type='Follow',
+                f_type='Accept',
                 f_actor=ThingUser(name=kwargs['name']).activity_id,
-                accepted=True,
+                active=True,
                 )
 
     def _modify_list_item(self, obj):
