@@ -79,9 +79,6 @@ class Activity(models.Model):
             blank=True,
             )
 
-    other_fields = models.TextField(
-            )
-
     active = models.BooleanField(
             default=True,
             )
@@ -133,8 +130,8 @@ class Activity(models.Model):
             if value is not None:
                 result[fieldname] = value
 
-        for f,v in json.loads(self.other_fields).items():
-            result[f] = v
+        for f in ActivityFields.objects.filter(parent=self):
+            result[f.name] = json.loads(f.value)
 
         return result
 
@@ -298,20 +295,24 @@ class Activity(models.Model):
             # with local URLs, which is weird and shouldn't happen.
             record_fields['remote_url'] = value['id']
 
-        for f in ['id', 'type']:
+        for f in ['id', 'type', 'actor']:
             if f in other_fields:
                 del other_fields[f]
-
-        record_fields['other_fields'] = json.dumps(
-                other_fields,
-                sort_keys=True,
-                )
 
         logger.debug('About to create Activity with fields: %s', record_fields)
 
         result = cls(**record_fields)
         result.save()
-        logger.debug('Activity created: %s', record_fields)
+        logger.debug('Activity created: %s', result)
+
+        for f, v in other_fields.items():
+            n = ActivityField(
+                    parent = result,
+                    name = f,
+                    value = json.dumps(v, sort_keys=True),
+                    )
+            n.save()
+            logger.debug('ActivityField created: %s', n)
 
         if run_side_effects:
             result.send_notifications()
@@ -320,6 +321,34 @@ class Activity(models.Model):
 
     # TODO: there should be a clean() method with the same
     # checks as create().
+
+########################################
+
+class ActivityField(models.Model):
+
+    class Meta:
+        unique_together = ['parent', 'name']
+
+    parent = models.ForeignKey(
+            Activity,
+            on_delete=models.CASCADE,
+            )
+
+    # "type" and "actor" are fields in the Activity model itself;
+    # all ohers go here.
+    name = models.CharField(
+            max_length=255,
+            )
+
+    # Stored in JSON.
+    value = models.TextField(
+        )
+
+    def __str__(self):
+        return '%s.%s = %s' % (
+                self.parent.uuid,
+                self.name,
+                self.value)
 
 ########################################
 
