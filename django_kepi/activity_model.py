@@ -76,6 +76,21 @@ def _object_to_id_and_type(obj):
 
 #######################
 
+ACTIVITY_TYPES = set([
+            'Create',
+            'Update',
+            'Delete',
+            'Follow',
+            'Add',
+            'Remove',
+            'Like',
+            'Undo',
+            'Accept',
+            'Reject',
+        ])
+
+ACTIVITY_TYPE_CHOICES = [(x,x) for x in ACTIVITY_TYPES]
+
 class Activity(models.Model):
 
     CREATE='C'
@@ -110,7 +125,7 @@ class Activity(models.Model):
             )
 
     f_type = models.CharField(
-            max_length=1,
+            max_length=255,
             choices=ACTIVITY_TYPE_CHOICES,
             )
 
@@ -283,6 +298,8 @@ class Activity(models.Model):
         if 'type' not in value:
             raise ValueError("Activities must have a type")
 
+        value['type'] = value['type'].title()
+
         if 'id' not in value and sender is not None:
             raise ValueError("Remote activities must have an id")
 
@@ -336,7 +353,7 @@ class Activity(models.Model):
                 record_fields['f_'+f] = v
                 del other_fields[f]
 
-        record_fields['f_type'] = TYPE_NAMES[value['type']]
+        record_fields['f_type'] = value['type']
 
         if 'id' in value:
             # FIXME this allows people to create "remote" Activities
