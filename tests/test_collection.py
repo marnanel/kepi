@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from unittest import skip
 from django_kepi.models import *
 import datetime
 import json
@@ -102,9 +103,10 @@ class CollectionTests(TestCase):
         else:
             self.assertNotIn('next', result)
 
+    @skip("/users isn't currently implemented")
     def test_usageByOtherApps(self):
 
-        PATH = '/thing-users'
+        PATH = '/users'
         EXPECTED_SERIALIZATION = [
                 {'id': 'https://example.com/user/alice', 'name': 'alice', 'type': 'Person', },
                 {'id': 'https://example.com/user/bob', 'name': 'bob', 'type': 'Person', },
@@ -143,15 +145,13 @@ class CollectionTests(TestCase):
                     'type': 'Follow',
                     'actor': people[name],
                     'object': people['alice'],
-                },
-                local=True)
+                })
 
             create({
                     'type': 'Accept',
                     'actor': people['alice'],
                     'object': follow,
-                },
-                local=True)
+                })
 
         path = '/users/alice/followers'
 
