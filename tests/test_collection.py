@@ -1,7 +1,5 @@
 from django.test import TestCase, Client
 from django_kepi.models import *
-from things_for_testing.models import ThingUser
-from things_for_testing.views import ThingUserCollection
 import datetime
 import json
 from django_kepi import logger
@@ -108,18 +106,15 @@ class CollectionTests(TestCase):
 
         PATH = '/thing-users'
         EXPECTED_SERIALIZATION = [
-                {'id': 'https://example.com/user/alice', 'name': 'alice', 'type': 'Person',
-                    'favourite_colour': 'red'},
-                {'id': 'https://example.com/user/bob', 'name': 'bob', 'type': 'Person',
-                    'favourite_colour': 'green'},
-                {'id': 'https://example.com/user/carol', 'name': 'carol', 'type': 'Person',
-                    'favourite_colour': 'blue'},
+                {'id': 'https://example.com/user/alice', 'name': 'alice', 'type': 'Person', },
+                {'id': 'https://example.com/user/bob', 'name': 'bob', 'type': 'Person', },
+                {'id': 'https://example.com/user/carol', 'name': 'carol', 'type': 'Person', },
                 ]
 
         users = [
-                ThingUser(name='alice', favourite_colour='red'),
-                ThingUser(name='bob', favourite_colour='green'),
-                ThingUser(name='carol', favourite_colour='blue'),
+                create({'name': 'alice', 'type': 'Person'}),
+                create({'name': 'bob', 'type': 'Person'}),
+                create({'name': 'carol', 'type': 'Person'}),
                 ]
 
         for user in users:
@@ -142,17 +137,16 @@ class CollectionTests(TestCase):
         people = {}
 
         for name in ['alice', 'bob', 'carol']:
-            people[name] = ThingUser(name=name)
-            people[name].save()
+            people[name] = create({'name': name, 'type': 'Person'})
 
-            follow = Thing.create({
+            follow = create({
                     'type': 'Follow',
                     'actor': people[name],
                     'object': people['alice'],
                 },
                 local=True)
 
-            Thing.create({
+            create({
                     'type': 'Accept',
                     'actor': people['alice'],
                     'object': follow,
