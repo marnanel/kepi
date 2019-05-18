@@ -29,6 +29,16 @@ ACTIVITY_TYPES = set([
 
 ACTIVITY_TYPE_CHOICES = [(x,x) for x in ACTIVITY_TYPES]
 
+OTHER_OBJECT_TYPES = set([
+    # https://www.w3.org/TR/activitystreams-vocabulary/
+
+    'Actor', 'Application', 'Group', 'Organization', 'Person', 'Service',
+
+    'Article', 'Audio', 'Document', 'Event', 'Image', 'Note', 'Page',
+    'Place', 'Profile', 'Relationship', 'Video',
+
+    ])
+
 class Thing(models.Model):
 
     uuid = models.UUIDField(
@@ -144,8 +154,17 @@ class Thing(models.Model):
         try:
             need_actor, need_object, need_target = cls.TYPES[value['type']]
         except KeyError:
-            logger.debug('Unknown thing type: %s', value['type'])
-            raise ValueError('{} is not a thing type'.format(value['type']))
+            if value['type'] in OTHER_OBJECT_TYPES:
+                logger.debug('Thing type %s is known, but not an Activity',
+                        value['type'])
+
+                need_actor = need_object = need_target = False
+            else:
+                logger.debug('Unknown thing type: %s', value['type'])
+                raise ValueError('{} is not a thing type'.format(value['type']))
+
+            # XXX We don't currently allow people to create Tombstones here,
+            # but we should.
 
         if need_actor!=('actor' in value) or \
                 need_object!=('object' in value) or \
@@ -220,6 +239,36 @@ class Thing(models.Model):
     # TODO: there should be a clean() method with the same
     # checks as create().
 
+    def save(self, *args, **kwargs):
+
+        we_are_new = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if we_are_new and self.f_type in OTHER_OBJECT_TYPES:
+            logger.debug('New Thing is not an activity: %s',
+                    str(self.activity_form))
+            logger.debug('We must create a Create wrapper for it.')
+
+            wrapper = Thing.create({
+                'type': 'Create',
+                'actor': self.activity_actor,
+                'to': self.activity_to,
+                'cc': self.activity_cc,
+                'object': self.activity_id,
+                })
+
+            wrapper.save()
+            logger.debug('Created wrapper %s',
+                    str(wrapper.activity_form))
+
+            # XXX We copy "to" and "cc" per
+            # https://www.w3.org/TR/activitypub/#object-without-create
+            # which also requires us to copy
+            # the two blind versions, and "audience".
+            # We don't support those (atm), but
+            # we should probably copy them anyway.
+
 ########################################
 
 class ThingField(models.Model):
@@ -247,4 +296,9 @@ class ThingField(models.Model):
                 self.parent.uuid,
                 self.name,
                 self.value)
+
+########################################
+
+def create(*args, **kwargs):
+    return Thing.create(*args, **kwargs)
 

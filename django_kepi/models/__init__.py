@@ -1,5 +1,4 @@
-from django_kepi.models.thing import Thing
-from django_kepi.something_model import ActivityModel
+from django_kepi.models.thing import Thing, create
 
 def new_activity_identifier():
     # we have to keep this in for now,
@@ -10,6 +9,6 @@ def new_activity_identifier():
 
 __all__ = [
         'Thing',
+        'create',
         'new_activity_identifier',
-        'ActivityModel',
         ]
