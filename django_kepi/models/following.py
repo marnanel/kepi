@@ -1,5 +1,6 @@
 from django.db import models
 from django_kepi.models.thing import Thing
+import logging
 
 logger = logging.getLogger(name='django_kepi')
 
