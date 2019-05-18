@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django_kepi.find import find
-from django_kepi.activity_model import Activity
+from django_kepi.activity_model import Thing
 from django.conf import settings
 from things_for_testing import KepiTestCase
 import httpretty
@@ -41,7 +41,7 @@ class TestFind(KepiTestCase):
 
     def test_find_local(self):
 
-        a = Activity(
+        a = Thing(
                 f_actor = 'https://example.net/users/fred',
                 f_object = 'https://example.net/articles/i-like-jam',
                 f_type = 'L',

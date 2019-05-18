@@ -145,14 +145,14 @@ class CollectionTests(TestCase):
             people[name] = ThingUser(name=name)
             people[name].save()
 
-            follow = Activity.create({
+            follow = Thing.create({
                     'type': 'Follow',
                     'actor': people[name],
                     'object': people['alice'],
                 },
                 local=True)
 
-            Activity.create({
+            Thing.create({
                     'type': 'Accept',
                     'actor': people['alice'],
                     'object': follow,

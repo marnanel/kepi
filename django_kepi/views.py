@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django_kepi.models import Activity
+from django_kepi.models import Thing
 from collections.abc import Iterable
 import logging
 import urllib.parse
@@ -171,15 +171,15 @@ class KepiView(django.views.View):
     def _modify_list_item(self, obj):
         return str(obj)
 
-class ActivityObjectView(KepiView):
+class ThingObjectView(KepiView):
 
     def activity(self, request, *args, **kwargs):
 
         try:
-            activity_object = Activity.objects.get(
+            activity_object = Thing.objects.get(
                     uuid=kwargs['id'],
                     )
-        except Activity.DoesNotExist:
+        except Thing.DoesNotExist:
             logger.info('unknown: %s', kwargs['id'])
             return None
         except django.core.exceptions.ValidationError:

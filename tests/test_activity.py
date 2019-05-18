@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django_kepi.models import Activity
+from django_kepi.models import Thing
 
 REMOTE_ID_1 = 'https://users.example.com/activity/1'
 
@@ -9,20 +9,20 @@ SAMPLE_NOTE = {
         "type": "Note",
         }
 
-class TestActivity(TestCase):
+class TestThing(TestCase):
 
     def test_bad_type(self):
 
-        with self.assertRaisesMessage(ValueError, "is not an Activity type"):
-            Activity.create({
+        with self.assertRaisesMessage(ValueError, "is not a thing type"):
+            Thing.create({
                 "id": REMOTE_ID_1,
                 "type": "Wombat",
                 })
 
     def test_remote_no_id(self):
 
-        with self.assertRaisesMessage(ValueError, "Remote activities must have an id"):
-            Activity.create({
+        with self.assertRaisesMessage(ValueError, "Remote things must have an id"):
+            Thing.create({
                 "type": "Create",
                 "actor": "https://example.com/user/fred",
                 "object": {
@@ -33,28 +33,28 @@ class TestActivity(TestCase):
 
     def test_create_create_wrong_params(self):
 
-        with self.assertRaisesMessage(ValueError, "Wrong parameters for Activity type"):
-            Activity.create({
+        with self.assertRaisesMessage(ValueError, "Wrong parameters for thing type"):
+            Thing.create({
                 "id": REMOTE_ID_1,
                 "type": "Create",
                 })
 
-        with self.assertRaisesMessage(ValueError, "Wrong parameters for Activity type"):
-            Activity.create({
+        with self.assertRaisesMessage(ValueError, "Wrong parameters for thing type"):
+            Thing.create({
                 "id": REMOTE_ID_1,
                 "actor": REMOTE_FRED,
                 "type": "Create",
                 })
 
-        with self.assertRaisesMessage(ValueError, "Wrong parameters for Activity type"):
-            Activity.create({
+        with self.assertRaisesMessage(ValueError, "Wrong parameters for thing type"):
+            Thing.create({
                 "id": REMOTE_ID_1,
                 "target": REMOTE_FRED,
                 "type": "Create",
                 })
 
     def test_create_create(self):
-        Activity.create({
+        Thing.create({
             "id": REMOTE_ID_1,
             "type": "Create",
             "actor": REMOTE_FRED,
@@ -62,6 +62,6 @@ class TestActivity(TestCase):
             })
 
         self.assertEqual(
-                Activity.objects.filter(remote_url=REMOTE_ID_1).count(),
+                Thing.objects.filter(remote_url=REMOTE_ID_1).count(),
                 1,
                 )

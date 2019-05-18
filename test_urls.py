@@ -3,8 +3,8 @@ from django_kepi.views import *
 from things_for_testing.views import *
 
 urlpatterns = [
-    path('obj/<id>', ActivityObjectView.as_view(),
-        { 'f_type': 'Activity',
+    path('obj/<id>', ThingObjectView.as_view(),
+        { 'f_type': 'Object',
             }),
     path('users', ThingUserCollection.as_view()),
     path('users/<name>', ThingUserView.as_view()),

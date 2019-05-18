@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django_kepi.validation import IncomingMessage
 from django_kepi.tasks import validate, deliver
-from django_kepi.activity_model import Activity
+from django_kepi.activity_model import Thing
 from things_for_testing import KepiTestCase
 from things_for_testing.models import ThingUser
 from unittest.mock import Mock, patch
@@ -133,9 +133,9 @@ def _remote_user(url, name,
 
 def _message_became_activity(url=ACTIVITY_ID):
     try:
-        result = Activity.objects.get(remote_url=url)
+        result = Thing.objects.get(remote_url=url)
         return True
-    except Activity.DoesNotExist:
+    except Thing.DoesNotExist:
         return False
 
 class ResultWrapper(object):
@@ -269,7 +269,7 @@ class TestDeliverTasks(TestCase):
             remote_user_details,
             ):
 
-        a = Activity.create(activity_fields)
+        a = Thing.create(activity_fields)
         a.save()
 
         def _get(url):
@@ -375,7 +375,7 @@ class TestBob(TestCase):
         logger.info('bob friends %s', c.get('/users/bob/following').content)
         logger.info('bob friends p1 %s', c.get('/users/bob/following?page=1').content)
 
-# This is purely about delivery, so we only use one Activity type: a Like.
+# This is purely about delivery, so we only use one Thing type: a Like.
 # {
 #    "type": "Like",
 #    "actor": "alice@altair.example.com",

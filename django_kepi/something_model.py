@@ -3,7 +3,7 @@ from django_kepi import object_type_registry
 from django_kepi.cache_model import Cache
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django_kepi.models import Activity
+from django_kepi.models import Thing
 import logging
 
 logger = logging.getLogger(name='django_kepi')
@@ -22,7 +22,7 @@ class ActivityModel(models.Model):
                     str(self.activity_form))
             logger.debug('We must create a Create wrapper for it.')
 
-            wrapper = Activity.create({
+            wrapper = Thing.create({
                 'type': 'Create',
                 'actor': self.activity_actor,
                 'to': self.activity_to,

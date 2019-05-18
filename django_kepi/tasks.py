@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 from django_kepi.validation import IncomingMessage
 from django_kepi.find import find, find_local
-from django_kepi.activity_model import Activity
+from django_kepi.activity_model import Thing
 from httpsig.verify import HeaderVerifier
 from urllib.parse import urlparse
 from django.http.request import HttpRequest
@@ -155,11 +155,11 @@ def validate(
 
     logger.debug('%s: validation passed!', message)
 
-    result = Activity.create(
+    result = Thing.create(
             value=message.activity_form,
             sender=actor,
             )
-    logger.debug('%s: produced new Activity %s', message, result )
+    logger.debug('%s: produced new Thing %s', message, result )
     return result
 
 @shared_task()
@@ -167,8 +167,8 @@ def deliver(
         activity_id,
         ):
     try:
-        activity = Activity.objects.get(uuid=activity_id)
-    except Activity.DoesNotExist:
+        activity = Thing.objects.get(uuid=activity_id)
+    except Thing.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)
         return None

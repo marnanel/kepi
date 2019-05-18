@@ -25,7 +25,7 @@ class ThingUserCollection(KepiView):
 class ThingUserFollowingView(KepiView):
 
     def activity(self, *args, **kwargs):
-        return Activity.objects.filter(
+        return Thing.objects.filter(
                 f_type='Accept',
                 f_actor=ThingUser(name=kwargs['name']).activity_id,
                 active=True,
@@ -37,7 +37,7 @@ class ThingUserFollowingView(KepiView):
 class ThingUserFollowersView(KepiView):
 
     def activity(self, *args, **kwargs):
-        return Activity.objects.filter(
+        return Thing.objects.filter(
                 f_type='Follow',
                 f_object=ThingUser(name=kwargs['name']).activity_id,
                 accepted=True,

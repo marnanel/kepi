@@ -39,7 +39,7 @@ class ResponseTests(TestCase):
 
     def test_empty_response(self):
 
-        aor = ActivityObjectResponse()
+        aor = ThingObjectResponse()
         self.assertEqual(
                 aor.content,
                  b'')
@@ -55,7 +55,7 @@ class ResponseTests(TestCase):
                         }
 
         rwt = RandomWeirdThing()
-        aor = ActivityObjectResponse(item=rwt)
+        aor = ThingObjectResponse(item=rwt)
 
         self.assertEqual(aor.status_code, 200)
 
@@ -73,7 +73,7 @@ class ResponseTests(TestCase):
                 raise TombstoneException(former_type='Article')
 
         rwgat = RandomWeirdGoneAwayThing()
-        aor = ActivityObjectResponse(item=rwgat)
+        aor = ThingObjectResponse(item=rwgat)
 
         self.assertEqual(aor.status_code, 410)
 

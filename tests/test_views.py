@@ -1,4 +1,3 @@
-from django_kepi.activity_model import Activity
 from django.test import TestCase, Client
 from things_for_testing.models import ThingUser
 import logging

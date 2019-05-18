@@ -142,7 +142,7 @@ class CachedRemoteText(models.Model):
     def _obviously_belongs_to(self, actor):
         return self.address.startswith(actor+'#')
 
-class ActivityRequest(HttpRequest):
+class ThingRequest(HttpRequest):
 
     def __init__(self):
         super().__init__()
@@ -162,7 +162,7 @@ def find_local(path):
     logger.debug('%s: %s', path, str(resolved.args))
     logger.debug('%s: %s', path, str(resolved.kwargs))
 
-    request = ActivityRequest()
+    request = ThingRequest()
     result = resolved.func(request,
             **resolved.kwargs)
     logger.debug('%s: resulting in %s', path, str(result))
