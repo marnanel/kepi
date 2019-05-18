@@ -1,4 +1,4 @@
-from django_kepi.activity_model import Thing
+from django_kepi.models.thing import Thing
 from django_kepi.something_model import ActivityModel
 
 def new_activity_identifier():
