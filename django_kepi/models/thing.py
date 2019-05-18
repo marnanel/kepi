@@ -109,7 +109,7 @@ class Thing(models.Model):
             if value is not None:
                 result[fieldname] = value
 
-        for f in ThingFields.objects.filter(parent=self):
+        for f in ThingField.objects.filter(parent=self):
             result[f.name] = json.loads(f.value)
 
         return result
@@ -137,6 +137,32 @@ class Thing(models.Model):
             run_side_effects=True):
 
         logger.debug('Creating thing from %s', str(value))
+
+        # First, let's fix the types of keys and values.
+
+        for k,v in value.items():
+            if not isinstance(k, str):
+                raise ValueError('Things can only have keys which are strings: %s',
+                        str(k))
+
+            if isinstance(v, str):
+                continue # strings are fine
+            elif isinstance(v, dict):
+                continue # so are dicts
+            elif isinstance(v, bool):
+                continue # also booleans
+            elif isinstance(v, Thing):
+                value[k] = v.url
+                continue
+
+            try:
+                value[k] = v.activity_form
+                logger.debug('  -- fixed type: %s=%s',
+                        k, value[k])
+            except AttributeError:
+                value[k] = str(v)
+                logger.debug('  -- fixed type to string: %s=%s',
+                        k, value[k])
 
         if 'type' not in value:
             raise ValueError("Things must have a type")
