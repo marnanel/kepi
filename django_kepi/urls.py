@@ -5,6 +5,8 @@ urlpatterns = [
         path('<uuid:id>', KepiView.as_view()),
         path('users/<str:name>', KepiView.as_view()),
         path('users/<str:name>/inbox', InboxView.as_view()),
+        path('users/<str:name>/followers', FollowersView.as_view()),
+        path('users/<str:name>/following', FollowingView.as_view()),
         path('sharedInbox', InboxView.as_view()),
         ]
 

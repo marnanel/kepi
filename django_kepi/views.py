@@ -193,7 +193,7 @@ class ThingObjectView(KepiView):
 
 class FollowingView(KepiView):
 
-    def get_collection_items(self, *args, **kwargs):
+    def activity(self, request, *args, **kwargs):
         return Following.objects.filter(follower__url=kwargs['url'])
 
     def _modify_list_item(self, obj):
@@ -201,7 +201,7 @@ class FollowingView(KepiView):
 
 class FollowersView(KepiView):
 
-    def get_collection_items(self, *args, **kwargs):
+    def activity(self, request, *args, **kwargs):
         return Following.objects.filter(following__url=kwargs['url'])
 
     def _modify_list_item(self, obj):
