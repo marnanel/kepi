@@ -282,7 +282,7 @@ class ThingField(models.Model):
             )
 
     # "type" and "actor" are fields in the Thing model itself;
-    # all ohers go here.
+    # all others go here.
     name = models.CharField(
             max_length=255,
             )
