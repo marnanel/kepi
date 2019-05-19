@@ -39,6 +39,8 @@ OTHER_OBJECT_TYPES = set([
 
     ])
 
+######################
+
 class Thing(models.Model):
 
     uuid = models.UUIDField(

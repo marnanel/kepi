@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django_kepi.models import Thing
+from django_kepi.models import Thing, ThingField, Following
 from collections.abc import Iterable
 import logging
 import urllib.parse
@@ -194,18 +194,38 @@ class ThingObjectView(KepiView):
 class FollowingView(KepiView):
 
     def activity(self, request, *args, **kwargs):
-        return Following.objects.filter(follower__url=kwargs['url'])
 
-    def _modify_list_item(self, obj):
-        return obj.following.url
+        logger.debug('Finding following of %s:', kwargs['name'])
+
+        person_name = ThingField.objects.get(
+                name='name',
+                value=json.dumps(kwargs['name']),
+                )
+
+        person = person_name.parent
+
+        logging.debug('Finding followers of %s: %s',
+                kwargs['name'], person)
+
+        return Following.objects.filter(follower=person.url)
 
 class FollowersView(KepiView):
 
     def activity(self, request, *args, **kwargs):
-        return Following.objects.filter(following__url=kwargs['url'])
 
-    def _modify_list_item(self, obj):
-        return obj.follower.url
+        logger.debug('Finding followers of %s:', kwargs['name'])
+
+        person_name = ThingField.objects.get(
+                name='name',
+                value=json.dumps(kwargs['name']),
+                )
+
+        person = person_name.parent
+
+        logging.debug('Finding followers of %s: %s',
+                kwargs['name'], person)
+
+        return Following.objects.filter(following=person.url)
 
 ########################################
 
