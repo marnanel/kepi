@@ -197,12 +197,9 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['name'])
 
-        person_name = ThingField.objects.get(
-                name='name',
-                value=json.dumps(kwargs['name']),
+        person = Thing.objects.get(
+                f_name = kwargs['name'],
                 )
-
-        person = person_name.parent
 
         logging.debug('Finding followers of %s: %s',
                 kwargs['name'], person)
@@ -215,12 +212,9 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['name'])
 
-        person_name = ThingField.objects.get(
-                name='name',
-                value=json.dumps(kwargs['name']),
+        person = Thing.objects.get(
+                f_name=kwargs['name'],
                 )
-
-        person = person_name.parent
 
         logging.debug('Finding followers of %s: %s',
                 kwargs['name'], person)

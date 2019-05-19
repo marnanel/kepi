@@ -65,6 +65,11 @@ class Thing(models.Model):
             blank=True,
             )
 
+    f_name = models.CharField(
+            max_length=255,
+            blank=True,
+            )
+
     active = models.BooleanField(
             default=True,
             )
@@ -83,9 +88,14 @@ class Thing(models.Model):
         else:
             inactive_warning = ' INACTIVE'
 
+        if self.f_name:
+            name = self.f_name
+        else:
+            name = self.url
+
         result = '[%s %s%s]' % (
                 self.f_type,
-                self.url,
+                name,
                 inactive_warning,
                 )
         return result
@@ -228,7 +238,8 @@ class Thing(models.Model):
 
         for f,v in value.items():
             if f in [
-                    'actor'
+                    'actor',
+                    'name',
                     ]:
                 record_fields['f_'+f] = v
                 del other_fields[f]
@@ -240,7 +251,7 @@ class Thing(models.Model):
             # with local URLs, which is weird and shouldn't happen.
             record_fields['remote_url'] = value['id']
 
-        for f in ['id', 'type', 'actor']:
+        for f in ['id', 'type', 'actor', 'name']:
             if f in other_fields:
                 del other_fields[f]
 
