@@ -3,6 +3,7 @@ from django_kepi import object_type_registry, find, register_type
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+from django_kepi.find import find
 import logging
 import random
 import json
@@ -126,8 +127,38 @@ class Thing(models.Model):
 
         return result
 
+    def __getitem__(self, name):
+
+        name_parts = name.split('__')
+        name = name_parts.pop(0)
+
+        if name=='name':
+            result = self.f_name
+        elif name=='actor':
+            result = self.f_actor
+        elif name=='type':
+            result = self.f_type
+        else:
+            field = ThingField.objects.get(
+                    parent = self,
+                    name = name,
+                    )
+
+            result = field.value
+
+            if 'raw' not in name_parts:
+                result = json.loads(result)
+
+        if 'obj' in name_parts:
+            result = find(result,
+                    local_only=True)
+
+        return result
+
     def send_notifications(self):
-        pass # XXX not yet implemented
+        if self.f_type=='Accept':
+            logger.debug('%s', self['object__obj'])
+            pass # XXX
 
     TYPES = {
             #          actor  object  target
