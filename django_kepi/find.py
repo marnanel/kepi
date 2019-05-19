@@ -183,14 +183,18 @@ def is_local(url):
     parsed_url = urlparse(url)
     return parsed_url.hostname in settings.ALLOWED_HOSTS
 
-def find(url):
+def find(url,
+        local_only):
     """
     Finds an object.
 
     address: the URL of the object. 
+    local_only: whether to restrict ourselves to local URLs.
 
     If the address is local, we look the object up using
     Django's usual dispatcher.
+
+    If it isn't found, and local_only is set, we return None.
 
     Otherwise, we check the cache. If the JSON source of the
     object is in the cache, we parse it and return it.
@@ -210,4 +214,7 @@ def find(url):
     if is_local:
         return find_local(parsed_url.path)
     else:
+        if local_only:
+            return None
+
         return find_remote(url)
