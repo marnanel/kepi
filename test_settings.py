@@ -4,7 +4,7 @@ import djcelery
 djcelery.setup_loader()
 
 KEPI = {
-        'ACTIVITY_URL_FORMAT': 'https://altair.example.com/obj/%s',
+        'ACTIVITY_URL_FORMAT': 'https://altair.example.com/%s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
         }
 
