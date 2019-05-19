@@ -198,6 +198,7 @@ class FollowingView(KepiView):
         logger.debug('Finding following of %s:', kwargs['name'])
 
         person = Thing.objects.get(
+                f_type='Person',
                 f_name = kwargs['name'],
                 )
 
@@ -213,6 +214,7 @@ class FollowersView(KepiView):
         logger.debug('Finding followers of %s:', kwargs['name'])
 
         person = Thing.objects.get(
+                f_type='Person',
                 f_name=kwargs['name'],
                 )
 
