@@ -255,20 +255,25 @@ class Thing(models.Model):
             if f in other_fields:
                 del other_fields[f]
 
-        logger.debug('About to create thing with fields: %s', record_fields)
-
         result = cls(**record_fields)
         result.save()
-        logger.debug('Thing created: %s', result)
+        logger.debug('Created %s (%s): ----',
+                result.f_type,
+                result.f_name,
+                )
 
         for f, v in other_fields.items():
+            value = json.dumps(v, sort_keys=True)
             n = ThingField(
                     parent = result,
                     name = f,
-                    value = json.dumps(v, sort_keys=True),
+                    value = value,
                     )
             n.save()
-            logger.debug('ThingField created: %s', n)
+            logger.debug('  --    %10s = %s', f, value)
+
+        logger.debug('  -- and%10s = %s',
+                'url', result.url)
 
         if run_side_effects:
             result.send_notifications()
