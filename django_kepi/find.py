@@ -179,6 +179,10 @@ def find_remote(url):
 
     return result
 
+def is_local(url):
+    parsed_url = urlparse(url)
+    return parsed_url.hostname in settings.ALLOWED_HOSTS
+
 def find(url):
     """
     Finds an object.
