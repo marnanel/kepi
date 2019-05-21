@@ -231,6 +231,17 @@ class FollowersView(KepiView):
     def _modify_list_item(self, obj):
         return obj.follower
 
+class AllUsersView(KepiView):
+
+    def activity(self, request, *args, **kwargs):
+
+        logger.debug('Finding all users.')
+
+        return Thing.objects.filter(f_type='Person')
+
+    def _modify_list_item(self, obj):
+        return obj.activity_form
+
 ########################################
 
 class InboxView(django.views.View):
