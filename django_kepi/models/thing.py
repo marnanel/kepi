@@ -1,7 +1,4 @@
 from django.db import models
-from django_kepi import object_type_registry, find, register_type
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django_kepi.find import find
 import django_kepi.models.following

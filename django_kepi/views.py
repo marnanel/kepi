@@ -1,4 +1,6 @@
-from django_kepi import ATSIGN_CONTEXT, create as kepi_create
+from django_kepi import ATSIGN_CONTEXT
+from django_kepi.models import create
+from django_kepi.find import find
 from django_kepi.validation import IncomingMessage
 from django.shortcuts import render, get_object_or_404
 import django.views
@@ -13,7 +15,6 @@ import urllib.parse
 import json
 import re
 from collections import defaultdict
-from . import find
 
 logger = logging.getLogger(name='django_kepi')
 
