@@ -52,7 +52,9 @@ class KepiView(django.views.View):
          Override this method in your subclass. In KepiView
          it's abstract.
         """
-        raise NotImplementedError("implement activity() in a subclass")
+        raise NotImplementedError("implement activity() in a subclass: %s" % (
+            self.__class__,
+            ))
 
     def get(self, request, *args, **kwargs):
         """
