@@ -6,7 +6,6 @@ __license__ = 'GPL-2'
 __copyright__ = 'Copyright (c) 2018 Marnanel Thurman'
 
 import logging
-from collections import defaultdict
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -36,38 +35,13 @@ ATSIGN_CONTEXT = [
             }
         ]
 
-object_type_registry = defaultdict(list)
-
-def register_type(f_type, handler):
-    logger.debug('Added handler for %s: %s',
-            f_type, handler)
-    object_type_registry[f_type].append(handler)
-
 # Decorator
 def implements_activity_type(f_type):
     def register(cls):
-        register_type(f_type, cls)
+        # XXX This will do something again later
+        pass #register_type(f_type, cls)
         return cls
     return register
-
-def create(fields):
-
-    if 'type' not in fields:
-        logger.debug('create: no "type" in %s', str(fields))
-        raise ValueError('objects must have a type')
-
-    t = fields['type']
-
-    if t not in object_type_registry:
-        logger.debug('create: unknown "type" in %s', str(fields))
-        raise ValueError('type {} is unknown'.format(t,))
-
-    logger.debug('create: for %s...', str(fields))
-    for cls in object_type_registry[t]:
-        result = cls.activity_create(fields)
-        logger.debug('    ...created %s', str(result))
-
-    return result
 
 class TombstoneException(Exception):
 
