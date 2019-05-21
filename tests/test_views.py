@@ -1,9 +1,16 @@
 from django.test import TestCase, Client
-from things_for_testing.models import ThingUser
+from django_kepi.models import create
 import logging
 import json
 
 logger = logging.getLogger(name='django_kepi')
+
+def _create_person(name):
+    return create({
+        'name': name,
+        'id': 'https://altair.example.com/users/'+name,
+        'type': 'Person',
+        })
 
 def _response_to_dict(response):
 
@@ -21,11 +28,7 @@ class TestKepiView(TestCase):
 
     def test_single_kepi_view(self):
 
-        alice = ThingUser(
-                name = 'alice',
-                favourite_colour = 'magenta',
-                )
-        alice.save()
+        alice = _create_person('alice')
 
         c = Client()
         response = c.get('/users/alice')
@@ -35,18 +38,13 @@ class TestKepiView(TestCase):
                 result,
                 {
                     'name': 'alice',
-                    'favourite_colour': 'magenta',
                     'id': 'https://altair.example.com/users/alice',
                     },
                 )
 
     def test_multiple_kepi_view(self):
 
-        alice = ThingUser(
-                name = 'alice',
-                favourite_colour = 'magenta',
-                )
-        alice.save()
+        alice = _create_person('alice')
 
         bob = ThingUser(
                 name = 'bob',
