@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django_kepi.find import find
+import django_kepi.models.following
 import logging
 import random
 import json
@@ -157,8 +158,41 @@ class Thing(models.Model):
 
     def send_notifications(self):
         if self.f_type=='Accept':
-            logger.debug('%s', self['object__obj'])
-            pass # XXX
+            obj = self['object__obj']
+
+            if obj['type']!='Follow':
+                logger.warn('Object %s was Accepted, but it isn\'t a Follow',
+                    obj)
+                return
+
+            logger.debug(' -- follow accepted')
+
+            django_kepi.models.following.accept(
+                    follower = obj['actor'],
+                    following = self['actor'],
+                    )
+
+        elif self.f_type=='Follow':
+            django_kepi.models.following.request(
+                    follower = self['actor'],
+                    following = self['object'],
+                    )
+
+        elif self.f_type=='Reject':
+            obj = self['object__obj']
+
+            if obj['type']!='Follow':
+                logger.warn('Object %s was Rejected, but it isn\'t a Follow',
+                    obj)
+                return
+
+            logger.debug(' -- follow rejected')
+
+            django_kepi.models.following.reject(
+                    follower = obj['actor'],
+                    following = self['actor'],
+                    )
+
 
     TYPES = {
             #          actor  object  target
@@ -178,8 +212,6 @@ class Thing(models.Model):
     def create(cls, value,
             sender=None,
             run_side_effects=True):
-
-        logger.debug('Creating thing from %s', str(value))
 
         # First, let's fix the types of keys and values.
 
@@ -224,9 +256,6 @@ class Thing(models.Model):
             need_actor, need_object, need_target = cls.TYPES[value['type']]
         except KeyError:
             if value['type'] in OTHER_OBJECT_TYPES:
-                logger.debug('Thing type %s is known, but not an Activity',
-                        value['type'])
-
                 need_actor = need_object = need_target = False
             else:
                 logger.debug('Unknown thing type: %s', value['type'])
@@ -303,8 +332,11 @@ class Thing(models.Model):
             n.save()
             logger.debug('  --    %10s = %s', f, value)
 
-        logger.debug('  -- and%10s = %s',
-                'url', result.url)
+        for f,v in [
+                ('actor', result.f_actor),
+                ('and -- url', result.url),
+                ]:
+            logger.debug('  --    %10s = %s', f, v)
 
         if run_side_effects:
             result.send_notifications()
