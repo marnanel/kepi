@@ -39,18 +39,14 @@ class TestKepiView(TestCase):
                 {
                     'name': 'alice',
                     'id': 'https://altair.example.com/users/alice',
+                    'type': 'Person',
                     },
                 )
 
     def test_multiple_kepi_view(self):
 
         alice = _create_person('alice')
-
-        bob = ThingUser(
-                name = 'bob',
-                favourite_colour = 'cyan',
-                )
-        bob.save()
+        bob = _create_person('bob')
 
         c = Client()
         response = c.get('/users')
@@ -74,8 +70,14 @@ class TestKepiView(TestCase):
                 {
                     'id': 'http://testserver/users?page=1',
                     'orderedItems': [
-                        {'favourite_colour': 'magenta', 'id': 'https://altair.example.com/users/alice', 'name': 'alice'},
-                        {'favourite_colour': 'cyan', 'id': 'https://altair.example.com/users/bob', 'name': 'bob'}
+                        { 'id': 'https://altair.example.com/users/alice',
+                            'name': 'alice',
+                            'type': 'Person',
+                            },
+                        { 'id': 'https://altair.example.com/users/bob',
+                            'name': 'bob',
+                            'type': 'Person',
+                            }
                         ],
                     'partOf': 'http://testserver/users',
                     'totalItems': 2,
