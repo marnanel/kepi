@@ -108,9 +108,9 @@ class CollectionTests(TestCase):
 
         PATH = '/users'
         EXPECTED_SERIALIZATION = [
-                {'id': 'https://example.com/user/alice', 'name': 'alice', 'type': 'Person', },
-                {'id': 'https://example.com/user/bob', 'name': 'bob', 'type': 'Person', },
-                {'id': 'https://example.com/user/carol', 'name': 'carol', 'type': 'Person', },
+                {'id': 'https://altair.example.com/users/alice', 'name': 'alice', 'type': 'Person', },
+                {'id': 'https://altair.example.com/users/bob', 'name': 'bob', 'type': 'Person', },
+                {'id': 'https://altair.example.com/users/carol', 'name': 'carol', 'type': 'Person', },
                 ]
 
         users = [
@@ -136,10 +136,14 @@ class CollectionTests(TestCase):
 
     def test_followers_and_following(self):
 
+        self.maxDiff = None
+
         people = {}
 
         for name in ['alice', 'bob', 'carol']:
-            people[name] = create({'name': name, 'type': 'Person'})
+            people[name] = create({'name': name, 'type': 'Person',
+                'id': 'https://altair.example.com/users/%s' % (name,),
+                })
 
             follow = create({
                     'type': 'Follow',
@@ -165,9 +169,9 @@ class CollectionTests(TestCase):
                 page_number=1,
                 expectedTotalItems=3,
                 expectedOnPage=[
-                    'https://example.com/user/alice',
-                    'https://example.com/user/bob',
-                    'https://example.com/user/carol',
+                    'https://altair.example.com/users/alice',
+                    'https://altair.example.com/users/bob',
+                    'https://altair.example.com/users/carol',
                     ],
                 )
 
@@ -185,7 +189,7 @@ class CollectionTests(TestCase):
                     page_number=1,
                     expectedTotalItems=1,
                     expectedOnPage=[
-                        'https://example.com/user/alice',
+                        'https://altair.example.com/users/alice',
                     ],
                      )
 
