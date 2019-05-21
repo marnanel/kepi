@@ -117,10 +117,10 @@ class Thing(models.Model):
             'type': self.get_f_type_display(),
             }
 
-        for fieldname in ['actor']:
+        for fieldname in ['actor', 'name']:
 
             value = getattr(self, 'f_'+fieldname)
-            if value is not None:
+            if value:
                 result[fieldname] = value
 
         for f in ThingField.objects.filter(parent=self):
