@@ -70,11 +70,9 @@ class KepiView(django.views.View):
 
         while True:
             if isinstance(result, dict):
-                logger.debug(' -- it\'s a dict')
                 return self._render(result)
 
             if isinstance(result, Iterable):
-                logger.debug(' -- it\'s an iterable')
                 return self._collection_get(request, result)
 
             try:
@@ -207,7 +205,11 @@ class FollowingView(KepiView):
         logging.debug('Finding followers of %s: %s',
                 kwargs['name'], person)
 
-        return Following.objects.filter(follower=person.url)
+        return Following.objects.filter(follower=person.url,
+                pending=False)
+
+    def _modify_list_item(self, obj):
+        return obj.following
 
 class FollowersView(KepiView):
 
@@ -223,7 +225,11 @@ class FollowersView(KepiView):
         logging.debug('Finding followers of %s: %s',
                 kwargs['name'], person)
 
-        return Following.objects.filter(following=person.url)
+        return Following.objects.filter(following=person.url,
+                pending=False)
+
+    def _modify_list_item(self, obj):
+        return obj.follower
 
 ########################################
 
