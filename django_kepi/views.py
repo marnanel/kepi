@@ -173,7 +173,7 @@ class KepiView(django.views.View):
     def _modify_list_item(self, obj):
         return str(obj)
 
-class ThingObjectView(KepiView):
+class ThingView(KepiView):
 
     def activity(self, request, *args, **kwargs):
 
