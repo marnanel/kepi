@@ -177,18 +177,31 @@ class ThingView(KepiView):
     def activity(self, request, *args, **kwargs):
 
         try:
-            activity_object = Thing.objects.get(
-                    uuid=kwargs['id'],
-                    )
+            if 'id' in kwargs:
+                logger.debug('Looking up Thing by id==%s',
+                        kwargs['id'])
+                activity_object = Thing.objects.get(
+                        uuid=kwargs['id'],
+                        )
+
+            elif 'name' in kwargs:
+                logger.debug('Looking up Thing by name==%s',
+                        kwargs['name'])
+                activity_object = Thing.objects.get(
+                        f_name=kwargs['name'],
+                        )
+            else:
+                raise ValueError("Need an id or a name")
+
         except Thing.DoesNotExist:
-            logger.info('unknown: %s', kwargs['id'])
+            logger.info('  -- unknown: %s', kwargs)
             return None
         except django.core.exceptions.ValidationError:
-            logger.info('invalid: %s', kwargs['id'])
+            logger.info('  -- invalid: %s', kwargs)
             return None
 
         result = activity_object.activity_form
-        logger.debug('found object: %s', str(result))
+        logger.debug('  -- found object: %s', result)
 
         return result
 
