@@ -150,7 +150,6 @@ class ThingRequest(HttpRequest):
         self.method = 'ACTIVITY'
 
 def find_local(path):
-    logger.debug('%s: find local', path)
 
     try:
         resolved = django.urls.resolve(path)
@@ -158,9 +157,12 @@ def find_local(path):
         logger.debug('%s: -- not found', path)
         return None
 
-    logger.debug('%s: handled by %s', path, str(resolved.func))
-    logger.debug('%s: %s', path, str(resolved.args))
-    logger.debug('%s: %s', path, str(resolved.kwargs))
+    logger.debug('%s: handled by %s, %s, %s',
+            path,
+            str(resolved.func),
+            str(resolved.args),
+            str(resolved.kwargs),
+            )
 
     request = ThingRequest()
     result = resolved.func(request,
