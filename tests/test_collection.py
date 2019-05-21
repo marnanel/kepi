@@ -9,6 +9,13 @@ EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json'
 PAGE_LENGTH = 50
 
+def _create_person(name):
+    return create({
+        'name': name,
+        'id': 'https://altair.example.com/users/'+name,
+        'type': 'Person',
+        })
+
 class CollectionTests(TestCase):
 
     def check_collection(self,
@@ -103,7 +110,6 @@ class CollectionTests(TestCase):
         else:
             self.assertNotIn('next', result)
 
-    @skip("/users isn't currently implemented")
     def test_usageByOtherApps(self):
 
         PATH = '/users'
@@ -114,9 +120,9 @@ class CollectionTests(TestCase):
                 ]
 
         users = [
-                create({'name': 'alice', 'type': 'Person'}),
-                create({'name': 'bob', 'type': 'Person'}),
-                create({'name': 'carol', 'type': 'Person'}),
+                _create_person(name='alice'),
+                _create_person(name='bob'),
+                _create_person(name='carol'),
                 ]
 
         for user in users:
@@ -141,9 +147,7 @@ class CollectionTests(TestCase):
         people = {}
 
         for name in ['alice', 'bob', 'carol']:
-            people[name] = create({'name': name, 'type': 'Person',
-                'id': 'https://altair.example.com/users/%s' % (name,),
-                })
+            people[name] = _create_person(name = name)
 
             follow = create({
                     'type': 'Follow',
