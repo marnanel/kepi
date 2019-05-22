@@ -9,24 +9,9 @@ import json
 
 logger = logging.getLogger(name='django_kepi')
 
-class RemoteItem(object):
+class RemoteItem(dict):
     def __init__(self, body):
-        self.content = json.loads(body)
-        logger.debug('RemoteItem created')
-
-    def __getitem__(self, key):
-        return self.content[key]
-
-    def __contains__(self, item):
-        return item in self.content
-
-    def __str__(self):
-        return str(self.content)
-
-    # XXX this is specific to actors!
-    @property
-    def public_key(self):
-        return self.content['publicKey']['publicKeyPem']
+        self.update(json.loads(body))
 
 class CachedRemoteText(models.Model):
 
@@ -186,7 +171,7 @@ def is_local(url):
     return parsed_url.hostname in settings.ALLOWED_HOSTS
 
 def find(url,
-        local_only):
+        local_only=False):
     """
     Finds an object.
 
