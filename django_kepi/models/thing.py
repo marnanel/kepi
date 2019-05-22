@@ -101,10 +101,6 @@ class Thing(models.Model):
         return result
 
     @property
-    def activity_id(self):
-        return self.identifier
-
-    @property
     def activity_type(self):
         return self.f_type
 
