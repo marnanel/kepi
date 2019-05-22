@@ -181,7 +181,7 @@ class ThingView(KepiView):
                 logger.debug('Looking up Thing by id==%s',
                         kwargs['id'])
                 activity_object = Thing.objects.get(
-                        uuid=kwargs['id'],
+                        number=kwargs['id'],
                         )
 
             elif 'name' in kwargs:

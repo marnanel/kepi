@@ -167,7 +167,7 @@ def deliver(
         activity_id,
         ):
     try:
-        activity = Thing.objects.get(uuid=activity_id)
+        activity = Thing.objects.get(number=activity_id)
     except Thing.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)

@@ -405,7 +405,7 @@ class ThingField(models.Model):
 
     def __str__(self):
         return '%s.%s = %s' % (
-                self.parent.uuid,
+                self.parent.number,
                 self.name,
                 self.value)
 
