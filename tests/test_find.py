@@ -2,6 +2,7 @@ from django.test import TestCase
 from django_kepi.find import find
 from django_kepi.models import Thing, create
 from django.conf import settings
+from . import _mock_remote_object
 import httpretty
 import json
 import logging
@@ -11,29 +12,6 @@ logger = logging.getLogger(name='django_kepi')
 REMOTE_URL = 'https://remote.example.net/fnord'
 
 STUFF = {'a': 1, 'b': 2}
-
-def _mock_remote_object(
-        url,
-        ftype = 'Object',
-        content = '',
-        status = 200,
-        ):
-
-    headers = {
-            'Content-Type': 'application/activity+json',
-            }
-
-    httpretty.register_uri(
-            httpretty.GET,
-            url,
-            status=status,
-            headers=headers,
-            body=bytes(content, encoding='UTF-8'))
-
-    logger.debug('Mocking %s as %d: %s',
-            url,
-            status,
-            content)
 
 class TestFind(TestCase):
 
