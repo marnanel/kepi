@@ -1,21 +1,46 @@
 from django.test import TestCase
 from django_kepi.find import find
-from django_kepi.activity_model import Thing
+from django_kepi.models import Thing, create
 from django.conf import settings
-from things_for_testing import KepiTestCase
 import httpretty
 import json
+import logging
+
+logger = logging.getLogger(name='django_kepi')
 
 REMOTE_URL = 'https://remote.example.net/fnord'
 
 STUFF = {'a': 1, 'b': 2}
 
-class TestFind(KepiTestCase):
+def _mock_remote_object(
+        url,
+        ftype = 'Object',
+        content = '',
+        status = 200,
+        ):
+
+    headers = {
+            'Content-Type': 'application/activity+json',
+            }
+
+    httpretty.register_uri(
+            httpretty.GET,
+            url,
+            status=status,
+            headers=headers,
+            body=bytes(content, encoding='UTF-8'))
+
+    logger.debug('Mocking %s as %d: %s',
+            url,
+            status,
+            content)
+
+class TestFind(TestCase):
 
     @httpretty.activate
     def test_find_remote(self):
 
-        self._mock_remote_object(
+        _mock_remote_object(
                 REMOTE_URL,
                 content = json.dumps(STUFF),
                 )
@@ -30,7 +55,7 @@ class TestFind(KepiTestCase):
     @httpretty.activate
     def test_find_remote_404(self):
 
-        self._mock_remote_object(
+        _mock_remote_object(
                 REMOTE_URL,
                 content = '',
                 )
@@ -41,11 +66,11 @@ class TestFind(KepiTestCase):
 
     def test_find_local(self):
 
-        a = Thing(
-                f_actor = 'https://example.net/users/fred',
-                f_object = 'https://example.net/articles/i-like-jam',
-                f_type = 'L',
-                )
+        a = create({
+            'actor': 'https://example.net/users/fred',
+            'object': 'https://example.net/articles/i-like-jam',
+            'type': 'Like',
+            })
         a.save()
         
         found = find(a.url)
