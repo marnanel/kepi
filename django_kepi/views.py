@@ -66,6 +66,9 @@ class KepiView(django.views.View):
         """
         result = self.activity(request, *args, **kwargs)
 
+        if result is None:
+            raise Http404()
+
         logger.debug('About to render object: %s',
                 result)
 
