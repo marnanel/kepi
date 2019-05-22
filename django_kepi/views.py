@@ -81,7 +81,7 @@ class KepiView(django.views.View):
                 logger.debug(' -- it has an activity_form, %s; recurring',
                         result)
             except AttributeError:
-                result.warn("I don't know how to render objects like %s.", result)
+                logger.warn("I don't know how to render objects like %s.", result)
                 raise ValueError("I don't know how to render objects like %s." % (result,))
 
     def _render(self, data):
