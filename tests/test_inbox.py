@@ -1,13 +1,15 @@
 from django.test import TestCase, Client
 from django_kepi.views import InboxView
-from django_kepi.models import Thing
-from things_for_testing.models import ThingArticle, ThingUser
-from things_for_testing import KepiTestCase
+from django_kepi.models import Thing, create
+from django_kepi.validation import IncomingMessage
+from . import _mock_remote_object, _create_person
 import json
 import httpretty
-from django_kepi import logger
+import logging
 
-class TestInbox(KepiTestCase):
+logger = logging.getLogger(name='django_kepi')
+
+class TestInbox(TestCase):
 
     @httpretty.activate
     def test_specific_post(self):
@@ -15,8 +17,8 @@ class TestInbox(KepiTestCase):
         HUMAN_URL = 'https://users.example.net/mary'
         ANIMAL_URL = 'https://things.example.org/lamb'
 
-        self._mock_remote_object(HUMAN_URL, ftype='Person')
-        self._mock_remote_object(ANIMAL_URL, ftype='Person')
+        _mock_remote_object(HUMAN_URL, ftype='Person')
+        _mock_remote_object(ANIMAL_URL, ftype='Person')
 
         c = Client()
 
@@ -31,7 +33,7 @@ class TestInbox(KepiTestCase):
                 )
 
         self.assertTrue(
-                QuarantinedMessage.objects.filter(username='alice').exists())
+                IncomingMessage.objects.filter(name='alice').exists())
 
     @httpretty.activate
     def test_shared_post(self):
@@ -39,8 +41,8 @@ class TestInbox(KepiTestCase):
         HUMAN_URL = 'https://users.example.net/mary'
         ANIMAL_URL = 'https://things.example.org/another-lamb'
 
-        self._mock_remote_object(HUMAN_URL, ftype='Person')
-        self._mock_remote_object(ANIMAL_URL, ftype='Person')
+        _mock_remote_object(HUMAN_URL, ftype='Person')
+        _mock_remote_object(ANIMAL_URL, ftype='Person')
 
         c = Client()
 
@@ -55,11 +57,11 @@ class TestInbox(KepiTestCase):
                 )
 
         self.assertTrue(
-                QuarantinedMessage.objects.filter(username=None).exists())
+                IncomingMessage.objects.filter(username=None).exists())
 
     def test_non_json(self):
 
-        QuarantinedMessage.objects.all().delete()
+        IncomingMessage.objects.all().delete()
 
         c = Client()
 
@@ -69,7 +71,7 @@ class TestInbox(KepiTestCase):
                 )
 
         self.assertFalse(
-                QuarantinedMessage.objects.all().exists())
+                IncomingMessage.objects.all().exists())
 
     @httpretty.activate
     def test_malformed_json(self):
@@ -77,8 +79,8 @@ class TestInbox(KepiTestCase):
         HUMAN_URL = 'https://users.example.com/my-dame'
         ANIMAL_URL = 'https://animals.example.com/a-lame-tame-crane'
 
-        self._mock_remote_object(HUMAN_URL, ftype='Person')
-        self._mock_remote_object(ANIMAL_URL, ftype='Person')
+        _mock_remote_object(HUMAN_URL, ftype='Person')
+        _mock_remote_object(ANIMAL_URL, ftype='Person')
 
         c = Client()
 
@@ -94,9 +96,9 @@ class TestInbox(KepiTestCase):
         return
 
         self.assertTrue(
-                QuarantinedMessage.objects.all().exists())
+                IncomingMessage.objects.all().exists())
 
-        QuarantinedMessage.objects.all().delete()
+        IncomingMessage.objects.all().delete()
 
         text = text[1:] # remove leading {, so the JSON is invalid
 
@@ -106,16 +108,14 @@ class TestInbox(KepiTestCase):
                 )
 
         self.assertFalse(
-                QuarantinedMessage.objects.all().exists())
+                IncomingMessage.objects.all().exists())
 
     def test_all_parts_known(self):
 
-        user = ThingUser(name="margaret")
-        user.save()
-        article = ThingArticle(title="dragons")
-        article.save()
+        user = _create_person(name="margaret")
+        article = create({'type': 'Article', 'title': 'dragons'})
 
-        QuarantinedMessage.objects.all().delete()
+        IncomingMessage.objects.all().delete()
 
         c = Client()
 
@@ -123,19 +123,18 @@ class TestInbox(KepiTestCase):
                 content_type = 'application/activity+json',
                 data = {
                     "id": "https://example.net/hello-world",
-                    "actor": user.activity_id,
-                    "object": article.activity_id,
+                    "actor": user.url,
+                    "object": article.url,
                     "type": "Like",
                     },
                 )
 
-        # This should go through immediately, because
-        # all parts are known and verifiable.
+        # XXX We need to deliver here
 
         self.assertTrue(
-                Thing.objects.filter(identifier='https://example.net/hello-world').exists())
+                Thing.objects.filter(remote_url='https://example.net/hello-world').exists())
 
         self.assertFalse(
-                QuarantinedMessage.objects.all().exists())
+                IncomingMessage.objects.all().exists())
 
 
