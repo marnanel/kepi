@@ -2,8 +2,6 @@ from django.test import TestCase, Client
 from django_kepi.validation import IncomingMessage
 from django_kepi.tasks import validate, deliver
 from django_kepi.activity_model import Thing
-from things_for_testing import KepiTestCase
-from things_for_testing.models import ThingUser
 from unittest.mock import Mock, patch
 import logging
 import httpsig

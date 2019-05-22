@@ -1,16 +1,9 @@
 from django.test import TestCase, Client
-from django_kepi.models import create
+from . import _create_person
 import logging
 import json
 
 logger = logging.getLogger(name='django_kepi')
-
-def _create_person(name):
-    return create({
-        'name': name,
-        'id': 'https://altair.example.com/users/'+name,
-        'type': 'Person',
-        })
 
 def _response_to_dict(response):
 

@@ -4,17 +4,11 @@ from django_kepi.models import *
 import datetime
 import json
 from django_kepi import logger
+from . import _create_person
 
 EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json'
 PAGE_LENGTH = 50
-
-def _create_person(name):
-    return create({
-        'name': name,
-        'id': 'https://altair.example.com/users/'+name,
-        'type': 'Person',
-        })
 
 class CollectionTests(TestCase):
 
