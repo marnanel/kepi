@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 from django_kepi.validation import IncomingMessage
 from django_kepi.find import find, find_local
-from django_kepi.activity_model import Thing
+from django_kepi.models.thing import Thing
 from httpsig.verify import HeaderVerifier
 from urllib.parse import urlparse
 from django.http.request import HttpRequest
@@ -130,7 +130,7 @@ def validate(
 
     # XXX key used to sign must "_obviously_belong_to" the actor
 
-    key = actor_details.public_key
+    key = actor_details['publicKey']['publicKeyPem']
 
     logger.debug('%s: public key is: %s',
             message, key)

@@ -1,8 +1,9 @@
 from django.test import TestCase, Client
 from django_kepi.validation import IncomingMessage
 from django_kepi.tasks import validate, deliver
-from django_kepi.activity_model import Thing
+from django_kepi.models import Thing
 from unittest.mock import Mock, patch
+from . import _create_person
 import logging
 import httpsig
 import json
@@ -97,7 +98,7 @@ def _test_message(secret='', **fields):
     return result
 
 def _remote_user(url, name,
-        public_key='',
+        publicKey='',
         inbox=None,
         sharedInbox=None,
         ):
@@ -114,7 +115,7 @@ def _remote_user(url, name,
                 'publicKey': {
                     'id': url+'#main-key',
                     'owner': url,
-                    'publicKeyPem': public_key,
+                    'publicKeyPem': publicKey,
                     },
                 }
 
@@ -150,11 +151,9 @@ class TestValidationTasks(TestCase):
     def test_local_lookup(self, mock_get):
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
 
-        alice = ThingUser(
-                url = LOCAL_ALICE,
+        alice = _create_person(
                 name = 'alice',
-                favourite_colour = 'puce',
-                public_key = keys['public'],
+                publicKey = keys['public'],
                 )
         alice.save()
         logger.debug('%s', alice.url)
@@ -180,7 +179,7 @@ class TestValidationTasks(TestCase):
                 text = _remote_user(
                     url = REMOTE_FRED,
                     name = 'Fred',
-                    public_key=keys['public']),
+                    publicKey=keys['public']),
                 )
 
         message = _test_message(
@@ -203,7 +202,7 @@ class TestValidationTasks(TestCase):
                 text = _remote_user(
                     url = REMOTE_FRED,
                     name = 'Fred',
-                    public_key=keys2['public'],
+                    publicKey=keys2['public'],
                 ))
 
         message = _test_message(
@@ -290,16 +289,16 @@ class TestDeliverTasks(TestCase):
 
         with patch('requests.get', mock_get):
             with patch('requests.post', mock_post):
-                deliver(a.uuid)
+                deliver(a.number)
 
     def test_deliver_remote(self):
 
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
-        alice = ThingUser(
+        alice = _create_person(
                 name = 'alice',
-                favourite_colour = 'puce',
-                public_key = keys['public'],
-                private_key = keys['private'],
+                publicKey = keys['public'],
+                # XXX FIXME this is a really silly place to store the private key
+                privateKey = keys['private'],
                 )
         alice.save()
 
@@ -323,18 +322,16 @@ class TestDeliverTasks(TestCase):
 
         keys0 = json.load(open('tests/keys/keys-0000.json', 'r'))
         keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
-        alice = ThingUser(
+        alice = _create_person(
                 name = 'alice',
-                favourite_colour = 'puce',
-                public_key = keys0['public'],
-                private_key = keys0['private'],
+                publicKey = keys0['public'],
+                privateKey = keys0['private'],
                 )
         alice.save()
-        bob = ThingUser(
+        bob = _create_person(
                 name = 'bob',
-                favourite_colour = 'taupe',
-                public_key = keys1['public'],
-                private_key = keys1['private'],
+                publicKey = keys1['public'],
+                privateKey = keys1['private'],
                 )
         bob.save()
 
@@ -352,21 +349,18 @@ class TestDeliverTasks(TestCase):
 # for investigation, rather than long-term testing
 class TestBob(TestCase):
     def test_bob(self):
-        alice = ThingUser(
+        alice = _create_person(
                 name = 'alice',
-                favourite_colour = 'taupe',
                 )
         alice.save()
 
-        bob = ThingUser(
+        bob = _create_person(
                 name = 'bob',
-                favourite_colour = 'beige',
                 )
         bob.save()
 
-        # XXX add follower / following. We should be able to request this from ThingUser,
-        #       rather than expecting kepi to keep track of it.
-        # XXX ThingUser's view is not embellishing its activity_form.
+        # XXX add follower / following.
+        # XXX _create_person's view is not embellishing its activity_form.
 
         c = Client()
         logger.info('bob %s', c.get('/users/bob').content)
