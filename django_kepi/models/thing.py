@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, IntegrityError
 from django.conf import settings
 from django_kepi.find import find
 import django_kepi.models.following
@@ -7,7 +7,6 @@ import random
 import json
 import datetime
 import warnings
-import uuid
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -42,9 +41,11 @@ OTHER_OBJECT_TYPES = set([
 
 class Thing(models.Model):
 
-    uuid = models.UUIDField(
-            default=uuid.uuid4,
+    number = models.CharField(
+            max_length=8,
             primary_key=True,
+            unique=True,
+            default='',
             )
 
     f_type = models.CharField(
@@ -78,7 +79,7 @@ class Thing(models.Model):
         if self.remote_url is not None:
             return self.remote_url
 
-        return settings.KEPI['ACTIVITY_URL_FORMAT'] % (self.uuid,)
+        return settings.KEPI['ACTIVITY_URL_FORMAT'] % (self.number,)
 
     def __str__(self):
 
@@ -347,7 +348,14 @@ class Thing(models.Model):
 
         we_are_new = self.pk is None
 
-        super().save(*args, **kwargs)
+        if not self.number:
+            self.number = '%08x' % (random.randint(0, 0xffffffff),)
+
+        try:
+            super().save(*args, **kwargs)
+        except IntegrityError:
+            self.number = None
+            return self.save(*args, **kwargs)
 
         if we_are_new and self.f_type in OTHER_OBJECT_TYPES:
             logger.debug('New Thing is not an activity: %s',
