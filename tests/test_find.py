@@ -54,7 +54,7 @@ class TestFind(TestCase):
         found = find(a.url)
 
         self.assertDictEqual(
-                found,
+                found.activity_form,
                 a.activity_form,
                 )
 

@@ -1,7 +1,6 @@
 from django_kepi import ATSIGN_CONTEXT
 from django_kepi.models import create
 from django_kepi.find import find
-from django_kepi.validation import IncomingMessage
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
@@ -203,7 +202,7 @@ class ThingView(KepiView):
             logger.info('  -- invalid: %s', kwargs)
             return None
 
-        result = activity_object.activity_form
+        result = activity_object
         logger.debug('  -- found object: %s', result)
 
         return result
