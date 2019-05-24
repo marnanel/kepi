@@ -1,6 +1,5 @@
 from django.test import TestCase, Client
-from django_kepi.validation import IncomingMessage
-from django_kepi.tasks import validate, deliver
+from django_kepi.delivery import deliver
 from django_kepi.models import Thing
 from unittest.mock import Mock, patch
 from . import _create_person
@@ -144,119 +143,6 @@ class ResultWrapper(object):
             ):
         self.text = json.dumps(text)
         self.status_code = status_code
-
-class TestValidationTasks(TestCase):
-
-    @patch('requests.get')
-    def test_local_lookup(self, mock_get):
-        keys = json.load(open('tests/keys/keys-0000.json', 'r'))
-
-        alice = _create_person(
-                name = 'alice',
-                publicKey = keys['public'],
-                )
-        alice.save()
-        logger.debug('%s', alice.url)
-
-        message = _test_message(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=LOCAL_ALICE,
-                f_object=LOCAL_BOB,
-                secret = keys['private'],
-                )
-
-        validate(message.id)
-
-        self.assertTrue(_message_became_activity())
-        mock_get.assert_not_called()
-
-    @patch('requests.get')
-    def test_remote_user_known(self, mock_get):
-
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        mock_get.return_value = ResultWrapper(
-                text = _remote_user(
-                    url = REMOTE_FRED,
-                    name = 'Fred',
-                    publicKey=keys['public']),
-                )
-
-        message = _test_message(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
-                secret = keys['private'],
-                )
-        validate(message.id)
-
-        self.assertTrue(_message_became_activity())
-        mock_get.assert_called_once_with(REMOTE_FRED)
-
-    @patch('requests.get')
-    def test_remote_user_spoofed(self, mock_get):
-        keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
-        keys2 = json.load(open('tests/keys/keys-0002.json', 'r'))
-        mock_get.return_value = ResultWrapper(
-                text = _remote_user(
-                    url = REMOTE_FRED,
-                    name = 'Fred',
-                    publicKey=keys2['public'],
-                ))
-
-        message = _test_message(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
-                secret = keys1['private'],
-                )
-        validate(message.id)
-
-        self.assertFalse(_message_became_activity())
-
-        mock_get.assert_called_once_with(REMOTE_FRED)
-
-    @patch('requests.get')
-    def test_remote_user_gone(self, mock_get):
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        mock_get.return_value = ResultWrapper(
-                status_code = 410,
-                )
-
-        message = _test_message(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
-                secret = keys['private'],
-                )
-        validate(message.id)
-
-        self.assertFalse(_message_became_activity())
-
-        mock_get.assert_called_once_with(REMOTE_FRED)
-
-    @patch('requests.get')
-    def test_remote_user_unknown(self, mock_get):
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        mock_get.return_value = ResultWrapper(
-                status_code = 404,
-                )
-
-        message = _test_message(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
-                secret = keys['private'],
-                )
-        validate(message.id)
-
-        self.assertFalse(_message_became_activity())
-
-        mock_get.assert_called_once_with(REMOTE_FRED)
 
 class TestDeliverTasks(TestCase):
 
