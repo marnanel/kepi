@@ -91,7 +91,13 @@ class IncomingMessage(models.Model):
 
     @property
     def key_id(self):
-        return re.findall(r'keyId="([^"]*)"', self.signature)[0]
+        if not self.signature:
+            raise ValueError("Can't get the key ID because this message isn't signed")
+
+        try:
+            return re.findall(r'keyId="([^"]*)"', self.signature)[0]
+        except IndexError:
+            raise ValueError("Key ID not found in %s" % (self.signature,))
 
     def __str__(self):
         return str(self.id)
@@ -113,30 +119,31 @@ def validate(
 
     message = IncomingMessage.objects.get(id=message_id)
 
-    logger.debug('%s: received %s',
-            message_id, str(message))
+    try:
+        key_id = message.key_id
+    except ValueError:
+        logger.warn('%s: message is unsigned; dropping',
+                message)
+        return None
 
-    actor = message.actor
-    key_id = message.key_id
+    actor = django_kepi.find.find(message.actor)
 
     logger.debug('%s: message signature is: %s',
             message, message.signature)
     logger.debug('%s: message body is: %s',
             message, message.body)
 
-    actor_details = django_kepi.find.find(actor)
-
     logger.debug('%s: actor details are: %s',
-            message, actor_details)
+            message, actor)
 
-    if actor_details is None:
+    if actor is None:
         logger.info('%s: actor %s does not exist; dropping message',
             message, actor)
         return None
 
     # XXX key used to sign must "_obviously_belong_to" the actor
 
-    key = actor_details['publicKey']['publicKeyPem']
+    key = actor.publicKey
 
     logger.debug('%s: public key is: %s',
             message, key)
