@@ -1,5 +1,6 @@
 from django_kepi import ATSIGN_CONTEXT
 from django_kepi.models import create
+import django_kepi.validation
 from django_kepi.find import find
 from django.shortcuts import render, get_object_or_404
 import django.views
@@ -269,7 +270,7 @@ class InboxView(django.views.View):
         headers = defaultdict(lambda: '',
                 [(f[5:],v) for f,v in request.META.items() if f.startswith("HTTP_")])
 
-        capture = IncomingMessage(
+        capture = django_kepi.validation.IncomingMessage(
                 date = headers['DATE'],
                 host = headers[''],
                 path = request.path,
@@ -277,10 +278,15 @@ class InboxView(django.views.View):
                 body = str(request.body, encoding='UTF-8'),
                 )
         capture.save()
-        logger.debug('%s: received %s at %s',
+        logger.debug('%s: received %s at %s -- now validating',
                 capture,
                 str(request.body, encoding='UTF-8'),
                 request.path,
+                )
+
+        django_kepi.validation.validate(message_id=capture.id)
+        logger.debug('%s: finished kicking off validation; returning to HTTP caller',
+                capture,
                 )
 
         return HttpResponse(
