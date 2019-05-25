@@ -1,10 +1,12 @@
 from django.test import TestCase
+from unittest import skip
 from django_kepi.embellish import embellish
 from . import _create_person
 import logging
 
 logger = logging.getLogger(name='django_kepi')
 
+@skip("Decide whether we're keeping this")
 class TestEmbellish(TestCase):
     def test_embellish_note(self):
 
