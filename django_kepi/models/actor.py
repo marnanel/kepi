@@ -8,6 +8,17 @@ logger = logging.getLogger(name='django_kepi')
 ######################
 
 class Actor(models.Model):
+    """
+    An Actor is a kind of Thing representing a person,
+    an organisation, a bot, or anything else that can
+    post stuff and interact with other Actors.
+
+    The most important thing about Actors specifically
+    is that they own a public/private key pair.
+
+    You can use your own actor class instead if you like,
+    but you'll need to implement the same properties.
+    """
 
     thing = models.OneToOneField(
             'django_kepi.Thing',
@@ -35,4 +46,39 @@ class Actor(models.Model):
             self.publicKey = key.public_as_pem()
 
         super().save(*args, **kwargs)
+
+    @property
+    def publicKey_as_dict(self):
+        """
+        A dict describing this Actor's public key,
+        in the format used by ActivityStreams.
+
+        The keys will be:
+          'owner' - the url of this Actor
+          'id'    - the name of the key
+          'publicKeyPem' - the public key, in PEM format
+                           (like, "----BEGIN PUBLIC KEY---" and so on)
+        """
+
+        owner = self.thing.id
+
+        result = {
+                'id': '%s#main-key' % (owner,),
+                'owner': owner,
+                'publicKeyPem': self.publicKey,
+                }
+
+        return result
+
+    def __getitem__(self, name):
+        """
+        Generally delegates to Thing.__getitem__(),
+        except that 'publicKey' returns the value of
+        publicKey_as_dict.
+        """
+
+        if name=='publicKey':
+            return self.publicKey_as_dict
+        else:
+            return self.thing[name]
 

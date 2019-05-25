@@ -143,7 +143,7 @@ def validate(
 
     # XXX key used to sign must "_obviously_belong_to" the actor
 
-    key = actor.publicKey
+    key = actor['publicKey']
 
     logger.debug('%s: public key is: %s',
             message, key)
@@ -154,7 +154,7 @@ def validate(
                 'Date': message.date,
                 'Signature': message.signature,
                 },
-            secret = key,
+            secret = key['publicKeyPem'],
             method = 'POST',
             path = message.path,
             host = message.host,
