@@ -35,25 +35,25 @@ def _recipients_to_inboxes(recipients):
 
         # FIXME treat magic recipients specially
 
-        actor_details = find(recipient)
+        actor = find(recipient)
 
         # FIXME this can also be a collection
-        # FIXME this doesn't work when actor_details is local
+        # FIXME this doesn't work when actor is local
 
-        if actor_details is None:
+        if actor is None:
             logger.debug('recipient "%s" doesn\'t exist; dropping',
                     recipient)
             continue
 
-        if 'endpoints' in actor_details and 'sharedInbox' in actor_details['endpoints']:
+        if 'endpoints' in actor and 'sharedInbox' in actor['endpoints']:
             logger.debug('recipient "%s" has a shared inbox at %s',
-                    recipient, actor_details['endpoints']['sharedInbox'])
-            inboxes.add(actor_details['endpoints']['sharedInbox'])
+                    recipient, actor['endpoints']['sharedInbox'])
+            inboxes.add(actor['endpoints']['sharedInbox'])
 
-        elif 'inbox' in actor_details:
+        elif 'inbox' in actor:
             logger.debug('recipient "%s" has a sole inbox at %s',
-                    recipient, actor_details['inbox'])
-            inboxes.add(actor_details['endpoints']['sharedInbox'])
+                    recipient, actor['inbox'])
+            inboxes.add(actor['endpoints']['sharedInbox'])
 
         else:
             logger.debug('recipient "%s" has no obvious inbox; dropping',
