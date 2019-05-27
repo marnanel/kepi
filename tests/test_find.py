@@ -2,7 +2,7 @@ from django.test import TestCase
 from django_kepi.find import find
 from django_kepi.models import Thing, create
 from django.conf import settings
-from . import _mock_remote_object
+from . import *
 import httpretty
 import json
 import logging
@@ -18,7 +18,7 @@ class TestFind(TestCase):
     @httpretty.activate
     def test_find_remote(self):
 
-        _mock_remote_object(
+        mock_remote_object(
                 REMOTE_URL,
                 content = json.dumps(STUFF),
                 )
@@ -33,7 +33,7 @@ class TestFind(TestCase):
     @httpretty.activate
     def test_find_remote_404(self):
 
-        _mock_remote_object(
+        mock_remote_object(
                 REMOTE_URL,
                 content = '',
                 )

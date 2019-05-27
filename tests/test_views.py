@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from . import _create_person
+from . import *
 import logging
 import json
 
@@ -21,7 +21,7 @@ class TestKepiView(TestCase):
 
     def test_single_kepi_view(self):
 
-        alice = _create_person('alice')
+        alice = create_person('alice')
 
         c = Client()
         response = c.get('/users/alice')
@@ -38,8 +38,8 @@ class TestKepiView(TestCase):
 
     def test_multiple_kepi_view(self):
 
-        alice = _create_person('alice')
-        bob = _create_person('bob')
+        alice = create_person('alice')
+        bob = create_person('bob')
 
         c = Client()
         response = c.get('/users')

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from unittest import skip
 from django_kepi.embellish import embellish
-from . import _create_person
+from . import *
 import logging
 
 logger = logging.getLogger(name='django_kepi')
@@ -36,7 +36,7 @@ class TestEmbellish(TestCase):
                 # (plus "published")
                 # (plus "conversation", wtf?)
 
-        user = _create_person(
+        user = create_person(
                 name = 'Fred',
                 url = 'https://example.com/users/fred',
                 )

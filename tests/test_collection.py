@@ -4,7 +4,8 @@ from django_kepi.models import *
 import datetime
 import json
 from django_kepi import logger
-from . import _create_person
+from django_kepi.find import find
+from . import *
 
 EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json'
@@ -114,9 +115,9 @@ class CollectionTests(TestCase):
                 ]
 
         users = [
-                _create_person(name='alice'),
-                _create_person(name='bob'),
-                _create_person(name='carol'),
+                create_person(name='alice'),
+                create_person(name='bob'),
+                create_person(name='carol'),
                 ]
 
         for user in users:
@@ -141,7 +142,7 @@ class CollectionTests(TestCase):
         people = {}
 
         for name in ['alice', 'bob', 'carol']:
-            people[name] = _create_person(name = name)
+            people[name] = create_person(name = name)
 
             follow = create({
                     'type': 'Follow',
