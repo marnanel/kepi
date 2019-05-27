@@ -32,6 +32,10 @@ class Actor(models.Model):
     publicKey = models.TextField(
             )
 
+    auto_follow = models.BooleanField(
+            default=True,
+            )
+
     @property
     def name(self):
         return self.thing.name
