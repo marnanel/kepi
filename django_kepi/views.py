@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django_kepi.models import Thing, ThingField, Following
+from django_kepi.models import Thing, ThingField, Following, Actor
 from collections.abc import Iterable
 import logging
 import urllib.parse
@@ -247,6 +247,25 @@ class FollowersView(KepiView):
 
     def _modify_list_item(self, obj):
         return obj.follower
+
+class ActorView(ThingView):
+
+    def activity(self, request, *args, **kwargs):
+        thing = super().activity(request, *args, **kwargs)
+
+        logger.debug('   -- found Thing %s; does it have an Actor?',
+                thing)
+
+        try:
+            result = Actor.objects.get(
+                    thing=thing,
+                    )
+            logger.debug('   -- yes, %s',
+                    result)
+            return result
+        except Actor.DoesNotExist:
+            logger.debug('   -- no')
+            return None
 
 class AllUsersView(KepiView):
 
