@@ -8,6 +8,7 @@ from django.conf import settings
 from urllib.parse import urlparse
 import django_kepi.find
 import django_kepi.models.thing
+import django.core.exceptions
 from httpsig.verify import HeaderVerifier
 
 logger = logging.getLogger(name='django_kepi')
@@ -117,7 +118,13 @@ def validate(
     logger.info('%s: begin validation',
             message_id)
 
-    message = IncomingMessage.objects.get(id=message_id)
+    try:
+        message = IncomingMessage.objects.get(id=message_id)
+    except django.core.exceptions.ValidationError:
+        # This is because celery tasks are loosely coupled to
+        # the rest of the application, so we pass in only
+        # primitive types.
+        raise ValueError("validate()'s message_id parameter takes a UUID string")
 
     try:
         key_id = message.key_id
