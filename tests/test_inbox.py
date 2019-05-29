@@ -141,4 +141,53 @@ class TestInbox(TestCase):
         self.assertFalse(
                 IncomingMessage.objects.all().exists())
 
+    # XXX This creates the IncomingMessage directly, rather than
+    # XXX going through the inbox, because of issue 1.
+    @httpretty.activate
+    def test_auto_follow(self):
+
+        MARY_URL = 'https://altair.example.com/users/mary'
+        BOB_URL = 'https://example.net/bob'
+        BOB_INBOX_URL = BOB_URL+'/inbox'
+
+        mary_keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        bob_keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+
+        mock_remote_object(BOB_URL, ftype='Person',
+                content = json.dumps(remote_user(
+                    name='bob',
+                    url=BOB_URL,
+                    publicKey=bob_keys['public'],
+                    inbox=BOB_INBOX_URL,
+                    sharedInbox=None,
+                    )),
+                )
+
+        httpretty.register_uri(
+                httpretty.POST,
+                BOB_INBOX_URL,
+                status=200,
+                body='Thank you!',
+                )
+
+        mary = create_person(
+                name='mary',
+                auto_follow=True,
+                publicKey=mary_keys['public'],
+                privateKey=mary_keys['private'],
+                )
+
+        follow_request = test_message(
+                secret = bob_keys['private'],
+                f_id = 'https://example.net/activity/123',
+                f_actor = BOB_URL,
+                f_object = MARY_URL,
+                f_type = "Follow",
+                )
+        validate(follow_request.id)
+
+        self.assertEqual(
+                httpretty.last_request().path,
+                '/bob/inbox',
+                )
 
