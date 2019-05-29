@@ -31,10 +31,8 @@ class TestInbox(TestCase):
                     publicKey = keys['public'],
                     )),
                 )
-        c = Client()
 
         post_test_message(
-            client = c,
             path = ALICE_INBOX,
             host = 'europa.example.com',
             secret = keys['private'],
