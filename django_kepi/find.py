@@ -11,7 +11,7 @@ logger = logging.getLogger(name='django_kepi')
 
 class RemoteItem(dict):
     def __init__(self, body):
-        self.update(json.loads(body))
+        self.update(json.loads(str(body)))
 
 class CachedRemoteText(models.Model):
 
@@ -29,10 +29,16 @@ class CachedRemoteText(models.Model):
         return self.content is None
 
     def __str__(self):
-        if self.key is None:
-            return '(%s: "%s")' % (self.owner, self.content[:20])
+        if self.content is not None:
+            return self.content
         else:
-            return '(%s is GONE)' % (self.owner)
+            return ''
+
+    def __repr__(self):
+        if self.content is not None:
+            return '(%s: "%s")' % (self.address, self.content[:20])
+        else:
+            return '(%s is GONE)' % (self.address)
 
     @classmethod
     def fetch(cls,
