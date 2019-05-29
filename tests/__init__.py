@@ -183,9 +183,8 @@ def post_test_message(
 
     client.post(
             path = path,
-            content_type = headers['content-type'], # XXX why twice?
+            content_type = headers['content-type'],
             data = json.dumps(body),
-            CONTENT_TYPE = headers['content-type'],
             HTTP_DATE = headers['date'],
             HOST = headers['host'],
             HTTP_SIGNATURE = headers['signature'],
