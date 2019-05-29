@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.views import InboxView
-from django_kepi.models import Thing, create
+from django_kepi.models import Thing, create, Following
 from django_kepi.validation import IncomingMessage
 from unittest import skip
 from . import *
@@ -21,6 +21,7 @@ class TestInbox(TestCase):
 
         alice = create_person(
                 name='alice',
+                auto_follow=False,
                 )
 
         mock_remote_object(REMOTE_FRED,
@@ -42,6 +43,14 @@ class TestInbox(TestCase):
             f_actor = REMOTE_FRED,
             f_object = LOCAL_ALICE,
             )
+
+        self.assertIs(
+                len(Following.objects.filter(
+                    follower = REMOTE_FRED,
+                    following = LOCAL_ALICE,
+                    )),
+                1,
+                msg="sending Follow did not result in following")
 
     @httpretty.activate
     def test_shared_post(self):
