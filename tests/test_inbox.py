@@ -140,41 +140,6 @@ class TestInbox(TestCase):
         self.assertFalse(
                 IncomingMessage.objects.all().exists())
 
-    @skip("broken; find out why")
-    def test_all_parts_known(self):
-
-        user = create_local_person(name="margaret")
-        article = create({'type': 'Article', 'title': 'dragons'})
-
-        IncomingMessage.objects.all().delete()
-
-        c = Client()
-
-        tm = test_message(
-                secret = '?',
-                # XXX This saves an IncomingMessage, whcih
-                # is *not* what we want to do. We need to
-                # have the message so we can post it via HTTP.
-                )
-
-        c.post('/users/alice/inbox',
-                content_type = 'application/activity+json',
-                data = {
-                    "id": "https://example.net/hello-world",
-                    "actor": user.url,
-                    "object": article.url,
-                    "type": "Like",
-                    },
-                )
-
-        # XXX We need to deliver here
-
-        self.assertTrue(
-                Thing.objects.filter(remote_url='https://example.net/hello-world').exists())
-
-        self.assertFalse(
-                IncomingMessage.objects.all().exists())
-
     # XXX This creates the IncomingMessage directly, rather than
     # XXX going through the inbox, because of issue 1.
     @httpretty.activate
