@@ -8,8 +8,9 @@ import httpsig
 import json
 
 ACTIVITY_ID = "https://example.com/04b065f8-81c4-408e-bec3-9fb1f7c06408"
+ACTIVITY_DATE = "Thu, 04 Apr 2019 21:12:11 GMT"
 INBOX_HOST = 'europa.example.com'
-INBOX_PATH = '/inbox'
+INBOX_PATH = '/sharedInbox'
 
 REMOTE_FRED = 'https://remote.example.org/users/fred'
 REMOTE_JIM = 'https://remote.example.org/users/jim'
@@ -118,11 +119,11 @@ def test_message_body_and_headers(secret='',
 
     body = dict([(f[2:],v) for f,v in fields.items() if f.startswith('f_')])
     body['@context'] = MESSAGE_CONTEXT
-    body['Host'] = host,
+    body['Host'] = host
 
     headers = {
             'content-type': "application/activity+json",
-            'date': "Thu, 04 Apr 2019 21:12:11 GMT",
+            'date': ACTIVITY_DATE,
             'host': host,
             }
 
