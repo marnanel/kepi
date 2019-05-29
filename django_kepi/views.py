@@ -284,7 +284,15 @@ class InboxView(django.views.View):
 
     def post(self, request, name=None, *args, **kwargs):
 
-        # username is None for the shared inbox.
+        # name is None for the shared inbox.
+
+        if request.META['CONTENT_TYPE'] not in [
+                'application/activity+json',
+                'application/json',
+                ]:
+            return HttpResponse(
+                    status = 415, # unsupported media type
+                    )
 
         capture = django_kepi.validation.IncomingMessage(
                 date = request.META['HTTP_DATE'],

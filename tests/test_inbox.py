@@ -51,18 +51,31 @@ class TestInbox(TestCase):
 
     @httpretty.activate
     def test_shared_post(self):
-        self._post_to_inbox('/sharedInbox')
+        self._post_to_inbox(INBOX_PATH)
 
-    @skip("broken; find out why")
     def test_non_json(self):
 
-        IncomingMessage.objects.all().delete()
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+
+        body, headers = test_message_body_and_headers(
+                f_actor = REMOTE_FRED,
+                secret = keys['private'],
+                )
+        # we don't use the body it gives us
 
         c = Client()
-
-        c.post('/sharedInbox',
+        result = c.post(
+                path = INBOX_PATH,
                 content_type = 'text/plain',
                 data = 'Hello',
+                HTTP_DATE = headers['date'],
+                HOST = headers['host'],
+                HTTP_SIGNATURE = headers['signature'],
+                )
+
+        self.assertEqual(
+                result.status_code,
+                415, # unsupported media type
                 )
 
         self.assertFalse(
