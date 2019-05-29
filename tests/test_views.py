@@ -78,3 +78,36 @@ class TestKepiView(TestCase):
                     }
                 )
 
+class TestTombstone(TestCase):
+
+    def test_tombstone(self):
+
+        queen_anne = create_local_person('queen_anne')
+
+        c = Client()
+        response = c.get('/users/queen_anne')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(
+                _response_to_dict(response),
+                {
+                    'name': 'queen_anne',
+                    'id': 'https://altair.example.com/users/queen_anne',
+                    'type': 'Person',
+                    },
+                )
+
+        queen_anne.entomb()
+
+        response = c.get('/users/queen_anne')
+
+        self.assertEqual(response.status_code, 410)
+        self.assertDictEqual(
+                _response_to_dict(response),
+                {
+                    'id': 'https://altair.example.com/users/queen_anne',
+                    'type': 'Tombstone',
+                    'former_type': 'Person',
+                    'name': 'queen_anne',
+                    },
+                )

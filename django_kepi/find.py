@@ -140,6 +140,14 @@ class ThingRequest(HttpRequest):
 
         self.method = 'ACTIVITY'
 
+class TombstoneException(Exception):
+    def __init__(self, tombstone, *args, **kwargs):
+        self.tombstone = tombstone
+        super().__init__(*args, **kwargs)
+
+    def __str__(self):
+        return self.tombstone.__str__()
+
 def find_local(path):
 
     try:
@@ -159,6 +167,9 @@ def find_local(path):
     result = resolved.func(request,
             **resolved.kwargs)
     logger.debug('%s: resulting in %s', path, str(result))
+
+    if result.f_type == 'Tombstone':
+        raise TombstoneException(result)
 
     return result
 

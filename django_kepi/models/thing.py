@@ -1,6 +1,6 @@
 from django.db import models, IntegrityError
 from django.conf import settings
-from django_kepi.find import find
+from django_kepi.find import find, is_local
 from django_kepi.delivery import deliver
 import django_kepi.models.following
 import logging
@@ -211,6 +211,39 @@ class Thing(models.Model):
                     following = self['actor'],
                     )
 
+    @property
+    def is_local(self):
+        if not self.remote_url:
+            return True
+
+        return is_local(self.remote_url)
+
+    def entomb(self):
+        logger.info('%s: entombing', self)
+
+        if self.f_type=='Tombstone':
+            logger.warn('   -- already entombed; ignoring')
+            return
+
+        if not self.is_local:
+            raise ValueError("%s: you can't entomb remote things %s",
+                    self, str(self.remote_url))
+
+        former_type = self.f_type
+
+        self.f_type = 'Tombstone'
+        self.active = True
+
+        ThingField.objects.filter(parent=self).delete()
+
+        for f,v in [
+                ('former_type', former_type),
+                # XXX 'deleted', when we're doing timestamps
+                ]:
+            ThingField(parent=self, name=f, value=json.dumps(v)).save()
+
+        self.save()
+        logger.info('%s: entombing finished', self)
 
     TYPES = {
             #          actor  object  target
@@ -335,8 +368,6 @@ class Thing(models.Model):
         record_fields['f_type'] = value['type']
 
         if 'id' in value:
-            # FIXME this allows people to create "remote" Activities
-            # with local URLs, which is weird and shouldn't happen.
             record_fields['remote_url'] = value['id']
 
         for f in ['id', 'type', 'actor', 'name']:

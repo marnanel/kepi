@@ -97,6 +97,10 @@ class KepiView(django.views.View):
 
         result['Content-Type'] = 'application/activity+json'
 
+        if data['type']=='Tombstone':
+            result.reason = 'Entombed'
+            result.status_code = 410
+
         return result
 
     def _collection_get(self, request, items):
@@ -251,6 +255,9 @@ class ActorView(ThingView):
 
     def activity(self, request, *args, **kwargs):
         thing = super().activity(request, *args, **kwargs)
+
+        if thing.f_type=='Tombstone':
+            return thing
 
         logger.debug('   -- found Thing %s; does it have an Actor?',
                 thing)
