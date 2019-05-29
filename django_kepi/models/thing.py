@@ -90,13 +90,14 @@ class Thing(models.Model):
             inactive_warning = ' INACTIVE'
 
         if self.f_name:
-            name = self.f_name
+            details = self.f_name
         else:
-            name = self.url
+            details = self.url
 
-        result = '[%s %s%s]' % (
+        result = '[%s %s %s%s]' % (
+                self.number,
                 self.f_type,
-                name,
+                details,
                 inactive_warning,
                 )
         return result
