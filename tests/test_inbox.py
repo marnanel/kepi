@@ -24,12 +24,10 @@ class TestInbox(TestCase):
                 auto_follow=False,
                 )
 
-        mock_remote_object(REMOTE_FRED,
-                content=json.dumps(remote_user(
-                    url=REMOTE_FRED,
-                    name='Fred',
-                    publicKey = keys['public'],
-                    )),
+        create_remote_person(
+                name='fred',
+                url=REMOTE_FRED,
+                publicKey = keys['public'],
                 )
 
         post_test_message(

@@ -97,6 +97,20 @@ def mock_remote_object(
             status,
             content)
 
+def create_remote_person(
+        url,
+        name,
+        publicKey):
+
+    mock_remote_object(
+            url=url,
+            content=json.dumps(remote_user(
+                url=url,
+                name=name,
+                publicKey = publicKey,
+                )),
+            )
+
 def test_message_body_and_headers(secret='',
         path=INBOX_PATH,
         host=INBOX_HOST,
