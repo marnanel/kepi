@@ -91,3 +91,12 @@ class Actor(models.Model):
         else:
             return self.thing[name]
 
+    @property
+    def activity_form(self):
+        """
+        The form which GET requests will return.
+
+        Delegates everything to our parent Thing.
+        """
+        return self.thing.activity_form
+
