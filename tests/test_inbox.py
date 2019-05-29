@@ -140,26 +140,23 @@ class TestInbox(TestCase):
         self.assertFalse(
                 IncomingMessage.objects.all().exists())
 
-    # XXX This creates the IncomingMessage directly, rather than
-    # XXX going through the inbox, because of issue 1.
     @httpretty.activate
     def test_auto_follow(self):
 
         MARY_URL = 'https://altair.example.com/users/mary'
         BOB_URL = 'https://example.net/bob'
         BOB_INBOX_URL = BOB_URL+'/inbox'
+        REQUEST_ID = 'https://example.net/activity/123'
 
         mary_keys = json.load(open('tests/keys/keys-0001.json', 'r'))
         bob_keys = json.load(open('tests/keys/keys-0002.json', 'r'))
 
-        mock_remote_object(BOB_URL, ftype='Person',
-                content = json.dumps(remote_user(
-                    name='bob',
-                    url=BOB_URL,
-                    publicKey=bob_keys['public'],
-                    inbox=BOB_INBOX_URL,
-                    sharedInbox=None,
-                    )),
+        create_remote_person(
+                url = BOB_URL,
+                name = 'bob',
+                publicKey=bob_keys['public'],
+                inbox=BOB_INBOX_URL,
+                sharedInbox=None,
                 )
 
         httpretty.register_uri(
@@ -169,24 +166,38 @@ class TestInbox(TestCase):
                 body='Thank you!',
                 )
 
-        mary = create_local_person(
+        create_local_person(
                 name='mary',
                 auto_follow=True,
                 publicKey=mary_keys['public'],
                 privateKey=mary_keys['private'],
                 )
 
-        follow_request = test_message(
-                secret = bob_keys['private'],
-                f_id = 'https://example.net/activity/123',
-                f_actor = BOB_URL,
-                f_object = MARY_URL,
-                f_type = "Follow",
-                )
-        validate(follow_request.id)
+        post_test_message(
+            path = INBOX_PATH,
+            secret = bob_keys['private'],
+            f_id = REQUEST_ID,
+            f_type = "Follow",
+            f_actor = BOB_URL,
+            f_object = MARY_URL,
+            )
+
+        # If this was successful, kepi must have contacted
+        # /bob/inbox and delivered the Accept request
+        last_request = httpretty.last_request()
 
         self.assertEqual(
-                httpretty.last_request().path,
+                last_request.path,
                 '/bob/inbox',
                 )
 
+        body = json.loads(str(last_request.body, encoding='UTF-8'))
+
+        self.assertDictContainsSubset(
+                {
+                    "actor": MARY_URL,
+                    'to': [BOB_URL],
+                    'type': 'Accept',
+                    'object': REQUEST_ID,
+                    },
+                body)
