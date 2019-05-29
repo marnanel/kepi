@@ -65,15 +65,11 @@ def create_person(name,
 
     result = create(spec)
 
-    if actor_fields:
-        # XXX kepi should allow us to create
-        # XXX this using create(), as part of
-        # XXX the Thing creation
-        actor = Actor(
-                thing=result,
-                **actor_fields,
-                )
-        actor.save()
+    actor = Actor(
+            thing=result,
+            **actor_fields,
+            )
+    actor.save()
 
     return result
 
@@ -100,16 +96,19 @@ def mock_remote_object(
             status,
             content)
 
-def test_message(secret='', **fields):
+def test_message_body_and_headers(secret='',
+        path=INBOX_PATH,
+        host=INBOX_HOST,
+        **fields):
 
     body = dict([(f[2:],v) for f,v in fields.items() if f.startswith('f_')])
     body['@context'] = MESSAGE_CONTEXT
-    body['Host'] = INBOX_HOST
+    body['Host'] = host,
 
     headers = {
             'content-type': "application/activity+json",
             'date': "Thu, 04 Apr 2019 21:12:11 GMT",
-            'host': INBOX_HOST,
+            'host': host,
             }
 
     if 'key_id' in fields:
@@ -127,12 +126,21 @@ def test_message(secret='', **fields):
     headers = signer.sign(
             headers,
             method='POST',
-            path=INBOX_PATH,
+            path=path,
             )
 
     SIGNATURE = 'Signature'
     if headers['Authorization'].startswith(SIGNATURE):
         headers['Signature'] = headers['Authorization'][len(SIGNATURE)+1:]
+
+    return body, headers
+
+def test_message(secret='', **fields):
+
+    body, headers = test_message_body_and_headers(
+            secret,
+            **fields,
+            )
 
     result = IncomingMessage(
             content_type = headers['content-type'],
