@@ -157,9 +157,11 @@ def test_message(secret='', **fields):
     return result
 
 def post_test_message(
-        path, host,
         secret,
-        f_id, f_type, f_actor, f_object,
+        f_type, f_actor, f_object,
+        path=INBOX_PATH,
+        host=INBOX_HOST,
+        f_id=ACTIVITY_ID,
         client = None,
         ):
 

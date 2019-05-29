@@ -34,9 +34,7 @@ class TestInbox(TestCase):
 
         post_test_message(
             path = ALICE_INBOX,
-            host = 'europa.example.com',
             secret = keys['private'],
-            f_id = ACTIVITY_ID,
             f_type = "Follow",
             f_actor = REMOTE_FRED,
             f_object = LOCAL_ALICE,
