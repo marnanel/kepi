@@ -115,9 +115,9 @@ class CollectionTests(TestCase):
                 ]
 
         users = [
-                create_person(name='alice'),
-                create_person(name='bob'),
-                create_person(name='carol'),
+                create_local_person(name='alice'),
+                create_local_person(name='bob'),
+                create_local_person(name='carol'),
                 ]
 
         for user in users:
@@ -142,7 +142,7 @@ class CollectionTests(TestCase):
         people = {}
 
         for name in ['alice', 'bob', 'carol']:
-            people[name] = create_person(name = name)
+            people[name] = create_local_person(name = name)
 
             follow = create({
                     'type': 'Follow',

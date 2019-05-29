@@ -63,7 +63,7 @@ class TestDeliverTasks(TestCase):
     def test_deliver_remote(self):
 
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
-        alice = create_person(
+        alice = create_local_person(
                 name = 'alice',
                 publicKey = keys['public'],
                 # XXX FIXME this is a really silly place to store the private key
@@ -91,13 +91,13 @@ class TestDeliverTasks(TestCase):
 
         keys0 = json.load(open('tests/keys/keys-0000.json', 'r'))
         keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
-        alice = create_person(
+        alice = create_local_person(
                 name = 'alice',
                 publicKey = keys0['public'],
                 privateKey = keys0['private'],
                 )
         alice.save()
-        bob = create_person(
+        bob = create_local_person(
                 name = 'bob',
                 publicKey = keys1['public'],
                 privateKey = keys1['private'],
@@ -118,18 +118,18 @@ class TestDeliverTasks(TestCase):
 # for investigation, rather than long-term testing
 class TestBob(TestCase):
     def test_bob(self):
-        alice = create_person(
+        alice = create_local_person(
                 name = 'alice',
                 )
         alice.save()
 
-        bob = create_person(
+        bob = create_local_person(
                 name = 'bob',
                 )
         bob.save()
 
         # XXX add follower / following.
-        # XXX create_person's view is not embellishing its activity_form.
+        # XXX create_local_person's view is not embellishing its activity_form.
 
         c = Client()
         logger.info('bob %s', c.get('/users/bob').content)

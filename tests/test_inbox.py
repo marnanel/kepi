@@ -19,7 +19,7 @@ class TestInbox(TestCase):
 
         keys = json.load(open('tests/keys/keys-0001.json', 'r'))
 
-        alice = create_person(
+        alice = create_local_person(
                 name='alice',
                 auto_follow=False,
                 )
@@ -122,7 +122,7 @@ class TestInbox(TestCase):
     @skip("broken; find out why")
     def test_all_parts_known(self):
 
-        user = create_person(name="margaret")
+        user = create_local_person(name="margaret")
         article = create({'type': 'Article', 'title': 'dragons'})
 
         IncomingMessage.objects.all().delete()
@@ -183,7 +183,7 @@ class TestInbox(TestCase):
                 body='Thank you!',
                 )
 
-        mary = create_person(
+        mary = create_local_person(
                 name='mary',
                 auto_follow=True,
                 publicKey=mary_keys['public'],

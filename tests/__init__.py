@@ -48,7 +48,7 @@ MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
 
 logger = logging.getLogger(name='django_kepi')
 
-def create_person(name,
+def create_local_person(name,
         **kwargs):
     spec = {
         'name': name,

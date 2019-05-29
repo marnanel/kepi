@@ -72,7 +72,7 @@ class TestValidationTasks(TestCase):
     def test_local_lookup(self, mock_get):
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
 
-        alice = create_person(
+        alice = create_local_person(
                 name = 'alice',
                 publicKey = keys['public'],
                 )

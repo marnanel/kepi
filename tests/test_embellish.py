@@ -36,7 +36,7 @@ class TestEmbellish(TestCase):
                 # (plus "published")
                 # (plus "conversation", wtf?)
 
-        user = create_person(
+        user = create_local_person(
                 name = 'Fred',
                 url = 'https://example.com/users/fred',
                 )

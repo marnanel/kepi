@@ -21,7 +21,7 @@ class TestKepiView(TestCase):
 
     def test_single_kepi_view(self):
 
-        alice = create_person('alice')
+        alice = create_local_person('alice')
 
         c = Client()
         response = c.get('/users/alice')
@@ -38,8 +38,8 @@ class TestKepiView(TestCase):
 
     def test_multiple_kepi_view(self):
 
-        alice = create_person('alice')
-        bob = create_person('bob')
+        alice = create_local_person('alice')
+        bob = create_local_person('bob')
 
         c = Client()
         response = c.get('/users')
