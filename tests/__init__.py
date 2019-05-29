@@ -65,7 +65,7 @@ def create_local_person(name,
             actor_fields[extra] = spec[extra]
             del spec[extra]
 
-    result = create(spec)
+    result = create(**spec)
 
     actor = Actor(
             thing=result,

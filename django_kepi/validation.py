@@ -178,14 +178,6 @@ def validate(
             sign_header = 'Signature',
         )
 
-    logger.debug('%s', {
-                'Content-Type': message.content_type,
-                'Date': message.date,
-                'Signature': message.signature,
-                'Host': message.host,
-                'path': message.path,
-                },)
-
     if not hv.verify():
         logger.info('%s: spoofing attempt; message dropped',
                 message)
@@ -194,8 +186,8 @@ def validate(
     logger.debug('%s: validation passed!', message)
 
     result = django_kepi.models.thing.Thing.create(
-            value=message.activity_form,
             sender=actor,
+            **(message.activity_form),
             )
     logger.debug('%s: produced new Thing %s', message, result )
     return result

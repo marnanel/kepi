@@ -180,12 +180,11 @@ class Thing(models.Model):
                         # XXX this causes a warning; add param to disable it
                         )
 
-                accept_the_request = create({
-                    'to': [self['actor']],
-                    'type': 'Accept',
-                    'actor': self['object'],
-                    'object': self.url,
-                    },
+                accept_the_request = create(
+                    f_to = [self['actor']],
+                    f_type = 'Accept',
+                    f_actor = self['object'],
+                    f_object = self.url,
                     run_side_effects = False,
                     )
 
@@ -228,13 +227,21 @@ class Thing(models.Model):
             }
 
     @classmethod
-    def create(cls, value,
+    def create(cls,
             sender=None,
-            run_side_effects=True):
+            run_side_effects=True,
+            **value):
 
-        # First, let's fix the types of keys and values.
+        # Remove the "f_" prefix, which exists so that we can write
+        # things like f_type or f_object without using reserved keywords.
+        for k,v in value.copy().items():
+            if k.startswith('f_'):
+                value[k[2:]] = v
+                del value[k]
 
-        for k,v in value.items():
+        # Now, let's fix the types of keys and values.
+
+        for k,v in value.copy().items():
             if not isinstance(k, str):
                 raise ValueError('Things can only have keys which are strings: %s',
                         str(k))
@@ -385,13 +392,13 @@ class Thing(models.Model):
                     str(self.activity_form))
             logger.debug('We must create a Create wrapper for it.')
 
-            wrapper = Thing.create({
-                'type': 'Create',
-                'actor': self.activity_actor,
-                'to': self.activity_to,
-                'cc': self.activity_cc,
-                'object': self.activity_id,
-                })
+            wrapper = Thing.create(
+                f_type = 'Create',
+                f_actor = self.activity_actor,
+                to = self.activity_to,
+                cc = self.activity_cc,
+                f_object = self.activity_id,
+                )
 
             wrapper.save()
             logger.debug('Created wrapper %s',

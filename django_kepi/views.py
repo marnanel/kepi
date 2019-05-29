@@ -1,5 +1,4 @@
 from django_kepi import ATSIGN_CONTEXT
-from django_kepi.models import create
 import django_kepi.validation
 from django_kepi.find import find
 from django.shortcuts import render, get_object_or_404
