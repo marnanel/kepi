@@ -52,6 +52,13 @@ class Actor(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def key_name(self):
+        """
+        The name of this key.
+        """
+        return '%s#main-key' % (self.thing.url,),
+
+    @property
     def publicKey_as_dict(self):
         """
         A dict describing this Actor's public key,
@@ -64,11 +71,9 @@ class Actor(models.Model):
                            (like, "----BEGIN PUBLIC KEY---" and so on)
         """
 
-        owner = self.thing.id
-
         result = {
-                'id': '%s#main-key' % (owner,),
-                'owner': owner,
+                'id': self.key_name,
+                'owner': self.thing.url,
                 'publicKeyPem': self.publicKey,
                 }
 
