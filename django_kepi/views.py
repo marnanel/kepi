@@ -286,20 +286,19 @@ class InboxView(django.views.View):
 
         # username is None for the shared inbox.
 
-        headers = defaultdict(lambda: '',
-                [(f[5:],v) for f,v in request.META.items() if f.startswith("HTTP_")])
-
         capture = django_kepi.validation.IncomingMessage(
-                date = headers['DATE'],
-                host = headers[''],
+                date = request.META['HTTP_DATE'],
+                host = request.META['HOST'],
                 path = request.path,
-                signature = headers['SIGNATURE'],
+                signature = request.META['HTTP_SIGNATURE'],
+                content_type = request.META['CONTENT_TYPE'],
                 body = str(request.body, encoding='UTF-8'),
                 )
         capture.save()
-        logger.debug('%s: received %s at %s -- now validating',
+        logger.debug('%s: received %s with headers %s at %s -- now validating',
                 capture,
                 str(request.body, encoding='UTF-8'),
+                dict(request.META.items()),
                 request.path,
                 )
 
