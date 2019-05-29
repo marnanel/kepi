@@ -30,32 +30,18 @@ class TestInbox(TestCase):
                     publicKey = keys['public'],
                     )),
                 )
-
-        body, headers = test_message_body_and_headers(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
-                secret = keys['private'],
-                path = ALICE_INBOX,
-                host = 'europa.example.com',
-                )
-
-        logger.debug("Test message is %s",
-                body)
-        logger.debug("  -- with headers %s",
-                headers)
-
         c = Client()
-        c.post(
-                ALICE_INBOX,
-                content_type = 'application/activity+json',
-                data = json.dumps(body),
-                CONTENT_TYPE = headers['content-type'],
-                HTTP_DATE = headers['date'],
-                HOST = headers['host'],
-                HTTP_SIGNATURE = headers['signature'],
-                )
+
+        post_test_message(
+            client = c,
+            path = ALICE_INBOX,
+            host = 'europa.example.com',
+            secret = keys['private'],
+            f_id = ACTIVITY_ID,
+            f_type = "Follow",
+            f_actor = REMOTE_FRED,
+            f_object = LOCAL_ALICE,
+            )
 
     @httpretty.activate
     def test_shared_post(self):

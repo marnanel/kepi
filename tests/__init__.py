@@ -1,6 +1,7 @@
 from django_kepi.models import create
 from django_kepi.validation import IncomingMessage, validate
 from django_kepi.models.actor import Actor
+import django.test
 import httpretty
 import logging
 import httpsig
@@ -154,6 +155,43 @@ def test_message(secret='', **fields):
 
     result.save()
     return result
+
+def post_test_message(
+        path, host,
+        secret,
+        f_id, f_type, f_actor, f_object,
+        client = None,
+        ):
+
+    if client is None:
+        client = django.test.Client()
+
+    body, headers = test_message_body_and_headers(
+            f_id=f_id,
+            f_type=f_type,
+            f_actor=f_actor,
+            f_object=f_object,
+            secret = secret,
+            path = path,
+            host = host,
+            )
+
+    logger.debug("Test message is %s",
+            body)
+    logger.debug("  -- with headers %s",
+            headers)
+
+    client.post(
+            path = path,
+            content_type = headers['content-type'], # XXX why twice?
+            data = json.dumps(body),
+            CONTENT_TYPE = headers['content-type'],
+            HTTP_DATE = headers['date'],
+            HOST = headers['host'],
+            HTTP_SIGNATURE = headers['signature'],
+            )
+
+    return client
 
 def remote_user(url, name,
         publicKey='',
