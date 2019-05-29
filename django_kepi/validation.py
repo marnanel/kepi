@@ -135,7 +135,14 @@ def validate(
                 message)
         return None
 
-    actor = django_kepi.find.find(message.actor)
+    try:
+        actor = django_kepi.find.find(message.actor)
+    except json.decoder.JSONDecodeError:
+        logger.info('%s: invalid JSON; dropping', message)
+        return None
+    except UnicodeDecodeError:
+        logger.info('%s: invalid UTF-8; dropping', message)
+        return None
 
     logger.debug('%s: message signature is: %s',
             message, message.signature)

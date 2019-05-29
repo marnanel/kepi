@@ -10,6 +10,8 @@ import logging
 
 logger = logging.getLogger(name='django_kepi')
 
+INVALID_UTF8 = b"\xa0\xa1"
+
 class TestInbox(TestCase):
 
     @httpretty.activate
@@ -88,7 +90,6 @@ class TestInbox(TestCase):
                 f_actor = REMOTE_FRED,
                 secret = keys['private'],
                 )
-        # we don't use the body it returns
 
         broken_json = json.dumps(body)[1:]
 
@@ -110,6 +111,39 @@ class TestInbox(TestCase):
         self.assertFalse(
                 IncomingMessage.objects.all().exists())
 
+    @httpretty.activate
+    def test_malformed_remote_json(self):
+
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+
+        create_local_person(
+                name='alice',
+                auto_follow=False,
+                )
+
+        mock_remote_object(
+                url=REMOTE_FRED,
+                ftype = 'Object',
+                content = 'This is not actually JSON',
+                status = 200,
+                )
+
+        post_test_message(
+            path = INBOX_PATH,
+            secret = keys['private'],
+            f_type = "Follow",
+            f_actor = REMOTE_FRED,
+            f_object = LOCAL_ALICE,
+            )
+
+        self.assertIs(
+                len(Following.objects.filter(
+                    follower = REMOTE_FRED,
+                    following = LOCAL_ALICE,
+                    )),
+                0,
+                msg="sending malformed JSON caused creation of object")
+
     def test_invalid_utf8(self):
 
         keys = json.load(open('tests/keys/keys-0001.json', 'r'))
@@ -120,13 +154,11 @@ class TestInbox(TestCase):
                 )
         # we don't use the body it returns
 
-        invalid_utf8 = b"\xa0\xa1"
-
         c = Client()
         result = c.post(
                 path = INBOX_PATH,
                 content_type = headers['content-type'],
-                data = invalid_utf8,
+                data = INVALID_UTF8,
                 HTTP_DATE = headers['date'],
                 HOST = headers['host'],
                 HTTP_SIGNATURE = headers['signature'],
@@ -139,6 +171,44 @@ class TestInbox(TestCase):
 
         self.assertFalse(
                 IncomingMessage.objects.all().exists())
+
+    @httpretty.activate
+    def test_invalid_remote_utf8(self):
+
+        # XXX oddity: kepi logs this failure as a JSON decoding
+        # error, not a UTF-8 decoding error. I don't know why.
+        # But the end result is the same.
+
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+
+        create_local_person(
+                name='alice',
+                auto_follow=False,
+                )
+
+        mock_remote_object(
+                url=REMOTE_FRED,
+                ftype = 'Object',
+                content = INVALID_UTF8,
+                status = 200,
+                )
+
+        post_test_message(
+            path = INBOX_PATH,
+            secret = keys['private'],
+            f_type = "Follow",
+            f_actor = REMOTE_FRED,
+            f_object = LOCAL_ALICE,
+            )
+
+        self.assertIs(
+                len(Following.objects.filter(
+                    follower = REMOTE_FRED,
+                    following = LOCAL_ALICE,
+                    )),
+                0,
+                msg="sending malformed JSON caused creation of object")
+
 
     @httpretty.activate
     def test_auto_follow(self):
