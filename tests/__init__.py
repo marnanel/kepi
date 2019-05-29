@@ -101,7 +101,8 @@ def mock_remote_object(
 def create_remote_person(
         url,
         name,
-        publicKey):
+        publicKey,
+        **fields):
 
     mock_remote_object(
             url=url,
@@ -109,6 +110,7 @@ def create_remote_person(
                 url=url,
                 name=name,
                 publicKey = publicKey,
+                **fields,
                 )),
             )
 
