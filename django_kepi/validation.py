@@ -93,11 +93,13 @@ class IncomingMessage(models.Model):
     @property
     def key_id(self):
         if not self.signature:
+            logger.debug("%s:   -- message has no signature", self)
             raise ValueError("Can't get the key ID because this message isn't signed")
 
         try:
             return re.findall(r'keyId="([^"]*)"', self.signature)[0]
         except IndexError:
+            logger.debug("%s:   -- message's signature has no keyID", self)
             raise ValueError("Key ID not found in %s" % (self.signature,))
 
     def __str__(self):
@@ -160,6 +162,7 @@ def validate(
                 'Content-Type': message.content_type,
                 'Date': message.date,
                 'Signature': message.signature,
+                'Host': message.host,
                 },
             secret = key['publicKeyPem'],
             method = 'POST',
@@ -167,6 +170,14 @@ def validate(
             host = message.host,
             sign_header = 'Signature',
         )
+
+    logger.debug('%s', {
+                'Content-Type': message.content_type,
+                'Date': message.date,
+                'Signature': message.signature,
+                'Host': message.host,
+                'path': message.path,
+                },)
 
     if not hv.verify():
         logger.info('%s: spoofing attempt; message dropped',
