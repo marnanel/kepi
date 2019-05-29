@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 from django_kepi.find import find, find_local
-from django_kepi.models.thing import Thing
+import django_kepi.models
 from httpsig.verify import HeaderVerifier
 from urllib.parse import urlparse
 from django.http.request import HttpRequest
@@ -53,7 +53,7 @@ def _recipients_to_inboxes(recipients):
         elif 'inbox' in actor:
             logger.debug('recipient "%s" has a sole inbox at %s',
                     recipient, actor['inbox'])
-            inboxes.add(actor['endpoints']['sharedInbox'])
+            inboxes.add(actor['inbox'])
 
         else:
             logger.debug('recipient "%s" has no obvious inbox; dropping',
@@ -94,8 +94,8 @@ def deliver(
         activity_id,
         ):
     try:
-        activity = Thing.objects.get(number=activity_id)
-    except Thing.DoesNotExist:
+        activity = django_kepi.models.Thing.objects.get(number=activity_id)
+    except django_kepi.models.Thing.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)
         return None
@@ -200,8 +200,8 @@ def deliver(
                 headers=headers,
                 )
 
-        logger.debug('%s: %s: posted. Server replied: %s',
-                activity, inbox, response)
+        logger.debug('%s: %s: posted. Server replied: %s %s',
+                activity, inbox, response.status_code, response.reason)
 
     logger.debug('%s: message posted to all inboxes',
             activity)
