@@ -1,5 +1,6 @@
 from django_kepi.models import create
 from django_kepi.validation import IncomingMessage, validate
+from django_kepi.models.actor import Actor
 import httpretty
 import logging
 import httpsig
@@ -56,7 +57,25 @@ def create_person(name,
 
     spec.update(kwargs)
 
-    return create(spec)
+    actor_fields = {}
+    for extra in ['publicKey', 'privateKey']:
+        if extra in spec:
+            actor_fields[extra] = spec[extra]
+            del spec[extra]
+
+    result = create(spec)
+
+    if actor_fields:
+        # XXX kepi should allow us to create
+        # XXX this using create(), as part of
+        # XXX the Thing creation
+        actor = Actor(
+                thing=result,
+                **actor_fields,
+                )
+        actor.save()
+
+    return result
 
 def mock_remote_object(
         url,
@@ -157,6 +176,5 @@ def remote_user(url, name,
             result['endpoints'] = {
                     'sharedInbox': sharedInbox,
                     }
-
 
         return result
