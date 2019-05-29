@@ -15,22 +15,46 @@ class TestInbox(TestCase):
     @httpretty.activate
     def test_specific_post(self):
 
-        HUMAN_URL = 'https://users.example.net/mary'
-        ANIMAL_URL = 'https://things.example.org/lamb'
+        ALICE_INBOX = '/users/alice/inbox'
 
-        mock_remote_object(HUMAN_URL, ftype='Person')
-        mock_remote_object(ANIMAL_URL, ftype='Person')
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+
+        alice = create_person(
+                name='alice',
+                )
+
+        mock_remote_object(REMOTE_FRED,
+                content=json.dumps(remote_user(
+                    url=REMOTE_FRED,
+                    name='Fred',
+                    publicKey = keys['public'],
+                    )),
+                )
+
+        body, headers = test_message_body_and_headers(
+                f_id=ACTIVITY_ID,
+                f_type="Follow",
+                f_actor=REMOTE_FRED,
+                f_object=LOCAL_ALICE,
+                secret = keys['private'],
+                path = ALICE_INBOX,
+                host = 'europa.example.com',
+                )
+
+        logger.debug("Test message is %s",
+                body)
+        logger.debug("  -- with headers %s",
+                headers)
 
         c = Client()
-
-        c.post('/users/alice/inbox',
+        c.post(
+                ALICE_INBOX,
                 content_type = 'application/activity+json',
-                data = {
-                    "id": "https://example.net/hello-world",
-                    "actor": HUMAN_URL,
-                    "object": ANIMAL_URL,
-                    "type": "Like",
-                    },
+                data = json.dumps(body),
+                CONTENT_TYPE = headers['content-type'],
+                HTTP_DATE = headers['date'],
+                HOST = headers['host'],
+                HTTP_SIGNATURE = headers['signature'],
                 )
 
     @httpretty.activate
