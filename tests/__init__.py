@@ -86,12 +86,18 @@ def mock_remote_object(
             'Content-Type': 'application/activity+json',
             }
 
+    if isinstance(content, bytes):
+        body = content
+    else:
+        body = bytes(content, encoding='UTF-8')
+
     httpretty.register_uri(
             httpretty.GET,
             url,
             status=status,
             headers=headers,
-            body=bytes(content, encoding='UTF-8'))
+            body = body,
+            )
 
     logger.debug('Mocking %s as %d: %s',
             url,
