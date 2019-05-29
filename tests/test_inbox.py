@@ -13,13 +13,12 @@ logger = logging.getLogger(name='django_kepi')
 class TestInbox(TestCase):
 
     @httpretty.activate
-    def test_specific_post(self):
-
-        ALICE_INBOX = '/users/alice/inbox'
+    def _post_to_inbox(self,
+            local_inbox_path):
 
         keys = json.load(open('tests/keys/keys-0001.json', 'r'))
 
-        alice = create_local_person(
+        create_local_person(
                 name='alice',
                 auto_follow=False,
                 )
@@ -31,7 +30,7 @@ class TestInbox(TestCase):
                 )
 
         post_test_message(
-            path = ALICE_INBOX,
+            path = local_inbox_path,
             secret = keys['private'],
             f_type = "Follow",
             f_actor = REMOTE_FRED,
@@ -47,25 +46,12 @@ class TestInbox(TestCase):
                 msg="sending Follow did not result in following")
 
     @httpretty.activate
+    def test_specific_post(self):
+        self._post_to_inbox('/users/alice/inbox')
+
+    @httpretty.activate
     def test_shared_post(self):
-
-        HUMAN_URL = 'https://users.example.net/mary'
-        ANIMAL_URL = 'https://things.example.org/another-lamb'
-
-        mock_remote_object(HUMAN_URL, ftype='Person')
-        mock_remote_object(ANIMAL_URL, ftype='Person')
-
-        c = Client()
-
-        c.post('/sharedInbox',
-                content_type = 'application/activity+json',
-                data = {
-                    "id": "https://example.net/hello-world",
-                    "actor": HUMAN_URL,
-                    "object": ANIMAL_URL,
-                    "type": "Like",
-                    },
-                )
+        self._post_to_inbox('/sharedInbox')
 
     @skip("broken; find out why")
     def test_non_json(self):
