@@ -1,6 +1,7 @@
 from django.db import models, IntegrityError
 from django.conf import settings
 from django_kepi.find import find
+from django_kepi.delivery import deliver
 import django_kepi.models.following
 import logging
 import random
@@ -167,10 +168,33 @@ class Thing(models.Model):
                     )
 
         elif self.f_type=='Follow':
-            django_kepi.models.following.request(
-                    follower = self['actor'],
-                    following = self['object'],
+
+            local_user = find(self['object'], local_only=True)
+            if local_user.auto_follow:
+                logger.info('Local user %s has auto_follow set; must Accept',
+                        local_user)
+                django_kepi.models.following.accept(
+                        follower = self['actor'],
+                        following = self['object'],
+                        # XXX this causes a warning; add param to disable it
+                        )
+
+                accept_the_request = create({
+                    'to': [self['actor']],
+                    'type': 'Accept',
+                    'actor': self['object'],
+                    'object': self.url,
+                    },
+                    run_side_effects = False,
                     )
+
+                deliver(accept_the_request.number)
+
+            else:
+                django_kepi.models.following.request(
+                        follower = self['actor'],
+                        following = self['object'],
+                        )
 
         elif self.f_type=='Reject':
             obj = self['object__obj']
@@ -220,6 +244,8 @@ class Thing(models.Model):
                 continue # so are dicts
             elif isinstance(v, bool):
                 continue # also booleans
+            elif isinstance(v, list):
+                continue # and lists as well
             elif isinstance(v, Thing):
                 value[k] = v.url
                 continue
