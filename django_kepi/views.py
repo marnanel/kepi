@@ -292,6 +292,16 @@ class InboxView(django.views.View):
                 ]:
             return HttpResponse(
                     status = 415, # unsupported media type
+                    reason = 'Try application/activity+json',
+                    )
+
+        try:
+            decoded_body = json.loads(
+                    str(request.body, encoding='UTF-8'))
+        except json.decoder.JSONDecodeError:
+            return HttpResponse(
+                    status = 415, # unsupported media type
+                    reason = 'Invalid JSON',
                     )
 
         capture = django_kepi.validation.IncomingMessage(
@@ -300,7 +310,7 @@ class InboxView(django.views.View):
                 path = request.path,
                 signature = request.META['HTTP_SIGNATURE'],
                 content_type = request.META['CONTENT_TYPE'],
-                body = str(request.body, encoding='UTF-8'),
+                body = str(decoded_body)
                 )
         capture.save()
         logger.debug('%s: received %s with headers %s at %s -- now validating',

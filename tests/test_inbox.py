@@ -54,7 +54,6 @@ class TestInbox(TestCase):
         self._post_to_inbox(INBOX_PATH)
 
     def test_non_json(self):
-
         keys = json.load(open('tests/keys/keys-0001.json', 'r'))
 
         body, headers = test_message_body_and_headers(
@@ -84,35 +83,28 @@ class TestInbox(TestCase):
     @httpretty.activate
     def test_malformed_json(self):
 
-        HUMAN_URL = 'https://users.example.com/my-dame'
-        ANIMAL_URL = 'https://animals.example.com/a-lame-tame-crane'
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
 
-        mock_remote_object(HUMAN_URL, ftype='Person')
-        mock_remote_object(ANIMAL_URL, ftype='Person')
+        body, headers = test_message_body_and_headers(
+                f_actor = REMOTE_FRED,
+                secret = keys['private'],
+                )
+
+        broken_json = json.dumps(body)[1:]
 
         c = Client()
-
-        c.post('/sharedInbox',
-                content_type = 'application/activity+json',
-                data = {
-                    "id": "https://example.net/hello-world",
-                    "actor": HUMAN_URL,
-                    "object": ANIMAL_URL,
-                    "type": "Like",
-                    },
+        result = c.post(
+                path = INBOX_PATH,
+                content_type = headers['content-type'],
+                data = broken_json,
+                HTTP_DATE = headers['date'],
+                HOST = headers['host'],
+                HTTP_SIGNATURE = headers['signature'],
                 )
-        return
 
-        self.assertTrue(
-                IncomingMessage.objects.all().exists())
-
-        IncomingMessage.objects.all().delete()
-
-        text = text[1:] # remove leading {, so the JSON is invalid
-
-        c.post('/sharedInbox',
-                content_type = 'application/activity+json',
-                data = text,
+        self.assertEqual(
+                result.status_code,
+                415, # unsupported media type
                 )
 
         self.assertFalse(
