@@ -303,6 +303,11 @@ class InboxView(django.views.View):
                     status = 415, # unsupported media type
                     reason = 'Invalid JSON',
                     )
+        except UnicodeDecodeError:
+            return HttpResponse(
+                    status = 400, # bad request
+                    reason = 'Invalid UTF-8',
+                    )
 
         capture = django_kepi.validation.IncomingMessage(
                 date = request.META['HTTP_DATE'],

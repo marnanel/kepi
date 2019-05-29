@@ -80,7 +80,6 @@ class TestInbox(TestCase):
         self.assertFalse(
                 IncomingMessage.objects.all().exists())
 
-    @httpretty.activate
     def test_malformed_json(self):
 
         keys = json.load(open('tests/keys/keys-0001.json', 'r'))
@@ -89,6 +88,7 @@ class TestInbox(TestCase):
                 f_actor = REMOTE_FRED,
                 secret = keys['private'],
                 )
+        # we don't use the body it returns
 
         broken_json = json.dumps(body)[1:]
 
@@ -105,6 +105,36 @@ class TestInbox(TestCase):
         self.assertEqual(
                 result.status_code,
                 415, # unsupported media type
+                )
+
+        self.assertFalse(
+                IncomingMessage.objects.all().exists())
+
+    def test_invalid_utf8(self):
+
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+
+        body, headers = test_message_body_and_headers(
+                f_actor = REMOTE_FRED,
+                secret = keys['private'],
+                )
+        # we don't use the body it returns
+
+        invalid_utf8 = b"\xa0\xa1"
+
+        c = Client()
+        result = c.post(
+                path = INBOX_PATH,
+                content_type = headers['content-type'],
+                data = invalid_utf8,
+                HTTP_DATE = headers['date'],
+                HOST = headers['host'],
+                HTTP_SIGNATURE = headers['signature'],
+                )
+
+        self.assertEqual(
+                result.status_code,
+                400, # bad request
                 )
 
         self.assertFalse(
