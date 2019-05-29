@@ -315,7 +315,7 @@ class InboxView(django.views.View):
                 path = request.path,
                 signature = request.META['HTTP_SIGNATURE'],
                 content_type = request.META['CONTENT_TYPE'],
-                body = str(decoded_body)
+                body = json.dumps(decoded_body),
                 )
         capture.save()
         logger.debug('%s: received %s with headers %s at %s -- now validating',
