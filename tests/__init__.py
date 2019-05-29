@@ -59,7 +59,7 @@ def create_person(name,
     spec.update(kwargs)
 
     actor_fields = {}
-    for extra in ['publicKey', 'privateKey']:
+    for extra in ['publicKey', 'privateKey', 'auto_follow']:
         if extra in spec:
             actor_fields[extra] = spec[extra]
             del spec[extra]
