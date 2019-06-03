@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 from . import *
 import logging
 import httpsig
+import httpretty
 import json
 
 # FIXME test caching
@@ -19,57 +20,43 @@ def _message_became_activity(url=ACTIVITY_ID):
     except Thing.DoesNotExist:
         return False
 
-class ResultWrapper(object):
-    def __init__(self,
-            text='',
-            status_code=200,
-            ):
-        self.text = json.dumps(text)
-        self.status_code = status_code
-
 class TestDeliverTasks(TestCase):
 
     def _run_delivery(
             self,
             activity_fields,
             remote_user_details,
+            remote_user_endpoints,
             ):
 
-        a = Thing.create(activity_fields)
+        a = Thing.create(**activity_fields)
         a.save()
 
-        def _get(url):
-            if url in remote_user_details:
-                return ResultWrapper(
-                        text=remote_user_details[url],
-                        )
-            else:
-                return ResultWrapper(
-                    status_code = 404,
+        for who, what in remote_user_details.items():
+            mock_remote_object(
+                    url = who,
+                    content = json.dumps(what),
                     )
 
-        mock_get = Mock(
-                side_effect = _get,
-                )
+        for who in remote_user_endpoints:
+            mock_remote_object(
+                    url = who,
+                    content = 'Thank you',
+                    as_post = True,
+                    )
 
-        mock_post = Mock(
-                return_value = None,
-                )
+        deliver(a.number)
 
-        with patch('requests.get', mock_get):
-            with patch('requests.post', mock_post):
-                deliver(a.number)
-
+    @httpretty.activate
     def test_deliver_remote(self):
 
         keys = json.load(open('tests/keys/keys-0000.json', 'r'))
+
         alice = create_local_person(
                 name = 'alice',
                 publicKey = keys['public'],
-                # XXX FIXME this is a really silly place to store the private key
                 privateKey = keys['private'],
                 )
-        alice.save()
 
         self._run_delivery(
                 activity_fields = {
@@ -84,9 +71,13 @@ class TestDeliverTasks(TestCase):
                         name='Fred',
                         sharedInbox=REMOTE_SHARED_INBOX,
                         ),
-                    }
+                    },
+                remote_user_endpoints = [
+                    REMOTE_SHARED_INBOX,
+                    ],
                 )
 
+    @httpretty.activate
     def test_deliver_local(self):
 
         keys0 = json.load(open('tests/keys/keys-0000.json', 'r'))
@@ -96,13 +87,11 @@ class TestDeliverTasks(TestCase):
                 publicKey = keys0['public'],
                 privateKey = keys0['private'],
                 )
-        alice.save()
         bob = create_local_person(
                 name = 'bob',
                 publicKey = keys1['public'],
                 privateKey = keys1['private'],
                 )
-        bob.save()
 
         self._run_delivery(
                 activity_fields = {
@@ -112,7 +101,9 @@ class TestDeliverTasks(TestCase):
                     'to': [LOCAL_BOB],
                     },
                 remote_user_details = {
-                    }
+                    },
+                remote_user_endpoints = [
+                    ],
                 )
 
 # for investigation, rather than long-term testing
@@ -121,12 +112,10 @@ class TestBob(TestCase):
         alice = create_local_person(
                 name = 'alice',
                 )
-        alice.save()
 
         bob = create_local_person(
                 name = 'bob',
                 )
-        bob.save()
 
         # XXX add follower / following.
         # XXX create_local_person's view is not embellishing its activity_form.
