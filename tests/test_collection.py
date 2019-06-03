@@ -144,17 +144,17 @@ class CollectionTests(TestCase):
         for name in ['alice', 'bob', 'carol']:
             people[name] = create_local_person(name = name)
 
-            follow = create({
-                    'type': 'Follow',
-                    'actor': people[name],
-                    'object': people['alice'],
-                })
+            follow = create(
+                    f_type = 'Follow',
+                    actor = people[name],
+                    f_object = people['alice'],
+                )
 
-            create({
-                    'type': 'Accept',
-                    'actor': people['alice'],
-                    'object': follow,
-                })
+            create(
+                    f_type = 'Accept',
+                    actor = people['alice'],
+                    f_object = follow,
+                )
 
         path = '/users/alice/followers'
 

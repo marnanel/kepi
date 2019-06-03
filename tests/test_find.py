@@ -44,11 +44,11 @@ class TestFind(TestCase):
 
     def test_find_local(self):
 
-        a = create({
-            'actor': 'https://example.net/users/fred',
-            'object': 'https://example.net/articles/i-like-jam',
-            'type': 'Like',
-            })
+        a = create(
+            actor = 'https://example.net/users/fred',
+            f_object = 'https://example.net/articles/i-like-jam',
+            f_type = 'Like',
+            )
         a.save()
         
         found = find(a.url)
