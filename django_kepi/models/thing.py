@@ -124,6 +124,13 @@ class Thing(models.Model):
 
         return result
 
+    def __contains__(self, name):
+        try:
+            self.__getitem__(name)
+            return True
+        except:
+            return False
+
     def __getitem__(self, name):
 
         name_parts = name.split('__')
@@ -171,7 +178,7 @@ class Thing(models.Model):
         elif self.f_type=='Follow':
 
             local_user = find(self['object'], local_only=True)
-            if local_user.auto_follow:
+            if local_user is not None and local_user.auto_follow:
                 logger.info('Local user %s has auto_follow set; must Accept',
                         local_user)
                 django_kepi.models.following.accept(
@@ -402,9 +409,6 @@ class Thing(models.Model):
 
         return result
 
-    # TODO: there should be a clean() method with the same
-    # checks as create().
-
     def save(self, *args, **kwargs):
 
         we_are_new = self.pk is None
@@ -419,6 +423,7 @@ class Thing(models.Model):
             return self.save(*args, **kwargs)
 
         if we_are_new and self.f_type in OTHER_OBJECT_TYPES:
+            # XXX we shouldn't do this unless it came in via an outbox!
             logger.debug('New Thing is not an activity: %s',
                     str(self.activity_form))
             logger.debug('We must create a Create wrapper for it.')

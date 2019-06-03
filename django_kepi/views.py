@@ -256,7 +256,7 @@ class ActorView(ThingView):
     def activity(self, request, *args, **kwargs):
         thing = super().activity(request, *args, **kwargs)
 
-        if thing.f_type=='Tombstone':
+        if thing is not None and thing['type']=='Tombstone':
             return thing
 
         logger.debug('   -- found Thing %s; does it have an Actor?',

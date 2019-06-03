@@ -79,6 +79,13 @@ class Actor(models.Model):
 
         return result
 
+    def __contains__(self, name):
+        try:
+            self.__getitem__(name)
+            return True
+        except:
+            return False
+
     def __getitem__(self, name):
         """
         Generally delegates to Thing.__getitem__(),

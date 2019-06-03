@@ -168,7 +168,7 @@ def find_local(path):
             **resolved.kwargs)
     logger.debug('%s: resulting in %s', path, str(result))
 
-    if result.f_type == 'Tombstone':
+    if result is not None and result['type'] == 'Tombstone':
         raise TombstoneException(result)
 
     return result
