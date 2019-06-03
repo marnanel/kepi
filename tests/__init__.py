@@ -80,6 +80,7 @@ def mock_remote_object(
         ftype = 'Object',
         content = '',
         status = 200,
+        as_post = False,
         ):
 
     headers = {
@@ -89,10 +90,16 @@ def mock_remote_object(
     if isinstance(content, bytes):
         body = content
     else:
+        logger.warn('%s', content)
         body = bytes(content, encoding='UTF-8')
 
+    if as_post:
+        method = httpretty.POST
+    else:
+        method = httpretty.GET
+
     httpretty.register_uri(
-            httpretty.GET,
+            method,
             url,
             status=status,
             headers=headers,
