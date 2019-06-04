@@ -90,7 +90,6 @@ def mock_remote_object(
     if isinstance(content, bytes):
         body = content
     else:
-        logger.warn('%s', content)
         body = bytes(content, encoding='UTF-8')
 
     if as_post:
