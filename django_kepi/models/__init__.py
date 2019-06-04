@@ -1,11 +1,7 @@
 from django_kepi.models.thing import Thing, ThingField, create
 from django_kepi.models.following import Following
 from django_kepi.models.actor import Actor
-
-def new_activity_identifier():
-    # we have to keep this in for now,
-    # to pacify makemigrations
-    return None
+from django_kepi.models.audience import Audience
 
 #######################
 
@@ -15,5 +11,5 @@ __all__ = [
         'ThingField',
         'create',
         'Following',
-        'new_activity_identifier',
+        'Audience',
         ]
