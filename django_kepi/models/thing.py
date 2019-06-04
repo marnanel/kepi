@@ -396,13 +396,15 @@ class Thing(models.Model):
                     value = value,
                     )
             n.save()
-            logger.debug('  --    %10s = %s', f, value)
+            logger.debug('  -- %s', n)
 
         for f,v in [
                 ('actor', result.f_actor),
-                ('and -- url', result.url),
+                ('url', result.url),
                 ]:
-            logger.debug('  --    %10s = %s', f, v)
+            if v:
+                logger.debug('  -- [%s %12s %s]',
+                        result.number, f, v)
 
         if run_side_effects:
             result.send_notifications()
@@ -470,7 +472,7 @@ class ThingField(models.Model):
         )
 
     def __str__(self):
-        return '%s.%s = %s' % (
+        return '[%s %12s %s]' % (
                 self.parent.number,
                 self.name,
                 self.value)
