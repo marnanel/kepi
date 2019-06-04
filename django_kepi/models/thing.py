@@ -26,7 +26,7 @@ ACTIVITY_TYPES = set([
             'Reject',
         ])
 
-ACTIVITY_TYPE_CHOICES = [(x,x) for x in ACTIVITY_TYPES]
+ACTIVITY_TYPE_CHOICES = [(x,x) for x in sorted(ACTIVITY_TYPES)]
 
 OTHER_OBJECT_TYPES = set([
     # https://www.w3.org/TR/activitystreams-vocabulary/
