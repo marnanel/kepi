@@ -22,6 +22,7 @@ FIELD_CHOICES = [
         ]
 
 FIELD_NAMES = dict([(v,f) for (f,v) in FIELD_CHOICES])
+AUDIENCE_FIELD_NAMES = FIELD_NAMES.keys()
 
 class Audience(models.Model):
 

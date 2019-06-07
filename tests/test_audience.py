@@ -32,6 +32,26 @@ class TestAudience(TestCase):
         self.assertEqual(results[0].recipient, REMOTE_FRED)
         self.assertEqual(results[1].recipient, REMOTE_JIM)
 
+    def test_create(self):
+        narcissus = create_local_person(
+                name = 'narcissus',
+                )
+
+        like = create(
+                f_type = 'Like',
+                f_actor = narcissus,
+                f_object = narcissus,
+                to = [ REMOTE_FRED, REMOTE_JIM, ],
+                )
+
+        results = Audience.objects.filter(
+                parent = like,
+                )
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].recipient, REMOTE_FRED)
+        self.assertEqual(results[1].recipient, REMOTE_JIM)
+
     def test_get_audiences_for(self):
         narcissus = create_local_person(
                 name = 'narcissus',

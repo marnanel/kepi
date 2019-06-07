@@ -7,6 +7,7 @@ from django_kepi.models.audience import Audience
 
 __all__ = [
         'Actor',
+        'Audience',
         'Thing',
         'ThingField',
         'create',

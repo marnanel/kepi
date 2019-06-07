@@ -3,6 +3,7 @@ from django.conf import settings
 from django_kepi.find import find, is_local
 from django_kepi.delivery import deliver
 import django_kepi.models.following
+import django_kepi.models.audience
 import logging
 import random
 import json
@@ -178,6 +179,8 @@ class Thing(models.Model):
         elif self.f_type=='Follow':
 
             local_user = find(self['object'], local_only=True)
+            remote_user = find(self['actor'])
+
             if local_user is not None and local_user.auto_follow:
                 logger.info('Local user %s has auto_follow set; must Accept',
                         local_user)
@@ -188,7 +191,7 @@ class Thing(models.Model):
                         )
 
                 accept_the_request = create(
-                    f_to = [self['actor']],
+                    f_to = remote_user['inbox'],
                     f_type = 'Accept',
                     f_actor = self['object'],
                     f_object = self.url,
@@ -364,15 +367,20 @@ class Thing(models.Model):
                     logger.warn(message)
                     raise ValueError(message)
 
+        # Right, we need to create some objects.
+        # Everything in "value" needs to go into:
+        #    - a Thing, containing records such as "type",
+        #    - zero or more Audiences, for "to" etc
+        #    - zero or more ThingFields, for everything else
+
         for f,v in value.items():
             if f in [
                     'actor',
                     'name',
+                    'type',
                     ]:
                 record_fields['f_'+f] = v
                 del other_fields[f]
-
-        record_fields['f_type'] = value['type']
 
         if 'id' in value:
             record_fields['remote_url'] = value['id']
@@ -389,14 +397,22 @@ class Thing(models.Model):
                 )
 
         for f, v in other_fields.items():
-            value = json.dumps(v, sort_keys=True)
-            n = ThingField(
-                    parent = result,
-                    name = f,
-                    value = value,
+
+            if f in django_kepi.models.audience.AUDIENCE_FIELD_NAMES:
+                django_kepi.models.audience.Audience.add_audiences_for(
+                    thing = result,
+                    field = f,
+                    value = v,
                     )
-            n.save()
-            logger.debug('  -- %s', n)
+            else:
+                value = json.dumps(v, sort_keys=True)
+                n = ThingField(
+                        parent = result,
+                        name = f,
+                        value = value,
+                        )
+                n.save()
+                logger.debug('  -- %s', n)
 
         for f,v in [
                 ('actor', result.f_actor),
