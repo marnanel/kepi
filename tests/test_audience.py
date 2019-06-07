@@ -60,7 +60,7 @@ class TestAudience(TestCase):
                     'cc': ['https://remote.example.org/users/fred',
                         'https://remote.example.org/users/jim'],
                     'bcc': ['https://remote.example.org/users/fred',
-                        'https://remote.example.org/users/jim']
+                        'https://remote.example.org/users/jim'],
                     })
 
         self.assertDictEqual(
