@@ -86,7 +86,7 @@ class Audience(models.Model):
                 recipient = str(line),
                 )
             a.save()
-            logger.debug('   -- created %s',
+            logger.debug('  -- %s',
                     a)
 
     @classmethod
