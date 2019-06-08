@@ -320,9 +320,6 @@ class InboxView(django.views.View):
             result = django_kepi.models.thing.Thing.create(
                     **decoded_body,
                     )
-            logger.debug('  -- resulting in creation of %s',
-                    result)
-
         else:
 
             capture = django_kepi.validation.IncomingMessage(
