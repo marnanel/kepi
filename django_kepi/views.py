@@ -292,7 +292,7 @@ class InboxView(django.views.View):
 
         # name is None for the shared inbox.
 
-        if request.META['CONTENT_TYPE'] not in [
+        if request.headers['Content-Type'] not in [
                 'application/activity+json',
                 'application/json',
                 ]:
@@ -315,26 +315,36 @@ class InboxView(django.views.View):
                     reason = 'Invalid UTF-8',
                     )
 
-        capture = django_kepi.validation.IncomingMessage(
-                date = request.META['HTTP_DATE'],
-                host = request.META['HOST'],
-                path = request.path,
-                signature = request.META['HTTP_SIGNATURE'],
-                content_type = request.META['CONTENT_TYPE'],
-                body = json.dumps(decoded_body),
-                )
-        capture.save()
-        logger.debug('%s: received %s with headers %s at %s -- now validating',
-                capture,
-                str(request.body, encoding='UTF-8'),
-                dict(request.META.items()),
-                request.path,
-                )
+        if kwargs.get('local', False):
+            logger.debug('Local request; skip validation')
+            result = django_kepi.models.thing.Thing.create(
+                    **decoded_body,
+                    )
+            logger.debug('  -- resulting in creation of %s',
+                    result)
 
-        django_kepi.validation.validate(message_id=capture.id)
-        logger.debug('%s: finished kicking off validation; returning to HTTP caller',
-                capture,
-                )
+        else:
+
+            capture = django_kepi.validation.IncomingMessage(
+                    date = request.headers['Date'],
+                    host = request.headers['Host'],
+                    path = request.path,
+                    signature = request.headers['Signature'],
+                    content_type = request.headers['Content-Type'],
+                    body = json.dumps(decoded_body),
+                    )
+            capture.save()
+            logger.debug('%s: received %s with headers %s at %s -- now validating',
+                    capture,
+                    str(request.body, encoding='UTF-8'),
+                    request.headers,
+                    request.path,
+                    )
+
+            django_kepi.validation.validate(message_id=capture.id)
+            logger.debug('%s: finished kicking off validation; returning to HTTP caller',
+                    capture,
+                    )
 
         return HttpResponse(
                 status = 200,

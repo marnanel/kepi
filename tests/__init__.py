@@ -55,6 +55,8 @@ def create_local_person(name,
         'name': name,
         'id': 'https://altair.example.com/users/'+name,
         'type': 'Person',
+        'endpoints': {'sharedInbox': 'https://altair.example.com/sharedInbox'},
+        'inbox': 'https://altair.example.com/sharedInbox',
         }
 
     spec.update(kwargs)

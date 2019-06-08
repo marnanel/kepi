@@ -123,6 +123,9 @@ class Thing(models.Model):
         for f in ThingField.objects.filter(parent=self):
             result[f.name] = json.loads(f.value)
 
+        # FIXME test for this was omitted; add it in
+        result.update(django_kepi.models.audience.Audience.get_audiences_for(self))
+
         return result
 
     def __contains__(self, name):
@@ -191,12 +194,12 @@ class Thing(models.Model):
                         )
 
                 accept_the_request = create(
-                    f_to = remote_user['inbox'],
-                    f_type = 'Accept',
-                    f_actor = self['object'],
-                    f_object = self.url,
-                    run_side_effects = False,
-                    )
+                        f_to = remote_user.url,
+                        f_type = 'Accept',
+                        f_actor = self['object'],
+                        f_object = self.url,
+                        run_side_effects = False,
+                        )
 
                 deliver(accept_the_request.number)
 

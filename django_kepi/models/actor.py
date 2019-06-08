@@ -99,6 +99,15 @@ class Actor(models.Model):
             return self.thing[name]
 
     @property
+    def url(self):
+        """
+        The URL representing this Actor.
+
+        Delegates everything to our parent Thing.
+        """
+        return self.thing.url
+
+    @property
     def activity_form(self):
         """
         The form which GET requests will return.

@@ -6,6 +6,8 @@ from httpsig.verify import HeaderVerifier
 from urllib.parse import urlparse
 from django.http.request import HttpRequest
 from django.conf import settings
+import django.urls
+import django.utils.datastructures
 import logging
 import requests
 import json
@@ -13,7 +15,10 @@ import datetime
 import pytz
 import httpsig
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='django_kepi.delivery')
+
+# Magic ID for public messages.
+PUBLIC_ID = 'https://www.w3.org/ns/activitystreams#Public'
 
 def _rfc822_datetime(when=None):
     if when is None:
@@ -28,12 +33,27 @@ def _find_local_actor(activity_form):
     return find_local(path)
 
 def _recipients_to_inboxes(recipients):
+    """
+    Find inbox URLs for a set of recipients.
+
+    "recipients" is an iterable of strings, each the ID of
+    a recipient of a message. (These IDs will be URLs.)
+
+    Returns a set of strings of URLs for their inboxes.
+    Shared inboxes are preferred. This being a set,
+    there will be no duplicates.
+    """
+
+    logger.info('Looking up inboxes for: %s',
+            recipients)
 
     inboxes = set()
 
     for recipient in recipients:
 
-        # FIXME treat magic recipients specially
+        if recipient==PUBLIC_ID:
+            logger.debug('  -- ignoring public')
+            continue
 
         actor = find(recipient)
 
@@ -41,23 +61,27 @@ def _recipients_to_inboxes(recipients):
         # FIXME this doesn't work when actor is local
 
         if actor is None:
-            logger.debug('recipient "%s" doesn\'t exist; dropping',
+            logger.debug('  -- "%s" doesn\'t exist; dropping',
                     recipient)
             continue
 
+        logger.debug('  -- "%s" found as %s',
+                recipient, actor)
+
         if 'endpoints' in actor and 'sharedInbox' in actor['endpoints']:
-            logger.debug('recipient "%s" has a shared inbox at %s',
-                    recipient, actor['endpoints']['sharedInbox'])
+            logger.debug('    -- has a shared inbox at %s',
+                    actor['endpoints']['sharedInbox'])
             inboxes.add(actor['endpoints']['sharedInbox'])
 
         elif 'inbox' in actor:
-            logger.debug('recipient "%s" has a sole inbox at %s',
-                    recipient, actor['inbox'])
+            logger.debug('    -- has a sole inbox at %s',
+                    actor['inbox'])
             inboxes.add(actor['inbox'])
 
         else:
-            logger.debug('recipient "%s" has no obvious inbox; dropping',
-                    recipient)
+            logger.debug('    -- has no obvious inbox; dropping')
+
+    logger.info('Found inboxes: %s', inboxes)
 
     return inboxes
 
@@ -88,6 +112,21 @@ def _signer_for_local_actor(local_actor):
             algorithm='rsa-sha256',
             headers=['(request-target)', 'host', 'date', 'content-type'],
             )
+
+class LocalDeliveryRequest(HttpRequest):
+
+    def __init__(self, content, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.method = 'POST'
+        self.headers = {
+            'Content-Type': 'application/activity+json',
+            }
+        self._content = bytes(content, encoding='UTF-8')
+
+    @property
+    def body(self):
+        return self._content
 
 @shared_task()
 def deliver(
@@ -165,15 +204,19 @@ def deliver(
             try:
                 resolved = django.urls.resolve(parsed_target_url.path)
             except django.urls.Resolver404:
-                logger.debug('%s: -- not found', path)
+                logger.debug('%s: -- not found', parsed_target_url.path)
                 continue
         
             request = LocalDeliveryRequest(
-                    # ... XXX something goes here
+                    content = message,
                     )
+
             result = resolved.func(request,
+                    local = True,
                     **resolved.kwargs)
-            logger.debug('%s: resulting in %s', path, result)
+
+            logger.debug('%s: resulting in %s %s', parsed_target_url.path,
+                    result.status_code, result.reason_phrase)
             continue
  
         headers = {
