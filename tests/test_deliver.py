@@ -1,17 +1,24 @@
 from django.test import TestCase, Client
 from django_kepi.delivery import deliver
 from django_kepi.models import Thing
+import django_kepi.views
 from unittest.mock import Mock, patch
 from . import *
 import logging
 import httpsig
 import httpretty
 import json
+import requests
 
 # FIXME test caching
 # FIXME test invalid keys
 
 logger = logging.getLogger(name='django_kepi')
+
+REMOTE_PATH_NAMES = {
+        '/users/fred/inbox': 'fred',
+        '/users/jim/inbox': 'jim',
+        }
 
 def _message_became_activity(url=ACTIVITY_ID):
     try:
@@ -106,6 +113,8 @@ class TestDeliverTasks(TestCase):
                     ],
                 )
 
+        # FIXME add some assertions!
+
 # for investigation, rather than long-term testing
 class TestBob(TestCase):
     def test_bob(self):
@@ -134,26 +143,28 @@ class TestBob(TestCase):
 # }
 
 # These tests are all written with respect to a small group of users:
+
+# XXX rewrite with follows -> followers
 #
 # Local users:
-#   alice@altair.example.com
+#   https://example.com/users/alice
 #       follows: bob, quebec, yankee
-#   bob@altair.example.com
+#   https://altair.example.com/users/bob
 #       follows: quebec, yankee, zulu
 #
 # Remote users:
-#   quebec@montreal.example.net
-#       personal inbox: https://montreal.example.net/users/quebec
+#   https://montreal.example.net/users/quebec
+#       personal inbox: https://montreal.example.net/users/quebec/inbox
 #       no shared inbox.
 #       follows: alice, zulu
 #
-#   yankee@example.net
-#       personal inbox: https://example.net/yankee
+#   https://example.net/yankee
+#       personal inbox: https://example.net/yankee/inbox
 #       shared inbox: https://example.net/sharedInbox
 #       follows: alice, bob
 #
-#   zulu@example.net
-#       personal inbox: https://example.net/zulu
+#   https://example.net/zulu
+#       personal inbox: https://example.net/zulu/inbox
 #       shared inbox: https://example.net/sharedInbox
 #       follows: alice, bob, quebec, yankee
 #
@@ -165,3 +176,121 @@ class TestBob(TestCase):
 # inboxes were delivered to.
 #
 # XXX Extra: make proof against infinite recursion honeytrap.
+# XXX Extra: check bcc and bto don't appear in the sent messages.
+# XXX Extra: check all versions of "Public" are equivalent.
+# XXX Extra: check what happens if the remote key is junk
+
+class TestDelivery(TestCase):
+
+    def _set_up_remote_user_mocks(self):
+
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        # XXX These also need follower collections
+
+        create_remote_person(
+                url = REMOTE_FRED,
+                name = 'fred',
+                publicKey = keys['public'],
+                inbox = FREDS_INBOX,
+                )
+
+        create_remote_person(
+                url = REMOTE_JIM,
+                name = 'jim',
+                publicKey = keys['public'],
+                inbox = JIMS_INBOX,
+                )
+
+    def _set_up_remote_request_mocks(self):
+        mock_remote_object(
+                FREDS_INBOX,
+                as_post = True,
+                )
+
+        mock_remote_object(
+                JIMS_INBOX,
+                as_post = True,
+                )
+
+    def _set_up_local_user_mocks(self):
+
+        keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+
+        # I know these aren't mocks. This is just for consistency.
+        create_local_person(name='alice',
+                privateKey = keys['private'])
+        create_local_person(name='bob')
+
+    @patch.object(django_kepi.views.InboxView, 'post')
+    @httpretty.activate
+    def _test_delivery(self,
+            fake_local_request,
+            to,
+            expected,
+            ):
+
+        self._set_up_remote_user_mocks()
+        self._set_up_remote_request_mocks()
+        self._set_up_local_user_mocks()
+
+        like = Thing.create(
+                f_type = 'Like',
+                f_actor = LOCAL_ALICE,
+                f_object = REMOTE_FRED,
+                to = to,
+                )
+        like.save()
+
+        deliver(like.number)
+
+        #################
+        # Assertions
+
+        touched = []
+        for req in httpretty.httpretty.latest_requests:
+            if req.method=='POST':
+                touched.append(
+                        REMOTE_PATH_NAMES.get(req.path, req.path),
+                        )
+
+        for req in fake_local_request.mock_calls:
+            kwargs = req[2]
+            if 'name' not in kwargs:
+                continue
+
+            if kwargs['name'] is None:
+                touched.append('shared-local')
+            else:
+                touched.append(kwargs['name'])
+
+        logger.info('Inboxes touched: %s', touched)
+        logger.info('  " "  expected: %s', expected)
+
+        self.assertListEqual(
+                sorted(touched),
+                sorted(expected),
+                )
+
+    def test_simple_remote_and_local(self):
+        self._test_delivery(
+                to=[REMOTE_FRED, LOCAL_BOB],
+                expected=['fred', 'shared-local'],
+                )
+
+    def test_simple_local(self):
+        self._test_delivery(
+                to=[LOCAL_BOB],
+                expected=['shared-local'],
+                )
+
+    def test_simple_remote(self):
+        self._test_delivery(
+                to=[REMOTE_FRED],
+                expected=['fred'],
+                )
+
+    def test_not_to_self(self):
+        self._test_delivery(
+                to=[LOCAL_ALICE],
+                expected=[],
+                )
