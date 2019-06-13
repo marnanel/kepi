@@ -206,12 +206,16 @@ def deliver(
             except django.urls.Resolver404:
                 logger.debug('%s: -- not found', parsed_target_url.path)
                 continue
+
+            # inboxName is the username, or None for the shared inbox
+            inboxName = resolved.kwargs.get('name', None)
         
             request = LocalDeliveryRequest(
                     content = message,
                     )
 
             result = resolved.func(request,
+                    name = inboxName,
                     local = True,
                     **resolved.kwargs)
 
