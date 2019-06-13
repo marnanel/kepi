@@ -17,8 +17,12 @@ import httpsig
 
 logger = logging.getLogger(name='django_kepi.delivery')
 
-# Magic ID for public messages.
-PUBLIC_ID = 'https://www.w3.org/ns/activitystreams#Public'
+# Magic IDs for public messages.
+PUBLIC_ID_LIST = [
+        'https://www.w3.org/ns/activitystreams#Public',
+        'as:Public',
+        'Public',
+        ]
 
 def _rfc822_datetime(when=None):
     if when is None:
@@ -51,7 +55,7 @@ def _recipients_to_inboxes(recipients):
 
     for recipient in recipients:
 
-        if recipient==PUBLIC_ID:
+        if recipient in PUBLIC_ID_LIST:
             logger.debug('  -- ignoring public')
             continue
 

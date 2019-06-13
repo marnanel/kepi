@@ -22,6 +22,8 @@ REMOTE_SHARED_INBOX = 'https://remote.example.org/shared-inbox'
 LOCAL_ALICE = 'https://altair.example.com/users/alice'
 LOCAL_BOB = 'https://altair.example.com/users/bob'
 
+PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
+
 MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
         "https://w3id.org/security/v1",
         {"manuallyApprovesFollowers":"as:manuallyApprovesFollowers",

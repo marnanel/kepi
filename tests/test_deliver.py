@@ -134,47 +134,6 @@ class TestBob(TestCase):
         logger.info('bob friends %s', c.get('/users/bob/following').content)
         logger.info('bob friends p1 %s', c.get('/users/bob/following?page=1').content)
 
-# This is purely about delivery, so we only use one Thing type: a Like.
-# {
-#    "type": "Like",
-#    "actor": "alice@altair.example.com",
-#    "object": "https://example.com",
-#  (here: to, cc, bto, bcc, as appropriate)
-# }
-
-# These tests are all written with respect to a small group of users:
-
-# XXX rewrite with follows -> followers
-#
-# Local users:
-#   https://example.com/users/alice
-#       follows: bob, quebec, yankee
-#   https://altair.example.com/users/bob
-#       follows: quebec, yankee, zulu
-#
-# Remote users:
-#   https://montreal.example.net/users/quebec
-#       personal inbox: https://montreal.example.net/users/quebec/inbox
-#       no shared inbox.
-#       follows: alice, zulu
-#
-#   https://example.net/yankee
-#       personal inbox: https://example.net/yankee/inbox
-#       shared inbox: https://example.net/sharedInbox
-#       follows: alice, bob
-#
-#   https://example.net/zulu
-#       personal inbox: https://example.net/zulu/inbox
-#       shared inbox: https://example.net/sharedInbox
-#       follows: alice, bob, quebec, yankee
-#
-# As ever, public messages:
-#   https://www.w3.org/ns/activitystreams#Public
-#    (or, "as:Public", or "Public"; all three are synonyms)
-#
-# Generally, each test asserts that a particular set of
-# inboxes were delivered to.
-#
 # XXX Extra: make proof against infinite recursion honeytrap.
 # XXX Extra: check bcc and bto don't appear in the sent messages.
 # XXX Extra: check all versions of "Public" are equivalent.
@@ -292,5 +251,23 @@ class TestDelivery(TestCase):
     def test_not_to_self(self):
         self._test_delivery(
                 to=[LOCAL_ALICE],
+                expected=[],
+                )
+
+    def test_not_to_public_url(self):
+        self._test_delivery(
+                to=[PUBLIC],
+                expected=[],
+                )
+
+    def test_not_to_public_as(self):
+        self._test_delivery(
+                to=['as:Public'],
+                expected=[],
+                )
+
+    def test_not_to_public_bare(self):
+        self._test_delivery(
+                to=['Public'],
                 expected=[],
                 )
