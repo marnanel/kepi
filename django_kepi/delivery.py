@@ -132,6 +132,72 @@ class LocalDeliveryRequest(HttpRequest):
     def body(self):
         return self._content
 
+def _deliver_local(
+        activity,
+        inbox,
+        parsed_target_url,
+        message,
+        signer,
+        ):
+    logger.debug('%s: %s is local',
+            activity, inbox)
+
+    try:
+        resolved = django.urls.resolve(parsed_target_url.path)
+    except django.urls.Resolver404:
+        logger.debug('%s: -- not found', parsed_target_url.path)
+        return
+
+    # inboxName is the username, or None for the shared inbox
+    inboxName = resolved.kwargs.get('name', None)
+
+    request = LocalDeliveryRequest(
+            content = message,
+            )
+
+    result = resolved.func(request,
+            name = inboxName,
+            local = True,
+            **resolved.kwargs)
+
+    logger.debug('%s: resulting in %s %s', parsed_target_url.path,
+            result.status_code, result.reason_phrase)
+
+def _deliver_remote(
+        activity,
+        inbox,
+        parsed_target_url,
+        message,
+        signer,
+        ):
+
+    headers = {
+            'Date': _rfc822_datetime(),
+            'Host': parsed_target_url.netloc,
+            # lowercase is deliberate, to work around
+            # an infelicity of the signer library
+            'content-type': "application/activity+json",
+            }
+
+    if signer is not None:
+        headers = signer.sign(
+                headers,
+                method = 'POST',
+                path = parsed_target_url.path,
+                )
+
+    logger.debug('%s: %s: headers are %s',
+            activity, inbox, headers)
+
+    response = requests.post(
+            inbox,
+            data=message,
+            headers=headers,
+            )
+
+    logger.debug('%s: %s: posted. Server replied: %s %s',
+            activity, inbox, response.status_code, response.reason)
+
 @shared_task()
 def deliver(
         activity_id,
@@ -190,7 +256,6 @@ def deliver(
             local_actor = local_actor,
             )
 
-    # XXX this is getting complicated; refactor
     for inbox in inboxes:
         logger.debug('%s: %s: begin delivery',
                 activity, inbox)
@@ -201,58 +266,21 @@ def deliver(
         is_local = parsed_target_url.hostname in settings.ALLOWED_HOSTS
 
         if is_local:
-
-            logger.debug('%s: %s is local',
-                    activity, inbox)
-
-            try:
-                resolved = django.urls.resolve(parsed_target_url.path)
-            except django.urls.Resolver404:
-                logger.debug('%s: -- not found', parsed_target_url.path)
-                continue
-
-            # inboxName is the username, or None for the shared inbox
-            inboxName = resolved.kwargs.get('name', None)
-        
-            request = LocalDeliveryRequest(
-                    content = message,
+            _deliver_local(
+                    activity,
+                    inbox,
+                    parsed_target_url,
+                    message,
+                    signer,
                     )
-
-            result = resolved.func(request,
-                    name = inboxName,
-                    local = True,
-                    **resolved.kwargs)
-
-            logger.debug('%s: resulting in %s %s', parsed_target_url.path,
-                    result.status_code, result.reason_phrase)
-            continue
- 
-        headers = {
-                'Date': _rfc822_datetime(),
-                'Host': parsed_target_url.netloc,
-                # lowercase is deliberate, to work around
-                # an infelicity of the signer library
-                'content-type': "application/activity+json",
-                }
-
-        if signer is not None:
-            headers = signer.sign(
-                    headers,
-                    method = 'POST',
-                    path = parsed_target_url.path,
+        else:
+            _deliver_remote(
+                    activity,
+                    inbox,
+                    parsed_target_url,
+                    message,
+                    signer,
                     )
-
-        logger.debug('%s: %s: headers are %s',
-                activity, inbox, headers)
-
-        response = requests.post(
-                inbox,
-                data=message,
-                headers=headers,
-                )
-
-        logger.debug('%s: %s: posted. Server replied: %s %s',
-                activity, inbox, response.status_code, response.reason)
 
     logger.debug('%s: message posted to all inboxes',
             activity)
