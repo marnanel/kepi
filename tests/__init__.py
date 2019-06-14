@@ -22,8 +22,14 @@ REMOTE_SHARED_INBOX = 'https://remote.example.org/shared-inbox'
 LOCAL_ALICE = 'https://altair.example.com/users/alice'
 LOCAL_BOB = 'https://altair.example.com/users/bob'
 
+FREDS_FOLLOWERS = REMOTE_FRED+'/followers'
+JIMS_FOLLOWERS = REMOTE_JIM+'/followers'
+ALICES_FOLLOWERS = LOCAL_ALICE+'/followers'
+BOBS_FOLLOWERS = LOCAL_BOB+'/followers'
+
 PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
 
+CONTEXT_URL = "https://www.w3.org/ns/activitystreams"
 MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
         "https://w3id.org/security/v1",
         {"manuallyApprovesFollowers":"as:manuallyApprovesFollowers",
@@ -46,8 +52,6 @@ MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
             "schema":"http://schema.org#",
             "PropertyValue":"schema:PropertyValue",
             "value":"schema:value"}]
-
-
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -128,6 +132,48 @@ def create_remote_person(
                 publicKey = publicKey,
                 **fields,
                 )),
+            )
+
+def create_remote_collection(
+        url,
+        items,
+        number_per_page = 10,
+        ):
+
+    PAGE_URL_FORMAT = '%s?page=%d'
+
+    mock_remote_object(
+            url=url,
+            content=json.dumps({
+                    "@context" : "https://www.w3.org/ns/activitystreams",
+                    "id" : url,
+                    "type" : "OrderedCollection",
+                    "totalItems" : len(items),
+                    "first" : PAGE_URL_FORMAT % (url, 1),
+                    }),
+                )
+
+    page_count = len(items)//number_per_page
+    for i in range(1, page_count+2):
+
+        fields = {
+                "@context" : CONTEXT_URL,
+                "id" : PAGE_URL_FORMAT % (url, i),
+                "type" : "OrderedCollectionPage",
+                "totalItems" : len(items),
+                "partOf": url,
+                "orderedItems": items[(i-1)*number_per_page:i*number_per_page],
+            }
+
+        if i>1:
+            fields['prev'] = PAGE_URL_FORMAT % (url, i-1)
+
+        if i<page_count+1:
+            fields['next'] = PAGE_URL_FORMAT % (url, i+1)
+
+        mock_remote_object(
+            url = PAGE_URL_FORMAT % (url, i),
+            content=json.dumps(fields),
             )
 
 def test_message_body_and_headers(secret='',
