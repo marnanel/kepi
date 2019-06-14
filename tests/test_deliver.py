@@ -151,6 +151,16 @@ class TestDelivery(TestCase):
                 name = 'fred',
                 publicKey = keys['public'],
                 inbox = FREDS_INBOX,
+                followers = FREDS_FOLLOWERS,
+                )
+
+        create_remote_collection(
+                url = FREDS_FOLLOWERS,
+                items=[
+                    REMOTE_JIM,
+                    LOCAL_ALICE,
+                    LOCAL_BOB,
+                    ],
                 )
 
         create_remote_person(
@@ -158,6 +168,14 @@ class TestDelivery(TestCase):
                 name = 'jim',
                 publicKey = keys['public'],
                 inbox = JIMS_INBOX,
+                followers = JIMS_FOLLOWERS,
+                )
+
+        create_remote_collection(
+                url = JIMS_FOLLOWERS,
+                items=[
+                    LOCAL_BOB,
+                    ],
                 )
 
     def _set_up_remote_request_mocks(self):
@@ -270,4 +288,10 @@ class TestDelivery(TestCase):
         self._test_delivery(
                 to=['Public'],
                 expected=[],
+                )
+
+    def test_remote_followers(self):
+        self._test_delivery(
+                to=[REMOTE_FRED, FREDS_FOLLOWERS],
+                expected=['fred', 'jim', 'bob'],
                 )
