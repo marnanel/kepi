@@ -111,6 +111,7 @@ def mock_remote_object(
             status=status,
             headers=headers,
             body = body,
+            match_querystring = True,
             )
 
     logger.debug('Mocking %s as %d: %s',
