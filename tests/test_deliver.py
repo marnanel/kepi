@@ -160,6 +160,7 @@ class TestDelivery(TestCase):
                     REMOTE_JIM,
                     LOCAL_ALICE,
                     LOCAL_BOB,
+                    JIMS_FOLLOWERS, # which we should ignore
                     ],
                 )
 
@@ -293,5 +294,5 @@ class TestDelivery(TestCase):
     def test_remote_followers(self):
         self._test_delivery(
                 to=[REMOTE_FRED, FREDS_FOLLOWERS],
-                expected=['fred', 'jim', 'bob'],
+                expected=['fred', 'jim', 'shared-local'],
                 )

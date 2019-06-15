@@ -53,37 +53,85 @@ def _recipients_to_inboxes(recipients):
 
     inboxes = set()
 
+    recipients = sorted(list(recipients))
+
+    original_recipients = recipients.copy()
+
     for recipient in recipients:
 
         if recipient in PUBLIC_ID_LIST:
             logger.debug('  -- ignoring public')
             continue
 
-        actor = find(recipient)
+        discovered = find(recipient)
 
-        # FIXME this can also be a collection
-        # FIXME this doesn't work when actor is local
-
-        if actor is None:
+        if discovered is None:
             logger.debug('  -- "%s" doesn\'t exist; dropping',
                     recipient)
             continue
 
         logger.debug('  -- "%s" found as %s',
-                recipient, actor)
+                recipient, discovered)
 
-        if 'endpoints' in actor and 'sharedInbox' in actor['endpoints']:
-            logger.debug('    -- has a shared inbox at %s',
-                    actor['endpoints']['sharedInbox'])
-            inboxes.add(actor['endpoints']['sharedInbox'])
+        if 'type' not in discovered:
+            logger.debug('    -- has no type (weird)')
 
-        elif 'inbox' in actor:
-            logger.debug('    -- has a sole inbox at %s',
-                    actor['inbox'])
-            inboxes.add(actor['inbox'])
+        elif discovered['type'] in ['Collection', 'OrderedCollection']:
 
+            if recipient not in original_recipients:
+                logger.debug('    -- is a collection, but we\'re too deep; ignoring')
+                continue
+
+            logger.debug('    -- is a collection')
+
+            # XXX add checks to make sure we don't loop forever on duff data
+            page_url = discovered.get('first', None)
+
+            while page_url is not None:
+                logger.debug('    -- loading page %s', page_url)
+                page = find(page_url)
+                page_url = None
+                items = []
+
+                if page is None:
+                    logger.debug('      -- and that\'s missing')
+                elif page.get('type', None) not in ['CollectionPage', 'OrderedCollectionPage']:
+                    logger.debug('      -- which has a weird type; ignoring')
+                elif page.get('partOf', None)!=recipient:
+                    logger.debug('      -- which belongs to someone else; ignoring')
+                elif 'orderedItems' in page:
+                    items = page['orderedItems']
+                elif 'items' in page:
+                    items = page['items']
+
+                if items:
+                    logger.debug('      -- items are %s', items)
+                    for item in items:
+                        if item not in recipients:
+                            logger.debug('        -- adding %s to recipients', item)
+                            recipients.append(item)
+
+                if page is not None:
+                    page_url = page.get('next', None)
+
+            logger.debug('    -- all loaded')
+
+        elif discovered['type'] in ['Actor', 'Person']:
+
+            if 'endpoints' in discovered and 'sharedInbox' in discovered['endpoints']:
+                logger.debug('    -- has a shared inbox at %s',
+                        discovered['endpoints']['sharedInbox'])
+                inboxes.add(discovered['endpoints']['sharedInbox'])
+
+            elif 'inbox' in discovered:
+                logger.debug('    -- has a sole inbox at %s',
+                        discovered['inbox'])
+                inboxes.add(discovered['inbox'])
+
+            else:
+                logger.debug('    -- has no obvious inbox; dropping')
         else:
-            logger.debug('    -- has no obvious inbox; dropping')
+            logger.warn('    -- remote object is an unexpected type')
 
     logger.info('Found inboxes: %s', inboxes)
 
