@@ -8,7 +8,7 @@ class Command(BaseCommand):
         parser.add_argument('type', type=str,
                 help="the type of object (e.g. 'Person')")
         parser.add_argument(
-                'fields', metavar='FIELD=VALUE', nargs='+', type=str,
+                'fields', metavar='FIELD=VALUE', nargs='*', type=str,
                 help='fields for the new object')
 
     def handle(self, *args, **options):
