@@ -368,8 +368,13 @@ class Thing(models.Model):
 
         value['type'] = value['type'].title()
 
-        if 'id' not in value and sender is not None:
-            raise ValueError("Remote things must have an id")
+        if 'id' in value:
+            if sender is None:
+                logger.warn('Removing "id" field at Thing creation')
+                del value['id']
+        else:
+            if sender is not None:
+                raise ValueError("Remote things must have an id")
 
         record_fields = {
                 'active': True,
