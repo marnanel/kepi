@@ -104,6 +104,51 @@ class Thing(models.Model):
         return result
 
     @property
+    def pretty(self):
+        result = ''
+        curly = '{'
+
+        items = [
+                ('type', self.f_type),
+                ]
+
+        if not self.active:
+            items.append( ('_active', False) )
+
+        for f, v in sorted(self.activity_form.items()):
+
+            if f in ['type']:
+                continue
+
+            items.append( (f,v) )
+
+        items.extend( [
+                ('actor', self.f_actor),
+                ('_name', self.f_name),
+                ('_number', self.number),
+                ('_remote_url', self.remote_url),
+                ] )
+
+        for f, v in items:
+
+            if not v:
+                continue
+
+            if result:
+                result += ',\n'
+
+            result += '%1s %15s: %s' % (
+                    curly,
+                    json.dumps(f),
+                    json.dumps(v),
+                    )
+            curly = ''
+
+        result += ' }'
+
+        return result
+
+    @property
     def activity_type(self):
         return self.f_type
 
@@ -146,18 +191,23 @@ class Thing(models.Model):
             result = self.f_actor
         elif name=='type':
             result = self.f_type
+        elif name=='number':
+            result = self.number
         else:
-            field = ThingField.objects.get(
-                    parent = self,
-                    name = name,
-                    )
+            try:
+                field = ThingField.objects.get(
+                        parent = self,
+                        name = name,
+                        )
+                result = field.value
 
-            result = field.value
+            except ThingField.DoesNotExist:
+                result = None
 
-            if 'raw' not in name_parts:
+            if 'raw' not in name_parts and result is not None:
                 result = json.loads(result)
 
-        if 'obj' in name_parts:
+        if 'obj' in name_parts and result is not None:
             result = find(result,
                     local_only=True)
 
