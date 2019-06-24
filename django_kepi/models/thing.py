@@ -314,9 +314,7 @@ class Thing(models.Model):
             raw_material = self['object']
             creation = Thing.create(**raw_material,
                     run_side_effects = False)
-            print(self.pretty)
             self['object'] = creation
-            print(self.pretty)
             self.save()
 
         elif self.f_type in OTHER_OBJECT_TYPES:
