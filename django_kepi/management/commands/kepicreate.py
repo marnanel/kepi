@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
+import json
 import django_kepi.models
+import sys
 
 class Command(BaseCommand):
     help = 'create a kepi object'
@@ -13,24 +15,26 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        fields = {
-                'type': options['type'].title(),
-                }
+        if options['type'] == '-':
+            fields = json.loads(sys.stdin.read())
 
-        for fv in options['fields']:
-            try:
-                f, v = fv.split('=', maxsplit=1)
-            except ValueError:
-                self.stderr.write(self.style.ERROR(
-                    fv + ' needs to be in the format FIELD=VALUE',
-                    ))
-                continue
+        else:
+            fields = {
+                    'type': options['type'].title(),
+                    }
 
-            fields[f.lower()] = v
+            for fv in options['fields']:
+                try:
+                    f, v = fv.split('=', maxsplit=1)
+                except ValueError:
+                    self.stderr.write(self.style.ERROR(
+                        fv + ' needs to be in the format FIELD=VALUE',
+                        ))
+                    continue
+
+                fields[f.lower()] = v
 
         created = None
-
-        print(fields)
 
         try:
             created = django_kepi.models.create(**fields)
@@ -40,3 +44,7 @@ class Command(BaseCommand):
 
         if created:
             self.stdout.write(self.style.NOTICE(created.pretty))
+
+            if created['type']=='Create':
+                self.stdout.write(' ---')
+                self.stdout.write(self.style.NOTICE(created['object__obj'].pretty))
