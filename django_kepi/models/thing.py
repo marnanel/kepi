@@ -213,6 +213,41 @@ class Thing(models.Model):
 
         return result
 
+    def __setitem__(self, name, value):
+
+        value = _normalise_type_for_thing(value)
+
+        if name=='name':
+            self.f_name = value
+            self.save()
+        elif name=='actor':
+            self.f_actor = value
+            self.save()
+        elif name=='type':
+            self.f_type = value
+            self.save()
+        elif name=='number':
+            raise ValueError("Can't set the number of an existing Thing")
+        else:
+
+            value = json.dumps(value)
+
+            try:
+                field = ThingField.objects.get(
+                        parent = self,
+                        name = name,
+                        )
+                field.value = value
+                field.save()
+
+            except ThingField.DoesNotExist:
+                field = ThingField(
+                        parent = self,
+                        name = name,
+                        value = value
+                        )
+                field.save()
+
     def send_notifications(self):
         if self.f_type=='Accept':
             obj = self['object__obj']
@@ -273,6 +308,42 @@ class Thing(models.Model):
                     follower = obj['actor'],
                     following = self['actor'],
                     )
+
+        elif self.f_type=='Create':
+
+            raw_material = self['object']
+            creation = Thing.create(**raw_material,
+                    run_side_effects = False)
+            print(self.pretty)
+            self['object'] = creation
+            print(self.pretty)
+            self.save()
+
+        elif self.f_type in OTHER_OBJECT_TYPES:
+            # XXX only if this came in via a local inbox
+            logger.debug('New Thing is not an activity: %s',
+                    str(self.activity_form))
+            logger.debug('We must create a Create wrapper for it.')
+
+            wrapper = Thing.create(
+                f_type = 'Create',
+                f_actor = self.f_actor,
+                to = self['to'],
+                cc = self['cc'],
+                f_object = self.url,
+                run_side_effects = False,
+                )
+
+            wrapper.save()
+            logger.debug('Created wrapper %s',
+                    str(wrapper.activity_form))
+
+            # XXX We copy "to" and "cc" per
+            # https://www.w3.org/TR/activitypub/#object-without-create
+            # which also requires us to copy
+            # the two blind versions, and "audience".
+            # We don't support those (atm), but
+            # we should probably copy them anyway.
 
     @property
     def is_local(self):
@@ -342,26 +413,7 @@ class Thing(models.Model):
                 raise ValueError('Things can only have keys which are strings: %s',
                         str(k))
 
-            if isinstance(v, str):
-                continue # strings are fine
-            elif isinstance(v, dict):
-                continue # so are dicts
-            elif isinstance(v, bool):
-                continue # also booleans
-            elif isinstance(v, list):
-                continue # and lists as well
-            elif isinstance(v, Thing):
-                value[k] = v.url
-                continue
-
-            try:
-                value[k] = v.activity_form
-                logger.debug('  -- fixed type: %s=%s',
-                        k, value[k])
-            except AttributeError:
-                value[k] = str(v)
-                logger.debug('  -- fixed type to string: %s=%s',
-                        k, value[k])
+            value[k] = _normalise_type_for_thing(v)
 
         if 'type' not in value:
             raise ValueError("Things must have a type")
@@ -487,8 +539,6 @@ class Thing(models.Model):
 
     def save(self, *args, **kwargs):
 
-        we_are_new = self.pk is None
-
         if not self.number:
             self.number = '%08x' % (random.randint(0, 0xffffffff),)
 
@@ -497,33 +547,6 @@ class Thing(models.Model):
         except IntegrityError:
             self.number = None
             return self.save(*args, **kwargs)
-
-        if we_are_new and self.f_type in OTHER_OBJECT_TYPES:
-            # XXX we shouldn't do this unless it came in via an outbox!
-            logger.debug('New Thing is not an activity: %s',
-                    str(self.activity_form))
-            logger.debug('We must create a Create wrapper for it.')
-
-            wrapper = Thing.create(
-                f_type = 'Create',
-                f_actor = self.activity_actor,
-                to = self.activity_to,
-                cc = self.activity_cc,
-                f_object = self.activity_id,
-                )
-
-            wrapper.save()
-            logger.debug('Created wrapper %s',
-                    str(wrapper.activity_form))
-
-            # XXX We copy "to" and "cc" per
-            # https://www.w3.org/TR/activitypub/#object-without-create
-            # which also requires us to copy
-            # the two blind versions, and "audience".
-            # We don't support those (atm), but
-            # we should probably copy them anyway.
-
-########################################
 
 class ThingField(models.Model):
 
@@ -555,4 +578,25 @@ class ThingField(models.Model):
 
 def create(*args, **kwargs):
     return Thing.create(*args, **kwargs)
+
+########################################
+
+def _normalise_type_for_thing(v):
+    logger.debug('Normalising %s', v)
+
+    if isinstance(v, str):
+        return v # strings are fine
+    elif isinstance(v, dict):
+        return v # so are dicts
+    elif isinstance(v, bool):
+        return v # also booleans
+    elif isinstance(v, list):
+        return v # and lists as well
+    elif isinstance(v, Thing):
+        return v.url
+
+    try:
+        return v.activity_form
+    except AttributeError:
+        return str(v)
 
