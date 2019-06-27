@@ -55,7 +55,7 @@ MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
 
 logger = logging.getLogger(name='django_kepi')
 
-def create_local_person(name,
+def create_local_person(name='jemima',
         **kwargs):
     spec = {
         'name': name,
@@ -81,6 +81,18 @@ def create_local_person(name,
             )
     actor.save()
 
+    return result
+
+def create_local_note(**kwargs):
+    spec = {
+        'id': 'https://altair.example.com/testing-note',
+        'type': 'Note',
+        'content': 'This is just a test.',
+        }
+
+    spec.update(kwargs)
+
+    result = create(**spec)
     return result
 
 def mock_remote_object(
