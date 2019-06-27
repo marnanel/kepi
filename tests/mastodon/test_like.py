@@ -18,8 +18,6 @@ class TestLike(TestCase):
             'object': status.id,
           }
 
-        # XXX What does Mastodon do with "with_indifferent_access" here?
-
         status = create(**object_json)
 
         self.assertTrue(
