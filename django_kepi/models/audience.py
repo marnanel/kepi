@@ -4,6 +4,8 @@ import logging
 
 logger = logging.getLogger('django_kepi')
 
+PUBLIC = 'https://www.w3.org/ns/activitystreams#Public'
+
 FIELD_AUDIENCE = 0x01 # literally "audience"
 FIELD_TO       = 0x02 
 FIELD_CC       = 0x04
@@ -76,14 +78,18 @@ class Audience(models.Model):
 
         field = FIELD_NAMES[field]
 
-        if not isinstance(value, list):
-            value = [value]
+        if value is None:
+            value = []
+        elif not isinstance(value, list):
+            value = [str(value)]
+        else:
+            value = [str(x) for x in value]
 
         for line in value:
             a = Audience(
                 parent = thing,
                 field = field,
-                recipient = str(line),
+                recipient = line,
                 )
             a.save()
             logger.debug('  -- %s',
@@ -108,7 +114,5 @@ class Audience(models.Model):
             result[a.get_field_display()].append(a.recipient)
 
         result = dict(result)
-
-        logger.debug('Audience is: %s', result)
 
         return result
