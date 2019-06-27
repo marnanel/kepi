@@ -7,7 +7,6 @@ import re
 from django.conf import settings
 from urllib.parse import urlparse
 import django_kepi.find
-import django_kepi.models.thing
 import django.core.exceptions
 from httpsig.verify import HeaderVerifier
 
@@ -185,7 +184,7 @@ def validate(
 
     logger.debug('%s: validation passed!', message)
 
-    result = django_kepi.models.thing.Thing.create(
+    result = create(
             sender=actor,
             **(message.activity_form),
             )

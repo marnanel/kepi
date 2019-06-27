@@ -1,5 +1,5 @@
 from django.db import models
-import django_kepi.models.thing
+import django_kepi.models.thing as thing
 import django_kepi.crypto
 import logging
 
@@ -7,7 +7,7 @@ logger = logging.getLogger(name='django_kepi')
 
 ######################
 
-class Actor(models.Model):
+class Actor(thing.Thing):
     """
     An Actor is a kind of Thing representing a person,
     an organisation, a bot, or anything else that can
@@ -15,16 +15,7 @@ class Actor(models.Model):
 
     The most important thing about Actors specifically
     is that they own a public/private key pair.
-
-    You can use your own actor class instead if you like,
-    but you'll need to implement the same properties.
     """
-
-    thing = models.OneToOneField(
-            'django_kepi.Thing',
-            primary_key=True,
-            on_delete=models.CASCADE,
-            )
 
     privateKey = models.TextField(
             )
@@ -35,10 +26,6 @@ class Actor(models.Model):
     auto_follow = models.BooleanField(
             default=True,
             )
-
-    @property
-    def name(self):
-        return self.thing.name
 
     def save(self, *args, **kwargs):
         if self.privateKey is None and self.publicKey is None:
@@ -79,13 +66,6 @@ class Actor(models.Model):
 
         return result
 
-    def __contains__(self, name):
-        try:
-            self.__getitem__(name)
-            return True
-        except:
-            return False
-
     def __getitem__(self, name):
         """
         Generally delegates to Thing.__getitem__(),
@@ -96,23 +76,5 @@ class Actor(models.Model):
         if name=='publicKey':
             return self.publicKey_as_dict
         else:
-            return self.thing[name]
-
-    @property
-    def url(self):
-        """
-        The URL representing this Actor.
-
-        Delegates everything to our parent Thing.
-        """
-        return self.thing.url
-
-    @property
-    def activity_form(self):
-        """
-        The form which GET requests will return.
-
-        Delegates everything to our parent Thing.
-        """
-        return self.thing.activity_form
+            return super().__getitem__(name)
 

@@ -8,3 +8,4 @@ django-celery
 httpretty
 httpsig
 django-celery-results
+django-polymorphic

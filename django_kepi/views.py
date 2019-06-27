@@ -7,7 +7,9 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django_kepi.models import Thing, ThingField, Following, Actor
+import django_kepi.models.thing as thing
+import django_kepi.models.following as following
+import django_kepi.models.actor as actor
 from collections.abc import Iterable
 import logging
 import urllib.parse
@@ -186,20 +188,20 @@ class ThingView(KepiView):
             if 'id' in kwargs:
                 logger.debug('Looking up Thing by id==%s',
                         kwargs['id'])
-                activity_object = Thing.objects.get(
+                activity_object = thing.Thing.objects.get(
                         number=kwargs['id'],
                         )
 
             elif 'name' in kwargs:
                 logger.debug('Looking up Thing by name==%s',
                         kwargs['name'])
-                activity_object = Thing.objects.get(
+                activity_object = thing.Thing.objects.get(
                         f_name=kwargs['name'],
                         )
             else:
                 raise ValueError("Need an id or a name")
 
-        except Thing.DoesNotExist:
+        except thing.Thing.DoesNotExist:
             logger.info('  -- unknown: %s', kwargs)
             return None
         except django.core.exceptions.ValidationError:
@@ -217,7 +219,7 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['name'])
 
-        person = Thing.objects.get(
+        person = thing.Thing.objects.get(
                 f_type='Person',
                 f_name = kwargs['name'],
                 )
@@ -237,7 +239,7 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['name'])
 
-        person = Thing.objects.get(
+        person = thing.Thing.objects.get(
                 f_type='Person',
                 f_name=kwargs['name'],
                 )
@@ -259,7 +261,7 @@ class ActorView(ThingView):
         if thing is not None and thing['type']=='Tombstone':
             return thing
 
-        logger.debug('   -- found Thing %s; does it have an Actor?',
+        logger.debug('   -- found hing %s; does it have an Actor?',
                 thing)
 
         try:
@@ -317,7 +319,7 @@ class InboxView(django.views.View):
 
         if kwargs.get('local', False):
             logger.debug('Local request; skip validation')
-            result = django_kepi.models.thing.Thing.create(
+            result = create(
                     **decoded_body,
                     )
         else:

@@ -1,4 +1,4 @@
-from django_kepi.models import create
+from django_kepi.create import create
 from django_kepi.validation import IncomingMessage, validate
 from django_kepi.models.actor import Actor
 import django.test
@@ -67,19 +67,7 @@ def create_local_person(name='jemima',
 
     spec.update(kwargs)
 
-    actor_fields = {}
-    for extra in ['publicKey', 'privateKey', 'auto_follow']:
-        if extra in spec:
-            actor_fields[extra] = spec[extra]
-            del spec[extra]
-
     result = create(**spec)
-
-    actor = Actor(
-            thing=result,
-            **actor_fields,
-            )
-    actor.save()
 
     return result
 
