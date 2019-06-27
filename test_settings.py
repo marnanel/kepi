@@ -20,7 +20,6 @@ INSTALLED_APPS = (
         'django_celery_results',
 
         'django_kepi',
-        'things_for_testing',
 
         )
 
