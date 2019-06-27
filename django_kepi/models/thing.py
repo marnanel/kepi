@@ -83,6 +83,14 @@ class Thing(models.Model):
 
         return settings.KEPI['ACTIVITY_URL_FORMAT'] % (self.number,)
 
+    @property
+    def id(self):
+        return self.url
+
+    @property
+    def text(self):
+        return self['content']
+
     def __str__(self):
 
         if self.active:
@@ -408,13 +416,15 @@ class Thing(models.Model):
 
         for k,v in value.copy().items():
             if not isinstance(k, str):
-                raise ValueError('Things can only have keys which are strings: %s',
+                logger.warn('Things can only have keys which are strings: %s',
                         str(k))
+                continue
 
             value[k] = _normalise_type_for_thing(v)
 
         if 'type' not in value:
-            raise ValueError("Things must have a type")
+            logger.warn("Things must have a type; dropping message")
+            return
 
         value['type'] = value['type'].title()
 
@@ -424,7 +434,8 @@ class Thing(models.Model):
                 del value['id']
         else:
             if sender is not None:
-                raise ValueError("Remote things must have an id")
+                logger.warn("Remote things must have an id; dropping message")
+                return
 
         record_fields = {
                 'active': True,
@@ -437,8 +448,9 @@ class Thing(models.Model):
             if value['type'] in OTHER_OBJECT_TYPES:
                 need_actor = need_object = need_target = False
             else:
-                logger.debug('Unknown thing type: %s', value['type'])
-                raise ValueError('{} is not a thing type'.format(value['type']))
+                logger.warn('Unknown thing type: %s; dropping message',
+                        value['type'])
+                return
 
             # XXX We don't currently allow people to create Tombstones here,
             # but we should.
@@ -535,6 +547,17 @@ class Thing(models.Model):
 
         return result
 
+    @property
+    def visibility(self):
+        audiences = django_kepi.models.audience.Audience.get_audiences_for(self)
+        logger.debug('%s', str(audiences))
+
+        if django_kepi.models.audience.PUBLIC in audiences.get('to', []):
+            return 'public'
+        elif django_kepi.models.audience.PUBLIC in audiences.get('cc', []):
+            return 'unlisted'
+        return 'direct'
+
     def save(self, *args, **kwargs):
 
         if not self.number:
@@ -582,6 +605,8 @@ def create(*args, **kwargs):
 def _normalise_type_for_thing(v):
     logger.debug('Normalising %s', v)
 
+    if v is None:
+        return v # we're good with nulls
     if isinstance(v, str):
         return v # strings are fine
     elif isinstance(v, dict):
@@ -591,7 +616,9 @@ def _normalise_type_for_thing(v):
     elif isinstance(v, list):
         return v # and lists as well
     elif isinstance(v, Thing):
-        return v.url
+        return v.url # Things can deal with themselves
+
+    # okay, it's something weird
 
     try:
         return v.activity_form
