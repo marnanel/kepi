@@ -1,5 +1,5 @@
 from django.db import models
-import django_kepi.models.thing as thing
+from . import thing
 import django_kepi.crypto
 import logging
 

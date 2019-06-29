@@ -1,6 +1,5 @@
-import django_kepi.models.thing as thing
-import django_kepi.models.audience as audience
-import django_kepi.models.actor as actor
+from django_kepi.models import *
+import django_kepi.types as types
 import logging
 import json
 
@@ -61,6 +60,30 @@ def create(
             'active': True,
             }
     other_fields = value.copy()
+
+    try:
+        type_spec = types.ACTIVITYPUB_TYPES[value['type']]
+    except KeyError:
+        logger.info('Unknown thing type: %s; dropping message',
+                value['type'])
+        return None
+
+    if 'class' not in type_spec:
+        logger.info('Type %s can\'t be instantiated',
+                value['type'])
+        return None
+
+    try:
+        cls = globals()[type_spec['class']]
+    except KeyError:
+        # shouldn't happen!
+        logger.warn("The class '%s' wasn't imported into create.py",
+                type_spec['class'])
+        return None
+
+    logger.debug('Class for %s is %s', value['type'], cls)
+
+    # XXX get the record from "types", and see what fields we need
 
     try:
         need_actor, need_object, need_target = TYPES[value['type']]
@@ -130,9 +153,6 @@ def create(
     for f in ['id', 'type', 'actor', 'name']:
         if f in other_fields:
             del other_fields[f]
-
-    # XXX decide "cls" here
-    cls = thing.Thing
 
     result = cls(**record_fields)
     result.save()
