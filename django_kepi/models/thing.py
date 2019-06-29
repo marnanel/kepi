@@ -88,10 +88,6 @@ class Thing(PolymorphicModel):
     def id(self):
         return self.url
 
-    @property
-    def text(self):
-        return self['content']
-
     def __str__(self):
 
         if self.active:
@@ -389,17 +385,6 @@ class Thing(PolymorphicModel):
 
         self.save()
         logger.info('%s: entombing finished', self)
-
-    @property
-    def visibility(self):
-        audiences = django_kepi.models.audience.Audience.get_audiences_for(self)
-        logger.debug('%s', str(audiences))
-
-        if django_kepi.models.audience.PUBLIC in audiences.get('to', []):
-            return 'public'
-        elif django_kepi.models.audience.PUBLIC in audiences.get('cc', []):
-            return 'unlisted'
-        return 'direct'
 
     def save(self, *args, **kwargs):
 
