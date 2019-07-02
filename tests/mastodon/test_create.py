@@ -1,6 +1,7 @@
 from django.test import TestCase
 from tests import create_local_note, create_local_person
-from django_kepi.models import create, Thing
+from django_kepi.create import create
+from django_kepi.models import *
 import logging
 
 SENDER_ID = 'https://example.com/actor'

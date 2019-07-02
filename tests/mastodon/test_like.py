@@ -1,5 +1,5 @@
 from tests import create_local_note, create_local_person
-from django_kepi.models import create
+from django_kepi.create import create
 from django.test import TestCase
 
 class TestLike(TestCase):
