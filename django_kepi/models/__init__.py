@@ -1,4 +1,4 @@
-from .thing import Thing, ThingField
+from .thing import Thing
 from .activity import Activity
 from .actor import Actor
 from .audience import Audience

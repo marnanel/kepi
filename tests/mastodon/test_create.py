@@ -8,6 +8,8 @@ SENDER_ID = 'https://example.com/actor'
 SENDER_DOMAIN = 'example.com'
 SENDER_FOLLOWERS = 'https://example.com/followers'
 
+RECIPIENT_ID = 'https://altair.example.com/users/fred'
+
 logger = logging.getLogger(name='tests')
 
 # nb: the Mastodon tests generally check creation by
@@ -141,11 +143,14 @@ class TestCreate(TestCase):
                 )
 
     def test_limited(self):
+
+        recipient = create_local_person()
+
         object_json = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
-            'to': RECIPIENT_ID,
+            'to': recipient,
           }
 
         status = create(**object_json)
@@ -374,7 +379,7 @@ class TestCreate(TestCase):
         local_user = create_local_person()
 
         object_json = {
-            'id': sender_id + '#bar',
+            'id': SENDER_ID + '#bar',
             'type': 'note',
             'content': 'lorem ipsum',
             'cc': local_user.id,
@@ -398,7 +403,7 @@ class TestCreate(TestCase):
         local_user = create_local_person()
 
         object_json = {
-            'id': sender_id + '#bar',
+            'id': SENDER_ID + '#bar',
             'type': 'note',
             'content': 'lorem ipsum',
             'cc': local_user.id,

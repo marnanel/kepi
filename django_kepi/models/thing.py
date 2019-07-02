@@ -77,6 +77,10 @@ class Thing(PolymorphicModel):
             default=True,
             )
 
+    other_fields = models.TextField(
+            default='',
+            )
+
     @property
     def url(self):
         if self.remote_url is not None:
@@ -170,8 +174,7 @@ class Thing(PolymorphicModel):
             if value:
                 result[fieldname] = value
 
-        for f in ThingField.objects.filter(parent=self):
-            result[f.name] = json.loads(f.value)
+        result.extend(json.loads(self.other_fields))
 
         # FIXME test for this was omitted; add it in
         result.update(django_kepi.models.audience.Audience.get_audiences_for(self))
@@ -190,27 +193,17 @@ class Thing(PolymorphicModel):
         name_parts = name.split('__')
         name = name_parts.pop(0)
 
-        if name=='name':
-            result = self.f_name
-        elif name=='actor':
-            result = self.f_actor
-        elif name=='type':
-            result = self.f_type
-        elif name=='number':
-            result = self.number
+        if hasattr(self, 'f_'+name):
+            result = getattr(self, 'f_'+name)
         else:
-            try:
-                field = ThingField.objects.get(
-                        parent = self,
-                        name = name,
-                        )
-                result = field.value
-
-            except ThingField.DoesNotExist:
+            others = json.loads(self.other_fields)
+            if name in others:
+                result = others[name]
+            else:
                 result = None
 
-            if 'raw' not in name_parts and result is not None:
-                result = json.loads(result)
+        if 'raw' not in name_parts and result is not None:
+            result = json.loads(result)
 
         if 'obj' in name_parts and result is not None:
             result = find(result,
@@ -222,36 +215,16 @@ class Thing(PolymorphicModel):
 
         value = _normalise_type_for_thing(value)
 
-        if name=='name':
-            self.f_name = value
-            self.save()
-        elif name=='actor':
-            self.f_actor = value
-            self.save()
-        elif name=='type':
-            self.f_type = value
-            self.save()
-        elif name=='number':
-            raise ValueError("Can't set the number of an existing Thing")
+        value = json.dumps(value)
+
+        if hasattr(self, 'f_'+name):
+            setattr(self, 'f_'+name, value)
         else:
+            others = json.loads(self.other_fields)
+            others[name] = value
+            self.other_fields = json.dumps(others)
 
-            value = json.dumps(value)
-
-            try:
-                field = ThingField.objects.get(
-                        parent = self,
-                        name = name,
-                        )
-                field.value = value
-                field.save()
-
-            except ThingField.DoesNotExist:
-                field = ThingField(
-                        parent = self,
-                        name = name,
-                        value = value
-                        )
-                field.save()
+        self.save()
 
     def send_notifications(self):
         if self.f_type=='Accept':
@@ -396,29 +369,3 @@ class Thing(PolymorphicModel):
         except IntegrityError:
             self.number = None
             return self.save(*args, **kwargs)
-
-class ThingField(models.Model):
-
-    class Meta:
-        unique_together = ['parent', 'name']
-
-    parent = models.ForeignKey(
-            Thing,
-            on_delete=models.CASCADE,
-            )
-
-    # "type" and "actor" are fields in the Thing model itself;
-    # all others go here.
-    name = models.CharField(
-            max_length=255,
-            )
-
-    # Stored in JSON.
-    value = models.TextField(
-        )
-
-    def __str__(self):
-        return '[%s %12s %s]' % (
-                self.parent.number,
-                self.name,
-                self.value)

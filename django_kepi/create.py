@@ -56,11 +56,6 @@ def create(
             logger.warn("Remote things must have an id; dropping message")
             return
 
-    record_fields = {
-            'active': True,
-            }
-    other_fields = value.copy()
-
     try:
         type_spec = types.ACTIVITYPUB_TYPES[value['type']]
     except KeyError:
@@ -132,60 +127,25 @@ def create(
                 logger.warn(message)
                 raise ValueError(message)
 
-    # Right, we need to create some objects.
-    # Everything in "value" needs to go into:
-    #    - a Thing, containing records such as "type",
-    #    - zero or more Audiences, for "to" etc
-    #    - zero or more ThingFields, for everything else
+    # Right, we need to create an object.
 
-    for f,v in value.items():
-        if f in [
-                'actor',
-                'name',
-                'type',
-                ]:
-            record_fields['f_'+f] = v
-            del other_fields[f]
+    result = cls()
 
     if 'id' in value:
-        record_fields['remote_url'] = value['id']
+        result.remote_url = value['id']
+        del value['id']
 
-    for f in ['id', 'type', 'actor', 'name']:
-        if f in other_fields:
-            del other_fields[f]
+    for f,v in value.copy().items():
+        if hasattr(result, 'f_'+f):
+            # result has a specialised field for this
+            logger.debug('  %s is a specialised field', f)
+            setattr(result, 'f_'+f, json.dumps(v))
+            del value[f]
 
-    result = cls(**record_fields)
+    # ...and everything else goes in other_fields.
+    logger.debug('  remaining fields: %s', str(value))
+    result.other_fields = json.dumps(value)
     result.save()
-    logger.debug('Created %s (%s): ----',
-            result.f_type,
-            result.f_name,
-            )
-
-    for f, v in other_fields.items():
-
-        if f in audience.AUDIENCE_FIELD_NAMES:
-            audience.Audience.add_audiences_for(
-                thing = result,
-                field = f,
-                value = v,
-                )
-        else:
-            value = json.dumps(v, sort_keys=True)
-            n = thing.ThingField(
-                    parent = result,
-                    name = f,
-                    value = value,
-                    )
-            n.save()
-            logger.debug('  -- %s', n)
-
-    for f,v in [
-            ('actor', result.f_actor),
-            ('url', result.url),
-            ]:
-        if v:
-            logger.debug('  -- [%s %12s %s]',
-                    result.number, f, v)
 
     if run_side_effects:
         result.send_notifications()
