@@ -39,8 +39,6 @@ def create(
                     str(k))
             continue
 
-        value[k] = _normalise_type_for_thing(v)
-
     if 'type' not in value:
         logger.warn("Things must have a type; dropping message")
         return
@@ -79,6 +77,8 @@ def create(
     logger.debug('Class for %s is %s', value['type'], cls)
 
     # XXX get the record from "types", and see what fields we need
+
+    ########################
 
     try:
         need_actor, need_object, need_target = TYPES[value['type']]
@@ -127,6 +127,8 @@ def create(
                 logger.warn(message)
                 raise ValueError(message)
 
+    ########################
+
     # Right, we need to create an object.
 
     result = cls()
@@ -135,43 +137,13 @@ def create(
         result.remote_url = value['id']
         del value['id']
 
-    for f,v in value.copy().items():
-        if hasattr(result, 'f_'+f):
-            # result has a specialised field for this
-            logger.debug('  %s is a specialised field', f)
-            setattr(result, 'f_'+f, json.dumps(v))
-            del value[f]
+    for f,v in value.items():
+        result[f] = v
 
-    # ...and everything else goes in other_fields.
-    logger.debug('  remaining fields: %s', str(value))
-    result.other_fields = json.dumps(value)
     result.save()
 
     if run_side_effects:
         result.send_notifications()
 
     return result
-
-def _normalise_type_for_thing(v):
-    logger.debug('Normalising %s', v)
-
-    if v is None:
-        return v # we're good with nulls
-    if isinstance(v, str):
-        return v # strings are fine
-    elif isinstance(v, dict):
-        return v # so are dicts
-    elif isinstance(v, bool):
-        return v # also booleans
-    elif isinstance(v, list):
-        return v # and lists as well
-    elif isinstance(v, Thing):
-        return v.url # Things can deal with themselves
-
-    # okay, it's something weird
-
-    try:
-        return v.activity_form
-    except AttributeError:
-        return str(v)
 

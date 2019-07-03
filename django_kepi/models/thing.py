@@ -215,10 +215,8 @@ class Thing(PolymorphicModel):
 
         value = _normalise_type_for_thing(value)
 
-        value = json.dumps(value)
-
         if hasattr(self, 'f_'+name):
-            setattr(self, 'f_'+name, value)
+            setattr(self, 'f_'+name, json.dumps(value))
         else:
             others = json.loads(self.other_fields)
             others[name] = value
