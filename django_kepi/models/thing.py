@@ -3,8 +3,7 @@ from django.conf import settings
 from django_kepi.find import find, is_local
 from django_kepi.delivery import deliver
 from polymorphic.models import PolymorphicModel
-import django_kepi.models.following
-import django_kepi.models.audience
+from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 import logging
 import random
 import json
@@ -195,6 +194,14 @@ class Thing(PolymorphicModel):
 
         if hasattr(self, 'f_'+name):
             result = getattr(self, 'f_'+name)
+        elif name in AUDIENCE_FIELD_NAMES:
+            try:
+                result = Audience.objects.find(
+                        parent = self,
+                        field = name,
+                        )
+            except Audience.ObjectDoesNotExist:
+                result = None
         else:
             others = json.loads(self.other_fields)
             if name in others:
@@ -217,12 +224,27 @@ class Thing(PolymorphicModel):
 
         if hasattr(self, 'f_'+name):
             setattr(self, 'f_'+name, json.dumps(value))
+        elif name in AUDIENCE_FIELD_NAMES:
+
+            if self.pk is None:
+                # We *must* save at this point;
+                # otherwise Audience might have no foreign key.
+                self.save()
+
+            Audience.add_audiences_for(
+                    thing = self,
+                    field = name,
+                    value = value,
+                    )
         else:
-            others = json.loads(self.other_fields)
+            others_json = self.other_fields
+            if others_json:
+                others = json.loads(others_json)
+            else:
+                others = {}
+
             others[name] = value
             self.other_fields = json.dumps(others)
-
-        self.save()
 
     def send_notifications(self):
         if self.f_type=='Accept':
@@ -367,3 +389,28 @@ class Thing(PolymorphicModel):
         except IntegrityError:
             self.number = None
             return self.save(*args, **kwargs)
+
+######################################
+
+def _normalise_type_for_thing(v):
+    logger.debug('Normalising %s', v)
+
+    if v is None:
+        return v # we're good with nulls
+    if isinstance(v, str):
+        return v # strings are fine
+    elif isinstance(v, dict):
+        return v # so are dicts
+    elif isinstance(v, bool):
+        return v # also booleans
+    elif isinstance(v, list):
+        return v # and lists as well
+    elif isinstance(v, Thing):
+        return v.url # Things can deal with themselves
+
+    # okay, it's something weird
+
+    try:
+        return v.activity_form
+    except AttributeError:
+        return str(v)
