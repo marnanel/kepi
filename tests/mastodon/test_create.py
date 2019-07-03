@@ -69,7 +69,7 @@ class TestCreate(TestCase):
             'to': 'https://www.w3.org/ns/activitystreams#Public',
           }
 
-        status = status = create(**object_json)
+        status = create(**object_json)
 
         self.assertIsNotNone(
                 status,
