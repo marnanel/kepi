@@ -1,4 +1,3 @@
-from django_kepi.models import *
 import django_kepi.types as types
 import logging
 import json
@@ -20,7 +19,7 @@ TYPES = {
 logger = logging.getLogger(name='django_kepi')
 
 def create(
-        sender=None,
+        is_local=True,
         run_side_effects=True,
         **value):
 
@@ -46,11 +45,11 @@ def create(
     value['type'] = value['type'].title()
 
     if 'id' in value:
-        if sender is None:
+        if is_local:
             logger.warn('Removing "id" field at Thing creation')
             del value['id']
     else:
-        if sender is not None:
+        if not is_local:
             logger.warn("Remote things must have an id; dropping message")
             return
 
@@ -67,65 +66,20 @@ def create(
         return None
 
     try:
-        cls = globals()[type_spec['class']]
+        import django_kepi.models as kepi_models
+        cls = getattr(locals()['kepi_models'], type_spec['class'])
     except KeyError:
         # shouldn't happen!
-        logger.warn("The class '%s' wasn't imported into create.py",
+        logger.warn("The class '%s' wasn't exported properly",
                 type_spec['class'])
         return None
 
     logger.debug('Class for %s is %s', value['type'], cls)
 
-    # XXX get the record from "types", and see what fields we need
-
     ########################
 
-    try:
-        need_actor, need_object, need_target = TYPES[value['type']]
-    except KeyError:
-        # XXX This will be much more easy when django_kepi.types is
-        # XXX working
-        if value['type'] in thing.OTHER_OBJECT_TYPES:
-            need_actor = need_object = need_target = False
-        else:
-            logger.warn('Unknown thing type: %s; dropping message',
-                    value['type'])
-            return
-
-        # XXX We don't currently allow people to create Tombstones here,
-        # but we should.
-
-    if need_actor!=('actor' in value) or \
-            need_object!=('object' in value) or \
-            need_target!=('target' in value):
-
-                def params(a, o, t):
-                    result = []
-                    if a: result.append('actor')
-                    if o: result.append('object')
-                    if t: result.append('target')
-
-                    if not result:
-                        return 'none'
-
-                    return '+'.join(result)
-
-                we_have = params(
-                        'actor' in value,
-                        'object' in value,
-                        'target' in value,
-                        )
-
-                we_need = params(
-                        need_actor,
-                        need_object,
-                        need_target,
-                        )
-
-                message = 'Wrong parameters for thing type {}: we have {}, we need {}'.format(
-                    value['type'], we_have, we_need)
-                logger.warn(message)
-                raise ValueError(message)
+    # XXX Check what fields we need, based on type_spec.
+    # XXX implement this.
 
     ########################
 
