@@ -5,133 +5,22 @@ from django.conf import settings
 import django.urls
 from urllib.parse import urlparse
 from django.http.request import HttpRequest
+from django_kepi.create import create
+import datetime
 import json
+import mimeparse
 
 logger = logging.getLogger(name='django_kepi')
 
-class RemoteItem(dict):
-    def __init__(self, body):
-        self.update(json.loads(str(body)))
+class Fetch(models.Model):
 
-class CachedRemoteText(models.Model):
-
-    address = models.URLField(
+    url = models.URLField(
             primary_key = True,
             )
 
-    content = models.TextField(
-            default = None,
-            null = True,
+    date = models.DateTimeField(
+            default = datetime.datetime.now,
             )
-    # XXX We should probably also have a cache timeout
-
-    def is_gone(self):
-        return self.content is None
-
-    def __str__(self):
-        if self.content is not None:
-            return self.content
-        else:
-            return ''
-
-    def __repr__(self):
-        if self.content is not None:
-            return '(%s: "%s")' % (self.address, self.content[:20])
-        else:
-            return '(%s is GONE)' % (self.address)
-
-    @classmethod
-    def fetch(cls,
-            fetch_url,
-            post_data):
-        """
-        Fetch a file over HTTPS (and other protocols).
-        This function blocks; don't call it while
-        serving a request.
-
-        fetch_url: the URL of the file you want.
-            FIXME: What happens if fetch_url is local?
-
-        post_data: If this is a dict, then the request
-            will be a POST, with the contents of
-            that dict as parameters to the remote server.
-            If this is None, then the request will
-            be a GET.
-
-        Returns: None, if post_data was a dict.
-            If post_data was None, returns a CachedRemoteText.
-            If fetch_url existed in the cache, this will be the cached 
-            record; otherwise it will be a new record, which
-            has already been saved.
-
-            If the request was not successful, the is_gone()
-            method of the returned CachedRemoteText will return True.
-            All error codes, including notably 404, 410, and 500,
-            are handled alike. (Is there any reason not to do this?)
-
-            FIXME: What does it do if the request returned a redirect?
-
-        """
-
-        if post_data is None:
-
-            # This is a GET, so the answer might be cached.
-            # (FIXME: honour HTTP caching headers etc)
-
-            try:
-                existing = cls.objects.get(address=fetch_url)
-            except cls.DoesNotExist:
-                existing = None
-
-            if existing is not None:
-                logger.info('fetch %s: in cache', fetch_url)
-
-                if existing is not None:
-                    return RemoteItem(existing)
-                else:
-                    return None
-
-            logger.info('fetch %s: GET', fetch_url)
-            fetch = requests.get(fetch_url)
-
-        else:
-            logger.info('fetch %s: POST', fetch_url)
-            logger.debug('fetch %s: with data: %s',
-                    fetch_url, post_data)
-
-            fetch = requests.post(fetch_url,
-                    data=post_data)
-
-        logger.info('fetch %s: response code was %d',
-                fetch_url, fetch.status_code)
-        logger.debug('fetch %s: body was %s',
-                fetch_url, fetch.text)
-
-        if post_data is not None:
-            return None
-
-        # This was a GET, so cache it
-        # (FIXME: honour HTTP caching headers etc)
-        # XXX: race condition: catch duplicate entry exception and ignore
-
-        if fetch.status_code==200:
-            content = fetch.text
-        else:
-            content = ''
-
-        result = cls(
-                address = fetch_url,
-                content = content,
-                )
-        result.save()
-
-        if content!='':
-            return RemoteItem(content)
-        else:
-            return None
-
-    def _obviously_belongs_to(self, actor):
-        return self.address.startswith(actor+'#')
 
 class ThingRequest(HttpRequest):
 
@@ -174,11 +63,89 @@ def find_local(path):
     return result
 
 def find_remote(url):
+
     logger.debug('%s: find remote', url)
 
-    result = CachedRemoteText.fetch(
-            fetch_url=url,
-            post_data=None,
+    try:
+        fetch = Fetch.objects.get(
+                url=url,
+                )
+
+        # TODO: cache timeouts.
+        # FIXME: honour cache headers etc
+
+        # We fetched it in the past.
+
+        try:
+            result = Thing.objects.get(
+                    remote_url = url,
+                    )
+            logger.debug('%s: already fetched, and it\'s %s',
+                    url, result)
+
+            return result
+        except Thing.DoesNotExist:
+            logger.debug('%s: already fetched, and it wasn\'t there',
+                    url, result)
+
+            return None
+
+    except Fetch.DoesNotExist:
+        # We haven't fetched it before.
+        # So we need to fetch it now.
+        pass
+
+    logger.info('%s: performing the GET', url)
+    response = requests.get(url,
+            headers={'Accept': 'application/activity+json'},
+            )
+
+    fetch_record = Fetch(url=url)
+    fetch_record.save()
+
+    if response.status_code!=200:
+        logger.warn('%s: remote server responded %s %s' % (
+            response.status_code, response.reason))
+        return None
+
+    mime_type = mimeparse.parse_mime_type(
+            response.headers['Content-Type'])
+    mime_type = '/'.join(mime_type[0:2])
+
+    if mime_type not in [
+        'application/activity+json',
+        'application/json',
+        'text/json',
+        'text/plain',
+        ]:
+        logger.warn('%s: response had the wrong Content-Type, %s' % (
+            url, response.headers['Content-Type'],
+            ))
+        return None
+
+    try:
+        content = json.loads(response.text)
+    except json.JSONDecodeError:
+        logger.warn('%s: response was not JSON' % (
+            url,
+            ))
+        return None
+
+    if not isinstance(content, dict):
+        logger.warn('%s: response was not a JSON dict' % (
+            url,
+            ))
+        return None
+
+    content_with_f = dict([
+        ('f_'+f, v)
+        for f, v in content.items()
+        if not f.startswith('@')
+        ])
+
+    result = create(
+            is_local = False,
+            **content_with_f,
             )
 
     return result
@@ -188,7 +155,8 @@ def is_local(url):
     return parsed_url.hostname in settings.ALLOWED_HOSTS
 
 def find(url,
-        local_only=False):
+        local_only=False,
+        lightweight_for=None):
     """
     Finds an object.
 
@@ -221,4 +189,5 @@ def find(url,
         if local_only:
             return None
 
-        return find_remote(url)
+        return find_remote(
+                url=url)

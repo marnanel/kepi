@@ -9,3 +9,4 @@ httpretty
 httpsig
 django-celery-results
 django-polymorphic
+python-mimeparse
