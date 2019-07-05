@@ -1,9 +1,8 @@
 from django.db import models, IntegrityError
 from django.conf import settings
-from django_kepi.find import find, is_local
-from django_kepi.delivery import deliver
 from polymorphic.models import PolymorphicModel
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
+from django_kepi.models.mention import Mention
 import logging
 import random
 import json
@@ -173,10 +172,10 @@ class Thing(PolymorphicModel):
             if value:
                 result[fieldname] = value
 
-        result.extend(json.loads(self.other_fields))
+        result.update(json.loads(self.other_fields))
 
         # FIXME test for this was omitted; add it in
-        result.update(django_kepi.models.audience.Audience.get_audiences_for(self))
+        result.update(Audience.get_audiences_for(self))
 
         return result
 
@@ -188,6 +187,8 @@ class Thing(PolymorphicModel):
             return False
 
     def __getitem__(self, name):
+
+        from django_kepi.find import find
 
         name_parts = name.split('__')
         name = name_parts.pop(0)
@@ -222,6 +223,11 @@ class Thing(PolymorphicModel):
 
         value = _normalise_type_for_thing(value)
 
+        logger.debug('  -- %12s %s',
+                name,
+                value,
+                )
+
         if hasattr(self, 'f_'+name):
             setattr(self, 'f_'+name, json.dumps(value))
         elif name in AUDIENCE_FIELD_NAMES:
@@ -246,7 +252,19 @@ class Thing(PolymorphicModel):
             others[name] = value
             self.other_fields = json.dumps(others)
 
+        # Special-cased side effects:
+
+        if name=='tag':
+            Mention.set_from_tags(
+                    status=self,
+                    tags=value,
+                    )
+
     def send_notifications(self):
+
+        from django_kepi.find import find
+        from django_kepi.delivery import deliver
+
         if self.f_type=='Accept':
             obj = self['object__obj']
 
@@ -347,6 +365,9 @@ class Thing(PolymorphicModel):
 
     @property
     def is_local(self):
+
+        from django_kepi.find import is_local
+
         if not self.remote_url:
             return True
 
@@ -393,8 +414,6 @@ class Thing(PolymorphicModel):
 ######################################
 
 def _normalise_type_for_thing(v):
-    logger.debug('Normalising %s', v)
-
     if v is None:
         return v # we're good with nulls
     if isinstance(v, str):
