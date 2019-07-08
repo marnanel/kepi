@@ -2,20 +2,6 @@ import django_kepi.types as types
 import logging
 import json
 
-TYPES = {
-        #          actor  object  target
-        'Create': (True,  True,   False),
-        'Update': (True,  True,   False),
-        'Delete': (True,  True,   False),
-        'Follow': (True,  True,   False),
-        'Add':    (True,  False,  True),
-        'Remove': (True,  False,  True),
-        'Like':   (True,  True,   False),
-        'Undo':   (False, True,   False),
-        'Accept': (True,  True,   False),
-        'Reject': (True,  True,   False),
-        }
-
 logger = logging.getLogger(name='django_kepi')
 
 def create(
