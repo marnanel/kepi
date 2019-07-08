@@ -166,15 +166,25 @@ class Thing(PolymorphicModel):
             'type': self.get_f_type_display(),
             }
 
-        for fieldname in ['actor', 'name']:
+        for name in dir(self):
+            if not name.startswith('f_'):
+                continue
 
-            value = getattr(self, 'f_'+fieldname)
-            if value:
-                result[fieldname] = value
+            value = getattr(self, name)
 
-        result.update(json.loads(self.other_fields))
+            if not isinstance(value, str):
+                continue
 
-        # FIXME test for this was omitted; add it in
+            if value=='':
+                value = None
+            else:
+                value = json.loads(value)
+
+            result[name[2:]] = value
+
+        if self.other_fields:
+            result.update(json.loads(self.other_fields))
+
         result.update(Audience.get_audiences_for(self))
 
         return result
@@ -195,6 +205,10 @@ class Thing(PolymorphicModel):
 
         if hasattr(self, 'f_'+name):
             result = getattr(self, 'f_'+name)
+
+            if 'raw' not in name_parts and result is not None:
+                result = json.loads(result)
+
         elif name in AUDIENCE_FIELD_NAMES:
             try:
                 result = Audience.objects.find(
@@ -210,9 +224,6 @@ class Thing(PolymorphicModel):
             else:
                 result = None
 
-        if 'raw' not in name_parts and result is not None:
-            result = json.loads(result)
-
         if 'obj' in name_parts and result is not None:
             result = find(result,
                     local_only=True)
@@ -223,7 +234,8 @@ class Thing(PolymorphicModel):
 
         value = _normalise_type_for_thing(value)
 
-        logger.debug('  -- %12s %s',
+        logger.debug('  -- %8s %12s %s',
+                self.number,
                 name,
                 value,
                 )
@@ -265,7 +277,9 @@ class Thing(PolymorphicModel):
         from django_kepi.find import find
         from django_kepi.delivery import deliver
 
-        if self.f_type=='Accept':
+        f_type = json.loads(self.f_type)
+
+        if f_type=='Accept':
             obj = self['object__obj']
 
             if obj['type']!='Follow':
@@ -280,7 +294,7 @@ class Thing(PolymorphicModel):
                     following = self['actor'],
                     )
 
-        elif self.f_type=='Follow':
+        elif f_type=='Follow':
 
             local_user = find(self['object'], local_only=True)
             remote_user = find(self['actor'])
@@ -311,7 +325,7 @@ class Thing(PolymorphicModel):
                         following = self['object'],
                         )
 
-        elif self.f_type=='Reject':
+        elif f_type=='Reject':
             obj = self['object__obj']
 
             if obj['type']!='Follow':
@@ -326,17 +340,24 @@ class Thing(PolymorphicModel):
                     following = self['actor'],
                     )
 
-        elif self.f_type=='Create':
+        elif f_type=='Create':
 
             from django_kepi.create import create
 
-            raw_material = self['object']
+            raw_material = dict([('f_'+f, v)
+                for f,v in self['object'].items()])
+
+            raw_material['attributedTo'] = self['actor']
+            # XXX and also copy audiences, per
+            # https://www.w3.org/TR/activitypub/ 6.2
+
             creation = create(**raw_material,
+                    is_local = self.is_local,
                     run_side_effects = False)
             self['object'] = creation
             self.save()
 
-        elif self.f_type in OTHER_OBJECT_TYPES:
+        elif f_type in OTHER_OBJECT_TYPES:
             # XXX only if this came in via a local inbox
             logger.debug('New Thing is not an activity: %s',
                     str(self.activity_form))
