@@ -13,6 +13,11 @@ class Item(thing.Thing):
             blank=True,
             )
 
+    f_attributedTo = models.CharField(
+            max_length=255,
+            blank=True,
+            )
+
     @property
     def visibility(self):
         audiences = audience.Audience.get_audiences_for(self)
