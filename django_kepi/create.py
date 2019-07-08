@@ -1,6 +1,5 @@
 import django_kepi.types as types
 import logging
-import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -8,6 +7,9 @@ def create(
         is_local=True,
         run_side_effects=True,
         **value):
+
+    logger.info("Create begins: source is %s; local? %s; run side effects? %s",
+        value, is_local, run_side_effects)
 
     # Remove the "f_" prefix, which exists so that we can write
     # things like f_type or f_object without using reserved keywords.
