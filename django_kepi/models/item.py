@@ -34,6 +34,11 @@ class Item(thing.Thing):
         return self['content']
 
     @property
+    def thread(self):
+        # stub
+        return None
+
+    @property
     def mentions(self):
         from django_kepi.models.mention import Mention
 
