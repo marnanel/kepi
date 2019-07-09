@@ -177,7 +177,7 @@ class TestCreate(TestCase):
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
-            'to': recipient,
+            'to': recipient.id,
           }
 
         status = self._send_create_for_object(object_form)
@@ -235,7 +235,7 @@ class TestCreate(TestCase):
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
-            'inReplyTo': original_status,
+            'inReplyTo': original_status.id,
           }
 
         status = self._send_create_for_object(object_form)
@@ -325,6 +325,8 @@ class TestCreate(TestCase):
     #   - polls
 
     def test_when_sender_is_followed_by_local_users(self):
+
+        from django_kepi.models.following import Following
 
         local_user = create_local_person()
 
@@ -438,8 +440,7 @@ class TestCreate(TestCase):
 
         status = self._send_create_for_object(object_form)
 
-        self.assertEqual(
-                Thing.objects.count(),
-                0,
+        self.assertIsNone(
+                status,
                 msg = 'it does not create a status',
                 )

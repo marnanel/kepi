@@ -425,6 +425,11 @@ class Thing(PolymorphicModel):
         self.save()
         logger.info('%s: entombing finished', self)
 
+    @property
+    def thread(self):
+        # stub
+        return None
+
     def save(self, *args, **kwargs):
 
         if not self.number:
