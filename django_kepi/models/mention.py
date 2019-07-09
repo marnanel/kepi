@@ -41,6 +41,10 @@ class Mention(models.Model):
             tags = [tags]
 
         for tag in tags:
+            if 'href' not in tag:
+                logger.info('No href in mention; ignoring')
+                return
+
             if tag['type']!='Mention':
                 continue
 
