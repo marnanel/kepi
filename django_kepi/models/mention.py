@@ -12,15 +12,14 @@ class Mention(models.Model):
             on_delete = models.DO_NOTHING,
             )
 
-    to_actor = models.ForeignKey(
-            'django_kepi.Actor',
-            on_delete = models.DO_NOTHING,
+    to_actor = models.CharField(
+            max_length=255,
             )
 
     def __str__(self):
         return '(%s mentions %s)' % (
-                from_status,
-                to_actor,
+                self.from_status,
+                self.to_actor,
                 )
 
     @classmethod
@@ -50,7 +49,7 @@ class Mention(models.Model):
 
             mention = cls(
                     from_status=status,
-                    to_actor=Actor.by_id(tag['href']),
+                    to_actor=tag['href'],
                 )
             mention.save()
             logger.debug('  -- created %s',

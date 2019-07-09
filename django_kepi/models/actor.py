@@ -1,7 +1,6 @@
 from django.db import models
 from . import thing
 import django_kepi.crypto
-import django_kepi.find
 import logging
 
 logger = logging.getLogger(name='django_kepi')
@@ -78,10 +77,3 @@ class Actor(thing.Thing):
             return self.publicKey_as_dict
         else:
             return super().__getitem__(name)
-
-    @classmethod
-    def by_id(cls, url):
-        result = find(
-                url=url,
-                lightweight=True,
-                )
