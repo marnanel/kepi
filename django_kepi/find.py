@@ -62,7 +62,8 @@ def find_local(path):
 
     return result
 
-def find_remote(url):
+def find_remote(url,
+        do_not_fetch=False):
 
     logger.debug('%s: find remote', url)
 
@@ -94,6 +95,10 @@ def find_remote(url):
         # We haven't fetched it before.
         # So we need to fetch it now.
         pass
+
+    if do_not_fetch:
+        logger.info('%s: do_not_fetch was set, so returning None')
+        return None
 
     logger.info('%s: performing the GET', url)
     response = requests.get(url,
@@ -156,7 +161,7 @@ def is_local(url):
 
 def find(url,
         local_only=False,
-        lightweight_for=None):
+        do_not_fetch=False):
     """
     Finds an object.
 

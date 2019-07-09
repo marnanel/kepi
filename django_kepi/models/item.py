@@ -35,8 +35,59 @@ class Item(thing.Thing):
 
     @property
     def thread(self):
-        # stub
-        return None
+
+        from django_kepi.find import find
+
+        if hasattr(self, '_thread'):
+            return self._thread
+
+        result = self
+
+        logger.debug('Searching for thread of %s',
+                result)
+
+        while True:
+            parent = result['inReplyTo']
+
+            if parent is None:
+                break
+
+            logger.debug('  -- scanning its parent %s',
+                    parent)
+
+            parent = find(
+                    parent,
+                    do_not_fetch = True)
+
+            if parent is None:
+                logger.debug('   -- which is remote and not cached')
+                break
+
+            result = parent
+
+        logger.debug('  -- result is %s',
+                result)
+
+        self._thread = result
+
+        return result
+
+    @property
+    def is_reply(self):
+        return 'inReplyTo' in self
+
+    @property
+    def in_reply_to_account(self):
+        parent = self['inReplyTo__obj']
+
+        if parent is None:
+            return None
+
+        return parent['attributedTo']
+
+    @property
+    def account(self):
+        return self['attributedTo']
 
     @property
     def mentions(self):
@@ -45,3 +96,8 @@ class Item(thing.Thing):
         logger.info('Finding Mentions for %s', self)
         return [x.to_actor for x in
                 Mention.objects.filter(from_status=self)]
+
+    @property
+    def conversation(self):
+        # FIXME I really don't understand conversation values
+        return None

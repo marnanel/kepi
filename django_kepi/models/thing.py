@@ -206,8 +206,9 @@ class Thing(PolymorphicModel):
         if hasattr(self, 'f_'+name):
             result = getattr(self, 'f_'+name)
 
-            if 'raw' not in name_parts and result is not None:
-                result = json.loads(result)
+            if 'raw' not in name_parts:
+                if result:
+                    result = json.loads(result)
 
         elif name in AUDIENCE_FIELD_NAMES:
             try:
@@ -218,7 +219,17 @@ class Thing(PolymorphicModel):
             except Audience.DoesNotExist:
                 result = None
         else:
-            others = json.loads(self.other_fields)
+            others = {}
+
+            if self.other_fields:
+                try:
+                    others = json.loads(self.other_fields)
+                except json.JSONDecodeError:
+                    logger.warn('%s: other_fields contained non-JSON: %s.' + \
+                            'Discarding.',
+                        self.number,
+                        self.other_fields)
+
             if name in others:
                 result = others[name]
             else:
@@ -424,11 +435,6 @@ class Thing(PolymorphicModel):
 
         self.save()
         logger.info('%s: entombing finished', self)
-
-    @property
-    def thread(self):
-        # stub
-        return None
 
     def save(self, *args, **kwargs):
 
