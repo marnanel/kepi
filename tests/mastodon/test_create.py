@@ -5,6 +5,7 @@ from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
 from django_kepi.models.item import Item
 import logging
+import json
 
 SENDER_ID = 'https://example.com/actor'
 SENDER_DOMAIN = 'example.com'
@@ -12,39 +13,63 @@ SENDER_FOLLOWERS = 'https://example.com/followers'
 
 RECIPIENT_ID = 'https://altair.example.com/users/fred'
 
-logger = logging.getLogger(name='tests')
-
-# nb: the Mastodon tests generally check creation by
-# requesting the most recent status for the sender;
-# our interface doesn't make that easy at present.
-# When it does, rewrite those parts. FIXME.
+logger = logging.getLogger(name='django_kepi')
 
 class TestCreate(TestCase):
 
-    def test_unknown_object_type(self):
+    def _send_create_for_object(self,
+            object_form):
 
-        object_json = {
+        create_form = {
+                '@context': 'https://www.w3.org/ns/activitystreams',
+                'id': SENDER_ID + '#foo',
+                'type': 'Create',
+                'actor': SENDER_ID,
+                'object': object_form,
+        }
+
+        logger.info('Submitting Create activity: %s', create_form)
+
+        activity = create(**create_form,
+                is_local=False)
+
+        logger.info('Created activity: %s', activity)
+
+        statuses = Item.objects.filter(
+                f_attributedTo=json.dumps(SENDER_ID),
+                )
+        logger.info('Statuses: %s', list(statuses))
+        try:
+            result = statuses[0]
+        except IndexError:
+            result = None
+
+        logger.info('New status: %s', result)
+
+        return result
+
+    def test_unknown_object_type(self):
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Banana',
             'content': 'Lorem ipsum',
           }
 
-        status = create(**object_json)
+        status = self._send_create_for_object(object_form)
 
-        self.assertEqual(
-                Thing.objects.count(),
-                0,
+        self.assertIsNone(
+                status,
                 msg = 'it does not create a status',
                 )
 
     def test_standalone(self):
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
           }
 
-        status = create(**object_json)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -64,14 +89,14 @@ class TestCreate(TestCase):
                 )
 
     def test_public(self):
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'to': 'https://www.w3.org/ns/activitystreams#Public',
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -91,14 +116,14 @@ class TestCreate(TestCase):
                 )
 
     def test_unlisted(self):
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'cc': 'https://www.w3.org/ns/activitystreams#Public',
           }
 
-        status = status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -118,14 +143,14 @@ class TestCreate(TestCase):
                 )
 
     def test_private(self):
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'to': 'http://example.com/followers',
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -148,14 +173,14 @@ class TestCreate(TestCase):
 
         recipient = create_local_person()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'to': recipient,
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -178,7 +203,7 @@ class TestCreate(TestCase):
 
         recipient = create_local_person()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
@@ -189,7 +214,7 @@ class TestCreate(TestCase):
                 },
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -206,14 +231,14 @@ class TestCreate(TestCase):
 
         original_status = create_local_note()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'inReplyTo': original_status,
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -248,7 +273,7 @@ class TestCreate(TestCase):
 
         recipient = create_local_person()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
@@ -260,7 +285,7 @@ class TestCreate(TestCase):
             ],
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -275,7 +300,7 @@ class TestCreate(TestCase):
 
     def test_with_mentions_missing_href(self):
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
@@ -286,7 +311,7 @@ class TestCreate(TestCase):
             ],
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -309,13 +334,13 @@ class TestCreate(TestCase):
                 )
         following.save()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -332,14 +357,14 @@ class TestCreate(TestCase):
 
         local_status = create_local_note()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'inReplyTo': local_status.id,
           }
 
-        status = status = create(**object_json)
+        status = status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -356,14 +381,14 @@ class TestCreate(TestCase):
 
         local_user = create_local_person()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'to': local_user.id,
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -380,14 +405,14 @@ class TestCreate(TestCase):
 
         local_user = create_local_person()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'note',
             'content': 'lorem ipsum',
             'cc': local_user.id,
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertIsNotNone(
                 status,
@@ -404,14 +429,14 @@ class TestCreate(TestCase):
 
         local_user = create_local_person()
 
-        object_json = {
+        object_form = {
             'id': SENDER_ID + '#bar',
             'type': 'note',
             'content': 'lorem ipsum',
             'cc': local_user.id,
           }
 
-        status = create(**object_json)
+        status = create(**object_form)
 
         self.assertEqual(
                 Thing.objects.count(),
