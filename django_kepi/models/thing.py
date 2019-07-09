@@ -211,11 +211,11 @@ class Thing(PolymorphicModel):
 
         elif name in AUDIENCE_FIELD_NAMES:
             try:
-                result = Audience.objects.find(
+                result = Audience.objects.filter(
                         parent = self,
-                        field = name,
+                        field = AUDIENCE_FIELD_NAMES[name],
                         )
-            except Audience.ObjectDoesNotExist:
+            except Audience.DoesNotExist:
                 result = None
         else:
             others = json.loads(self.other_fields)

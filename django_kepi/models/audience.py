@@ -23,8 +23,7 @@ FIELD_CHOICES = [
         (FIELD_BCC,      'bcc'),
         ]
 
-FIELD_NAMES = dict([(v,f) for (f,v) in FIELD_CHOICES])
-AUDIENCE_FIELD_NAMES = FIELD_NAMES.keys()
+AUDIENCE_FIELD_NAMES = dict([(v,f) for (f,v) in FIELD_CHOICES])
 
 class Audience(models.Model):
 
@@ -69,14 +68,14 @@ class Audience(models.Model):
         where it's needed.
         """
         
-        if field not in FIELD_NAMES:
+        if field not in AUDIENCE_FIELD_NAMES:
             raise ValueError('%s is not an audience field' % (
                 field,
                 ))
         logger.debug('Adding Audiences for %s: %s=%s',
                 thing.number, field, value)
 
-        field = FIELD_NAMES[field]
+        field = AUDIENCE_FIELD_NAMES[field]
 
         if value is None:
             value = []
