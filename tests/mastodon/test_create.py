@@ -38,7 +38,7 @@ class TestCreate(TestCase):
         statuses = Item.objects.filter(
                 f_attributedTo=json.dumps(SENDER_ID),
                 )
-        logger.info('Statuses: %s', list(statuses))
+
         try:
             result = statuses[0]
         except IndexError:
@@ -96,7 +96,7 @@ class TestCreate(TestCase):
             'to': 'https://www.w3.org/ns/activitystreams#Public',
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -123,7 +123,7 @@ class TestCreate(TestCase):
             'cc': 'https://www.w3.org/ns/activitystreams#Public',
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -150,7 +150,7 @@ class TestCreate(TestCase):
             'to': 'http://example.com/followers',
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -180,7 +180,7 @@ class TestCreate(TestCase):
             'to': recipient,
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -214,7 +214,7 @@ class TestCreate(TestCase):
                 },
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -238,7 +238,7 @@ class TestCreate(TestCase):
             'inReplyTo': original_status,
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -285,7 +285,7 @@ class TestCreate(TestCase):
             ],
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -311,7 +311,7 @@ class TestCreate(TestCase):
             ],
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -340,7 +340,7 @@ class TestCreate(TestCase):
             'content': 'Lorem ipsum',
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -364,7 +364,7 @@ class TestCreate(TestCase):
             'inReplyTo': local_status.id,
           }
 
-        status = status = create(**object_form)
+        status = status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -388,7 +388,7 @@ class TestCreate(TestCase):
             'to': local_user.id,
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -412,7 +412,7 @@ class TestCreate(TestCase):
             'cc': local_user.id,
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
@@ -436,7 +436,7 @@ class TestCreate(TestCase):
             'cc': local_user.id,
           }
 
-        status = create(**object_form)
+        status = self._send_create_for_object(object_form)
 
         self.assertEqual(
                 Thing.objects.count(),
