@@ -267,6 +267,10 @@ class Thing(PolymorphicModel):
         # Special-cased side effects:
 
         if name=='tag':
+
+            # We must save, in order for Mention's fk to point to us
+            self.save()
+
             Mention.set_from_tags(
                     status=self,
                     tags=value,
