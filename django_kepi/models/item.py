@@ -32,3 +32,11 @@ class Item(thing.Thing):
     @property
     def text(self):
         return self['content']
+
+    @property
+    def mentions(self):
+        from django_kepi.models.mention import Mention
+
+        logger.info('Finding Mentions for %s', self)
+        return [x.to_actor for x in
+                Mention.objects.filter(from_status=self)]
