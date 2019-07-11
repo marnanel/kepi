@@ -27,6 +27,10 @@ class Actor(thing.Thing):
             default=True,
             )
 
+    f_preferredUsername = models.CharField(
+            max_length=255,
+            )
+
     def save(self, *args, **kwargs):
         if self.privateKey is None and self.publicKey is None:
             logger.info('Generating key pair for %s.',
@@ -67,11 +71,20 @@ class Actor(thing.Thing):
         return result
 
     def __getitem__(self, name):
-        """
-        Generally delegates to Thing.__getitem__(),
-        except that 'publicKey' returns the value of
-        publicKey_as_dict.
-        """
+        if self.is_local:
+
+            format_details = {
+                    'username': self.f_preferredUsername,
+                    }
+
+            if name=='followers':
+                return settings.KEPI['FOLLOWERS_PATH'] % format_details
+            elif name=='following':
+                return settings.KEPI['FOLLOWING_PATH'] % format_details
+            elif name=='inbox':
+                return settings.KEPI['INBOX_PATH'] % format_details
+            elif name=='outbox':
+                return settings.KEPI['OUTBOX_PATH'] % format_details
 
         if name=='publicKey':
             return self.publicKey_as_dict

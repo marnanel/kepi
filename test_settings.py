@@ -6,6 +6,10 @@ djcelery.setup_loader()
 KEPI = {
         'ACTIVITY_URL_FORMAT': 'https://altair.example.com/%s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
+        'FOLLOWERS_PATH': '/user/%(username)s/followers',
+        'FOLLOWING_PATH': '/user/%(username)s/followers',
+        'INBOX_PATH': '/user/%(username)s/inbox',
+        'OUTBOX_PATH': '/user/%(username)s/outbox',
         }
 
 INSTALLED_APPS = (
