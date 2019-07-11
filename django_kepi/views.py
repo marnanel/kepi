@@ -7,9 +7,7 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
-import django_kepi.models.thing as thing
-import django_kepi.models.following as following
-import django_kepi.models.actor as actor
+from django_kepi.models import *
 from collections.abc import Iterable
 import logging
 import urllib.parse
@@ -188,20 +186,20 @@ class ThingView(KepiView):
             if 'id' in kwargs:
                 logger.debug('Looking up Thing by id==%s',
                         kwargs['id'])
-                activity_object = thing.Thing.objects.get(
+                activity_object = Thing.objects.get(
                         number=kwargs['id'],
                         )
 
             elif 'name' in kwargs:
                 logger.debug('Looking up Thing by name==%s',
                         kwargs['name'])
-                activity_object = thing.Thing.objects.get(
+                activity_object = Thing.objects.get(
                         f_name=kwargs['name'],
                         )
             else:
                 raise ValueError("Need an id or a name")
 
-        except thing.Thing.DoesNotExist:
+        except Thing.DoesNotExist:
             logger.info('  -- unknown: %s', kwargs)
             return None
         except django.core.exceptions.ValidationError:
@@ -219,7 +217,7 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['name'])
 
-        person = thing.Thing.objects.get(
+        person = Thing.objects.get(
                 f_type='Person',
                 f_name = kwargs['name'],
                 )
@@ -239,7 +237,7 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['name'])
 
-        person = thing.Thing.objects.get(
+        person = Thing.objects.get(
                 f_type='Person',
                 f_name=kwargs['name'],
                 )
@@ -252,28 +250,6 @@ class FollowersView(KepiView):
 
     def _modify_list_item(self, obj):
         return obj.follower
-
-class ActorView(ThingView):
-
-    def activity(self, request, *args, **kwargs):
-        thing = super().activity(request, *args, **kwargs)
-
-        if thing is not None and thing['type']=='Tombstone':
-            return thing
-
-        logger.debug('   -- found hing %s; does it have an Actor?',
-                thing)
-
-        try:
-            result = Actor.objects.get(
-                    thing=thing,
-                    )
-            logger.debug('   -- yes, %s',
-                    result)
-            return result
-        except Actor.DoesNotExist:
-            logger.debug('   -- no')
-            return None
 
 class AllUsersView(KepiView):
 
