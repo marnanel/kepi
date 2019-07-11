@@ -20,13 +20,30 @@ class Item(thing.Thing):
 
     @property
     def visibility(self):
+
+        from django_kepi.find import find
+
         audiences = audience.Audience.get_audiences_for(self)
-        logger.debug('%s', str(audiences))
+        logger.debug('%s: checking visibility in audiences: %s',
+                self.number, str(audiences))
 
         if audience.PUBLIC in audiences.get('to', []):
             return 'public'
         elif audience.PUBLIC in audiences.get('cc', []):
             return 'unlisted'
+
+        actor = find(self.account, local_only=True)
+
+        if actor is None:
+            logger.debug('%s: posted by %s, whom we don\'t know about',
+                    self.number, self.account)
+        else:
+            logger.debug('%s: checking visibility from poster: %s',
+                    self.number, actor)
+
+            if actor['following'] in audiences.get('to', []):
+                return 'private'
+
         return 'direct'
 
     @property
