@@ -18,9 +18,13 @@ class Actor(thing.Thing):
     """
 
     privateKey = models.TextField(
+            blank=True,
+            null=True,
             )
 
     publicKey = models.TextField(
+            blank=True,
+            null=True,
             )
 
     auto_follow = models.BooleanField(

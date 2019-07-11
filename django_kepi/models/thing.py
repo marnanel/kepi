@@ -8,35 +8,18 @@ import random
 import json
 import datetime
 import warnings
+from django_kepi.types import ACTIVITYPUB_TYPES
 
 logger = logging.getLogger(name='django_kepi')
 
 ######################
 
-ACTIVITY_TYPES = set([
-            'Create',
-            'Update',
-            'Delete',
-            'Follow',
-            'Add',
-            'Remove',
-            'Like',
-            'Undo',
-            'Accept',
-            'Reject',
-        ])
+ACTIVITY_TYPES = sorted(ACTIVITYPUB_TYPES.keys())
 
-ACTIVITY_TYPE_CHOICES = [(x,x) for x in sorted(ACTIVITY_TYPES)]
+ACTIVITY_TYPE_CHOICES = [(x,x) for x in ACTIVITY_TYPES]
 
-OTHER_OBJECT_TYPES = set([
-    # https://www.w3.org/TR/activitystreams-vocabulary/
-
-    'Actor', 'Application', 'Group', 'Organization', 'Person', 'Service',
-
-    'Article', 'Audio', 'Document', 'Event', 'Image', 'Note', 'Page',
-    'Place', 'Profile', 'Relationship', 'Video',
-
-    ])
+def _new_number():
+    return '%08x' % (random.randint(0, 0xffffffff),)
 
 ######################
 
@@ -46,7 +29,7 @@ class Thing(PolymorphicModel):
             max_length=8,
             primary_key=True,
             unique=True,
-            default='',
+            default=_new_number,
             )
 
     f_type = models.CharField(
@@ -58,17 +41,8 @@ class Thing(PolymorphicModel):
             max_length=255,
             unique=True,
             null=True,
+            blank=True,
             default=None,
-            )
-
-    f_actor = models.URLField(
-            max_length=255,
-            blank=True,
-            )
-
-    f_name = models.CharField(
-            max_length=255,
-            blank=True,
             )
 
     active = models.BooleanField(
@@ -76,6 +50,7 @@ class Thing(PolymorphicModel):
             )
 
     other_fields = models.TextField(
+            blank=True,
             default='',
             )
 
@@ -97,10 +72,7 @@ class Thing(PolymorphicModel):
         else:
             inactive_warning = ' INACTIVE'
 
-        if self.f_name:
-            details = self.f_name
-        else:
-            details = self.url
+        details = self.url
 
         result = '[%s %s %s%s]' % (
                 self.number,
@@ -131,7 +103,6 @@ class Thing(PolymorphicModel):
 
         items.extend( [
                 ('actor', self.f_actor),
-                ('_name', self.f_name),
                 ('_number', self.number),
                 ('_remote_url', self.remote_url),
                 ] )
@@ -177,8 +148,6 @@ class Thing(PolymorphicModel):
 
             if value=='':
                 value = None
-            else:
-                value = json.loads(value)
 
             result[name[2:]] = value
 
@@ -372,33 +341,6 @@ class Thing(PolymorphicModel):
             self['object'] = creation
             self.save()
 
-        elif f_type in OTHER_OBJECT_TYPES:
-            # XXX only if this came in via a local inbox
-            logger.debug('New Thing is not an activity: %s',
-                    str(self.activity_form))
-            logger.debug('We must create a Create wrapper for it.')
-
-            from django_kepi.create import create
-            wrapper = create(
-                f_type = 'Create',
-                f_actor = self.f_actor,
-                to = self['to'],
-                cc = self['cc'],
-                f_object = self.url,
-                run_side_effects = False,
-                )
-
-            wrapper.save()
-            logger.debug('Created wrapper %s',
-                    str(wrapper.activity_form))
-
-            # XXX We copy "to" and "cc" per
-            # https://www.w3.org/TR/activitypub/#object-without-create
-            # which also requires us to copy
-            # the two blind versions, and "audience".
-            # We don't support those (atm), but
-            # we should probably copy them anyway.
-
     @property
     def is_local(self):
 
@@ -438,13 +380,10 @@ class Thing(PolymorphicModel):
 
     def save(self, *args, **kwargs):
 
-        if not self.number:
-            self.number = '%08x' % (random.randint(0, 0xffffffff),)
-
         try:
             super().save(*args, **kwargs)
         except IntegrityError:
-            self.number = None
+            self.number = _new_number()
             return self.save(*args, **kwargs)
 
 ######################################
@@ -469,3 +408,5 @@ def _normalise_type_for_thing(v):
         return v.activity_form
     except AttributeError:
         return str(v)
+
+

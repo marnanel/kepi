@@ -191,10 +191,10 @@ class ThingView(KepiView):
                         )
 
             elif 'name' in kwargs:
-                logger.debug('Looking up Thing by name==%s',
+                logger.debug('Looking up Actor by name==%s',
                         kwargs['name'])
-                activity_object = Thing.objects.get(
-                        f_name=kwargs['name'],
+                activity_object = Actor.objects.get(
+                        f_preferredUsername=kwargs['name'],
                         )
             else:
                 raise ValueError("Need an id or a name")
@@ -217,9 +217,8 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['name'])
 
-        person = Thing.objects.get(
-                f_type='Person',
-                f_name = kwargs['name'],
+        person = Actor.objects.get(
+                f_preferredUsername=kwargs['name'],
                 )
 
         logging.debug('Finding followers of %s: %s',
@@ -237,9 +236,8 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['name'])
 
-        person = Thing.objects.get(
-                f_type='Person',
-                f_name=kwargs['name'],
+        person = Actor.objects.get(
+                f_preferredUsername=kwargs['name'],
                 )
 
         logging.debug('Finding followers of %s: %s',

@@ -4,5 +4,6 @@ __pycache__
 .eggs
 .tox
 *.egg-info
+*.sqlite3
 build/
 dist/
