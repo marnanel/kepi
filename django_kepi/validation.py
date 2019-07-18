@@ -112,8 +112,26 @@ class IncomingMessage(models.Model):
     def activity_form(self):
         return self.fields
 
+def validate(path, headers, body):
+    message = IncomingMessage(
+            content_type = headers['content-type'],
+            date = headers.get('date', ''),
+            digest = '', # FIXME ???
+            host = headers.get('host', ''),
+            path = path,
+            signature = headers.get('Signature', ''),
+            body = body,
+            )
+    message.save()
+
+    logger.debug('%s: invoking the validation task',
+            message.id)
+    _run_validation(message.id)
+    logger.debug('%s: validation task invoked',
+            message.id)
+
 @shared_task()
-def validate(
+def _run_validation(
         message_id,
         ):
     logger.info('%s: begin validation',
@@ -125,7 +143,7 @@ def validate(
         # This is because celery tasks are loosely coupled to
         # the rest of the application, so we pass in only
         # primitive types.
-        raise ValueError("validate()'s message_id parameter takes a UUID string")
+        raise ValueError("_run_validation()'s message_id parameter takes a UUID string")
 
     try:
         key_id = message.key_id
