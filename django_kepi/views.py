@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django_kepi.models import *
+from django_kepi.validation import validate
 from collections.abc import Iterable
 import logging
 import urllib.parse
@@ -329,3 +330,21 @@ class InboxView(django.views.View):
     # We need to support GET (as a collection)
     # but we don't yet.
 
+class OutboxView(django.views.View):
+
+    def post(self, request, *args, **kwargs):
+        logger.debug('Outbox: received %s',
+                request.body)
+
+        validate(
+                path = request.path,
+                headers = request.headers,
+                body = request.body,
+                )
+
+        return HttpResponse(
+                status = 200,
+                reason = 'Thank you',
+                content = '',
+                content_type = 'text/plain',
+                )
