@@ -72,8 +72,6 @@ class Audience(models.Model):
             raise ValueError('%s is not an audience field' % (
                 field,
                 ))
-        logger.debug('Adding Audiences for %s: %s=%s',
-                thing.number, field, value)
 
         field = AUDIENCE_FIELD_NAMES[field]
 
@@ -91,8 +89,6 @@ class Audience(models.Model):
                 recipient = line,
                 )
             a.save()
-            logger.debug('  -- %s',
-                    a)
 
     @classmethod
     def get_audiences_for(cls, thing,
