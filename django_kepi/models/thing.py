@@ -331,7 +331,40 @@ class Thing(PolymorphicModel):
             raw_material = dict([('f_'+f, v)
                 for f,v in self['object'].items()])
 
+            if 'f_type' not in raw_material:
+                logger.warn('Attempt to use Create to create '+\
+                        'something without a type. Bailing.')
+                return
+
+            if raw_material['f_type'] not in ACTIVITYPUB_TYPES:
+                logger.warn('Attempt to use Create to create '+\
+                        'an object of type %s, which is unknown. Bailing.',
+                        raw_material['f_type'])
+                return
+
+            if 'class' not in ACTIVITYPUB_TYPES[raw_material['f_type']]:
+                logger.warn('Attempt to use Create to create '+\
+                        'an object of type %s, which is abstract. Bailing.',
+                        raw_material['f_type'])
+                return
+
+            if ACTIVITYPUB_TYPES[raw_material['f_type']]['class']=='Activity':
+                logger.warn('Attempt to use Create to create '+\
+                        'an object of type %s. '+\
+                        'Create can only create non-activities. Bailing.',
+                        raw_material['f_type'])
+                return
+
+            if raw_material.get('attributedTo',None)!=self['actor']:
+                logger.warn('Attribution on object is %s, but '+\
+                        'actor on Create is %s; '+\
+                        'fixing this and continuing',
+                        raw_material.get('attributedTo', None),
+                        self['actor'],
+                        )
+
             raw_material['attributedTo'] = self['actor']
+
             # XXX and also copy audiences, per
             # https://www.w3.org/TR/activitypub/ 6.2
 
