@@ -110,6 +110,7 @@ def find_remote(url,
 
     if response.status_code!=200:
         logger.warn('%s: remote server responded %s %s' % (
+            url,
             response.status_code, response.reason))
         return None
 
