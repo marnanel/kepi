@@ -9,12 +9,9 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django_kepi.models import *
 from django_kepi.validation import validate
-from collections.abc import Iterable
 import logging
 import urllib.parse
 import json
-import re
-from collections import defaultdict
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -334,12 +331,15 @@ class OutboxView(django.views.View):
 
     def post(self, request, *args, **kwargs):
         logger.debug('Outbox: received %s',
-                request.body)
+                str(request.body, 'UTF-8'))
+        logger.debug('Outbox: with headers %s',
+                request.headers)
 
         validate(
                 path = request.path,
                 headers = request.headers,
                 body = request.body,
+                is_local_user = True,
                 )
 
         return HttpResponse(
