@@ -7,6 +7,7 @@ import re
 from django.conf import settings
 from urllib.parse import urlparse
 import django_kepi.find
+import django_kepi.create
 import django.core.exceptions
 from httpsig.verify import HeaderVerifier
 
@@ -82,6 +83,7 @@ class IncomingMessage(models.Model):
     body = models.TextField(default='')
     actor = models.CharField(max_length=255, default='')
     key_id = models.CharField(max_length=255, default='')
+    is_local_user = models.BooleanField(default=False)
 
     waiting_for = models.URLField(default=None, null=True)
 
@@ -106,13 +108,18 @@ class IncomingMessage(models.Model):
 
     @property
     def fields(self):
+        logger.warn('>>> %s', self.body)
         return json.loads(self.body)
 
     @property
     def activity_form(self):
         return self.fields
 
-def validate(path, headers, body):
+def validate(path, headers, body, is_local_user):
+
+    if isinstance(body, bytes):
+        body = str(body, encoding='UTF-8')
+
     message = IncomingMessage(
             content_type = headers['content-type'],
             date = headers.get('date', ''),
@@ -121,13 +128,14 @@ def validate(path, headers, body):
             path = path,
             signature = headers.get('Signature', ''),
             body = body,
+            is_local_user = is_local_user,
             )
     message.save()
 
     logger.debug('%s: invoking the validation task',
             message.id)
     _run_validation(message.id)
-    logger.debug('%s: validation task invoked',
+    logger.debug('%s: finished invoking the validation task',
             message.id)
 
 @shared_task()
@@ -161,6 +169,11 @@ def _run_validation(
         logger.info('%s: invalid UTF-8; dropping', message)
         return None
 
+    if actor is None:
+        logger.info('%s: actor does not exist; dropping message',
+            message)
+        return None
+
     logger.debug('%s: message signature is: %s',
             message, message.signature)
     logger.debug('%s: message body is: %s',
@@ -168,11 +181,6 @@ def _run_validation(
 
     logger.debug('%s: actor details are: %s',
             message, actor)
-
-    if actor is None:
-        logger.info('%s: actor %s does not exist; dropping message',
-            message, actor)
-        return None
 
     # XXX key used to sign must "_obviously_belong_to" the actor
 
@@ -202,11 +210,12 @@ def _run_validation(
 
     logger.debug('%s: validation passed!', message)
 
-    result = create(
+    result = django_kepi.create.create(
             sender=actor,
+            is_local_user = message.is_local_user,
             **(message.activity_form),
             )
-    logger.debug('%s: produced new Thing %s', message, result )
+    logger.debug('%s: produced new Thing %s', message, result)
     return result
 
 

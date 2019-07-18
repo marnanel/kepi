@@ -4,12 +4,12 @@ import logging
 logger = logging.getLogger(name='django_kepi')
 
 def create(
-        is_local=True,
+        is_local_user=True,
         run_side_effects=True,
         **value):
 
     logger.info("Create begins: source is %s; local? %s; run side effects? %s",
-        value, is_local, run_side_effects)
+        value, is_local_user, run_side_effects)
 
     # Remove the "f_" prefix, which exists so that we can write
     # things like f_type or f_object without using reserved keywords.
@@ -33,11 +33,11 @@ def create(
     value['type'] = value['type'].title()
 
     if 'id' in value:
-        if is_local:
+        if is_local_user:
             logger.warn('Removing "id" field at Thing creation')
             del value['id']
     else:
-        if not is_local:
+        if not is_local_user:
             logger.warn("Remote things must have an id; dropping message")
             return
 
