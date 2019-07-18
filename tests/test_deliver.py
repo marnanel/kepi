@@ -61,8 +61,8 @@ class TestDeliverTasks(TestCase):
 
         alice = create_local_person(
                 name = 'alice',
-                publicKey = keys['public'],
-                privateKey = keys['private'],
+                f_publicKey = keys['public'],
+                f_privateKey = keys['private'],
                 )
 
         self._run_delivery(
@@ -91,13 +91,13 @@ class TestDeliverTasks(TestCase):
         keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
         alice = create_local_person(
                 name = 'alice',
-                publicKey = keys0['public'],
-                privateKey = keys0['private'],
+                f_publicKey = keys0['public'],
+                f_privateKey = keys0['private'],
                 )
         bob = create_local_person(
                 name = 'bob',
-                publicKey = keys1['public'],
-                privateKey = keys1['private'],
+                f_publicKey = keys1['public'],
+                f_privateKey = keys1['private'],
                 )
 
         self._run_delivery(
@@ -149,7 +149,7 @@ class TestDelivery(TestCase):
         create_remote_person(
                 url = REMOTE_FRED,
                 name = 'fred',
-                publicKey = keys['public'],
+                f_publicKey = keys['public'],
                 inbox = FREDS_INBOX,
                 followers = FREDS_FOLLOWERS,
                 )
@@ -167,7 +167,7 @@ class TestDelivery(TestCase):
         create_remote_person(
                 url = REMOTE_JIM,
                 name = 'jim',
-                publicKey = keys['public'],
+                f_publicKey = keys['public'],
                 inbox = JIMS_INBOX,
                 followers = JIMS_FOLLOWERS,
                 )
@@ -196,7 +196,7 @@ class TestDelivery(TestCase):
 
         # I know these aren't mocks. This is just for consistency.
         create_local_person(name='alice',
-                privateKey = keys['private'])
+                f_privateKey = keys['private'])
         create_local_person(name='bob')
 
     @patch.object(django_kepi.views.InboxView, 'post')

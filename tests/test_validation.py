@@ -74,7 +74,7 @@ class TestValidationTasks(TestCase):
 
         alice = create_local_person(
                 name = 'alice',
-                publicKey = keys['public'],
+                f_publicKey = keys['public'],
                 )
         alice.save()
         logger.debug('%s', alice.url)
@@ -102,7 +102,7 @@ class TestValidationTasks(TestCase):
                     name = 'Fred',
                     # XXX This fails because publicKey is ordinarily a dict
                     # containing the string, not just a string
-                    publicKey=keys['public']),
+                    f_publicKey=keys['public']),
                 )
 
         message = test_message(
@@ -125,7 +125,7 @@ class TestValidationTasks(TestCase):
                 text = remote_user(
                     url = REMOTE_FRED,
                     name = 'Fred',
-                    publicKey=keys2['public'],
+                    f_publicKey=keys2['public'],
                 ))
 
         message = test_message(

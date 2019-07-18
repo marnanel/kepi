@@ -17,12 +17,12 @@ class Actor(thing.Thing):
     is that they own a public/private key pair.
     """
 
-    privateKey = models.TextField(
+    f_privateKey = models.TextField(
             blank=True,
             null=True,
             )
 
-    publicKey = models.TextField(
+    f_publicKey = models.TextField(
             blank=True,
             null=True,
             )
@@ -36,13 +36,18 @@ class Actor(thing.Thing):
             )
 
     def save(self, *args, **kwargs):
-        if self.privateKey is None and self.publicKey is None:
-            logger.info('Generating key pair for %s.',
-                    self.name)
-            
-            key = django_kepi.crypto.Key()
-            self.privateKey = key.private_as_pem()
-            self.publicKey = key.public_as_pem()
+        if self.f_privateKey is None and self.f_publicKey is None:
+
+            if not self.is_local:
+                logger.warn('%s: Attempt to save remote without key',
+                        self.url)
+            else:
+                logger.info('%s: generating key pair.',
+                        self.url)
+
+                key = django_kepi.crypto.Key()
+                self.f_privateKey = key.private_as_pem()
+                self.f_publicKey = key.public_as_pem()
 
         super().save(*args, **kwargs)
 
@@ -51,7 +56,7 @@ class Actor(thing.Thing):
         """
         The name of this key.
         """
-        return '%s#main-key' % (self.thing.url,),
+        return '%s#main-key' % (self.url,),
 
     @property
     def publicKey_as_dict(self):
@@ -62,14 +67,14 @@ class Actor(thing.Thing):
         The keys will be:
           'owner' - the url of this Actor
           'id'    - the name of the key
-          'publicKeyPem' - the public key, in PEM format
+          'f_publicKeyPem' - the public key, in PEM format
                            (like, "----BEGIN PUBLIC KEY---" and so on)
         """
 
         result = {
                 'id': self.key_name,
-                'owner': self.thing.url,
-                'publicKeyPem': self.publicKey,
+                'owner': self.url,
+                'f_publicKeyPem': self.f_publicKey,
                 }
 
         return result
@@ -90,7 +95,7 @@ class Actor(thing.Thing):
             elif name=='outbox':
                 return settings.KEPI['OUTBOX_PATH'] % format_details
 
-        if name=='publicKey':
-            return self.publicKey_as_dict
+        if name=='f_publicKey':
+            return self.f_publicKey_as_dict
         else:
             return super().__getitem__(name)

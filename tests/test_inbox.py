@@ -28,7 +28,7 @@ class TestInbox(TestCase):
         create_remote_person(
                 name='fred',
                 url=REMOTE_FRED,
-                publicKey = keys['public'],
+                f_publicKey = keys['public'],
                 )
 
         post_test_message(
@@ -224,7 +224,7 @@ class TestInbox(TestCase):
         create_remote_person(
                 url = BOB_URL,
                 name = 'bob',
-                publicKey=bob_keys['public'],
+                f_publicKey=bob_keys['public'],
                 inbox=BOB_INBOX_URL,
                 sharedInbox=None,
                 )
@@ -239,8 +239,8 @@ class TestInbox(TestCase):
         create_local_person(
                 name='mary',
                 auto_follow=True,
-                publicKey=mary_keys['public'],
-                privateKey=mary_keys['private'],
+                f_publicKey=mary_keys['public'],
+                f_privateKey=mary_keys['private'],
                 )
 
         post_test_message(
