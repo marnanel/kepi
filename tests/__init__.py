@@ -181,6 +181,7 @@ def create_remote_collection(
 def test_message_body_and_headers(secret='',
         path=INBOX_PATH,
         host=INBOX_HOST,
+        signed = True,
         **fields):
 
     body = dict([(f[2:],v) for f,v in fields.items() if f.startswith('f_')])
@@ -197,6 +198,9 @@ def test_message_body_and_headers(secret='',
         key_id = fields['key_id']
     else:
         key_id = body['actor']+'#main-key'
+
+    if not signed:
+        return body, headers
 
     signer = httpsig.HeaderSigner(
             secret=secret,

@@ -50,7 +50,9 @@ class TestOutbox(TestCase):
     def _send(self,
             content,
             keys = None,
-            sender = None):
+            sender = None,
+            signed = True,
+            ):
 
         if keys is None:
             keys = json.load(open('tests/keys/keys-0001.json', 'r'))
@@ -68,6 +70,7 @@ class TestOutbox(TestCase):
                 secret = keys['private'],
                 path = OUTBOX_PATH,
                 key_id = sender['name']+'#main-key',
+                signed = signed,
                 **f_body,
                 )
 
@@ -82,13 +85,11 @@ class TestOutbox(TestCase):
 
         return response
 
-    @skip("not finished")
     def test_no_signature(self):
 
-        c = Client()
-        response = c.post(OUTBOX,
-                OBJECT_FORM,
-                content_type='application/activity+json',
+        self._send(
+                content = CREATE_FORM,
+                signed = False,
                 )
 
         statuses = Item.objects.filter(
@@ -96,8 +97,8 @@ class TestOutbox(TestCase):
                 )
 
         self.assertEqual(
-                statuses,
-                [])
+                len(statuses),
+                0)
 
     def test_create(self):
 
