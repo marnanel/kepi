@@ -192,7 +192,7 @@ class ThingView(KepiView):
                 logger.debug('Looking up Actor by name==%s',
                         kwargs['name'])
                 activity_object = Actor.objects.get(
-                        f_preferredUsername=kwargs['name'],
+                        f_preferredUsername=json.dumps(kwargs['name']),
                         )
             else:
                 raise ValueError("Need an id or a name")
