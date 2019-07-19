@@ -12,10 +12,10 @@ import httpretty
 import logging
 import json
 
-SENDER_ID = "https://dustycloud.org/chris/"
-SENDER_DOMAIN = urlparse(SENDER_ID).netloc
-SENDER_FOLLOWERS = SENDER_ID + 'followers'
-SENDER_KEY = SENDER_ID + '#main-key'
+REMOTE_DAVE_ID = "https://dave.example.net/users/dave"
+REMOTE_DAVE_DOMAIN = urlparse(REMOTE_DAVE_ID).netloc
+REMOTE_DAVE_FOLLOWERS = REMOTE_DAVE_ID + 'followers'
+REMOTE_DAVE_KEY = REMOTE_DAVE_ID + '#main-key'
 
 ALICE_ID = 'https://testserver/users/alice'
 OUTBOX = ALICE_ID+'/outbox'
@@ -114,47 +114,58 @@ class TestOutbox(TestCase):
                 len(statuses),
                 1)
 
+    def test_post_by_remote_interloper(self):
 
-    @skip("not finished")
-    @httpretty.activate
-    def test_post_by_interloper(self):
+        keys = json.load(open('tests/keys/keys-0002.json', 'r'))
 
-        body = dict([('f_'+f,v) for f,v in CREATE_FORM.items()])
-
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        body, headers = test_message_body_and_headers(
-                secret = keys['private'],
-                path = OUTBOX_PATH,
-                key_id = SENDER_KEY,
-                **body,
-                )
-
-        headers=dict([('HTTP_'+f,v) for f,v in headers.items()])
-
-        create_remote_person(
-                url = SENDER_ID,
-                name = 'Example person',
+        sender = create_remote_person(
+                url = REMOTE_DAVE_ID,
+                name = 'dave',
                 publicKey = keys['public'],
                 )
 
-        c = Client()
-        response = c.post(OUTBOX,
-                bytes(json.dumps(CREATE_FORM),
-                    encoding='UTF-8'),
-                **headers,
-                content_type='application/activity+json',
+        self._send(
+                content = CREATE_FORM,
+                sender = sender,
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(SENDER_ID),
+                f_attributedTo=json.dumps(ALICE_ID),
                 )
-
-        logger.debug('List of items by %s: %s',
-                SENDER_ID, list(statuses))
 
         self.assertEqual(
                 len(statuses),
-                1)
+                0)
+
+    def test_post_by_local_interloper(self):
+
+        keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys2 = json.load(open('tests/keys/keys-0002.json', 'r'))
+
+        create_local_person(
+                name = 'alice',
+                privateKey = keys1['private'],
+                publicKey = keys1['public'],
+                )
+
+        sender = create_local_person(
+                name = 'dave',
+                privateKey = keys2['private'],
+                publicKey = keys2['public'],
+                )
+
+        self._send(
+                content = CREATE_FORM,
+                sender = sender,
+                )
+
+        statuses = Item.objects.filter(
+                f_attributedTo=json.dumps(ALICE_ID),
+                )
+
+        self.assertEqual(
+                len(statuses),
+                0)
 
     @skip("not finished")
     @httpretty.activate
@@ -175,7 +186,7 @@ class TestOutbox(TestCase):
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(SENDER_ID),
+                f_attributedTo=json.dumps(REMOTE_DAVE_ID),
                 )
 
         self.assertEqual(
