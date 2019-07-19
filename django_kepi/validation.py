@@ -196,7 +196,7 @@ def _run_validation(
                 'Signature': message.signature,
                 'Host': message.host,
                 },
-            secret = key['publicKeyPem'],
+            secret = key,
             method = 'POST',
             path = message.path,
             host = message.host,
