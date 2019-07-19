@@ -59,6 +59,7 @@ def create_local_person(name='jemima',
         **kwargs):
     spec = {
         'name': name,
+        'preferredUsername': name,
         'id': 'https://altair.example.com/users/'+name,
         'type': 'Person',
         'endpoints': {'sharedInbox': 'https://altair.example.com/sharedInbox'},
