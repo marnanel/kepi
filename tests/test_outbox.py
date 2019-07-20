@@ -175,31 +175,20 @@ class TestOutbox(TestCase):
                 len(statuses),
                 0)
 
-    @skip("not finished")
     @httpretty.activate
     def test_unwrapped_object(self):
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        body, headers = test_message_body_and_headers(
-                key_id = ALICE_ID+'#main-key',
-                secret = keys['private'],
-                path = OUTBOX_PATH,
-                )
-
-        c = Client()
-        response = c.post(OUTBOX,
-                bytes(json.dumps(OBJECT_FORM), encoding='UTF-8'),
-                content_type='application/activity+json',
-                headers=dict([('HTTP_'+f,v) for f,v in headers.items()])
+        self._send(
+                content = OBJECT_FORM,
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(REMOTE_DAVE_ID),
+                f_attributedTo=json.dumps(ALICE_ID),
                 )
 
         self.assertEqual(
                 len(statuses),
-                0)
+                1)
 
     @skip("not implemented")
     def test_create_doesnt_work_on_activites(self):

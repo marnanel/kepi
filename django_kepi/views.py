@@ -346,10 +346,13 @@ class OutboxView(django.views.View):
                     content_type = 'text/plain',
                     )
 
-        actor = fields.get('actor', '')
+        actor = fields.get('actor', None)
+        if actor is None:
+            actor = fields.get('attributedTo', None)
+
         owner = settings.KEPI['USER_URL_FORMAT'] % (kwargs['name'],)
 
-        if fields.get('actor', '') != owner:
+        if actor != owner:
             logger.info('Outbox: actor was %s but we needed %s',
                     actor, owner)
 
