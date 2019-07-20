@@ -17,7 +17,7 @@ REMOTE_DAVE_DOMAIN = urlparse(REMOTE_DAVE_ID).netloc
 REMOTE_DAVE_FOLLOWERS = REMOTE_DAVE_ID + 'followers'
 REMOTE_DAVE_KEY = REMOTE_DAVE_ID + '#main-key'
 
-ALICE_ID = 'https://testserver/users/alice'
+ALICE_ID = 'https://altair.example.com/users/alice'
 OUTBOX = ALICE_ID+'/outbox'
 OUTBOX_PATH = '/users/alice/outbox'
 
@@ -124,13 +124,17 @@ class TestOutbox(TestCase):
                 publicKey = keys['public'],
                 )
 
+        create = CREATE_FORM
+        create['actor'] = REMOTE_DAVE_ID
+        create['id'] = REMOTE_DAVE_ID+'#foo'
+
         self._send(
-                content = CREATE_FORM,
+                content = create,
                 sender = sender,
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(ALICE_ID),
+                f_attributedTo=json.dumps(REMOTE_DAVE_ID),
                 )
 
         self.assertEqual(
@@ -149,18 +153,22 @@ class TestOutbox(TestCase):
                 )
 
         sender = create_local_person(
-                name = 'dave',
+                name = 'bob',
                 privateKey = keys2['private'],
                 publicKey = keys2['public'],
                 )
 
+        create = CREATE_FORM
+        create['actor'] = sender.url
+        create['id'] = sender.url+'#foo'
+
         self._send(
-                content = CREATE_FORM,
+                content = create,
                 sender = sender,
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(ALICE_ID),
+                f_attributedTo=json.dumps(sender.id),
                 )
 
         self.assertEqual(

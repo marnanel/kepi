@@ -1,6 +1,7 @@
 from django_kepi.create import create
 from django_kepi.validation import IncomingMessage, validate
 from django_kepi.models.actor import Actor
+from django.conf import settings
 import django.test
 import httpretty
 import logging
@@ -60,10 +61,10 @@ def create_local_person(name='jemima',
     spec = {
         'name': name,
         'preferredUsername': name,
-        'id': 'https://altair.example.com/users/'+name,
+        'id': settings.KEPI['USER_URL_FORMAT'] % (name),
         'type': 'Person',
-        'endpoints': {'sharedInbox': 'https://altair.example.com/sharedInbox'},
-        'inbox': 'https://altair.example.com/sharedInbox',
+        'endpoints': {'sharedInbox': settings.KEPI['SHARED_INBOX']},
+        'inbox': settings.KEPI['SHARED_INBOX'],
         }
 
     spec.update(kwargs)

@@ -335,6 +335,31 @@ class OutboxView(django.views.View):
         logger.debug('Outbox: with headers %s',
                 request.headers)
 
+        try:
+            fields = json.loads(request.body)
+        except json.JSONDecoderError:
+            logger.info('Outbox: invalid JSON; dropping')
+            return HttpResponse(
+                    status = 400,
+                    reason = 'Invalid JSON',
+                    content = 'Invalid JSON',
+                    content_type = 'text/plain',
+                    )
+
+        actor = fields.get('actor', '')
+        owner = settings.KEPI['USER_URL_FORMAT'] % (kwargs['name'],)
+
+        if fields.get('actor', '') != owner:
+            logger.info('Outbox: actor was %s but we needed %s',
+                    actor, owner)
+
+            return HttpResponse(
+                    status = 410,
+                    reason = 'Not yours',
+                    content = 'Sir, you are an interloper!',
+                    content_type = 'text/plain',
+                    )
+
         validate(
                 path = request.path,
                 headers = request.headers,

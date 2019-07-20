@@ -32,13 +32,16 @@ SECRET_KEY = 'cmfy8%_q^u#bix$_4bq!p^8eq@=46bb*a7ztmg4i)l8jo(kl%^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# XXX This is a mess. Make it consistent
 KEPI = {
         'ACTIVITY_URL_FORMAT': 'https://altair.example.com/%s',
+        'USER_URL_FORMAT': 'https://altair.example.com/users/%s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
         'FOLLOWERS_PATH': '/user/%(username)s/followers',
         'FOLLOWING_PATH': '/user/%(username)s/followers',
         'INBOX_PATH': '/user/%(username)s/inbox',
         'OUTBOX_PATH': '/user/%(username)s/outbox',
+        'SHARED_INBOX': 'https://altair.example.com/sharedInbox',
         }
 
 MIDDLEWARE = [
