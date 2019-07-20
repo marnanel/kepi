@@ -108,7 +108,6 @@ class IncomingMessage(models.Model):
 
     @property
     def fields(self):
-        logger.warn('>>> %s', self.body)
         return json.loads(self.body)
 
     @property
