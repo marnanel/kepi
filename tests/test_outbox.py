@@ -54,6 +54,11 @@ class TestOutbox(TestCase):
             signed = True,
             ):
 
+        settings.ALLOWED_HOSTS = [
+                'altair.example.com',
+                'testserver',
+                ]
+
         if keys is None:
             keys = json.load(open('tests/keys/keys-0001.json', 'r'))
 
