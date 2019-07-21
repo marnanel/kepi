@@ -184,16 +184,16 @@ class TestOutbox(TestCase):
     @httpretty.activate
     def test_unwrapped_object(self):
 
+        items_before = len(Item.objects.all())
+
         self._send(
                 content = OBJECT_FORM,
                 )
 
-        statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(ALICE_ID),
-                )
+        items_after = len(Item.objects.all())
 
         self.assertEqual(
-                len(statuses),
+                items_after-items_before,
                 1)
 
     def test_create_doesnt_work_on_activities(self):
