@@ -333,26 +333,34 @@ class Thing(PolymorphicModel):
 
             if 'f_type' not in raw_material:
                 logger.warn('Attempt to use Create to create '+\
-                        'something without a type. Bailing.')
+                        'something without a type. '+\
+                        'Deleting original Create.')
+                self.delete()
                 return
 
             if raw_material['f_type'] not in ACTIVITYPUB_TYPES:
                 logger.warn('Attempt to use Create to create '+\
-                        'an object of type %s, which is unknown. Bailing.',
+                        'an object of type %s, which is unknown. '+\
+                        'Deleting original Create.',
                         raw_material['f_type'])
+                self.delete()
                 return
 
             if 'class' not in ACTIVITYPUB_TYPES[raw_material['f_type']]:
                 logger.warn('Attempt to use Create to create '+\
-                        'an object of type %s, which is abstract. Bailing.',
+                        'an object of type %s, which is abstract. '+\
+                        'Deleting original Create.',
                         raw_material['f_type'])
+                self.delete()
                 return
 
             if ACTIVITYPUB_TYPES[raw_material['f_type']]['class']=='Activity':
                 logger.warn('Attempt to use Create to create '+\
                         'an object of type %s. '+\
-                        'Create can only create non-activities. Bailing.',
+                        'Create can only create non-activities. '+\
+                        'Deleting original Create.',
                         raw_material['f_type'])
+                self.delete()
                 return
 
             if raw_material.get('attributedTo',None)!=self['actor']:
