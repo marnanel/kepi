@@ -407,6 +407,16 @@ class Thing(PolymorphicModel):
                 self.delete()
                 return
 
+            if existing['attributedTo']!=self['actor']:
+                logger.warn('Update by %s to object owned by %s. '+\
+                        'Deleting update.',
+                        self['actor'],
+                        existing['attributedTo'],
+                        )
+                self.delete()
+                return
+
+
             logger.debug('Updating object %s',
                     new_object['id'])
 
