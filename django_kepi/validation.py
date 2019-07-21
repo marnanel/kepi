@@ -89,7 +89,10 @@ class IncomingMessage(models.Model):
 
     @property
     def actor(self):
-        return self.fields['actor']
+        if 'actor' in self.fields:
+            return self.fields['actor']
+        else:
+            return self.fields.get('attributedTo', '')
 
     @property
     def key_id(self):
@@ -108,7 +111,11 @@ class IncomingMessage(models.Model):
 
     @property
     def fields(self):
-        return json.loads(self.body)
+        try:
+            return self._fields
+        except AttributeError:
+            self._fields = json.loads(self.body)
+            return self._fields
 
     @property
     def activity_form(self):
