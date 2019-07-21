@@ -22,6 +22,8 @@ ALICE_ID = 'https://altair.example.com/users/alice'
 OUTBOX = ALICE_ID+'/outbox'
 OUTBOX_PATH = '/users/alice/outbox'
 
+BOB_ID = 'https://altair.example.com/users/bob'
+
 # as given in https://www.w3.org/TR/activitypub/
 OBJECT_FORM = {
         "@context": ["https://www.w3.org/ns/activitystreams",
@@ -184,17 +186,20 @@ class TestOutbox(TestCase):
     @httpretty.activate
     def test_unwrapped_object(self):
 
-        items_before = len(Item.objects.all())
+        items_before = list(Thing.objects.all())
 
         self._send(
                 content = OBJECT_FORM,
                 )
 
-        items_after = len(Item.objects.all())
+        items_after = list(Thing.objects.all())
+
+        # This should have created two objects:
+        # the Note we sent, and an implict Create.
 
         self.assertEqual(
-                items_after-items_before,
-                1)
+                len(items_after)-len(items_before),
+                2)
 
     def test_create_doesnt_work_on_activities(self):
 
@@ -213,3 +218,24 @@ class TestOutbox(TestCase):
                 0)
 
 
+    def test_like(self):
+
+        note = create_local_note(
+                attributedTo = BOB_ID,
+                )
+
+        self._send(
+                content = {
+                    '@context': 'https://www.w3.org/ns/activitystreams',
+                    'actor': ALICE_ID,
+                    'type': 'Like',
+                    'object': note.url,
+                    }
+            )
+
+        self.assertEqual(
+                len(Thing.objects.filter(f_actor=json.dumps(ALICE_ID))),
+                1)
+
+        # TODO When Actors have liked() and Things have likes(),
+        # test those here too.
