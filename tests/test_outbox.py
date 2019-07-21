@@ -239,3 +239,34 @@ class TestOutbox(TestCase):
 
         # TODO When Actors have liked() and Things have likes(),
         # test those here too.
+
+    def test_update(self):
+
+        note = create_local_note(
+                attributedTo = ALICE_ID,
+                content = 'Twas brillig, and the slithy toves',
+                )
+
+        self.assertEqual(
+                note['content'],
+                'Twas brillig, and the slithy toves',
+                )
+
+        self._send(
+                content = {
+                    '@context': 'https://www.w3.org/ns/activitystreams',
+                    'actor': ALICE_ID,
+                    'type': 'Update',
+                    'object': note.url,
+                    'content': 'did gyre and gimble in the wabe.',
+                    }
+            )
+
+        self.assertEqual(
+                note['content'],
+                'did gyre and gimble in the wabe.',
+                )
+
+    @skip
+    def test_update_someone_elses(self):
+        pass
