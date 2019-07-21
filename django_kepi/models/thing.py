@@ -37,6 +37,13 @@ class Thing(PolymorphicModel):
             choices=ACTIVITY_TYPE_CHOICES,
             )
 
+    f_actor = models.CharField(
+            max_length=255,
+            default=None,
+            null=True,
+            blank=True,
+            )
+
     remote_url = models.URLField(
             max_length=255,
             unique=True,
