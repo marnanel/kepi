@@ -389,6 +389,40 @@ class Thing(PolymorphicModel):
             self['object'] = creation
             self.save()
 
+        elif f_type=='Update':
+
+            new_object = self['object']
+
+            if 'id' not in new_object:
+                logger.warn('Update did not include an id.')
+                self.delete()
+                return
+
+            existing = find(new_object['id'],
+                    local_only = True)
+
+            if existing is None:
+                logger.warn('Update to non-existent object, %s.',
+                        new_object['id'])
+                self.delete()
+                return
+
+            logger.debug('Updating object %s',
+                    new_object['id'])
+
+            for f, v in sorted(new_object.items()):
+                if f=='id':
+                    continue
+
+                existing[f] = v
+
+            # FIXME if not self.is_local we have to remove
+            # all properties of "existing" which aren't in
+            # "new_object"
+
+            existing.save()
+            logger.debug('  -- done')
+
     @property
     def is_local(self):
 

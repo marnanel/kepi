@@ -257,10 +257,15 @@ class TestOutbox(TestCase):
                     '@context': 'https://www.w3.org/ns/activitystreams',
                     'actor': ALICE_ID,
                     'type': 'Update',
-                    'object': note.url,
-                    'content': 'did gyre and gimble in the wabe.',
+                    'object': {
+                        'id': note.url,
+                        'content': 'did gyre and gimble in the wabe.',
+                        },
                     }
             )
+
+        note = Item.objects.get(f_attributedTo = json.dumps(ALICE_ID))
+        logger.debug('---> %s', note.activity_form)
 
         self.assertEqual(
                 note['content'],
