@@ -6,6 +6,7 @@ from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
 from django_kepi.models.item import Item
 from django_kepi.models.thing import Thing
+from django_kepi.models.activity import Activity
 from django.test import Client
 from urllib.parse import urlparse
 import httpretty
@@ -195,8 +196,20 @@ class TestOutbox(TestCase):
                 len(statuses),
                 1)
 
-    @skip("not implemented")
-    def test_create_doesnt_work_on_activites(self):
-        pass
+    def test_create_doesnt_work_on_activities(self):
+
+        create = CREATE_FORM
+        create['object']['type'] = 'Like'
+
+        self._send(
+                content = create,
+                )
+
+        activities = Activity.objects.all(
+                )
+
+        self.assertEqual(
+                len(activities),
+                0)
 
 
