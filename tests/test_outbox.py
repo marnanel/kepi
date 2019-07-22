@@ -305,27 +305,47 @@ class TestOutbox(TestCase):
 
     def test_delete(self):
 
-        note = create_local_note(
-                attributedTo = ALICE_ID,
-                content = 'Twas brillig, and the slithy toves',
-                )
         c = Client()
 
-        response = c.get(note.url)
+        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
 
-        self.assertEqual(
-                response.status_code,
-                200)
+        alice = create_local_person(
+                name = 'alice',
+                publicKey = keys['public'],
+                privateKey = keys['private'],
+                )
 
-        self._send(
-                content = {
-                    '@context': 'https://www.w3.org/ns/activitystreams',
-                    'actor': ALICE_ID,
-                    'type': 'Delete',
-                    'object': note.url,
-                    },
-            )
+        for tombstones, result_code in [
+                (True, 410),
+                (False, 404),
+                ]:
 
-        self.assertEqual(
-                response.status_code,
-                410)
+            settings.KEPI['TOMBSTONES'] = tombstones
+
+            note = create_local_note(
+                    attributedTo = ALICE_ID,
+                    content = 'Twas brillig, and the slithy toves',
+                    )
+
+            response = c.get(note.url)
+
+            self.assertEqual(
+                    response.status_code,
+                    200)
+
+            self._send(
+                    keys = keys,
+                    sender = alice,
+                    content = {
+                        '@context': 'https://www.w3.org/ns/activitystreams',
+                        'actor': ALICE_ID,
+                        'type': 'Delete',
+                        'object': note.url,
+                        },
+                )
+
+            response = c.get(note.url)
+
+            self.assertEqual(
+                    response.status_code,
+                    result_code)
