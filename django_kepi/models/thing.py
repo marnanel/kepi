@@ -157,7 +157,7 @@ class Thing(PolymorphicModel):
             if value=='':
                 value = None
 
-            result[name[2:]] = value
+            result[name[2:]] = json.loads(value)
 
         if self.other_fields:
             result.update(json.loads(self.other_fields))
@@ -280,8 +280,7 @@ class Thing(PolymorphicModel):
 
         if result==False:
             logger.debug('  -- deleting original object')
-            logger.info(' --> This is %s %s',
-                    self, self.thing_ptr_id)
+
             try:
                 self.delete()
             except AssertionError:
@@ -309,21 +308,12 @@ class Thing(PolymorphicModel):
             raise ValueError("%s: you can't entomb remote things %s",
                     self, str(self.remote_url))
 
-        former_type = self.f_type
-
-        self.f_type = 'Tombstone'
+        self['type'] = 'Tombstone'
+        self['deleted'] = datetime.datetime.now()
         self.active = True
 
-        ThingField.objects.filter(parent=self).delete()
-
-        for f,v in [
-                ('former_type', former_type),
-                # XXX 'deleted', when we're doing timestamps
-                ]:
-            ThingField(parent=self, name=f, value=json.dumps(v)).save()
-
         self.save()
-        logger.info('%s: entombing finished', self)
+        logger.info('%s: entombed', self)
 
     def save(self, *args, **kwargs):
 
