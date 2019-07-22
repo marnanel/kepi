@@ -85,7 +85,7 @@ def create(
     result.save()
 
     if run_side_effects:
-        result.send_notifications()
+        result.run_side_effects()
 
     return result
 

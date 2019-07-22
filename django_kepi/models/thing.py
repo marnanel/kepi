@@ -3,6 +3,7 @@ from django.conf import settings
 from polymorphic.models import PolymorphicModel
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
+import django_kepi.side_effects as side_effects
 import logging
 import random
 import json
@@ -263,175 +264,29 @@ class Thing(PolymorphicModel):
                     tags=value,
                     )
 
-    def send_notifications(self):
+    def run_side_effects(self):
 
         from django_kepi.find import find
         from django_kepi.delivery import deliver
 
-        f_type = json.loads(self.f_type)
+        f_type = json.loads(self.f_type).lower()
 
-        if f_type=='Accept':
-            obj = self['object__obj']
+        if not hasattr(side_effects, f_type):
+            logger.debug('  -- no side effects for %s',
+                    f_type)
+            return
 
-            if obj['type']!='Follow':
-                logger.warn('Object %s was Accepted, but it isn\'t a Follow',
-                    obj)
-                return
+        result = getattr(side_effects, f_type)(self)
 
-            logger.debug(' -- follow accepted')
-
-            django_kepi.models.following.accept(
-                    follower = obj['actor'],
-                    following = self['actor'],
-                    )
-
-        elif f_type=='Follow':
-
-            local_user = find(self['object'], local_only=True)
-            remote_user = find(self['actor'])
-
-            if local_user is not None and local_user.auto_follow:
-                logger.info('Local user %s has auto_follow set; must Accept',
-                        local_user)
-                django_kepi.models.following.accept(
-                        follower = self['actor'],
-                        following = self['object'],
-                        # XXX this causes a warning; add param to disable it
-                        )
-
-                from django_kepi.create import create
-                accept_the_request = create(
-                        f_to = remote_user.url,
-                        f_type = 'Accept',
-                        f_actor = self['object'],
-                        f_object = self.url,
-                        run_side_effects = False,
-                        )
-
-                deliver(accept_the_request.number)
-
-            else:
-                django_kepi.models.following.request(
-                        follower = self['actor'],
-                        following = self['object'],
-                        )
-
-        elif f_type=='Reject':
-            obj = self['object__obj']
-
-            if obj['type']!='Follow':
-                logger.warn('Object %s was Rejected, but it isn\'t a Follow',
-                    obj)
-                return
-
-            logger.debug(' -- follow rejected')
-
-            django_kepi.models.following.reject(
-                    follower = obj['actor'],
-                    following = self['actor'],
-                    )
-
-        elif f_type=='Create':
-
-            from django_kepi.create import create
-
-            raw_material = dict([('f_'+f, v)
-                for f,v in self['object'].items()])
-
-            if 'f_type' not in raw_material:
-                logger.warn('Attempt to use Create to create '+\
-                        'something without a type. '+\
-                        'Deleting original Create.')
+        if result==False:
+            logger.debug('  -- deleting original object')
+            logger.info(' --> This is %s %s',
+                    self, self.thing_ptr_id)
+            try:
                 self.delete()
-                return
-
-            if raw_material['f_type'] not in ACTIVITYPUB_TYPES:
-                logger.warn('Attempt to use Create to create '+\
-                        'an object of type %s, which is unknown. '+\
-                        'Deleting original Create.',
-                        raw_material['f_type'])
-                self.delete()
-                return
-
-            if 'class' not in ACTIVITYPUB_TYPES[raw_material['f_type']]:
-                logger.warn('Attempt to use Create to create '+\
-                        'an object of type %s, which is abstract. '+\
-                        'Deleting original Create.',
-                        raw_material['f_type'])
-                self.delete()
-                return
-
-            if ACTIVITYPUB_TYPES[raw_material['f_type']]['class']=='Activity':
-                logger.warn('Attempt to use Create to create '+\
-                        'an object of type %s. '+\
-                        'Create can only create non-activities. '+\
-                        'Deleting original Create.',
-                        raw_material['f_type'])
-                self.delete()
-                return
-
-            if raw_material.get('attributedTo',None)!=self['actor']:
-                logger.warn('Attribution on object is %s, but '+\
-                        'actor on Create is %s; '+\
-                        'fixing this and continuing',
-                        raw_material.get('attributedTo', None),
-                        self['actor'],
-                        )
-
-            raw_material['attributedTo'] = self['actor']
-
-            # XXX and also copy audiences, per
-            # https://www.w3.org/TR/activitypub/ 6.2
-
-            creation = create(**raw_material,
-                    is_local = self.is_local,
-                    run_side_effects = False)
-            self['object'] = creation
-            self.save()
-
-        elif f_type=='Update':
-
-            new_object = self['object']
-
-            if 'id' not in new_object:
-                logger.warn('Update did not include an id.')
-                self.delete()
-                return
-
-            existing = find(new_object['id'],
-                    local_only = True)
-
-            if existing is None:
-                logger.warn('Update to non-existent object, %s.',
-                        new_object['id'])
-                self.delete()
-                return
-
-            if existing['attributedTo']!=self['actor']:
-                logger.warn('Update by %s to object owned by %s. '+\
-                        'Deleting update.',
-                        self['actor'],
-                        existing['attributedTo'],
-                        )
-                self.delete()
-                return
-
-
-            logger.debug('Updating object %s',
-                    new_object['id'])
-
-            for f, v in sorted(new_object.items()):
-                if f=='id':
-                    continue
-
-                existing[f] = v
-
-            # FIXME if not self.is_local we have to remove
-            # all properties of "existing" which aren't in
-            # "new_object"
-
-            existing.save()
-            logger.debug('  -- done')
+            except AssertionError:
+                logger.info('    -- deletion failed, probably because of '+\
+                        'https://code.djangoproject.com/ticket/23076')
 
     @property
     def is_local(self):
