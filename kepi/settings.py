@@ -42,6 +42,7 @@ KEPI = {
         'INBOX_PATH': '/user/%(username)s/inbox',
         'OUTBOX_PATH': '/user/%(username)s/outbox',
         'SHARED_INBOX': 'https://altair.example.com/sharedInbox',
+        'TOMBSTONES': True,
         }
 
 MIDDLEWARE = [
