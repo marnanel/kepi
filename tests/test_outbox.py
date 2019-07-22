@@ -302,3 +302,30 @@ class TestOutbox(TestCase):
                 note['content'],
                 'Twas brillig, and the slithy toves',
                 )
+
+    def test_delete(self):
+
+        note = create_local_note(
+                attributedTo = ALICE_ID,
+                content = 'Twas brillig, and the slithy toves',
+                )
+        c = Client()
+
+        response = c.get(note.url)
+
+        self.assertEqual(
+                response.status_code,
+                200)
+
+        self._send(
+                content = {
+                    '@context': 'https://www.w3.org/ns/activitystreams',
+                    'actor': ALICE_ID,
+                    'type': 'Delete',
+                    'object': note.url,
+                    },
+            )
+
+        self.assertEqual(
+                response.status_code,
+                410)
