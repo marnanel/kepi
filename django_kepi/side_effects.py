@@ -1,4 +1,5 @@
 import logging
+from django.conf import settings
 from django_kepi.find import find
 from django_kepi.delivery import deliver
 from django_kepi.types import ACTIVITYPUB_TYPES
@@ -138,7 +139,6 @@ def update(activity):
 
     if 'id' not in new_object:
         logger.warn('Update did not include an id.')
-        activity.delete()
         return False
 
     existing = find(new_object['id'],
@@ -147,7 +147,6 @@ def update(activity):
     if existing is None:
         logger.warn('Update to non-existent object, %s.',
                 new_object['id'])
-        activity.delete()
         return False
 
     if existing['attributedTo']!=activity['actor']:
@@ -156,7 +155,6 @@ def update(activity):
                 activity['actor'],
                 existing['attributedTo'],
                 )
-        activity.delete()
         return False
 
     logger.debug('Updating object %s',
@@ -174,5 +172,24 @@ def update(activity):
 
     existing.save()
     logger.debug('  -- done')
+
+    return True
+
+def delete(activity):
+
+    victim = find(activity['object'],
+            local_only = True)
+
+    if victim is None:
+        logger.info('  -- attempt to Delete non-existent object.')
+        return False
+
+    if settings.KEPI['TOMBSTONES']:
+        # I have a lovely cask of amontillado to show you
+        victim.entomb()
+    else:
+        victim.delete()
+        logger.info('  -- %s deleted',
+                victim)
 
     return True
