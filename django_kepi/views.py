@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django_kepi.models import *
 from django_kepi.validation import validate
+from collections.abc import Iterable
 import logging
 import urllib.parse
 import json
