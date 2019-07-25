@@ -192,8 +192,9 @@ def _run_validation(
 
     key = actor['publicKey']
 
-    logger.debug('%s: public key is: %s',
-            message, key)
+    if isinstance(key, dict):
+        # Remote keys are sent over the wire as a JSON object
+        key = key['publicKeyPem']
 
     hv = HeaderVerifier(
             headers = {
