@@ -277,7 +277,7 @@ class InboxView(django.views.View):
                     )
 
         try:
-            decoded_body = json.loads(
+            fields = json.loads(
                     str(request.body, encoding='UTF-8'))
         except json.decoder.JSONDecodeError:
             return HttpResponse(
@@ -290,33 +290,16 @@ class InboxView(django.views.View):
                     reason = 'Invalid UTF-8',
                     )
 
-        if kwargs.get('local', False):
-            logger.debug('Local request; skip validation')
-            result = create(
-                    **decoded_body,
-                    )
-        else:
-
-            capture = django_kepi.validation.IncomingMessage(
-                    date = request.headers['Date'],
-                    host = request.headers['Host'],
-                    path = request.path,
-                    signature = request.headers['Signature'],
-                    content_type = request.headers['Content-Type'],
-                    body = json.dumps(decoded_body),
-                    )
-            capture.save()
-            logger.debug('%s: received %s with headers %s at %s -- now validating',
-                    capture,
-                    str(request.body, encoding='UTF-8'),
-                    request.headers,
-                    request.path,
-                    )
-
-            django_kepi.validation.validate(message_id=capture.id)
-            logger.debug('%s: finished kicking off validation; returning to HTTP caller',
-                    capture,
-                    )
+        validate(
+                path = request.path,
+                headers = request.headers,
+                body = request.body,
+                # is_local_user is used by create() to
+                # determine whether to strip or require the
+                # "id" field.
+                # FIXME it probably shouldn't always be False here.
+                is_local_user = False,
+                )
 
         return HttpResponse(
                 status = 200,
@@ -324,9 +307,6 @@ class InboxView(django.views.View):
                 content = '',
                 content_type = 'text/plain',
                 )
-
-    # We need to support GET (as a collection)
-    # but we don't yet.
 
 class OutboxView(django.views.View):
 
