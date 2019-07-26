@@ -25,3 +25,12 @@ class ThingParentAdmin(PolymorphicParentModelAdmin):
             Item,
             Activity,
             )
+
+class CollectionMemberInline(admin.TabularInline):
+    model = CollectionMember
+
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    inlines = [
+            CollectionMemberInline,
+            ]

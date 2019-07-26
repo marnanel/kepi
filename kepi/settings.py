@@ -37,10 +37,7 @@ KEPI = {
         'ACTIVITY_URL_FORMAT': 'https://altair.example.com/%s',
         'USER_URL_FORMAT': 'https://altair.example.com/users/%s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
-        'FOLLOWERS_PATH': '/user/%(username)s/followers',
-        'FOLLOWING_PATH': '/user/%(username)s/followers',
-        'INBOX_PATH': '/user/%(username)s/inbox',
-        'OUTBOX_PATH': '/user/%(username)s/outbox',
+        'COLLECTION_PATH': '/user/%(username)s/%(listname)s',
         'SHARED_INBOX': 'https://altair.example.com/sharedInbox',
         'TOMBSTONES': True,
         }

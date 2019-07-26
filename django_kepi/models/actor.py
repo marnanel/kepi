@@ -17,6 +17,9 @@ class Actor(thing.Thing):
     is that they own a public/private key pair.
     """
 
+    # FIXME It's ludicrous to store some of these as JSON,
+    # and it causes problems building queries downstream.
+
     f_privateKey = models.TextField(
             blank=True,
             null=True,
@@ -58,44 +61,24 @@ class Actor(thing.Thing):
         """
         return '%s#main-key' % (self.url,),
 
-    @property
-    def publicKey_as_dict(self):
-        """
-        A dict describing this Actor's public key,
-        in the format used by ActivityStreams.
-
-        The keys will be:
-          'owner' - the url of this Actor
-          'id'    - the name of the key
-          'f_publicKeyPem' - the public key, in PEM format
-                           (like, "----BEGIN PUBLIC KEY---" and so on)
-        """
-
-        result = {
-                'id': self.key_name,
-                'owner': self.url,
-                'f_publicKeyPem': self.f_publicKey,
+    def list_path(self, name):
+        return settings.KEPI['COLLECTION_PATH'] % {
+                'username': self.owner.f_preferredUsername,
+                'listname': self.name,
                 }
 
-        return result
+    @property
+    def publicKey(self):
+        result = self['publicKey']
+        logger.warn('---> %s', self.f_publicKey)
+
 
     def __getitem__(self, name):
         if self.is_local:
 
-            format_details = {
-                    'username': self.f_preferredUsername,
-                    }
+            if name in ('inbox', 'outbox',
+                    'followers', 'following',
+                    ):
+                return self.list_path(name)
 
-            if name=='followers':
-                return settings.KEPI['FOLLOWERS_PATH'] % format_details
-            elif name=='following':
-                return settings.KEPI['FOLLOWING_PATH'] % format_details
-            elif name=='inbox':
-                return settings.KEPI['INBOX_PATH'] % format_details
-            elif name=='outbox':
-                return settings.KEPI['OUTBOX_PATH'] % format_details
-
-        if name=='f_publicKey':
-            return self.f_publicKey_as_dict
-        else:
-            return super().__getitem__(name)
+        return super().__getitem__(name)

@@ -84,6 +84,7 @@ class IncomingMessage(models.Model):
     actor = models.CharField(max_length=255, default='')
     key_id = models.CharField(max_length=255, default='')
     is_local_user = models.BooleanField(default=False)
+    target_collection = models.CharField(max_length=255, default='')
 
     waiting_for = models.URLField(default=None, null=True)
 
@@ -121,7 +122,7 @@ class IncomingMessage(models.Model):
     def activity_form(self):
         return self.fields
 
-def validate(path, headers, body, is_local_user):
+def validate(path, headers, body, is_local_user, target_collection):
 
     if isinstance(body, bytes):
         body = str(body, encoding='UTF-8')
@@ -135,6 +136,7 @@ def validate(path, headers, body, is_local_user):
             signature = headers.get('Signature', ''),
             body = body,
             is_local_user = is_local_user,
+            target_collection = target_collection,
             )
     message.save()
 
@@ -191,10 +193,8 @@ def _run_validation(
     # XXX key used to sign must "_obviously_belong_to" the actor
 
     key = actor['publicKey']
-
-    if isinstance(key, dict):
-        # Remote keys are sent over the wire as a JSON object
-        key = key['publicKeyPem']
+    key = key['publicKeyPem']
+    logger.debug('Verifying with key: %s', key)
 
     hv = HeaderVerifier(
             headers = {
@@ -222,7 +222,20 @@ def _run_validation(
             is_local_user = message.is_local_user,
             **(message.activity_form),
             )
-    logger.debug('%s: produced new Thing %s', message, result)
+    logger.info('%s: produced new Thing %s', message, result)
+
+    if message.target_collection:
+        logger.info('%s: adding to collection %s',
+                message,
+                message.target_collection)
+
+        from django_kepi.models.collection import Collection
+
+        target = Collection.get(message.target_collection)
+        logger.debug('  -- found %s', target)
+
+        target.append(result)
+
     return result
 
 

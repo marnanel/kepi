@@ -261,7 +261,64 @@ class AllUsersView(KepiView):
 
 ########################################
 
-class InboxView(django.views.View):
+class UserCollectionView(KepiView):
+
+    _default_to_existing = False
+
+    def activity(self, request,
+            username,
+            listname,
+            *args, **kwargs):
+
+        from django_kepi.models.collection import Collection, CollectionMember
+
+        logger.debug('Finding user %s\'s %s collection',
+                username, listname)
+        try:
+            the_collection = Collection.objects.get(
+                    owner__f_preferredUsername = json.dumps(username),
+                    name = listname)
+
+            logger.debug('  -- found collection: %s',
+                the_collection)
+
+            return CollectionMember.objects.filter(
+                    parent = the_collection,
+                    )
+
+        except Collection.DoesNotExist:
+
+            if self._default_to_existing:
+                logger.debug('  -- does not exist; returning empty')
+
+                return CollectionMember.objects.none()
+            else:
+                logger.debug('  -- does not exist; 404')
+
+                raise Http404()
+
+    def _modify_list_item(self, obj):
+        return obj.member.url
+
+class InboxView(UserCollectionView):
+
+    _default_to_existing = True
+
+    # FIXME: Only externally visible to the owner
+    def activity(self, request, name=None, *args, **kwargs):
+
+        if name is None:
+            logger.info('Attempt to write to the shared inbox')
+            return HttpResponse(
+                    status = 403,
+                    reason = 'The shared inbox is write-only',
+                    )
+
+        return super().activity(
+                request,
+                username = name,
+                listname = 'inbox',
+                )
 
     def post(self, request, name=None, *args, **kwargs):
 
@@ -299,6 +356,10 @@ class InboxView(django.views.View):
                 # "id" field.
                 # FIXME it probably shouldn't always be False here.
                 is_local_user = False,
+                target_collection = Collection.build_name(
+                    username=name,
+                    collectionname='inbox',
+                    ),
                 )
 
         return HttpResponse(
@@ -308,7 +369,9 @@ class InboxView(django.views.View):
                 content_type = 'text/plain',
                 )
 
-class OutboxView(django.views.View):
+class OutboxView(UserCollectionView):
+
+    _default_to_existing = True
 
     def post(self, request, *args, **kwargs):
         logger.debug('Outbox: received %s',

@@ -5,6 +5,7 @@ from .audience import Audience, AUDIENCE_FIELD_NAMES
 from .following import Following
 from .mention import Mention
 from .item import Item
+from .collection import Collection, CollectionMember
 
 __all__ = [
         'Thing',
@@ -15,4 +16,6 @@ __all__ = [
         'Following',
         'Mention',
         'Item',
+        'Collection',
+        'CollectionMember',
         ]

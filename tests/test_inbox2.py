@@ -41,6 +41,8 @@ OBJECT_FORM = {
         "cc": "https://e14n.com/evan"
         }
 
+MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+
 logger = logging.getLogger(name='django_kepi')
 
 class TestInbox2(TestCase):
@@ -111,6 +113,43 @@ class TestInbox2(TestCase):
 
         return response
 
+    def _get(self,
+            client,
+            url):
+
+        response = client.get(url,
+                HTTP_ACCEPT = MIME_TYPE,
+                )
+
+        self.assertEqual(
+                response.status_code,
+                200)
+
+        return json.loads(
+                str(response.content, encoding='UTF-8'))
+
+    def _get_collection(self, url):
+        c = Client()
+
+        result = []
+        linkname = 'first'
+
+        while True:
+            page = self._get(c, url)
+            logger.debug('Received %s:', url)
+            logger.debug('  -- %s', page)
+
+            if 'orderedItems' in page:
+                result.extend(page['orderedItems'])
+
+            if linkname not in page:
+                logger.info('Inbox contains: %s',
+                        result)
+                return result
+
+            url = page[linkname]
+            linkname = 'next'
+
     def test_create(self):
 
         self._send(
@@ -128,5 +167,8 @@ class TestInbox2(TestCase):
                 len(items),
                 1)
 
-        # FIXME also check whether it appears in Alice's inbox
-        # as seen by Alice
+        result = self._get_collection(INBOX)
+
+        self.assertEqual(
+                len(result),
+                1)
