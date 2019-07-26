@@ -298,7 +298,7 @@ class UserCollectionView(KepiView):
                 raise Http404()
 
     def _modify_list_item(self, obj):
-        return obj.member.url
+        return obj.member.activity_form
 
 class InboxView(UserCollectionView):
 
