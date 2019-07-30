@@ -394,7 +394,7 @@ class OutboxView(UserCollectionView):
         if actor is None:
             actor = fields.get('attributedTo', None)
 
-        owner = settings.KEPI['USER_URL_FORMAT'] % (kwargs['name'],)
+        owner = settings.KEPI['USER_URL_FORMAT'] % (kwargs['username'],)
 
         if actor != owner:
             logger.info('Outbox: actor was %s but we needed %s',
