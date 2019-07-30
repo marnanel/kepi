@@ -35,7 +35,7 @@ OBJECT_FORM = {
         'attributedTo': BOB_ID,
         "name": "Chris liked 'Minimal ActivityPub update client'",
         "object": "https://rhiaro.co.uk/2016/05/minimal-activitypub",
-        "to": ["https://rhiaro.co.uk/#amy",
+        "to": [ALICE_ID,
             "https://dustycloud.org/followers",
             "https://rhiaro.co.uk/followers/"],
         "cc": "https://e14n.com/evan"
@@ -156,6 +156,8 @@ class TestInbox2(TestCase):
                 content = {
                     'type': 'Create',
                     'object': OBJECT_FORM,
+                    'to': OBJECT_FORM['to'],
+                    'cc': OBJECT_FORM['cc'],
                     },
                 )
 
