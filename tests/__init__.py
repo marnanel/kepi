@@ -69,6 +69,13 @@ def create_local_person(name='jemima',
 
     spec.update(kwargs)
 
+    if 'publicKey' in spec:
+        spec['publicKey'] = {
+            'id': spec['id']+'#main-key',
+            'owner': spec['id'],
+            'publicKeyPem': spec['publicKey'],
+        }
+
     result = create(**spec)
 
     return result
