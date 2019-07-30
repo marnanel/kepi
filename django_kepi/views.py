@@ -24,7 +24,23 @@ class KepiView(django.views.View):
     def __init__(self):
         super().__init__()
 
-        self.http_method_names.append('activity')
+        self.http_method_names.extend([
+                'activity',
+                'activity_store',
+                ])
+
+    def activity_store(self, request, *args, **kwargs):
+        """
+        An internal request to store request.activity
+        in whatever we happen to represent. No return
+        value is expected: instead, throw an exception if
+        there's a problem.
+        """
+        raise NotImplementedError(
+            "I don't know how to store %s in %s." % (
+                request.activity,
+                request.path,
+                ))
 
     def activity(self, request, *args, **kwargs):
         """
@@ -66,6 +82,11 @@ class KepiView(django.views.View):
 
         if result is None:
             raise Http404()
+
+        if isinstance(result, HttpResponse):
+            logger.info('self.activity() returned HttpResponse %s',
+                    result)
+            return result
 
         logger.debug('About to render object: %s',
                 result)
@@ -182,21 +203,11 @@ class ThingView(KepiView):
     def activity(self, request, *args, **kwargs):
 
         try:
-            if 'id' in kwargs:
-                logger.debug('Looking up Thing by id==%s',
-                        kwargs['id'])
-                activity_object = Thing.objects.get(
-                        number=kwargs['id'],
-                        )
-
-            elif 'name' in kwargs:
-                logger.debug('Looking up Actor by name==%s',
-                        kwargs['name'])
-                activity_object = Actor.objects.get(
-                        f_preferredUsername=json.dumps(kwargs['name']),
-                        )
-            else:
-                raise ValueError("Need an id or a name")
+            logger.debug('Looking up Thing by id==%s',
+                    kwargs['id'])
+            activity_object = Thing.objects.get(
+                    number=kwargs['id'],
+                    )
 
         except Thing.DoesNotExist:
             logger.info('  -- unknown: %s', kwargs)
@@ -209,6 +220,48 @@ class ThingView(KepiView):
         logger.debug('  -- found object: %s', result)
 
         return result
+
+class ActorView(ThingView):
+
+    def activity(self, request, *args, **kwargs):
+        logger.debug('Looking up Actor by username==%s',
+                kwargs['username'])
+
+        try:
+            activity_object = Actor.objects.get(
+                    f_preferredUsername=json.dumps(kwargs['username']),
+                    )
+
+        except Actor.DoesNotExist:
+            logger.info('  -- unknown user: %s', kwargs)
+            return None
+        except django.core.exceptions.ValidationError:
+            logger.info('  -- invalid: %s', kwargs)
+            return None
+
+        result = activity_object
+        logger.debug('  -- found object: %s', result)
+
+        return result
+
+    def activity_store(self, request, *args, **kwargs):
+
+        from django_kepi.models.collection import Collection
+
+        inbox_name = Collection.build_name(
+                username = kwargs['username'],
+                collectionname = 'inbox',
+                )
+
+        inbox = Collection.get(
+                name = inbox_name,
+                create_if_missing = True,
+                )
+
+        logger.debug('%s: storing %s',
+                inbox_name, request.activity)
+
+        inbox.append(request.activity)
 
 class FollowingView(KepiView):
 
@@ -305,10 +358,10 @@ class InboxView(UserCollectionView):
     _default_to_existing = True
 
     # FIXME: Only externally visible to the owner
-    def activity(self, request, name=None, *args, **kwargs):
+    def activity(self, request, username=None, *args, **kwargs):
 
-        if name is None:
-            logger.info('Attempt to write to the shared inbox')
+        if username is None:
+            logger.info('Attempt to read from the shared inbox')
             return HttpResponse(
                     status = 403,
                     reason = 'The shared inbox is write-only',
@@ -316,7 +369,7 @@ class InboxView(UserCollectionView):
 
         return super().activity(
                 request,
-                username = name,
+                username = username,
                 listname = 'inbox',
                 )
 
@@ -356,10 +409,6 @@ class InboxView(UserCollectionView):
                 # "id" field.
                 # FIXME it probably shouldn't always be False here.
                 is_local_user = False,
-                target_collection = Collection.build_name(
-                    username=name,
-                    collectionname='inbox',
-                    ),
                 )
 
         return HttpResponse(
