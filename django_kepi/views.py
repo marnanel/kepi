@@ -25,7 +25,7 @@ class KepiView(django.views.View):
         super().__init__()
 
         self.http_method_names.extend([
-                'activity',
+                'activity_get',
                 'activity_store',
                 ])
 
@@ -42,7 +42,7 @@ class KepiView(django.views.View):
                 request.path,
                 ))
 
-    def activity(self, request, *args, **kwargs):
+    def activity_get(self, request, *args, **kwargs):
         """
         Returns this view in a form suitable for ActivityPub.
 
@@ -67,7 +67,7 @@ class KepiView(django.views.View):
          Override this method in your subclass. In KepiView
          it's abstract.
         """
-        raise NotImplementedError("implement activity() in a subclass: %s" % (
+        raise NotImplementedError("implement activity_get() in a subclass: %s" % (
             self.__class__,
             ))
 
@@ -75,16 +75,16 @@ class KepiView(django.views.View):
         """
         Returns a rendered HttpResult for a GET request.
 
-        By default, KepiViews call self.activity() to get
+        By default, KepiViews call self.activity_get() to get
         the data to render.
         """
-        result = self.activity(request, *args, **kwargs)
+        result = self.activity_get(request, *args, **kwargs)
 
         if result is None:
             raise Http404()
 
         if isinstance(result, HttpResponse):
-            logger.info('self.activity() returned HttpResponse %s',
+            logger.info('self.activity_get() returned HttpResponse %s',
                     result)
             return result
 
@@ -200,7 +200,7 @@ class KepiView(django.views.View):
 
 class ThingView(KepiView):
 
-    def activity(self, request, *args, **kwargs):
+    def activity_get(self, request, *args, **kwargs):
 
         try:
             logger.debug('Looking up Thing by id==%s',
@@ -223,7 +223,7 @@ class ThingView(KepiView):
 
 class ActorView(ThingView):
 
-    def activity(self, request, *args, **kwargs):
+    def activity_get(self, request, *args, **kwargs):
         logger.debug('Looking up Actor by username==%s',
                 kwargs['username'])
 
@@ -265,7 +265,7 @@ class ActorView(ThingView):
 
 class FollowingView(KepiView):
 
-    def activity(self, request, *args, **kwargs):
+    def activity_get(self, request, *args, **kwargs):
 
         logger.debug('Finding following of %s:', kwargs['name'])
 
@@ -284,7 +284,7 @@ class FollowingView(KepiView):
 
 class FollowersView(KepiView):
 
-    def activity(self, request, *args, **kwargs):
+    def activity_get(self, request, *args, **kwargs):
 
         logger.debug('Finding followers of %s:', kwargs['name'])
 
@@ -303,7 +303,7 @@ class FollowersView(KepiView):
 
 class AllUsersView(KepiView):
 
-    def activity(self, request, *args, **kwargs):
+    def activity_get(self, request, *args, **kwargs):
 
         logger.debug('Finding all users.')
 
@@ -318,7 +318,7 @@ class UserCollectionView(KepiView):
 
     _default_to_existing = False
 
-    def activity(self, request,
+    def activity_get(self, request,
             username,
             listname,
             *args, **kwargs):
@@ -358,7 +358,7 @@ class InboxView(UserCollectionView):
     _default_to_existing = True
 
     # FIXME: Only externally visible to the owner
-    def activity(self, request, username=None, *args, **kwargs):
+    def activity_get(self, request, username=None, *args, **kwargs):
 
         if username is None:
             logger.info('Attempt to read from the shared inbox')
@@ -367,7 +367,7 @@ class InboxView(UserCollectionView):
                     reason = 'The shared inbox is write-only',
                     )
 
-        return super().activity(
+        return super().activity_get(
                 request,
                 username = username,
                 listname = 'inbox',

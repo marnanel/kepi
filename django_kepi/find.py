@@ -27,7 +27,7 @@ class ThingRequest(HttpRequest):
     def __init__(self):
         super().__init__()
 
-        self.method = 'ACTIVITY'
+        self.method = 'ACTIVITY_GET'
 
 class TombstoneException(Exception):
     def __init__(self, tombstone, *args, **kwargs):
