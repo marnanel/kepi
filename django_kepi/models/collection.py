@@ -45,6 +45,9 @@ class Collection(models.Model):
                 self.name,
                 )
 
+    # FIXME it ought to be possible to specify username and collectionname
+    # instead of just name here
+
     @classmethod
     def get(cls, name,
             create_if_missing=True):
@@ -102,6 +105,12 @@ class Collection(models.Model):
     @classmethod
     def build_name(cls,
             username, collectionname):
+
+        if username is None:
+            raise ValueError('Username not supplied')
+
+        if collectionname is None:
+            raise ValueError('Collectionname not supplied')
 
         if '/' in username:
             raise ValueError('Username cannot contain slashes')
