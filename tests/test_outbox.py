@@ -23,6 +23,7 @@ OUTBOX = ALICE_ID+'/outbox'
 OUTBOX_PATH = '/users/alice/outbox'
 
 BOB_ID = 'https://altair.example.com/users/bob'
+MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 
 # as given in https://www.w3.org/TR/activitypub/
 OBJECT_FORM = {
@@ -93,6 +94,49 @@ class TestOutbox(TestCase):
 
         return response
 
+    # XXX duplicated code!
+    def _get(self,
+            client,
+            url):
+
+        response = client.get(url,
+                HTTP_ACCEPT = MIME_TYPE,
+                )
+
+        self.assertEqual(
+                response.status_code,
+                200)
+
+        return json.loads(
+                str(response.content, encoding='UTF-8'))
+
+    def _get_collection(self, url):
+        c = Client()
+
+        result = []
+        linkname = 'first'
+
+        while True:
+            page = self._get(c, url)
+            logger.debug('Received %s:', url)
+            logger.debug('  -- %s', page)
+
+            if 'orderedItems' in page:
+                result.extend(page['orderedItems'])
+
+            if linkname not in page:
+                # XXX testing
+                json.dump(page, open('tests/examples/current-outbox.json', 'w'),
+                        indent=4)
+                # XXX end testing
+
+                logger.info('Inbox contains: %s',
+                        result)
+                return result
+
+            url = page[linkname]
+            linkname = 'next'
+
     def test_no_signature(self):
 
         self._send(
@@ -117,6 +161,8 @@ class TestOutbox(TestCase):
         statuses = Item.objects.filter(
                 f_attributedTo=json.dumps(ALICE_ID),
                 )
+
+        something = self._get_collection(OUTBOX)
 
         self.assertEqual(
                 len(statuses),
