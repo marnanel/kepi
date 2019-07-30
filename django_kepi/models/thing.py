@@ -263,6 +263,9 @@ class Thing(PolymorphicModel):
                     status=self,
                     tags=value,
                     )
+    @property
+    def audiences(self):
+        return Audience.get_audiences_for(self)
 
     def run_side_effects(self):
 
