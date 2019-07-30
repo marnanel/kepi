@@ -84,7 +84,6 @@ class IncomingMessage(models.Model):
     actor = models.CharField(max_length=255, default='')
     key_id = models.CharField(max_length=255, default='')
     is_local_user = models.BooleanField(default=False)
-    target_collection = models.CharField(max_length=255, default='')
 
     waiting_for = models.URLField(default=None, null=True)
 
@@ -122,8 +121,7 @@ class IncomingMessage(models.Model):
     def activity_form(self):
         return self.fields
 
-def validate(path, headers, body, is_local_user,
-        target_collection=''):
+def validate(path, headers, body, is_local_user):
 
     if isinstance(body, bytes):
         body = str(body, encoding='UTF-8')
@@ -137,7 +135,6 @@ def validate(path, headers, body, is_local_user,
             signature = headers.get('Signature', ''),
             body = body,
             is_local_user = is_local_user,
-            target_collection = target_collection,
             )
     message.save()
 
@@ -151,6 +148,9 @@ def validate(path, headers, body, is_local_user,
 def _run_validation(
         message_id,
         ):
+
+    from django_kepi.delivery import deliver
+
     logger.info('%s: begin validation',
             message_id)
 
@@ -225,17 +225,8 @@ def _run_validation(
             )
     logger.info('%s: produced new Thing %s', message, result)
 
-    if message.target_collection:
-        logger.info('%s: adding to collection %s',
-                message,
-                message.target_collection)
-
-        from django_kepi.models.collection import Collection
-
-        target = Collection.get(message.target_collection)
-        logger.debug('  -- found %s', target)
-
-        target.append(result)
+    deliver(result.number,
+            incoming = True)
 
     return result
 

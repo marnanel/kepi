@@ -33,8 +33,20 @@ def _rfc822_datetime(when=None):
     return datetime.datetime.utcnow().strftime("%a, %d %b %Y %T GMT")
 
 def _find_local_actor(activity_form):
-    path = urlparse(activity_form['actor']).path
-    return find_local(path)
+
+    parts = None
+    for fieldname in ['actor', 'attributedTo']:
+        if fieldname in activity_form:
+            parts = urlparse(activity_form[fieldname])
+            break
+
+    if parts is None:
+        return None
+
+    if parts.hostname not in settings.ALLOWED_HOSTS:
+        return None
+
+    return find_local(parts.path)
 
 def _recipients_to_inboxes(recipients):
     """
@@ -167,14 +179,16 @@ def _signer_for_local_actor(local_actor):
 
 class LocalDeliveryRequest(HttpRequest):
 
-    def __init__(self, content, *args, **kwargs):
+    def __init__(self, content, activity, path, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.method = 'POST'
+        self.method = 'ACTIVITY_STORE'
         self.headers = {
             'Content-Type': 'application/activity+json',
             }
         self._content = bytes(content, encoding='UTF-8')
+        self.activity = activity
+        self.path = path
 
     @property
     def body(self):
@@ -185,7 +199,6 @@ def _deliver_local(
         inbox,
         parsed_target_url,
         message,
-        signer,
         ):
     logger.debug('%s: %s is local',
             activity, inbox)
@@ -196,20 +209,23 @@ def _deliver_local(
         logger.debug('%s: -- not found', parsed_target_url.path)
         return
 
-    # inboxName is the username, or None for the shared inbox
-    inboxName = resolved.kwargs.get('name', None)
-
     request = LocalDeliveryRequest(
             content = message,
+            activity = activity,
+            path = parsed_target_url.path,
             )
 
     result = resolved.func(request,
-            name = inboxName,
+            **resolved.kwargs,
             local = True,
-            **resolved.kwargs)
+            )
 
-    logger.debug('%s: resulting in %s %s', parsed_target_url.path,
-            result.status_code, result.reason_phrase)
+    if result:
+        logger.debug('%s: resulting in %s %s', parsed_target_url.path,
+                result.status_code, result.reason_phrase)
+    else:
+        logger.debug('%s: done', parsed_target_url.path)
+
 
 def _deliver_remote(
         activity,
@@ -249,6 +265,7 @@ def _deliver_remote(
 @shared_task()
 def deliver(
         activity_id,
+        incoming = False,
         ):
     try:
         activity = django_kepi.models.Thing.objects.get(number=activity_id)
@@ -257,8 +274,8 @@ def deliver(
                 activity_id)
         return None
 
-    logger.info('%s: begin delivery',
-            activity)
+    logger.info('%s: begin delivery; incoming==%s',
+            activity, incoming)
 
     activity_form = activity.activity_form
     logger.debug('%s: full form is %s',
@@ -274,8 +291,9 @@ def deliver(
             recipients.update(activity_form[field])
 
     # Actors don't get told about their own activities
-    if activity_form['actor'] in recipients:
-        recipients.remove(activity_form['actor'])
+    if not incoming:
+        if activity_form['actor'] in recipients:
+            recipients.remove(activity_form['actor'])
 
     if not recipients:
         logger.debug('%s: there are no recipients; giving up',
@@ -285,24 +303,34 @@ def deliver(
     logger.debug('%s: recipients are %s',
             activity, recipients)
 
-    inboxes = _recipients_to_inboxes(recipients)
+    if incoming:
 
-    if not inboxes:
-        logger.debug('%s: there are no inboxes to send to; giving up',
-                activity)
-        return
+        inboxes = recipients
+        message = ''
+        signer = None
 
-    logger.debug('%s: inboxes are %s',
-            activity, inboxes)
+    else:
 
-    message = _activity_form_to_outgoing_string(
-            activity_form = activity_form,
-            local_actor = local_actor,
-            )
+        # Dereference collections.
 
-    signer = _signer_for_local_actor(
-            local_actor = local_actor,
-            )
+        inboxes = _recipients_to_inboxes(recipients)
+
+        if not inboxes:
+            logger.debug('%s: there are no inboxes to send to; giving up',
+                    activity)
+            return
+
+        logger.debug('%s: inboxes are %s',
+                activity, inboxes)
+
+        message = _activity_form_to_outgoing_string(
+                activity_form = activity_form,
+                local_actor = local_actor,
+                )
+
+        signer = _signer_for_local_actor(
+                local_actor = local_actor,
+                )
 
     for inbox in inboxes:
         logger.debug('%s: %s: begin delivery',
@@ -319,9 +347,13 @@ def deliver(
                     inbox,
                     parsed_target_url,
                     message,
-                    signer,
                     )
         else:
+
+            if incoming:
+                logger.debug('  -- target is remote; ignoring')
+                continue
+
             _deliver_remote(
                     activity,
                     inbox,
