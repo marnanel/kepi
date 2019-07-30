@@ -122,7 +122,8 @@ class IncomingMessage(models.Model):
     def activity_form(self):
         return self.fields
 
-def validate(path, headers, body, is_local_user, target_collection):
+def validate(path, headers, body, is_local_user,
+        target_collection=''):
 
     if isinstance(body, bytes):
         body = str(body, encoding='UTF-8')
