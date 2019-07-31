@@ -76,7 +76,10 @@ def create_local_person(name='jemima',
             'publicKeyPem': spec['publicKey'],
         }
 
-    result = create(**spec)
+    result = create(
+            value = spec,
+            run_delivery = False,
+            )
 
     return result
 
