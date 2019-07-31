@@ -6,14 +6,21 @@ logger = logging.getLogger(name='django_kepi')
 def create(
         is_local_user=True,
         run_side_effects=True,
-        **value):
+        run_delivery=True,
+        value=None,
+        **kwargs):
+
+    from django_kepi.delivery import deliver
 
     logger.info("Create begins: source is %s; local? %s; run side effects? %s",
         value, is_local_user, run_side_effects)
 
+    if value is None:
+        value = kwargs.copy()
+
     # Remove the "f_" prefix, which exists so that we can write
     # things like f_type or f_object without using reserved keywords.
-    for k,v in value.copy().items():
+    for k,v in kwargs.copy().items():
         if k.startswith('f_'):
             value[k[2:]] = v
             del value[k]
@@ -86,6 +93,10 @@ def create(
 
     if run_side_effects:
         result.run_side_effects()
+
+    if run_delivery:
+        deliver(result.number,
+                incoming = True)
 
     return result
 
