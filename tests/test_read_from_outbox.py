@@ -1,5 +1,6 @@
-from django.test import TestCase
-from django.test import Client
+from django.conf import settings
+from django.test import TestCase, Client
+from django_kepi.create import create
 from . import create_local_person
 import httpretty
 import logging
@@ -12,6 +13,51 @@ OUTBOX_PATH = '/users/alice/outbox'
 MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 
 logger = logging.getLogger(name='kepi.tests')
+
+VICTORIA_WOOD = {
+            "type": "Create",
+            "actor": "https://altair.example.com/users/alice",
+            "published": "2019-07-27T13:08:46Z",
+            "to": [
+                "https://www.w3.org/ns/activitystreams#Public"
+            ],
+            "cc": [
+                "https://altair.example.com/users/alice/followers"
+            ],
+            "object": {
+                "id": "https://altair.example.com/users/alice/statuses/102513569060504404",
+                "type": "Note",
+                "summary": None,
+                "inReplyTo": "https://altair.example.com/users/alice/statuses/102513505242530375",
+                "published": "2019-07-27T13:08:46Z",
+                "url": "https://altair.example.com/@marnanel/102513569060504404",
+                "attributedTo": "https://altair.example.com/users/alice",
+                "to": [
+                    "https://www.w3.org/ns/activitystreams#Public"
+                ],
+                "cc": [
+                    "https://altair.example.com/users/alice/followers"
+                ],
+                "sensitive": False,
+                "conversation": "tag:altair.example.com,2019-07-27:objectId=17498957:objectType=Conversation",
+                "content": "<p>Victoria Wood parodying Peter Skellern. I laughed so much at this, though you might have to know both singers&apos; work in order to find it quite as funny.</p><p>- love song<br />- self-doubt<br />- refs to northern England<br />- preamble<br />- piano solo<br />- brass band<br />- choir backing<br />- love is cosy<br />- heavy rhotic vowels</p><p><a href=\"https://youtu.be/782hqdmnq7g\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">youtu.be/782hqdmnq7g</span><span class=\"invisible\"></span></a></p>",
+                "contentMap": {
+                    "en": "<p>Victoria Wood parodying Peter Skellern. I laughed so much at this, though you might have to know both singers&apos; work in order to find it quite as funny.</p><p>- love song<br />- self-doubt<br />- refs to northern England<br />- preamble<br />- piano solo<br />- brass band<br />- choir backing<br />- love is cosy<br />- heavy rhotic vowels</p><p><a href=\"https://youtu.be/782hqdmnq7g\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">youtu.be/782hqdmnq7g</span><span class=\"invisible\"></span></a></p>",
+                },
+                "attachment": [],
+                "tag": [],
+                "replies": {
+                    "id": "https://altair.example.com/users/alice/statuses/102513569060504404/replies",
+                    "type": "Collection",
+                    "first": {
+                        "type": "CollectionPage",
+                        "partOf": "https://altair.example.com/users/alice/statuses/102513569060504404/replies",
+                        "items": []
+                    }
+                }
+            }
+}
+
 
 class TestOutbox(TestCase):
 
@@ -62,18 +108,46 @@ class TestOutbox(TestCase):
             url = page[linkname]
             linkname = 'next'
 
+    def _put_stuff_in_inbox(self,
+            what):
+
+        if not hasattr(self, '_example_user'):
+            keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+
+            alice = create_local_person(
+                    name='alice',
+                    publicKey=keys['public'],
+                    privateKey=keys['private'],
+                    )
+
+            setattr(self, '_example_user', alice)
+
+            settings.ALLOWED_HOSTS = [
+                    'altair.example.com',
+                    'testserver',
+                    ]
+
+        for thing in what:
+            create(**thing)
+
     def test_read_empty(self):
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-
-        create_local_person(
-                name='alice',
-                publicKey=keys['public'],
-                privateKey=keys['private'],
-                )
+        self._put_stuff_in_inbox([])
 
         contents = self._get_collection(OUTBOX)
 
         self.assertEqual(
                 len(contents),
                 0)
+
+    def test_read_create(self):
+
+        self._put_stuff_in_inbox([
+            VICTORIA_WOOD,
+            ])
+
+        contents = self._get_collection(OUTBOX)
+
+        self.assertEqual(
+                len(contents),
+                1)
