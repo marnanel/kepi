@@ -284,6 +284,10 @@ class FollowingView(KepiView):
 
 class FollowersView(KepiView):
 
+    def activity_store(self, request, *args, **kwargs):
+        # I *think* this is covered by ordinary local delivery
+        pass
+
     def activity_get(self, request, *args, **kwargs):
 
         logger.debug('Finding followers of %s:', kwargs['name'])
@@ -421,6 +425,27 @@ class InboxView(UserCollectionView):
 class OutboxView(UserCollectionView):
 
     _default_to_existing = True
+
+    def activity_store(self, request, *args, **kwargs):
+        # XXX this is too similar to the same method
+        # XXX in InboxView; move it into a superclass
+
+        from django_kepi.models.collection import Collection
+
+        inbox_name = Collection.build_name(
+                username = kwargs['username'],
+                collectionname = 'outbox',
+                )
+
+        inbox = Collection.get(
+                name = inbox_name,
+                create_if_missing = True,
+                )
+
+        logger.debug('%s: storing %s',
+                inbox_name, request.activity)
+
+        inbox.append(request.activity)
 
     def post(self, request, *args, **kwargs):
         logger.debug('Outbox: received %s',
