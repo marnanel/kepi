@@ -108,7 +108,7 @@ class TestOutbox(TestCase):
             url = page[linkname]
             linkname = 'next'
 
-    def _put_stuff_in_inbox(self,
+    def _put_stuff_in_outbox(self,
             what):
 
         if not hasattr(self, '_example_user'):
@@ -142,7 +142,7 @@ class TestOutbox(TestCase):
 
     def test_read_create(self):
 
-        self._put_stuff_in_inbox([
+        self._put_stuff_in_outbox([
             VICTORIA_WOOD,
             ])
 
