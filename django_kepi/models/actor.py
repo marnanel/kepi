@@ -1,7 +1,9 @@
 from django.db import models
+from django.conf import settings
 from . import thing
 import django_kepi.crypto
 import logging
+import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -63,15 +65,13 @@ class Actor(thing.Thing):
 
     def list_path(self, name):
         return settings.KEPI['COLLECTION_PATH'] % {
-                'username': self.owner.f_preferredUsername,
-                'listname': self.name,
+                'username': json.loads(self.f_preferredUsername),
+                'listname': name,
                 }
 
     @property
     def publicKey(self):
         result = self['publicKey']
-        logger.warn('---> %s', self.f_publicKey)
-
 
     def __getitem__(self, name):
         if self.is_local:
