@@ -24,10 +24,16 @@ class Fetch(models.Model):
 
 class ThingRequest(HttpRequest):
 
-    def __init__(self):
+    def __init__(self, path, object_to_store):
         super().__init__()
 
-        self.method = 'ACTIVITY_GET'
+        self.path = path
+
+        if object_to_store is None:
+            self.method = 'ACTIVITY_GET'
+        else:
+            self.method = 'ACTIVITY_STORE'
+            self.activity = object_to_store
 
 class TombstoneException(Exception):
     def __init__(self, tombstone, *args, **kwargs):
@@ -37,7 +43,8 @@ class TombstoneException(Exception):
     def __str__(self):
         return self.tombstone.__str__()
 
-def find_local(path):
+def find_local(path,
+        object_to_store=None):
 
     try:
         resolved = django.urls.resolve(path)
@@ -52,13 +59,13 @@ def find_local(path):
             str(resolved.kwargs),
             )
 
-    request = ThingRequest()
+    request = ThingRequest(
+            path=path,
+            object_to_store=object_to_store,
+            )
     result = resolved.func(request,
             **resolved.kwargs)
     logger.debug('%s: resulting in %s', path, str(result))
-
-    if result is not None and result['type'] == 'Tombstone':
-        raise TombstoneException(result)
 
     return result
 
@@ -193,6 +200,8 @@ def find(url,
         return find_local(parsed_url.path)
     else:
         if local_only:
+            logger.info('find: url==%s but is_local==False; ignoring',
+                    url)
             return None
 
         return find_remote(
