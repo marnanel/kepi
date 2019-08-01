@@ -23,6 +23,7 @@ REMOTE_DAVE_KEY = REMOTE_DAVE_ID + '#main-key'
 
 ALICE_ID = 'https://altair.example.com/users/alice'
 INBOX = ALICE_ID+'/inbox'
+INBOX_HOST = 'altair.example.com'
 INBOX_PATH = '/users/alice/inbox'
 
 BOB_ID = 'https://bobs-computer.example.net/users/bob'
@@ -55,7 +56,6 @@ class TestInbox2(TestCase):
             recipientKeys = None,
             sender = None,
             senderKeys = None,
-            signed = True,
             ):
 
         settings.ALLOWED_HOSTS = [
@@ -94,21 +94,11 @@ class TestInbox2(TestCase):
 
         f_body = dict([('f_'+f,v) for f,v in content.items()])
 
-        body, headers = test_message_body_and_headers(
-                secret = senderKeys['private'],
+        response = post_test_message(
                 path = INBOX_PATH,
-                key_id = BOB_ID+'#main-key',
-                signed = signed,
+                host = INBOX_HOST,
+                secret = senderKeys['private'],
                 **f_body,
-                )
-
-        headers=dict([('HTTP_'+f,v) for f,v in headers.items()])
-
-        c = Client()
-        response = c.post(INBOX,
-                body,
-                **headers,
-                content_type='application/activity+json',
                 )
 
         return response

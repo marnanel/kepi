@@ -230,6 +230,9 @@ def test_message_body_and_headers(secret='',
     if headers['Authorization'].startswith(SIGNATURE):
         headers['Signature'] = headers['Authorization'][len(SIGNATURE)+1:]
 
+    if 'id' not in body:
+        body['id'] = ACTIVITY_ID
+
     return body, headers
 
 def test_message(secret='', **fields):
@@ -254,24 +257,21 @@ def test_message(secret='', **fields):
 
 def post_test_message(
         secret,
-        f_type, f_actor, f_object,
         path=INBOX_PATH,
         host=INBOX_HOST,
         f_id=ACTIVITY_ID,
         client = None,
+        **fields,
         ):
 
     if client is None:
         client = django.test.Client()
 
     body, headers = test_message_body_and_headers(
-            f_id=f_id,
-            f_type=f_type,
-            f_actor=f_actor,
-            f_object=f_object,
             secret = secret,
             path = path,
             host = host,
+            **fields,
             )
 
     logger.debug("Test message is %s",
@@ -279,16 +279,16 @@ def post_test_message(
     logger.debug("  -- with headers %s",
             headers)
 
-    client.post(
+    response = client.post(
             path = path,
             content_type = headers['content-type'],
             data = json.dumps(body),
             HTTP_DATE = headers['date'],
-            HOST = headers['host'],
+            HTTP_HOST = headers['host'],
             HTTP_SIGNATURE = headers['signature'],
             )
 
-    return client
+    return response
 
 def remote_user(url, name,
         publicKey='',
