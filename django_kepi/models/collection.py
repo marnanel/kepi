@@ -66,8 +66,18 @@ class Collection(models.Model):
                 username, collectionname)
 
         try:
+            owner = Actor.objects.get(
+                    f_preferredUsername = json.dumps(username),
+                    )
+        except Actor.DoesNotExist:
+            logger.info("  -- can't get %s because %s doesn't exist",
+                    name, username,
+                    )
+            raise KeyError(name)
+
+        try:
             result = cls.objects.get(
-                    owner = username,
+                    owner = owner,
                     name = collectionname,
                     )
             logger.debug('  -- found %s', result)
@@ -77,16 +87,6 @@ class Collection(models.Model):
         except cls.DoesNotExist:
 
             if create_if_missing:
-
-                try:
-                    owner = Actor.objects.get(
-                            f_preferredUsername = json.dumps(username),
-                            )
-                except Actor.DoesNotExist:
-                    logger.info("  -- can't get %s because %s doesn't exist",
-                            name, username,
-                            )
-                    raise KeyError(name)
 
                 newCollection = cls(
                         owner = owner,
