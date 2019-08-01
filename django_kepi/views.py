@@ -88,25 +88,9 @@ class KepiView(django.views.View):
                     result)
             return result
 
-        logger.debug('About to render object: %s',
-                result)
+        return self._render_object(request, result)
 
-        while True:
-            if isinstance(result, dict):
-                return self._render(result)
-
-            if isinstance(result, Iterable):
-                return self._collection_get(request, result)
-
-            try:
-                result = result.activity_form
-                logger.debug(' -- it has an activity_form, %s; recurring',
-                        result)
-            except AttributeError:
-                logger.warn("I don't know how to render objects like %s.", result)
-                raise ValueError("I don't know how to render objects like %s." % (result,))
-
-    def _render(self, data):
+    def _to_json(self, data):
         result = JsonResponse(
                 data=data,
                 json_dumps_params={
@@ -123,16 +107,42 @@ class KepiView(django.views.View):
 
         return result
 
-    def _collection_get(self, request, items):
+    def _render_object(self, request, something):
+        logger.debug('About to render object: %s',
+                something)
+
+        while True:
+            try:
+                something = something.activity_form
+                logger.debug(' -- it has an activity_form, %s; iterating',
+                        something)
+                continue
+            except AttributeError:
+                break
+
+        if isinstance(something, dict):
+            logger.debug("  -- it's a dict; our work here is done") 
+            return self._to_json(something)
+
+        elif isinstance(something, Iterable):
+            logger.debug("  -- it's an iterable; treating as a collection ") 
+            return self._render_collection(request, something)
+
+        logger.warn("I don't know how to render objects like %s.", something)
+        raise ValueError("I don't know how to render objects like %s." % (something,))
+
+    def _render_collection(self, request, items):
 
         # XXX assert that items.ordered
 
         our_url = request.build_absolute_uri()
-        index_url = self._make_query_page(request, None)
+        index_url = self._make_query_page_url(request, None)
         
         if PAGE_FIELD in request.GET:
 
             page_number = int(request.GET[PAGE_FIELD])
+            logger.debug("    -- it's a request for page %d",
+                    page_number)
 
             start = (page_number-1) * PAGE_LENGTH
 
@@ -149,14 +159,17 @@ class KepiView(django.views.View):
                     }
 
             if page_number > 1:
-               result["prev"] = self._make_query_page(request, page_number-1)
+               result["prev"] = self._make_query_page_url(request,
+                       page_number-1)
 
             if start+PAGE_LENGTH < items.count():
-               result["next"] = self._make_query_page(request, page_number+1)
+               result["next"] = self._make_query_page_url(request,
+                       page_number+1)
 
         else:
 
             # Index page.
+            logger.debug("    -- it's a request for the index")
 
             result = {
                     "@context": ATSIGN_CONTEXT,
@@ -168,9 +181,9 @@ class KepiView(django.views.View):
             if items.exists():
                     result["first"] = "{}?page=1".format(our_url,)
 
-        return self._render(result)
+        return self._to_json(result)
 
-    def _make_query_page(
+    def _make_query_page_url(
             self,
             request,
             page_number,
@@ -196,7 +209,8 @@ class KepiView(django.views.View):
                 )
 
     def _modify_list_item(self, obj):
-        return str(obj)
+        logger.debug('  -- default _modify_list_item for %s', obj)
+        return self._render_object(obj)
 
 class ThingView(KepiView):
 
