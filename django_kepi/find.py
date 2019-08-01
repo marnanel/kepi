@@ -65,7 +65,9 @@ def find_local(path,
             )
     result = resolved.func(request,
             **resolved.kwargs)
-    logger.debug('%s: resulting in %s', path, str(result))
+
+    if result:
+        logger.debug('%s: resulting in %s', path, str(result))
 
     return result
 
