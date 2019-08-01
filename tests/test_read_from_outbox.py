@@ -12,7 +12,7 @@ OUTBOX_PATH = '/users/alice/outbox'
 
 MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 
-logger = logging.getLogger(name='kepi.tests')
+logger = logging.getLogger(name='django_kepi')
 
 VICTORIA_WOOD = {
             "type": "Create",
@@ -58,7 +58,6 @@ VICTORIA_WOOD = {
             }
 }
 
-
 class TestOutbox(TestCase):
 
     # XXX Add a boolean flag about whether to authenticate self
@@ -81,6 +80,8 @@ class TestOutbox(TestCase):
     def _get_collection(self, url,
             client=None):
 
+        logger.debug('------------------')
+        logger.debug('Get collection: %s', url)
         if not client:
             client = Client()
 
@@ -88,9 +89,9 @@ class TestOutbox(TestCase):
         linkname = 'first'
 
         while True:
+            logger.debug('  -- get page: %s', url)
             page = self._get(url, client)
-            logger.debug('Received %s:', url)
-            logger.debug('  -- %s', page)
+            logger.debug('    -- received %s', url)
 
             if 'orderedItems' in page:
                 result.extend(page['orderedItems'])
@@ -101,7 +102,7 @@ class TestOutbox(TestCase):
                         indent=4)
                 # XXX end testing
 
-                logger.info('Inbox contains: %s',
+                logger.info('  -- done; collection contains: %s',
                         result)
                 return result
 
