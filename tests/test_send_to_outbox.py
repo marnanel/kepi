@@ -94,7 +94,6 @@ class TestOutbox(TestCase):
 
         return response
 
-    # XXX duplicated code!
     def _get(self,
             client,
             url):
