@@ -58,6 +58,22 @@ VICTORIA_WOOD = {
             }
 }
 
+BOOST = {
+        "id": "https://altair.example.com/users/alice/statuses/102513175027636695/activity",
+        "type": "Announce",
+        "actor": "https://altair.example.com/users/alice",
+        "published": "2019-07-27T11:28:33Z",
+        "to": [
+            "https://www.w3.org/ns/activitystreams#Public"
+            ],
+        "cc": [
+            "https://weirder.earth.example.net/users/natrix",
+            "https://altair.example.com/users/alice/followers"
+            ],
+        "object": "https://weirder.earth.example.net/users/natrix/statuses/102504233649665656",
+        "atomUri": "https://altair.example.com/users/alice/statuses/102513175027636695/activity"
+        }
+
 class TestOutbox(TestCase):
 
     # XXX Add a boolean flag about whether to authenticate self
@@ -133,7 +149,7 @@ class TestOutbox(TestCase):
 
     def test_read_empty(self):
 
-        self._put_stuff_in_inbox([])
+        self._put_stuff_in_outbox([])
 
         contents = self._get_collection(OUTBOX)
 
@@ -150,5 +166,17 @@ class TestOutbox(TestCase):
         contents = self._get_collection(OUTBOX)
 
         self.assertEqual(
-                len(contents),
-                1)
+                [x['type'] for x in contents],
+                ['Create'])
+
+    def test_read_announce(self):
+        # Announce, aka boost
+        self._put_stuff_in_outbox([
+            BOOST,
+            ])
+
+        contents = self._get_collection(OUTBOX)
+
+        self.assertEqual(
+                [x['type'] for x in contents],
+                ['Announce'])
