@@ -9,31 +9,7 @@ import logging
 
 logger = logging.getLogger(name='django_kepi')
 
-# XXX this is mastodon-specific; it will be generalised later
-ATSIGN_CONTEXT = [
-        "https://www.w3.org/ns/activitystreams", 
-        "https://w3id.org/security/v1", 
-        {
-            "schema": "http://schema.org#", 
-            "inReplyToAtomUri": "ostatus:inReplyToAtomUri", 
-            "movedTo": "as:movedTo", 
-            "conversation": "ostatus:conversation", 
-            "ostatus": "http://ostatus.org#", 
-            "atomUri": "ostatus:atomUri", 
-            "featured": "toot:featured", 
-            "value": "schema:value", 
-            "PropertyValue": "schema:PropertyValue", 
-            "sensitive": "as:sensitive", 
-            "toot": "http://joinmastodon.org/ns#", 
-            "Hashtag": "as:Hashtag", 
-            "manuallyApprovesFollowers": "as:manuallyApprovesFollowers", 
-            "focalPoint": {
-                "@id": "toot:focalPoint", 
-                "@container": "@list"
-                }, 
-            "Emoji": "toot:Emoji"
-            }
-        ]
+ATSIGN_CONTEXT = "https://www.w3.org/ns/activitystreams", 
 
 # Decorator
 def implements_activity_type(f_type):
