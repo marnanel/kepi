@@ -336,6 +336,10 @@ def deliver(
         logger.debug('%s: %s: begin delivery',
                 activity, inbox)
 
+        if inbox in PUBLIC_ID_LIST:
+            logger.debug("  -- mustn't deliver to Public")
+            continue
+
         parsed_target_url = urlparse(inbox,
                 allow_fragments = False,
                 )
