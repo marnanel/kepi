@@ -156,8 +156,10 @@ class Thing(PolymorphicModel):
 
             if value=='':
                 value = None
+            else:
+                value = json.loads(value)
 
-            result[name[2:]] = json.loads(value)
+            result[name[2:]] = value
 
         if self.other_fields:
             result.update(json.loads(self.other_fields))
