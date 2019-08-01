@@ -299,8 +299,8 @@ class FollowingView(KepiView):
 class FollowersView(KepiView):
 
     def activity_store(self, request, *args, **kwargs):
-        # I *think* this is covered by ordinary local delivery
-        pass
+        if isinstance(request.activity, Activity):
+            request.activity.go_into_outbox_if_local()
 
     def activity_get(self, request, *args, **kwargs):
 

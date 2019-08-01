@@ -131,8 +131,6 @@ def create(activity):
     activity['object'] = creation
     activity.save()
 
-    activity.go_into_outbox_if_local()
-
     return True
 
 def update(activity):
