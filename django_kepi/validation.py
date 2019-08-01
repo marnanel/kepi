@@ -195,7 +195,8 @@ def _run_validation(
 
     key = actor['publicKey']
     key = key['publicKeyPem']
-    logger.debug('Verifying with key: %s', key)
+    logger.debug('Verifying; key=%s, path=%s, host=%s',
+            key, message.path, message.host)
 
     hv = HeaderVerifier(
             headers = {
@@ -223,11 +224,14 @@ def _run_validation(
             is_local_user = message.is_local_user,
             **(message.activity_form),
             )
+
+    if result is None:
+        logger.info('%s: creation was refused; bailing', message)
+        return
+
     logger.info('%s: produced new Thing %s', message, result)
 
     deliver(result.number,
             incoming = True)
 
     return result
-
-
