@@ -80,6 +80,7 @@ class TestInbox2(TestCase):
             sender = create_remote_person(
                     url = BOB_ID,
                     name = 'bob',
+                    inbox = BOB_INBOX_URL,
                     publicKey = senderKeys['public'],
                     )
 
@@ -103,6 +104,7 @@ class TestInbox2(TestCase):
 
         return response
 
+    @httpretty.activate
     def test_create(self):
 
         self._send(
@@ -125,23 +127,6 @@ class TestInbox2(TestCase):
     @httpretty.activate
     def test_follow(self):
 
-        alice_keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        bob_keys = json.load(open('tests/keys/keys-0002.json', 'r'))
-
-        create_local_person(
-                name = 'alice',
-                publicKey = alice_keys['public'],
-                privateKey = alice_keys['private'],
-                )
-
-        create_remote_person(
-                url = BOB_ID,
-                name = 'bob',
-                publicKey=bob_keys['public'],
-                inbox=BOB_INBOX_URL,
-                sharedInbox=None,
-                )
-
         httpretty.register_uri(
                 httpretty.POST,
                 BOB_INBOX_URL,
@@ -155,10 +140,6 @@ class TestInbox2(TestCase):
                     'object': ALICE_ID,
                     'actor': BOB_ID,
                     },
-                recipient = ALICE_ID,
-                recipientKeys = alice_keys,
-                sender = BOB_ID,
-                senderKeys = bob_keys,
                 )
 
         self.assertDictContainsSubset(
