@@ -31,72 +31,78 @@ class Following(models.Model):
                 )
         return result
 
-def _get_follow(follower, following):
-    try:
-        return Following.objects.get(follower=follower, following=following)
-    except Following.DoesNotExist:
-        return None
+    @classmethod
+    def _get_follow(cls, follower, following):
+        try:
+            return Following.objects.get(follower=follower, following=following)
+        except Following.DoesNotExist:
+            return None
 
-def request(follower, following):
+    @classmethod
+    def make_request(cls, follower, following):
 
-    f = _get_follow(follower, following)
+        f = cls._get_follow(follower, following)
 
-    if f is not None:
+        if f is not None:
 
-        logger.warn('follow request failed; %s already exists',
-            f)
+            logger.warn('follow request failed; %s already exists',
+                f)
 
-        if f.pending:
-            raise ValueError('%s has already requested to follow %s',
-                    follower, following)
-        else:
-            raise ValueError('%s is already following %s',
-                    follower, following)
-
-    result = Following(
-            follower = follower,
-            following = following,
-            pending = True,
-            )
-    result.save()
-
-    logger.info('%s has requested to follow %s',
-            follower, following)
-
-def accept(follower, following):
-
-    result = _get_follow(follower, following)
-
-    if result is None:
-
-        logger.warn('accepting follow request that we didn\'t know about')
+            if f.pending:
+                raise ValueError('%s has already requested to follow %s',
+                        follower, following)
+            else:
+                raise ValueError('%s is already following %s',
+                        follower, following)
 
         result = Following(
                 follower = follower,
                 following = following,
-                pending = False,
+                pending = True,
                 )
-    else:
-        result.pending = False
+        result.save()
 
-    result.save()
+        logger.info('%s has requested to follow %s',
+                follower, following)
 
-    logger.info('%s has started to follow %s: %s',
-            follower, following, result)
+    @classmethod
+    def accept_request(cls, follower, following,
+            warn_on_unknown = True):
 
-    return result
+        result = cls._get_follow(follower, following)
 
-def reject(follower, following):
+        if result is None:
 
-    f = _get_follow(follower, following)
+            if warn_on_unknown:
+                logger.warn('accepting follow request that we didn\'t know about')
 
-    if f is None:
-        logger.warn('rejecting follow request; '+
-            'that\'s fine because we didn\'t know about it')
-    else:
-        f.delete()
+            result = cls(
+                    follower = follower,
+                    following = following,
+                    pending = False,
+                    )
+        else:
+            result.pending = False
 
-    logger.info('%s was rejected as a follower of %s',
-            follower, following)
+        result.save()
+
+        logger.info('%s has started to follow %s: %s',
+                follower, following, result)
+
+        return result
+
+    @classmethod
+    def reject_request(cls, follower, following):
+
+        f = cls._get_follow(follower, following)
+
+        if f is None:
+            logger.warn('rejecting follow request; '+
+                'that\'s fine because we didn\'t know about it')
+        else:
+            f.delete()
+
+        logger.info('%s was rejected as a follower of %s',
+                follower, following)
 
 

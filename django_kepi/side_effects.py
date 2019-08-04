@@ -26,20 +26,23 @@ def accept(activity):
 
 def follow(activity):
 
+    from django_kepi.models.following import Following
+    from django_kepi.create import create
+
     local_user = find(activity['object'], local_only=True)
     remote_user = find(activity['actor'])
 
     if local_user is not None and local_user.auto_follow:
         logger.info('Local user %s has auto_follow set; must Accept',
                 local_user)
-        django_kepi.models.following.accept(
+
+        Following.accept_request(
                 follower = activity['actor'],
                 following = activity['object'],
-                # XXX this causes a warning; add param to disable it
+                warn_on_unknown = False,
                 )
 
-        from django_kepi.create import kepi_create
-        accept_the_request = kepi_create(
+        accept_the_request = create(
                 f_to = remote_user.url,
                 f_type = 'Accept',
                 f_actor = activity['object'],
@@ -50,7 +53,10 @@ def follow(activity):
         deliver(accept_the_request.number)
 
     else:
-        django_kepi.models.Following.request(
+        logger.info('Local user %s does not have auto_follow set.',
+                local_user)
+
+        Following.make_request(
                 follower = activity['actor'],
                 following = activity['object'],
                 )
@@ -58,6 +64,9 @@ def follow(activity):
     return True
 
 def reject(activity):
+
+    from django_kepi.models.following import Following
+
     obj = activity['object__obj']
 
     if obj['type']!='Follow':
@@ -67,7 +76,7 @@ def reject(activity):
 
     logger.debug(' -- follow rejected')
 
-    django_kepi.models.following.reject(
+    Following.reject_request(
             follower = obj['actor'],
             following = activity['actor'],
             )
@@ -75,6 +84,7 @@ def reject(activity):
     return True
 
 def create(activity):
+
     from django_kepi.create import create as kepi_create
 
     raw_material = dict([('f_'+f, v)

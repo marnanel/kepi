@@ -6,6 +6,7 @@ from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
 from django_kepi.models.item import Item
 from django_kepi.models.thing import Thing
+from django_kepi.models.following import Following
 from django_kepi.models.activity import Activity
 from django.test import Client
 from urllib.parse import urlparse
@@ -27,6 +28,7 @@ INBOX_HOST = 'altair.example.com'
 INBOX_PATH = '/users/alice/inbox'
 
 BOB_ID = 'https://bobs-computer.example.net/users/bob'
+BOB_INBOX_URL = 'https://bobs-computer.example.net/users/bob/inbox'
 
 # as given in https://www.w3.org/TR/activitypub/
 OBJECT_FORM = {
@@ -48,10 +50,8 @@ logger = logging.getLogger(name='django_kepi')
 
 class TestInbox2(TestCase):
 
-    @httpretty.activate
     def _send(self,
             content,
-            keys = None,
             recipient = None,
             recipientKeys = None,
             sender = None,
@@ -121,3 +121,53 @@ class TestInbox2(TestCase):
         self.assertEqual(
                 len(items),
                 1)
+
+    @httpretty.activate
+    def test_follow(self):
+
+        alice_keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        bob_keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+
+        create_local_person(
+                name = 'alice',
+                publicKey = alice_keys['public'],
+                privateKey = alice_keys['private'],
+                )
+
+        create_remote_person(
+                url = BOB_ID,
+                name = 'bob',
+                publicKey=bob_keys['public'],
+                inbox=BOB_INBOX_URL,
+                sharedInbox=None,
+                )
+
+        httpretty.register_uri(
+                httpretty.POST,
+                BOB_INBOX_URL,
+                status=200,
+                body='Thank you!',
+                )
+
+        self._send(
+                content = {
+                    'type': 'Follow',
+                    'object': ALICE_ID,
+                    'actor': BOB_ID,
+                    },
+                recipient = ALICE_ID,
+                recipientKeys = alice_keys,
+                sender = BOB_ID,
+                senderKeys = bob_keys,
+                )
+
+        self.assertDictContainsSubset(
+                subset = {
+                    "actor": "https://altair.example.com/users/alice",
+                    "to": [
+                        "https://bobs-computer.example.net/users/bob"
+                        ],
+                    "type": "Accept"
+                    },
+                dictionary = json.loads(httpretty.last_request().body),
+        msg='Acceptance of follow request matched')
