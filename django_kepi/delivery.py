@@ -138,7 +138,7 @@ def _recipients_to_inboxes(recipients):
                         discovered['endpoints']['sharedInbox'])
                 inboxes.add(discovered['endpoints']['sharedInbox'])
 
-            elif 'inbox' in discovered:
+            elif 'inbox' in discovered and discovered['inbox'] is not None:
                 logger.debug('    -- has a sole inbox at %s',
                         discovered['inbox'])
                 inboxes.add(discovered['inbox'])
@@ -345,6 +345,10 @@ def deliver(
     for inbox in inboxes:
         logger.debug('%s: %s: begin delivery',
                 activity, inbox)
+
+        if inbox is None:
+            logger.warn('  -- attempt to deliver to None (but why?)')
+            continue
 
         if inbox in PUBLIC_ID_LIST:
             logger.debug("  -- mustn't deliver to Public")
