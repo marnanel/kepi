@@ -74,6 +74,8 @@ def find_local(path,
 def find_remote(url,
         do_not_fetch=False):
 
+    from django_kepi.models.thing import Thing
+
     logger.debug('%s: find remote', url)
 
     try:
@@ -95,8 +97,8 @@ def find_remote(url,
 
             return result
         except Thing.DoesNotExist:
-            logger.debug('%s: already fetched, and it wasn\'t there',
-                    url, result)
+            logger.debug('%s: we already know it wasn\'t there',
+                    url)
 
             return None
 
@@ -159,8 +161,9 @@ def find_remote(url,
         ])
 
     result = create(
-            is_local = False,
+            is_local_user = False,
             **content_with_f,
+            remote_url = url,
             )
 
     return result
