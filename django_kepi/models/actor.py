@@ -61,7 +61,7 @@ class Actor(thing.Thing):
         """
         The name of this key.
         """
-        return '%s#main-key' % (self.url,),
+        return '%s#main-key' % (self.url,)
 
     def list_path(self, name):
         return settings.KEPI['COLLECTION_PATH'] % {
