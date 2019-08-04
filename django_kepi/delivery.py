@@ -14,6 +14,7 @@ import json
 import datetime
 import pytz
 import httpsig
+from collections.abc import Iterable
 
 logger = logging.getLogger(name='django_kepi.delivery')
 
@@ -130,7 +131,9 @@ def _recipients_to_inboxes(recipients):
 
         elif discovered['type'] in ['Actor', 'Person']:
 
-            if 'endpoints' in discovered and 'sharedInbox' in discovered['endpoints']:
+            if 'endpoints' in discovered and \
+                    isinstance(discovered['endpoints'], Iterable) and \
+                    'sharedInbox' in discovered['endpoints']:
                 logger.debug('    -- has a shared inbox at %s',
                         discovered['endpoints']['sharedInbox'])
                 inboxes.add(discovered['endpoints']['sharedInbox'])
@@ -170,12 +173,19 @@ def _signer_for_local_actor(local_actor):
         logger.info('not signing outgoing messages because we have no known actor')
         return None
 
-    return httpsig.HeaderSigner(
-            key_id=local_actor.key_name,
-            secret=local_actor.f_privateKey,
-            algorithm='rsa-sha256',
-            headers=['(request-target)', 'host', 'date', 'content-type'],
-            )
+    try:
+        return httpsig.HeaderSigner(
+                key_id=local_actor.key_name,
+                secret=json.loads(local_actor.f_privateKey),
+                algorithm='rsa-sha256',
+                headers=['(request-target)', 'host', 'date', 'content-type'],
+                )
+    except httpsig.utils.HttpSigException as hse:
+        logger.warn('Local private key was not honoured.')
+        logger.warn('This should never happen!')
+        logger.warn('Error was: %s', str(hse))
+        logger.warn('Key was: %s', local_actor.f_privateKey)
+        return None
 
 class LocalDeliveryRequest(HttpRequest):
 
