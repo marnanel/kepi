@@ -1,233 +1,140 @@
-from django.test import TestCase, Client
-from django_kepi.views import InboxView
-from django_kepi.models import Thing, create, Following
-from django_kepi.validation import IncomingMessage
+from django.test import TestCase
 from unittest import skip
-from . import *
-import json
+from tests import *
+from django_kepi.create import create
+from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
+from django_kepi.models.mention import Mention
+from django_kepi.models.item import Item
+from django_kepi.models.thing import Thing
+from django_kepi.models.following import Following
+from django_kepi.models.activity import Activity
+from django.test import Client
+from urllib.parse import urlparse
 import httpretty
 import logging
+import json
+
+# This is a version of test_inbox based on test_outbox;
+# they'll be merged in the future.
+
+REMOTE_DAVE_ID = "https://dave.example.net/users/dave"
+REMOTE_DAVE_DOMAIN = urlparse(REMOTE_DAVE_ID).netloc
+REMOTE_DAVE_FOLLOWERS = REMOTE_DAVE_ID + 'followers'
+REMOTE_DAVE_KEY = REMOTE_DAVE_ID + '#main-key'
+
+ALICE_ID = 'https://altair.example.com/users/alice'
+INBOX = ALICE_ID+'/inbox'
+INBOX_HOST = 'altair.example.com'
+ALICE_SOLE_INBOX_PATH = '/users/alice/inbox'
+
+BOB_ID = 'https://bobs-computer.example.net/users/bob'
+BOB_INBOX_URL = 'https://bobs-computer.example.net/users/bob/inbox'
+
+# as given in https://www.w3.org/TR/activitypub/
+OBJECT_FORM = {
+        "@context": ["https://www.w3.org/ns/activitystreams",
+            {"@language": "en"}],
+        "type": "Note",
+        'attributedTo': BOB_ID,
+        "name": "Chris liked 'Minimal ActivityPub update client'",
+        "object": "https://rhiaro.co.uk/2016/05/minimal-activitypub",
+        "to": [ALICE_ID,
+            "https://dustycloud.org/followers",
+            "https://rhiaro.co.uk/followers/"],
+        "cc": "https://e14n.com/evan"
+        }
+
+MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+INVALID_UTF8 = b"\xa0\xa1"
 
 logger = logging.getLogger(name='django_kepi')
 
-INVALID_UTF8 = b"\xa0\xa1"
+class TestInbox2(TestCase):
 
-class TestInbox(TestCase):
-
-    @httpretty.activate
-    def _post_to_inbox(self,
-            local_inbox_path):
-
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-
-        create_local_person(
-                name='alice',
-                auto_follow=False,
-                )
-
-        create_remote_person(
-                name='fred',
-                url=REMOTE_FRED,
-                f_publicKey = keys['public'],
-                )
-
-        post_test_message(
-            path = local_inbox_path,
-            secret = keys['private'],
-            f_type = "Follow",
-            f_actor = REMOTE_FRED,
-            f_object = LOCAL_ALICE,
-            )
-
-        self.assertIs(
-                len(Following.objects.filter(
-                    follower = REMOTE_FRED,
-                    following = LOCAL_ALICE,
-                    )),
-                1,
-                msg="sending Follow did not result in following")
-
-    @httpretty.activate
-    def test_specific_post(self):
-        self._post_to_inbox('/users/alice/inbox')
-
-    @httpretty.activate
-    def test_shared_post(self):
-        self._post_to_inbox(INBOX_PATH)
-
-    def test_non_json(self):
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-
-        body, headers = test_message_body_and_headers(
-                f_actor = REMOTE_FRED,
-                secret = keys['private'],
-                )
-        # we don't use the body it gives us
-
-        c = Client()
-        result = c.post(
-                path = INBOX_PATH,
-                content_type = 'text/plain',
-                data = 'Hello',
-                HTTP_DATE = headers['date'],
-                HOST = headers['host'],
-                HTTP_SIGNATURE = headers['signature'],
-                )
-
-        self.assertEqual(
-                result.status_code,
-                415, # unsupported media type
-                )
-
-        self.assertFalse(
-                IncomingMessage.objects.all().exists())
-
-    def test_malformed_json(self):
-
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-
-        body, headers = test_message_body_and_headers(
-                f_actor = REMOTE_FRED,
-                secret = keys['private'],
-                )
-
-        broken_json = json.dumps(body)[1:]
-
-        c = Client()
-        result = c.post(
-                path = INBOX_PATH,
-                content_type = headers['content-type'],
-                data = broken_json,
-                HTTP_DATE = headers['date'],
-                HOST = headers['host'],
-                HTTP_SIGNATURE = headers['signature'],
-                )
-
-        self.assertEqual(
-                result.status_code,
-                415, # unsupported media type
-                )
-
-        self.assertFalse(
-                IncomingMessage.objects.all().exists())
-
-    @httpretty.activate
-    def test_malformed_remote_json(self):
-
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-
-        create_local_person(
-                name='alice',
-                auto_follow=False,
-                )
-
-        mock_remote_object(
-                url=REMOTE_FRED,
-                ftype = 'Object',
-                content = 'This is not actually JSON',
-                status = 200,
-                )
-
-        post_test_message(
+    def _send(self,
+            content,
+            recipient = None,
+            recipientKeys = None,
+            sender = None,
+            senderKeys = None,
             path = INBOX_PATH,
-            secret = keys['private'],
-            f_type = "Follow",
-            f_actor = REMOTE_FRED,
-            f_object = LOCAL_ALICE,
-            )
+            ):
 
-        self.assertIs(
-                len(Following.objects.filter(
-                    follower = REMOTE_FRED,
-                    following = LOCAL_ALICE,
-                    )),
-                0,
-                msg="sending malformed JSON caused creation of object")
+        settings.ALLOWED_HOSTS = [
+                'altair.example.com',
+                'testserver',
+                ]
 
-    def test_invalid_utf8(self):
+        if recipientKeys is None:
+            recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        if recipient is None:
+            recipient = create_local_person(
+                    name = 'alice',
+                    publicKey = recipientKeys['public'],
+                    privateKey = recipientKeys['private'],
+                    )
 
-        body, headers = test_message_body_and_headers(
-                f_actor = REMOTE_FRED,
-                secret = keys['private'],
+        if senderKeys is None:
+            senderKeys = json.load(open('tests/keys/keys-0002.json', 'r'))
+
+        if sender is None:
+            sender = create_remote_person(
+                    url = BOB_ID,
+                    name = 'bob',
+                    inbox = BOB_INBOX_URL,
+                    publicKey = senderKeys['public'],
+                    )
+
+        if not isinstance(content, dict):
+            # Overriding the usual content.
+            # This is used for things like checking
+            # whether non-JSON content is handled correctly.
+
+            f_body = {'content': content}
+            content = {}
+
+        if '@context' not in content:
+            content['@context'] = 'https://www.w3.org/ns/activitystreams'
+
+        if 'id' not in content:
+            content['id'] = BOB_ID+'#foo'
+
+        if 'actor' not in content:
+            content['actor'] = BOB_ID
+
+        f_body = dict([('f_'+f,v) for f,v in content.items()])
+        response = post_test_message(
+                path = path,
+                host = INBOX_HOST,
+                secret = senderKeys['private'],
+                **f_body,
                 )
-        # we don't use the body it returns
 
-        c = Client()
-        result = c.post(
-                path = INBOX_PATH,
-                content_type = headers['content-type'],
-                data = INVALID_UTF8,
-                HTTP_DATE = headers['date'],
-                HOST = headers['host'],
-                HTTP_SIGNATURE = headers['signature'],
+        return response
+
+    @httpretty.activate
+    def test_create(self):
+
+        self._send(
+                content = {
+                    'type': 'Create',
+                    'object': OBJECT_FORM,
+                    'to': OBJECT_FORM['to'],
+                    'cc': OBJECT_FORM['cc'],
+                    },
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
                 )
 
         self.assertEqual(
-                result.status_code,
-                400, # bad request
-                )
-
-        self.assertFalse(
-                IncomingMessage.objects.all().exists())
+                len(items),
+                1)
 
     @httpretty.activate
-    def test_invalid_remote_utf8(self):
-
-        # XXX oddity: kepi logs this failure as a JSON decoding
-        # error, not a UTF-8 decoding error. I don't know why.
-        # But the end result is the same.
-
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-
-        create_local_person(
-                name='alice',
-                auto_follow=False,
-                )
-
-        mock_remote_object(
-                url=REMOTE_FRED,
-                ftype = 'Object',
-                content = INVALID_UTF8,
-                status = 200,
-                )
-
-        post_test_message(
-            path = INBOX_PATH,
-            secret = keys['private'],
-            f_type = "Follow",
-            f_actor = REMOTE_FRED,
-            f_object = LOCAL_ALICE,
-            )
-
-        self.assertIs(
-                len(Following.objects.filter(
-                    follower = REMOTE_FRED,
-                    following = LOCAL_ALICE,
-                    )),
-                0,
-                msg="sending malformed JSON caused creation of object")
-
-
-    @httpretty.activate
-    def test_auto_follow(self):
-
-        MARY_URL = 'https://altair.example.com/users/mary'
-        BOB_URL = 'https://example.net/bob'
-        BOB_INBOX_URL = BOB_URL+'/inbox'
-        REQUEST_ID = 'https://example.net/activity/123'
-
-        mary_keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        bob_keys = json.load(open('tests/keys/keys-0002.json', 'r'))
-
-        create_remote_person(
-                url = BOB_URL,
-                name = 'bob',
-                f_publicKey=bob_keys['public'],
-                inbox=BOB_INBOX_URL,
-                sharedInbox=None,
-                )
+    def test_follow(self):
 
         httpretty.register_uri(
                 httpretty.POST,
@@ -236,38 +143,110 @@ class TestInbox(TestCase):
                 body='Thank you!',
                 )
 
-        create_local_person(
-                name='mary',
-                auto_follow=True,
-                f_publicKey=mary_keys['public'],
-                f_privateKey=mary_keys['private'],
+        self._send(
+                content = {
+                    'type': 'Follow',
+                    'object': ALICE_ID,
+                    'actor': BOB_ID,
+                    },
                 )
-
-        post_test_message(
-            path = INBOX_PATH,
-            secret = bob_keys['private'],
-            f_id = REQUEST_ID,
-            f_type = "Follow",
-            f_actor = BOB_URL,
-            f_object = MARY_URL,
-            )
-
-        # If this was successful, kepi must have contacted
-        # /bob/inbox and delivered the Accept request
-        last_request = httpretty.last_request()
-
-        self.assertEqual(
-                last_request.path,
-                '/bob/inbox',
-                )
-
-        body = json.loads(str(last_request.body, encoding='UTF-8'))
 
         self.assertDictContainsSubset(
-                {
-                    "actor": MARY_URL,
-                    'to': [BOB_URL],
-                    'type': 'Accept',
-                    'object': REQUEST_ID,
+                subset = {
+                    "actor": "https://altair.example.com/users/alice",
+                    "to": [
+                        "https://bobs-computer.example.net/users/bob"
+                        ],
+                    "type": "Accept"
                     },
-                body)
+                dictionary = json.loads(httpretty.last_request().body),
+        msg='Acceptance of follow request matched')
+
+    @httpretty.activate
+    def test_sole_inbox(self):
+        recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        recipient = create_local_person(
+                name = 'alice',
+                publicKey = recipientKeys['public'],
+                privateKey = recipientKeys['private'],
+                inbox = ALICE_SOLE_INBOX_PATH,
+                )
+
+        self._send(
+                content = {
+                    'type': 'Create',
+                    'object': OBJECT_FORM,
+                    'to': OBJECT_FORM['to'],
+                    'cc': OBJECT_FORM['cc'],
+                    },
+                recipient = recipient,
+                path = ALICE_SOLE_INBOX_PATH,
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                1)
+
+    @httpretty.activate
+    def test_shared_inbox(self):
+        recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        recipient = create_local_person(
+                name = 'alice',
+                publicKey = recipientKeys['public'],
+                privateKey = recipientKeys['private'],
+                inbox = ALICE_SOLE_INBOX_PATH,
+                sharedInbox = INBOX_PATH,
+                )
+
+        self._send(
+                content = {
+                    'type': 'Create',
+                    'object': OBJECT_FORM,
+                    'to': OBJECT_FORM['to'],
+                    'cc': OBJECT_FORM['cc'],
+                    },
+                recipient = recipient,
+                path = INBOX_PATH,
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                1)
+
+    @httpretty.activate
+    def test_non_json(self):
+
+        self._send(
+                content = 'Hello',
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                0)
+
+    @httpretty.activate
+    def test_invalid_utf8(self):
+
+        self._send(
+                content = INVALID_UTF8,
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                0)
