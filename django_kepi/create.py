@@ -12,11 +12,15 @@ def create(
 
     from django_kepi.delivery import deliver
 
+    if value is None:
+        value = kwargs.copy()
+
     logger.info("Create begins: source is %s; local? %s; run side effects? %s",
         value, is_local_user, run_side_effects)
 
     if value is None:
-        value = kwargs.copy()
+        logger.warn("  -- it's ludicrous to create an object with no value")
+        return None
 
     # Remove the "f_" prefix, which exists so that we can write
     # things like f_type or f_object without using reserved keywords.
@@ -35,7 +39,7 @@ def create(
 
     if 'type' not in value:
         logger.warn("Things must have a type; dropping message")
-        return
+        return None
 
     value['type'] = value['type'].title()
 
@@ -46,7 +50,7 @@ def create(
     else:
         if not is_local_user:
             logger.warn("Remote things must have an id; dropping message")
-            return
+            return None
 
     try:
         type_spec = types.ACTIVITYPUB_TYPES[value['type']]
@@ -88,6 +92,9 @@ def create(
 
     for f,v in value.items():
         result[f] = v
+
+    if hasattr(result, '_after_create'):
+        result._after_create()
 
     result.save()
 
