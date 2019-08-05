@@ -28,7 +28,7 @@ AUDIENCE_FIELD_NAMES = dict([(v,f) for (f,v) in FIELD_CHOICES])
 class Audience(models.Model):
 
     parent = models.ForeignKey(
-            'django_kepi.Thing',
+            'django_kepi.Object',
             on_delete = models.CASCADE,
             )
 
@@ -56,7 +56,7 @@ class Audience(models.Model):
             field, value):
 
         """
-        Add new Audiences for a given Thing.
+        Add new Audiences for a given Object.
         "value" is a list of strings.
 
         This function only adds Audiences of

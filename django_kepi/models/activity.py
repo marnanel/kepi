@@ -5,7 +5,7 @@ logger = logging.getLogger(name='django_kepi')
 
 ######################
 
-class Activity(thing.Thing):
+class Activity(thing.Object):
 
     @property
     def activity_form(self):
@@ -38,3 +38,39 @@ class Activity(thing.Thing):
 
         outbox = find_local(outbox_url,
                 object_to_store=self)
+
+##############################
+
+class Create(Activity):
+    pass
+
+class Update(Activity):
+    pass
+
+class Delete(Activity):
+    pass
+
+class Follow(Activity):
+    pass
+
+class Add(Activity):
+    pass
+
+class Remove(Activity):
+    pass
+
+class Like(Activity):
+    pass
+
+class Undo(Activity):
+    pass
+
+class Accept(Activity):
+    pass
+
+class Reject(Activity):
+    pass
+
+class Announce(Activity):
+    # aka "boost"
+    pass

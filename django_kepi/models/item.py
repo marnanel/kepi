@@ -6,7 +6,7 @@ logger = logging.getLogger(name='django_kepi')
 
 ######################
 
-class Item(thing.Thing):
+class Item(thing.Object):
 
     f_content = models.CharField(
             max_length=255,
@@ -118,3 +118,40 @@ class Item(thing.Thing):
     def conversation(self):
         # FIXME I really don't understand conversation values
         return None
+
+##############################
+
+class Article(Item):
+    pass
+
+class Audio(Item):
+    pass
+
+class Document(Item):
+    pass
+
+class Event(Item):
+    pass
+
+class Image(Item):
+    pass
+
+class Note(Item):
+    # Why isn't it a subclass of Document?
+    pass
+
+class Page(Item):
+    # i.e. a web page
+    pass
+
+class Place(Item):
+    pass
+
+class Profile(Item):
+    pass
+
+class Relationship(Item):
+    pass
+
+class Video(Item):
+    pass

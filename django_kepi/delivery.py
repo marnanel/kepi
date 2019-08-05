@@ -278,8 +278,8 @@ def deliver(
         incoming = False,
         ):
     try:
-        activity = django_kepi.models.Thing.objects.get(number=activity_id)
-    except django_kepi.models.Thing.DoesNotExist:
+        activity = django_kepi.models.Object.objects.get(number=activity_id)
+    except django_kepi.models.Object.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)
         return None

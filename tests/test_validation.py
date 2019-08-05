@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.validation import IncomingMessage, validate
-from django_kepi.models import Thing
+from django_kepi.models import Object
 from unittest import skip
 from unittest.mock import Mock, patch
 from . import *
@@ -52,9 +52,9 @@ MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
 
 def _message_became_activity(url=ACTIVITY_ID):
     try:
-        result = Thing.objects.get(remote_url=url)
+        result = Object.objects.get(remote_url=url)
         return True
-    except Thing.DoesNotExist:
+    except Object.DoesNotExist:
         return False
 
 class ResultWrapper(object):

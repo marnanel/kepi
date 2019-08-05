@@ -22,7 +22,7 @@ class Command(BaseCommand):
         # This can certainly be optimised a lot
 
         count = 0
-        for thing in django_kepi.models.Thing.objects.all():
+        for thing in django_kepi.models.Object.objects.all():
 
             usable = True
             for f,v in filters:

@@ -1,4 +1,4 @@
-import django_kepi.types as types
+from django_kepi.models import *
 import logging
 
 logger = logging.getLogger(name='django_kepi')
@@ -19,7 +19,7 @@ def create(
         value, is_local_user, run_side_effects)
 
     if value is None:
-        logger.warn("  -- it's ludicrous to create an object with no value")
+        logger.warn("  -- it's ludicrous to create an Object with no value")
         return None
 
     # Remove the "f_" prefix, which exists so that we can write
@@ -33,40 +33,28 @@ def create(
 
     for k,v in value.copy().items():
         if not isinstance(k, str):
-            logger.warn('Things can only have keys which are strings: %s',
+            logger.warn('Objects can only have keys which are strings: %s',
                     str(k))
             continue
 
     if 'type' not in value:
-        logger.warn("Things must have a type; dropping message")
+        logger.warn("Objects must have a type; dropping message")
         return None
 
     value['type'] = value['type'].title()
 
     if 'id' in value:
         if is_local_user:
-            logger.warn('Removing "id" field at Thing creation')
+            logger.warn('Removing "id" field at local Object creation')
             del value['id']
     else:
         if not is_local_user:
-            logger.warn("Remote things must have an id; dropping message")
+            logger.warn("Remote Objects must have an id; dropping message")
             return None
 
     try:
-        type_spec = types.ACTIVITYPUB_TYPES[value['type']]
-    except KeyError:
-        logger.info('Unknown thing type: %s; dropping message',
-                value['type'])
-        return None
-
-    if 'class' not in type_spec:
-        logger.info('Type %s can\'t be instantiated',
-                value['type'])
-        return None
-
-    try:
         import django_kepi.models as kepi_models
-        cls = getattr(locals()['kepi_models'], type_spec['class'])
+        cls = getattr(locals()['kepi_models'], value['type'])
     except KeyError:
         # shouldn't happen!
         logger.warn("The class '%s' wasn't exported properly",
@@ -74,11 +62,7 @@ def create(
         return None
 
     logger.debug('Class for %s is %s', value['type'], cls)
-
-    ########################
-
-    # XXX Check what fields we need, based on type_spec.
-    # XXX implement this.
+    del value['type']
 
     ########################
 

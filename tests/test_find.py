@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django_kepi.find import find
-from django_kepi.models import Thing
 from django_kepi.create import create
 from django.conf import settings
 from . import *
