@@ -1,6 +1,7 @@
 from django.contrib import admin
 from polymorphic.admin import *
 from django_kepi.models import *
+from django_kepi.validation import IncomingMessage
 import django_kepi.forms as kepi_forms
 
 ###################################
@@ -197,3 +198,7 @@ class CollectionAdmin(admin.ModelAdmin):
     inlines = [
             CollectionMemberInline,
             ]
+
+@admin.register(IncomingMessage)
+class IncomingMessageAdmin(admin.ModelAdmin):
+    pass
