@@ -261,6 +261,7 @@ def post_test_message(
         host=INBOX_HOST,
         f_id=ACTIVITY_ID,
         client = None,
+        content = None,
         **fields,
         ):
 
@@ -274,6 +275,9 @@ def post_test_message(
             **fields,
             )
 
+    if content is None:
+        content = json.dumps(body)
+
     logger.debug("Test message is %s",
             body)
     logger.debug("  -- with headers %s",
@@ -282,7 +286,7 @@ def post_test_message(
     response = client.post(
             path = path,
             content_type = headers['content-type'],
-            data = json.dumps(body),
+            data = content,
             HTTP_DATE = headers['date'],
             HTTP_HOST = headers['host'],
             HTTP_SIGNATURE = headers['signature'],

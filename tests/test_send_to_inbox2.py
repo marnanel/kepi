@@ -25,7 +25,7 @@ REMOTE_DAVE_KEY = REMOTE_DAVE_ID + '#main-key'
 ALICE_ID = 'https://altair.example.com/users/alice'
 INBOX = ALICE_ID+'/inbox'
 INBOX_HOST = 'altair.example.com'
-INBOX_PATH = '/users/alice/inbox'
+ALICE_SOLE_INBOX_PATH = '/users/alice/inbox'
 
 BOB_ID = 'https://bobs-computer.example.net/users/bob'
 BOB_INBOX_URL = 'https://bobs-computer.example.net/users/bob/inbox'
@@ -45,6 +45,7 @@ OBJECT_FORM = {
         }
 
 MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+INVALID_UTF8 = b"\xa0\xa1"
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -56,6 +57,7 @@ class TestInbox2(TestCase):
             recipientKeys = None,
             sender = None,
             senderKeys = None,
+            path = INBOX_PATH,
             ):
 
         settings.ALLOWED_HOSTS = [
@@ -84,6 +86,14 @@ class TestInbox2(TestCase):
                     publicKey = senderKeys['public'],
                     )
 
+        if not isinstance(content, dict):
+            # Overriding the usual content.
+            # This is used for things like checking
+            # whether non-JSON content is handled correctly.
+
+            f_body = {'content': content}
+            content = {}
+
         if '@context' not in content:
             content['@context'] = 'https://www.w3.org/ns/activitystreams'
 
@@ -94,9 +104,8 @@ class TestInbox2(TestCase):
             content['actor'] = BOB_ID
 
         f_body = dict([('f_'+f,v) for f,v in content.items()])
-
         response = post_test_message(
-                path = INBOX_PATH,
+                path = path,
                 host = INBOX_HOST,
                 secret = senderKeys['private'],
                 **f_body,
@@ -152,3 +161,92 @@ class TestInbox2(TestCase):
                     },
                 dictionary = json.loads(httpretty.last_request().body),
         msg='Acceptance of follow request matched')
+
+    @httpretty.activate
+    def test_sole_inbox(self):
+        recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        recipient = create_local_person(
+                name = 'alice',
+                publicKey = recipientKeys['public'],
+                privateKey = recipientKeys['private'],
+                inbox = ALICE_SOLE_INBOX_PATH,
+                )
+
+        self._send(
+                content = {
+                    'type': 'Create',
+                    'object': OBJECT_FORM,
+                    'to': OBJECT_FORM['to'],
+                    'cc': OBJECT_FORM['cc'],
+                    },
+                recipient = recipient,
+                path = ALICE_SOLE_INBOX_PATH,
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                1)
+
+    @httpretty.activate
+    def test_shared_inbox(self):
+        recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        recipient = create_local_person(
+                name = 'alice',
+                publicKey = recipientKeys['public'],
+                privateKey = recipientKeys['private'],
+                inbox = ALICE_SOLE_INBOX_PATH,
+                sharedInbox = INBOX_PATH,
+                )
+
+        self._send(
+                content = {
+                    'type': 'Create',
+                    'object': OBJECT_FORM,
+                    'to': OBJECT_FORM['to'],
+                    'cc': OBJECT_FORM['cc'],
+                    },
+                recipient = recipient,
+                path = INBOX_PATH,
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                1)
+
+    @httpretty.activate
+    def test_non_json(self):
+
+        self._send(
+                content = 'Hello',
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                0)
+
+    @httpretty.activate
+    def test_invalid_utf8(self):
+
+        self._send(
+                content = INVALID_UTF8,
+                )
+
+        items = Item.objects.filter(
+                f_attributedTo=BOB_ID,
+                )
+
+        self.assertEqual(
+                len(items),
+                0)
