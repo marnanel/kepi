@@ -5,7 +5,6 @@ from django_kepi.create import create
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
 from django_kepi.models.item import Item
-from django_kepi.models.thing import Thing
 from django_kepi.models.following import Following
 from django_kepi.models.activity import Activity
 from django.test import Client

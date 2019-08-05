@@ -217,13 +217,13 @@ class ThingView(KepiView):
     def activity_get(self, request, *args, **kwargs):
 
         try:
-            logger.debug('Looking up Thing by id==%s',
+            logger.debug('Looking up Object by id==%s',
                     kwargs['id'])
-            activity_object = Thing.objects.get(
+            activity_object = Object.objects.get(
                     number=kwargs['id'],
                     )
 
-        except Thing.DoesNotExist:
+        except Object.DoesNotExist:
             logger.info('  -- unknown: %s', kwargs)
             return None
         except django.core.exceptions.ValidationError:
@@ -325,7 +325,7 @@ class AllUsersView(KepiView):
 
         logger.debug('Finding all users.')
 
-        return Thing.objects.filter(f_type='Person')
+        return Object.objects.filter(f_type='Person')
 
     def _modify_list_item(self, obj):
         return obj.activity_form

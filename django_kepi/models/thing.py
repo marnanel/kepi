@@ -10,33 +10,23 @@ import random
 import json
 import datetime
 import warnings
-from django_kepi.types import ACTIVITYPUB_TYPES
 
 logger = logging.getLogger(name='django_kepi')
 
 ######################
-
-ACTIVITY_TYPES = sorted(ACTIVITYPUB_TYPES.keys())
-
-ACTIVITY_TYPE_CHOICES = [(x,x) for x in ACTIVITY_TYPES]
 
 def _new_number():
     return '%08x' % (random.randint(0, 0xffffffff),)
 
 ######################
 
-class Thing(PolymorphicModel):
+class Object(PolymorphicModel):
 
     number = models.CharField(
             max_length=8,
             primary_key=True,
             unique=True,
             default=_new_number,
-            )
-
-    f_type = models.CharField(
-            max_length=255,
-            choices=ACTIVITY_TYPE_CHOICES,
             )
 
     f_actor = models.CharField(
@@ -131,14 +121,14 @@ class Thing(PolymorphicModel):
         return result
 
     @property
-    def activity_type(self):
-        return self.f_type
+    def f_type(self):
+        return self.__class__.__name__
 
     @property
     def activity_form(self):
         result = {
             'id': self.url,
-            'type': self.get_f_type_display(),
+            'type': self.f_type,
             }
 
         for name in dir(self):
@@ -283,7 +273,7 @@ class Thing(PolymorphicModel):
 
             try:
                 self.delete()
-            except AssertionError:
+            except:
                 logger.info('    -- deletion failed, probably because of '+\
                         'https://code.djangoproject.com/ticket/23076')
 
@@ -336,8 +326,8 @@ def _normalise_type_for_thing(v):
         return v # also booleans
     elif isinstance(v, list):
         return v # and lists as well
-    elif isinstance(v, Thing):
-        return v.url # Things can deal with themselves
+    elif isinstance(v, Object):
+        return v.url # Objects can deal with themselves
 
     # okay, it's something weird
 

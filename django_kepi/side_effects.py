@@ -2,7 +2,6 @@ import logging
 from django.conf import settings
 from django_kepi.find import find
 from django_kepi.delivery import deliver
-from django_kepi.types import ACTIVITYPUB_TYPES
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -85,35 +84,16 @@ def reject(activity):
 
 def create(activity):
 
+    import django_kepi.models as kepi_models
     from django_kepi.create import create as kepi_create
 
     raw_material = dict([('f_'+f, v)
         for f,v in activity['object'].items()])
 
-    if 'f_type' not in raw_material:
-        logger.warn('Attempt to use Create to create '+\
-                'something without a type. '+\
-                'Deleting original Create.')
+    if issubclass(getattr(kepi_models,
+        raw_material['f_type']),
+        kepi_models.Activity):
 
-        return False
-
-    if raw_material['f_type'] not in ACTIVITYPUB_TYPES:
-        logger.warn('Attempt to use Create to create '+\
-                'an object of type %s, which is unknown. '+\
-                'Deleting original Create.',
-                raw_material['f_type'])
-
-        return False
-
-    if 'class' not in ACTIVITYPUB_TYPES[raw_material['f_type']]:
-        logger.warn('Attempt to use Create to create '+\
-                'an object of type %s, which is abstract. '+\
-                'Deleting original Create.',
-                raw_material['f_type'])
-
-        return False
-
-    if ACTIVITYPUB_TYPES[raw_material['f_type']]['class']=='Activity':
         logger.warn('Attempt to use Create to create '+\
                 'an object of type %s. '+\
                 'Create can only create non-activities. '+\

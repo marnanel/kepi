@@ -26,7 +26,7 @@ class ThingField(models.Model):
             )
 
     parent = models.ForeignKey(
-            'django_kepi.Thing',
+            'django_kepi.Object',
             on_delete = models.DO_NOTHING,
             )
 

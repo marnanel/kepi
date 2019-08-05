@@ -5,7 +5,7 @@ from django_kepi.create import create
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
 from django_kepi.models.item import Item
-from django_kepi.models.thing import Thing
+from django_kepi.models.thing import Object
 from django_kepi.models.activity import Activity
 from django.test import Client
 from urllib.parse import urlparse
@@ -231,13 +231,13 @@ class TestOutbox(TestCase):
     @httpretty.activate
     def test_unwrapped_object(self):
 
-        items_before = list(Thing.objects.all())
+        items_before = list(Object.objects.all())
 
         self._send(
                 content = OBJECT_FORM,
                 )
 
-        items_after = list(Thing.objects.all())
+        items_after = list(Object.objects.all())
 
         # This should have created two objects:
         # the Note we sent, and an implict Create.
@@ -279,7 +279,7 @@ class TestOutbox(TestCase):
             )
 
         self.assertEqual(
-                len(Thing.objects.filter(f_actor=json.dumps(ALICE_ID))),
+                len(Object.objects.filter(f_actor=json.dumps(ALICE_ID))),
                 1)
 
         # TODO When Actors have liked() and Things have likes(),

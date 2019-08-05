@@ -74,7 +74,7 @@ def find_local(path,
 def find_remote(url,
         do_not_fetch=False):
 
-    from django_kepi.models.thing import Thing
+    from django_kepi.models.thing import Object 
 
     logger.debug('%s: find remote', url)
 
@@ -89,14 +89,14 @@ def find_remote(url,
         # We fetched it in the past.
 
         try:
-            result = Thing.objects.get(
+            result = Object.objects.get(
                     remote_url = url,
                     )
             logger.debug('%s: already fetched, and it\'s %s',
                     url, result)
 
             return result
-        except Thing.DoesNotExist:
+        except Object.DoesNotExist:
             logger.debug('%s: we already know it wasn\'t there',
                     url)
 

@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.delivery import deliver
-from django_kepi.models import Thing
+from django_kepi.models import Object
 import django_kepi.views
 from unittest.mock import Mock, patch
 from . import *
@@ -22,9 +22,9 @@ REMOTE_PATH_NAMES = {
 
 def _message_became_activity(url=ACTIVITY_ID):
     try:
-        result = Thing.objects.get(remote_url=url)
+        result = Object.objects.get(remote_url=url)
         return True
-    except Thing.DoesNotExist:
+    except Object.DoesNotExist:
         return False
 
 class TestDeliverTasks(TestCase):
@@ -36,7 +36,7 @@ class TestDeliverTasks(TestCase):
             remote_user_endpoints,
             ):
 
-        a = Thing.create(**activity_fields)
+        a = Object.create(**activity_fields)
         a.save()
 
         for who, what in remote_user_details.items():
@@ -211,7 +211,7 @@ class TestDelivery(TestCase):
         self._set_up_remote_request_mocks()
         self._set_up_local_user_mocks()
 
-        like = Thing.create(
+        like = Object.create(
                 f_type = 'Like',
                 f_actor = LOCAL_ALICE,
                 f_object = REMOTE_FRED,

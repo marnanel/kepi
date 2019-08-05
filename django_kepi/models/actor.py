@@ -8,9 +8,9 @@ logger = logging.getLogger(name='django_kepi')
 
 ######################
 
-class Actor(thing.Thing):
+class Actor(thing.Object):
     """
-    An Actor is a kind of Thing representing a person,
+    An Actor is a kind of Object representing a person,
     an organisation, a bot, or anything else that can
     post stuff and interact with other Actors.
 
@@ -76,3 +76,20 @@ class Actor(thing.Thing):
                 return self.list_path(name)
 
         return super().__getitem__(name)
+
+##############################
+
+class Application(Actor):
+    pass
+
+class Group(Actor):
+    pass
+
+class Organization(Actor):
+    pass
+
+class Person(Actor):
+    pass
+
+class Service(Actor):
+    pass
