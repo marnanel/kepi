@@ -176,7 +176,7 @@ def _signer_for_local_actor(local_actor):
     try:
         return httpsig.HeaderSigner(
                 key_id=local_actor.key_name,
-                secret=json.loads(local_actor.f_privateKey),
+                secret=local_actor.f_privateKey,
                 algorithm='rsa-sha256',
                 headers=['(request-target)', 'host', 'date', 'content-type'],
                 )

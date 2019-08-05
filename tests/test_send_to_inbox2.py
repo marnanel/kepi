@@ -117,7 +117,7 @@ class TestInbox2(TestCase):
                 )
 
         items = Item.objects.filter(
-                f_attributedTo=json.dumps(BOB_ID),
+                f_attributedTo=BOB_ID,
                 )
 
         self.assertEqual(

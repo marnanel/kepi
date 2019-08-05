@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 import logging
-import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -41,7 +40,7 @@ class Collection(models.Model):
 
     def __str__(self):
         return '%s/%s' % (
-                json.loads(self.owner.f_preferredUsername),
+                self.owner.f_preferredUsername,
                 self.name,
                 )
 
@@ -67,7 +66,7 @@ class Collection(models.Model):
 
         try:
             owner = Actor.objects.get(
-                    f_preferredUsername = json.dumps(username),
+                    f_preferredUsername = username,
                     )
         except Actor.DoesNotExist:
             logger.info("  -- can't get %s because %s doesn't exist",

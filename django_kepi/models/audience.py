@@ -83,7 +83,7 @@ class Audience(models.Model):
             value = [str(x) for x in value]
 
         for line in value:
-            a = Audience(
+            a = cls(
                 parent = thing,
                 field = field,
                 recipient = line,
@@ -97,7 +97,7 @@ class Audience(models.Model):
 
         result = defaultdict(lambda: [])
 
-        for a in Audience.objects.filter(
+        for a in cls.objects.filter(
                 parent=thing,
                 ):
 

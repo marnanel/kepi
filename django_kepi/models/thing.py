@@ -2,6 +2,7 @@ from django.db import models, IntegrityError
 from django.conf import settings
 from polymorphic.models import PolymorphicModel
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
+from django_kepi.models.thingfield import ThingField
 from django_kepi.models.mention import Mention
 import django_kepi.side_effects as side_effects
 import logging
@@ -55,11 +56,6 @@ class Thing(PolymorphicModel):
 
     active = models.BooleanField(
             default=True,
-            )
-
-    other_fields = models.TextField(
-            blank=True,
-            default='',
             )
 
     @property
@@ -125,8 +121,8 @@ class Thing(PolymorphicModel):
 
             result += '%1s %15s: %s' % (
                     curly,
-                    json.dumps(f),
-                    json.dumps(v),
+                    f,
+                    v,
                     )
             curly = ''
 
@@ -156,14 +152,10 @@ class Thing(PolymorphicModel):
 
             if value=='':
                 value = None
-            else:
-                value = json.loads(value)
 
             result[name[2:]] = value
 
-        if self.other_fields:
-            result.update(json.loads(self.other_fields))
-
+        result.update(ThingField.get_fields_for(self))
         result.update(Audience.get_audiences_for(self))
 
         return result
@@ -185,10 +177,6 @@ class Thing(PolymorphicModel):
         if hasattr(self, 'f_'+name):
             result = getattr(self, 'f_'+name)
 
-            if 'raw' not in name_parts:
-                if result:
-                    result = json.loads(result)
-
         elif name in AUDIENCE_FIELD_NAMES:
             try:
                 result = Audience.objects.filter(
@@ -198,20 +186,17 @@ class Thing(PolymorphicModel):
             except Audience.DoesNotExist:
                 result = None
         else:
-            others = {}
+            try:
+                another = ThingField.objects.get(
+                        parent = self,
+                        field = name)
 
-            if self.other_fields:
-                try:
-                    others = json.loads(self.other_fields)
-                except json.JSONDecodeError:
-                    logger.warn('%s: other_fields contained non-JSON: %s.' + \
-                            'Discarding.',
-                        self.number,
-                        self.other_fields)
+                if 'raw' in name_parts:
+                    result = another.value
+                else:
+                    result = another.interpreted_value
 
-            if name in others:
-                result = others[name]
-            else:
+            except ThingField.DoesNotExist:
                 result = None
 
         if 'obj' in name_parts and result is not None:
@@ -231,7 +216,7 @@ class Thing(PolymorphicModel):
                 )
 
         if hasattr(self, 'f_'+name):
-            setattr(self, 'f_'+name, json.dumps(value))
+            setattr(self, 'f_'+name, value)
         elif name in AUDIENCE_FIELD_NAMES:
 
             if self.pk is None:
@@ -245,14 +230,24 @@ class Thing(PolymorphicModel):
                     value = value,
                     )
         else:
-            others_json = self.other_fields
-            if others_json:
-                others = json.loads(others_json)
-            else:
-                others = {}
 
-            others[name] = value
-            self.other_fields = json.dumps(others)
+            if self.pk is None:
+                # See above
+                self.save()
+
+            try:
+                another = ThingField.objects.get(
+                        parent = self,
+                        field = name,
+                        )
+            except ThingField.DoesNotExist:
+                another = ThingField(
+                        parent = self,
+                        field = name,
+                        )
+
+            another.value = json.dumps(value)
+            another.save()
 
         # Special-cased side effects:
 
@@ -274,7 +269,7 @@ class Thing(PolymorphicModel):
         from django_kepi.find import find
         from django_kepi.delivery import deliver
 
-        f_type = json.loads(self.f_type).lower()
+        f_type = self.f_type.lower()
 
         if not hasattr(side_effects, f_type):
             logger.debug('  -- no side effects for %s',

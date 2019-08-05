@@ -3,7 +3,6 @@ from django.conf import settings
 from . import thing
 import django_kepi.crypto
 import logging
-import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -18,9 +17,6 @@ class Actor(thing.Thing):
     The most important thing about Actors specifically
     is that they own a public/private key pair.
     """
-
-    # FIXME It's ludicrous to store some of these as JSON,
-    # and it causes problems building queries downstream.
 
     f_privateKey = models.TextField(
             blank=True,
@@ -40,7 +36,7 @@ class Actor(thing.Thing):
             max_length=255,
             )
 
-    def save(self, *args, **kwargs):
+    def _after_create(self):
         if self.f_privateKey is None and self.f_publicKey is None:
 
             if not self.is_local:
@@ -54,8 +50,6 @@ class Actor(thing.Thing):
                 self.f_privateKey = key.private_as_pem()
                 self.f_publicKey = key.public_as_pem()
 
-        super().save(*args, **kwargs)
-
     @property
     def key_name(self):
         """
@@ -65,7 +59,7 @@ class Actor(thing.Thing):
 
     def list_path(self, name):
         return settings.KEPI['COLLECTION_PATH'] % {
-                'username': json.loads(self.f_preferredUsername),
+                'username': self.f_preferredUsername,
                 'listname': name,
                 }
 

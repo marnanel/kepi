@@ -1,4 +1,4 @@
-from .thing import Thing
+from .thing import Thing, ThingField
 from .activity import Activity
 from .actor import Actor
 from .audience import Audience, AUDIENCE_FIELD_NAMES
@@ -9,6 +9,7 @@ from .collection import Collection, CollectionMember
 
 __all__ = [
         'Thing',
+        'ThingField',
         'Activity',
         'Actor',
         'Audience',

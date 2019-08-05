@@ -243,7 +243,7 @@ class ActorView(ThingView):
 
         try:
             activity_object = Actor.objects.get(
-                    f_preferredUsername=json.dumps(kwargs['username']),
+                    f_preferredUsername=kwargs['username'],
                     )
 
         except Actor.DoesNotExist:
@@ -347,7 +347,7 @@ class UserCollectionView(KepiView):
                 username, listname)
         try:
             the_collection = Collection.objects.get(
-                    owner__f_preferredUsername = json.dumps(username),
+                    owner__f_preferredUsername = username,
                     name = listname)
 
             logger.debug('  -- found collection: %s',
