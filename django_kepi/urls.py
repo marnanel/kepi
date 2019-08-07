@@ -12,5 +12,10 @@ urlpatterns = [
         path('users/<str:username>/followers', django_kepi.views.FollowersView.as_view()),
         path('users/<str:username>/following', django_kepi.views.FollowingView.as_view()),
         path('sharedInbox', django_kepi.views.InboxView.as_view()),
+
+        # XXX We might want to split out the patterns that HAVE to be
+        # at the root.
+
+        path('.well-known/host-meta', django_kepi.views.HostMeta.as_view()),
         ]
 
