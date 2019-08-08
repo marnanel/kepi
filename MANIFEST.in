@@ -2,4 +2,4 @@ include LICENSE
 include README.md
 recursive-include django_kepi *.py
 recursive-include django_kepi/migrations *.py
-
+recursive-include django_kepi/templates *.xml

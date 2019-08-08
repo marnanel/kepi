@@ -18,7 +18,7 @@ def get_version(package):
 version = get_version('django_kepi')
 
 setup(
-    name='django_kepi',
+    name='kepi',
     version=version,
     url='https://gitlab.com/marnanel/django-kepi/',
     license='GPL-2',
@@ -27,7 +27,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Marnanel Thurman',
     author_email='marnanel@thurman.org.uk',
-    packages=['django_kepi'],
+    packages=['kepi', 'django_kepi'],
     include_package_data=True,
     install_requires=[],
     python_requires=">=3.0",
