@@ -176,7 +176,7 @@ def _signer_for_local_actor(local_actor):
     try:
         return httpsig.HeaderSigner(
                 key_id=local_actor.key_name,
-                secret=local_actor.f_privateKey,
+                secret=local_actor.privateKey,
                 algorithm='rsa-sha256',
                 headers=['(request-target)', 'host', 'date', 'content-type'],
                 )
@@ -184,7 +184,7 @@ def _signer_for_local_actor(local_actor):
         logger.warn('Local private key was not honoured.')
         logger.warn('This should never happen!')
         logger.warn('Error was: %s', str(hse))
-        logger.warn('Key was: %s', local_actor.f_privateKey)
+        logger.warn('Key was: %s', local_actor.privateKey)
         return None
 
 class LocalDeliveryRequest(HttpRequest):

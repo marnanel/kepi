@@ -18,7 +18,7 @@ class Actor(thing.Object):
     is that they own a public/private key pair.
     """
 
-    f_privateKey = models.TextField(
+    privateKey = models.TextField(
             blank=True,
             null=True,
             )
@@ -37,7 +37,7 @@ class Actor(thing.Object):
             )
 
     def _after_create(self):
-        if self.f_privateKey is None and self.f_publicKey is None:
+        if self.privateKey is None and self.f_publicKey is None:
 
             if not self.is_local:
                 logger.warn('%s: Attempt to save remote without key',
@@ -47,7 +47,7 @@ class Actor(thing.Object):
                         self.url)
 
                 key = django_kepi.crypto.Key()
-                self.f_privateKey = key.private_as_pem()
+                self.privateKey = key.private_as_pem()
                 self.f_publicKey = key.public_as_pem()
 
     @property
@@ -67,6 +67,12 @@ class Actor(thing.Object):
     def publicKey(self):
         result = self['publicKey']
 
+    def __setitem__(self, name, value):
+        if name=='privateKey':
+            self.privateKey = value
+
+        super().__setitem__(name, value)
+
     def __getitem__(self, name):
         if self.is_local:
 
@@ -74,6 +80,8 @@ class Actor(thing.Object):
                     'followers', 'following',
                     ):
                 return self.list_path(name)
+            elif name=='privateKey':
+                return self.privateKey
 
         return super().__getitem__(name)
 
