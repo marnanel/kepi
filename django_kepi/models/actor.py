@@ -36,6 +36,13 @@ class Actor(thing.Object):
             max_length=255,
             )
 
+    @property
+    def url(self):
+        if self.remote_url is not None:
+            return self.remote_url
+
+        return settings.KEPI['USER_URL_FORMAT'] % (self.number,)
+
     def _after_create(self):
         if self.privateKey is None and self.f_publicKey is None:
 
