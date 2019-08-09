@@ -17,5 +17,6 @@ urlpatterns = [
         # at the root.
 
         path('.well-known/host-meta', django_kepi.views.HostMeta.as_view()),
+        path('.well-known/webfinger', django_kepi.views.Webfinger.as_view()),
         ]
 
