@@ -50,6 +50,12 @@ class Actor(thing.Object):
                 self.privateKey = key.private_as_pem()
                 self.f_publicKey = key.public_as_pem()
 
+    def __str__(self):
+        if self.is_local:
+            return 'local user {}'.format(self.f_preferredUsername)
+        else:
+            return 'remote user {}'.format(self.remote_url)
+
     @property
     def key_name(self):
         """
