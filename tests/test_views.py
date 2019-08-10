@@ -19,6 +19,10 @@ def _response_to_dict(response):
 
 class TestKepiView(TestCase):
 
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+        self.maxDiff = None
+
     def test_single_kepi_view(self):
 
         alice = create_local_person('alice')
@@ -27,13 +31,14 @@ class TestKepiView(TestCase):
         response = c.get('/users/alice')
         result = _response_to_dict(response)
 
-        self.assertDictEqual(
-                result,
+        self.assertDictContainsSubset(
                 {
                     'name': 'alice',
-                    'id': 'https://altair.example.com/users/alice',
+                    'id': 'https://testserver/users/alice',
                     'type': 'Person',
+                    'preferredUsername': 'alice',
                     },
+                result,
                 )
 
     def test_multiple_kepi_view(self):
@@ -45,40 +50,50 @@ class TestKepiView(TestCase):
         response = c.get('/users')
         result = _response_to_dict(response)
 
-        self.assertDictEqual(
-                result,
+        self.assertDictContainsSubset(
                 {
                     "first": "http://testserver/users?page=1",
                     "id": "http://testserver/users",
                     "totalItems": 2,
                     "type": "OrderedCollection"
-                    }
+                    },
+                result,
                 )
 
         response = c.get('/users?page=1')
         result = _response_to_dict(response)
 
-        self.assertDictEqual(
-                result,
+        self.assertDictContainsSubset(
                 {
                     'id': 'http://testserver/users?page=1',
-                    'orderedItems': [
-                        { 'id': 'https://altair.example.com/users/alice',
-                            'name': 'alice',
-                            'type': 'Person',
-                            },
-                        { 'id': 'https://altair.example.com/users/bob',
-                            'name': 'bob',
-                            'type': 'Person',
-                            }
-                        ],
                     'partOf': 'http://testserver/users',
                     'totalItems': 2,
                     'type': 'OrderedCollectionPage',
-                    }
+                    },
+                result,
                 )
 
+        self.assertEqual(
+                len(result['orderedItems']),
+                2)
+
+        for item, name in zip(
+                result['orderedItems'],
+                ['alice', 'bob']):
+            self.assertDictContainsSubset(
+                    {
+                        'id': 'https://testserver/users/'+name,
+                        'name': name,
+                        'type': 'Person',
+                        },
+                    item,
+                    )
+
 class TestTombstone(TestCase):
+
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+        self.maxDiff = None
 
     def test_tombstone(self):
 
@@ -88,13 +103,13 @@ class TestTombstone(TestCase):
         response = c.get('/users/queen_anne')
 
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-                _response_to_dict(response),
+        self.assertDictContainsSubset(
                 {
                     'name': 'queen_anne',
-                    'id': 'https://altair.example.com/users/queen_anne',
+                    'id': 'https://testserver/users/queen_anne',
                     'type': 'Person',
                     },
+                _response_to_dict(response),
                 )
 
         queen_anne.entomb()
@@ -102,12 +117,12 @@ class TestTombstone(TestCase):
         response = c.get('/users/queen_anne')
 
         self.assertEqual(response.status_code, 410)
-        self.assertDictEqual(
-                _response_to_dict(response),
+        self.assertDictContainsSubset(
                 {
-                    'id': 'https://altair.example.com/users/queen_anne',
+                    'id': 'https://testserver/users/queen_anne',
                     'type': 'Tombstone',
                     'former_type': 'Person',
                     'name': 'queen_anne',
                     },
+                _response_to_dict(response),
                 )
