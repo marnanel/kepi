@@ -267,18 +267,11 @@ class Object(PolymorphicModel):
         if not hasattr(side_effects, f_type):
             logger.debug('  -- no side effects for %s',
                     f_type)
-            return
+            return True
 
         result = getattr(side_effects, f_type)(self)
 
-        if result==False:
-            logger.debug('  -- deleting original object')
-
-            try:
-                self.delete()
-            except:
-                logger.info('    -- deletion failed, probably because of '+\
-                        'https://code.djangoproject.com/ticket/23076')
+        return result
 
     @property
     def is_local(self):

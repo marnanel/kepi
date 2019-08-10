@@ -83,7 +83,17 @@ def create(
     result.save()
 
     if run_side_effects:
-        result.run_side_effects()
+        success = result.run_side_effects()
+        if not success:
+            logger.debug('  -- deleting original object')
+            try:
+                # FIXME This fails because "delete" is a type name!
+                result.delete()
+            except:
+                logger.debug('    -- deletion failed; marking inactive')
+                result.active = False
+                result.save()
+            return None
 
     if run_delivery:
         deliver(result.number,
