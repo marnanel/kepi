@@ -71,6 +71,48 @@ class KepiView(django.views.View):
             self.__class__,
             ))
 
+    def post(self, request, *args, **kwargs):
+
+        if request.headers['Content-Type'] not in [
+                'application/activity+json',
+                'application/json',
+                ]:
+            return HttpResponse(
+                    status = 415, # unsupported media type
+                    reason = 'Try application/activity+json',
+                    )
+        try:
+            fields = json.loads(
+                    str(request.body, encoding='UTF-8'))
+        except json.decoder.JSONDecodeError:
+            return HttpResponse(
+                    status = 415, # unsupported media type
+                    reason = 'Invalid JSON',
+                    )
+        except UnicodeDecodeError:
+            return HttpResponse(
+                    status = 400, # bad request
+                    reason = 'Invalid UTF-8',
+                    )
+
+        validate(
+                path = request.path,
+                headers = request.headers,
+                body = request.body,
+                # is_local_user is used by create() to
+                # determine whether to strip or require the
+                # "id" field.
+                # FIXME it probably shouldn't always be False here.
+                is_local_user = False,
+                )
+
+        return HttpResponse(
+                status = 200,
+                reason = 'Thank you',
+                content = '',
+                content_type = 'text/plain',
+                )
+
     def get(self, request, *args, **kwargs):
         """
         Returns a rendered HttpResult for a GET request.
