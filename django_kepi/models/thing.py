@@ -293,7 +293,7 @@ class Object(PolymorphicModel):
     def entomb(self):
         logger.info('%s: entombing', self)
 
-        if self.f_type=='Tombstone':
+        if self['former_type'] is not None:
             logger.warn('   -- already entombed; ignoring')
             return
 
@@ -301,9 +301,9 @@ class Object(PolymorphicModel):
             raise ValueError("%s: you can't entomb remote things %s",
                     self, str(self.remote_url))
 
-        self['type'] = 'Tombstone'
+        self['former_type'] = self.f_type
         self['deleted'] = datetime.datetime.now()
-        self.active = True
+        self.active = False
 
         self.save()
         logger.info('%s: entombed', self)

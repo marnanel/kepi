@@ -91,6 +91,10 @@ class KepiView(django.views.View):
         return self._render_object(request, result)
 
     def _to_json(self, data):
+
+        if 'former_type' in data:
+            data['type'] = 'Tombstone'
+
         result = JsonResponse(
                 data=data,
                 json_dumps_params={
@@ -101,7 +105,7 @@ class KepiView(django.views.View):
 
         result['Content-Type'] = 'application/activity+json'
 
-        if data['type']=='Tombstone':
+        if 'former_type' in data:
             result.reason = 'Entombed'
             result.status_code = 410
 
@@ -325,7 +329,7 @@ class AllUsersView(KepiView):
 
         logger.debug('Finding all users.')
 
-        return Object.objects.filter(f_type='Person')
+        return Actor.objects.all()
 
     def _modify_list_item(self, obj):
         return obj.activity_form
