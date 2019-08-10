@@ -57,7 +57,21 @@ MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
 logger = logging.getLogger(name='django_kepi')
 
 def create_local_person(name='jemima',
+        load_default_keys_from='tests/keys/keys-0003.json',
         **kwargs):
+
+    if 'publicKey' or 'privateKey' not in kwargs:
+        keys = json.load(open(load_default_keys_from, 'r'))
+
+        if 'publicKey' not in kwargs:
+            kwargs['publicKey'] = keys['public']
+
+        if 'privateKey' not in kwargs:
+            kwargs['privateKey'] = keys['private']
+
+    else:
+        keys = None
+
     spec = {
         'name': name,
         'preferredUsername': name,
