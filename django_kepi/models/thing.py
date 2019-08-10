@@ -1,5 +1,6 @@
 from django.db import models, IntegrityError
 from django.conf import settings
+from django.utils import timezone
 from polymorphic.models import PolymorphicModel
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.thingfield import ThingField
@@ -8,7 +9,6 @@ import django_kepi.side_effects as side_effects
 import logging
 import random
 import json
-import datetime
 import warnings
 
 logger = logging.getLogger(name='django_kepi')
@@ -295,7 +295,7 @@ class Object(PolymorphicModel):
                     self, str(self.remote_url))
 
         self['former_type'] = self.f_type
-        self['deleted'] = datetime.datetime.now()
+        self['deleted'] = timezone.now()
         self.active = False
 
         self.save()

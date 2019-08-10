@@ -6,7 +6,7 @@ import django.urls
 from urllib.parse import urlparse
 from django.http.request import HttpRequest
 from django_kepi.create import create
-import datetime
+from django.utils import timezone
 import json
 import mimeparse
 
@@ -19,7 +19,7 @@ class Fetch(models.Model):
             )
 
     date = models.DateTimeField(
-            default = datetime.datetime.now,
+            default = timezone.now,
             )
 
 class ThingRequest(HttpRequest):
