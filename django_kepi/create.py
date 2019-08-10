@@ -55,10 +55,14 @@ def create(
     try:
         import django_kepi.models as kepi_models
         cls = getattr(locals()['kepi_models'], value['type'])
+    except AttributeError:
+        logger.warn("There's no type called %s",
+                value['type'])
+        return None
     except KeyError:
-        # shouldn't happen!
-        logger.warn("The class '%s' wasn't exported properly",
-                type_spec['class'])
+        logger.warn("The class '%s' wasn't exported properly. "+\
+                "This shouldn't happen.",
+                value['type'])
         return None
 
     logger.debug('Class for %s is %s', value['type'], cls)
