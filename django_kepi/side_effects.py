@@ -7,6 +7,8 @@ logger = logging.getLogger(name='django_kepi')
 
 def accept(activity):
 
+    from django_kepi.models.following import Following
+
     obj = activity['object__obj']
 
     if obj['type']!='Follow':
@@ -16,7 +18,7 @@ def accept(activity):
 
     logger.debug(' -- follow accepted')
 
-    django_kepi.models.following.accept(
+    Following.accept_request(
             follower = obj['actor'],
             following = activity['actor'],
             )
