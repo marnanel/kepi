@@ -81,7 +81,10 @@ class TestFind(TestCase):
 
     def test_find_local_404(self):
 
-        found = find(settings.KEPI['ACTIVITY_URL_FORMAT'] % ('walrus',) )
+        found = find(settings.KEPI['ACTIVITY_URL_FORMAT'] % {
+            'number': 'walrus',
+            'hostname': 'altair.example.com',
+            })
 
         self.assertIsNone(
                 found,

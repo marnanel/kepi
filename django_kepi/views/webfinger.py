@@ -60,7 +60,10 @@ class Webfinger(django.views.View):
                     content_type = 'text/plain',
                     )
 
-        actor_url = settings.KEPI['USER_URL_FORMAT'] % (username,)
+        actor_url = settings.KEPI['USER_URL_FORMAT'] % {
+                'username': username,
+                'hostname': hostname,
+                }
 
         result = {
                 "subject" : "acct:{}@{}".format(username, hostname),

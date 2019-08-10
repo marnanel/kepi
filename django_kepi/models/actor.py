@@ -41,7 +41,10 @@ class Actor(thing.Object):
         if self.remote_url is not None:
             return self.remote_url
 
-        return settings.KEPI['USER_URL_FORMAT'] % (self.number,)
+        return settings.KEPI['USER_URL_FORMAT'] % {
+                'username': self.f_preferredUsername,
+                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                }
 
     def _after_create(self):
         if self.privateKey is None and self.f_publicKey is None:

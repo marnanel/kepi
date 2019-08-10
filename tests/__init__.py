@@ -61,10 +61,19 @@ def create_local_person(name='jemima',
     spec = {
         'name': name,
         'preferredUsername': name,
-        'id': settings.KEPI['USER_URL_FORMAT'] % (name),
+        'id': settings.KEPI['USER_URL_FORMAT'] % {
+            'username': name,
+            'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+            },
         'type': 'Person',
-        'endpoints': {'sharedInbox': settings.KEPI['SHARED_INBOX']},
-        'inbox': settings.KEPI['SHARED_INBOX'],
+        'endpoints': {
+            'sharedInbox': settings.KEPI['SHARED_INBOX'] % {
+                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                },
+            },
+        'inbox': settings.KEPI['SHARED_INBOX'] % {
+                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+            },
         }
 
     spec.update(kwargs)

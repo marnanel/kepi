@@ -53,7 +53,10 @@ class Object(PolymorphicModel):
         if self.remote_url is not None:
             return self.remote_url
 
-        return settings.KEPI['ACTIVITY_URL_FORMAT'] % (self.number,)
+        return settings.KEPI['ACTIVITY_URL_FORMAT'] % {
+                'number': self.number,
+                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                }
 
     @property
     def id(self):

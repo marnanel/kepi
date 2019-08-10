@@ -32,13 +32,12 @@ SECRET_KEY = 'cmfy8%_q^u#bix$_4bq!p^8eq@=46bb*a7ztmg4i)l8jo(kl%^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# XXX This is a mess. Make it consistent
 KEPI = {
-        'ACTIVITY_URL_FORMAT': 'https://altair.example.com/%s',
-        'USER_URL_FORMAT': 'https://altair.example.com/users/%s',
+        'ACTIVITY_URL_FORMAT': 'https://%(hostname)s/%(number)s',
+        'USER_URL_FORMAT': 'https://%(hostname)s/users/%(username)s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
         'COLLECTION_PATH': '/users/%(username)s/%(listname)s',
-        'SHARED_INBOX': 'https://altair.example.com/sharedInbox',
+        'SHARED_INBOX': 'https://%(hostname)s/sharedInbox',
         'TOMBSTONES': True,
         }
 
