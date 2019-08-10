@@ -1,6 +1,6 @@
 from django_kepi import ATSIGN_CONTEXT
 import django_kepi.validation
-from django_kepi.find import find
+from django_kepi.find import find, is_local
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
@@ -285,14 +285,14 @@ class FollowingView(KepiView):
 
     def activity_get(self, request, *args, **kwargs):
 
-        logger.debug('Finding following of %s:', kwargs['name'])
+        logger.debug('Finding following of %s:', kwargs['username'])
 
         person = Actor.objects.get(
-                f_preferredUsername=kwargs['name'],
+                f_preferredUsername=kwargs['username'],
                 )
 
         logging.debug('Finding followers of %s: %s',
-                kwargs['name'], person)
+                kwargs['username'], person)
 
         return Following.objects.filter(follower=person.url,
                 pending=False)
@@ -308,14 +308,14 @@ class FollowersView(KepiView):
 
     def activity_get(self, request, *args, **kwargs):
 
-        logger.debug('Finding followers of %s:', kwargs['name'])
+        logger.debug('Finding followers of %s:', kwargs['username'])
 
         person = Actor.objects.get(
-                f_preferredUsername=kwargs['name'],
+                f_preferredUsername=kwargs['username'],
                 )
 
         logging.debug('Finding followers of %s: %s',
-                kwargs['name'], person)
+                kwargs['username'], person)
 
         return Following.objects.filter(following=person.url,
                 pending=False)
@@ -372,12 +372,42 @@ class UserCollectionView(KepiView):
 
                 raise Http404()
 
+    def activity_store(self, request,
+            username,
+            listname,
+            *args, **kwargs):
+
+        from django_kepi.models.collection import Collection, CollectionMember
+
+        logger.debug('Finding user %s\'s %s collection',
+                username, listname)
+        try:
+            the_collection = Collection.objects.get(
+                    owner__f_preferredUsername = username,
+                    name = listname)
+
+            logger.debug('  -- found collection: %s. Appending %s.',
+                the_collection, request.activity)
+
+            the_collection.append(request.activity)
+
+        except Collection.DoesNotExist:
+
+            if self._default_to_existing:
+                logger.debug('  -- does not exist; doing nothing')
+                return
+            else:
+                logger.debug('  -- does not exist; 404')
+                raise Http404()
+
     def _modify_list_item(self, obj):
         return obj.member.activity_form
 
 class InboxView(UserCollectionView):
 
     _default_to_existing = True
+
+    # username can be None for the shared inbox.
 
     # FIXME: Only externally visible to the owner
     def activity_get(self, request, username=None, *args, **kwargs):
@@ -395,50 +425,51 @@ class InboxView(UserCollectionView):
                 listname = 'inbox',
                 )
 
-    def post(self, request, name=None, *args, **kwargs):
+    def activity_store(self, request,
+            username=None, *args, **kwargs):
 
-        # name is None for the shared inbox.
+        from django_kepi.delivery import deliver
 
-        if request.headers['Content-Type'] not in [
-                'application/activity+json',
-                'application/json',
-                ]:
-            return HttpResponse(
-                    status = 415, # unsupported media type
-                    reason = 'Try application/activity+json',
+        if username is None:
+            logger.info('    -- storing into the shared inbox')
+
+            # This is a bit of a hack, but I don't want people
+            # submitting requests to the shared inbox which
+            # ask to be submitted back to the shared inbox.
+            if hasattr(request, 'no_multiplexing'):
+                logger.info("        -- but we've been down this road before")
+                return
+            else:
+                request.no_multiplexing = True
+
+            recipients = sorted(set([url for urls in [
+                urls for name,urls in request.activity.audiences.items()
+                ] for url in urls]))
+
+            for recipient in recipients:
+
+                if not is_local(recipient):
+                    logger.info('      -- recipient %s is remote; ignoring',
+                            recipient)
+                    continue
+
+                logger.info('      -- recipient %s gets a copy',
+                            recipient)
+
+                deliver(
+                        request.activity,
+                        incoming = True,
+                        )
+
+            logger.info('    -- storing to shared inbox done')
+
+        else:
+
+            super().activity_store(
+                    request,
+                    username = username,
+                    listname = 'inbox',
                     )
-
-        try:
-            fields = json.loads(
-                    str(request.body, encoding='UTF-8'))
-        except json.decoder.JSONDecodeError:
-            return HttpResponse(
-                    status = 415, # unsupported media type
-                    reason = 'Invalid JSON',
-                    )
-        except UnicodeDecodeError:
-            return HttpResponse(
-                    status = 400, # bad request
-                    reason = 'Invalid UTF-8',
-                    )
-
-        validate(
-                path = request.path,
-                headers = request.headers,
-                body = request.body,
-                # is_local_user is used by create() to
-                # determine whether to strip or require the
-                # "id" field.
-                # FIXME it probably shouldn't always be False here.
-                is_local_user = False,
-                )
-
-        return HttpResponse(
-                status = 200,
-                reason = 'Thank you',
-                content = '',
-                content_type = 'text/plain',
-                )
 
 class OutboxView(UserCollectionView):
 

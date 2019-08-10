@@ -13,6 +13,10 @@ PAGE_LENGTH = 50
 
 class CollectionTests(TestCase):
 
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+        self.maxDiff = None
+
     def check_collection(self,
             path,
             expectedTotalItems):
@@ -109,9 +113,9 @@ class CollectionTests(TestCase):
 
         PATH = '/users'
         EXPECTED_SERIALIZATION = [
-                {'id': 'https://altair.example.com/users/alice', 'name': 'alice', 'type': 'Person', },
-                {'id': 'https://altair.example.com/users/bob', 'name': 'bob', 'type': 'Person', },
-                {'id': 'https://altair.example.com/users/carol', 'name': 'carol', 'type': 'Person', },
+                {'id': 'https://testserver/users/alice', 'name': 'alice', 'type': 'Person', },
+                {'id': 'https://testserver/users/bob', 'name': 'bob', 'type': 'Person', },
+                {'id': 'https://testserver/users/carol', 'name': 'carol', 'type': 'Person', },
                 ]
 
         users = [
@@ -168,9 +172,9 @@ class CollectionTests(TestCase):
                 page_number=1,
                 expectedTotalItems=3,
                 expectedOnPage=[
-                    'https://altair.example.com/users/alice',
-                    'https://altair.example.com/users/bob',
-                    'https://altair.example.com/users/carol',
+                    'https://testserver/users/alice',
+                    'https://testserver/users/bob',
+                    'https://testserver/users/carol',
                     ],
                 )
 
@@ -188,7 +192,7 @@ class CollectionTests(TestCase):
                     page_number=1,
                     expectedTotalItems=1,
                     expectedOnPage=[
-                        'https://altair.example.com/users/alice',
+                        'https://testserver/users/alice',
                     ],
                      )
 
