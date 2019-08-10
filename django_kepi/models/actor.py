@@ -3,6 +3,7 @@ from django.conf import settings
 from . import thing
 import django_kepi.crypto
 import logging
+import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -86,8 +87,11 @@ class Actor(thing.Object):
     def __setitem__(self, name, value):
         if name=='privateKey':
             self.privateKey = value
-
-        super().__setitem__(name, value)
+        elif name=='publicKey':
+            self.f_publicKey = json.dumps(value,
+                    sort_keys = True)
+        else:
+            super().__setitem__(name, value)
 
     def __getitem__(self, name):
         if self.is_local:
@@ -98,6 +102,9 @@ class Actor(thing.Object):
                 return self.list_path(name)
             elif name=='privateKey':
                 return self.privateKey
+
+        if name=='publicKey':
+            return json.loads(self.f_publicKey)
 
         return super().__getitem__(name)
 
