@@ -18,11 +18,11 @@ REMOTE_DAVE_DOMAIN = urlparse(REMOTE_DAVE_ID).netloc
 REMOTE_DAVE_FOLLOWERS = REMOTE_DAVE_ID + 'followers'
 REMOTE_DAVE_KEY = REMOTE_DAVE_ID + '#main-key'
 
-ALICE_ID = 'https://altair.example.com/users/alice'
+ALICE_ID = 'https://testserver/users/alice'
 OUTBOX = ALICE_ID+'/outbox'
 OUTBOX_PATH = '/users/alice/outbox'
 
-BOB_ID = 'https://altair.example.com/users/bob'
+BOB_ID = 'https://testserver/users/bob'
 MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 
 # as given in https://www.w3.org/TR/activitypub/
@@ -51,17 +51,19 @@ logger = logging.getLogger(name='django_kepi')
 
 class TestOutbox(TestCase):
 
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+        settings.ALLOWED_HOSTS = [
+                'altair.example.com',
+                'testserver',
+                ]
+
     def _send(self,
             content,
             keys = None,
             sender = None,
             signed = True,
             ):
-
-        settings.ALLOWED_HOSTS = [
-                'altair.example.com',
-                'testserver',
-                ]
 
         if keys is None:
             keys = json.load(open('tests/keys/keys-0001.json', 'r'))
@@ -144,7 +146,7 @@ class TestOutbox(TestCase):
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(ALICE_ID),
+                f_attributedTo=ALICE_ID,
                 )
 
         self.assertEqual(
@@ -158,7 +160,7 @@ class TestOutbox(TestCase):
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(ALICE_ID),
+                f_attributedTo=ALICE_ID,
                 )
 
         something = self._get_collection(OUTBOX)
@@ -187,7 +189,7 @@ class TestOutbox(TestCase):
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(REMOTE_DAVE_ID),
+                f_attributedTo=REMOTE_DAVE_ID,
                 )
 
         self.assertEqual(
@@ -221,7 +223,7 @@ class TestOutbox(TestCase):
                 )
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(sender.id),
+                f_attributedTo=sender.id,
                 )
 
         self.assertEqual(
@@ -255,13 +257,13 @@ class TestOutbox(TestCase):
                 content = create,
                 )
 
-        activities = Activity.objects.all(
+        activities = Activity.objects.filter(
+                active = True,
                 )
 
         self.assertEqual(
                 len(activities),
                 0)
-
 
     def test_like(self):
 
@@ -279,7 +281,7 @@ class TestOutbox(TestCase):
             )
 
         self.assertEqual(
-                len(Object.objects.filter(f_actor=json.dumps(ALICE_ID))),
+                len(Object.objects.filter(f_actor=ALICE_ID)),
                 1)
 
         # TODO When Actors have liked() and Things have likes(),
@@ -309,7 +311,7 @@ class TestOutbox(TestCase):
                     }
             )
 
-        note = Item.objects.get(f_attributedTo = json.dumps(ALICE_ID))
+        note = Item.objects.get(f_attributedTo = ALICE_ID)
 
         self.assertEqual(
                 note['content'],
@@ -340,7 +342,7 @@ class TestOutbox(TestCase):
                     }
             )
 
-        note = Item.objects.get(f_attributedTo = json.dumps(BOB_ID))
+        note = Item.objects.get(f_attributedTo = BOB_ID)
 
         # no change, because Alice doesn't own this note
         self.assertEqual(
