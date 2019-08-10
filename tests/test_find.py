@@ -43,12 +43,13 @@ class TestFind(TestCase):
                 found.is_local,
                 )
 
-        self.assertDictEqual(
-                found.activity_form,
-                {'attributedTo': 'https://europa.example.org/someone-else',
+        self.assertDictContainsSubset(
+                {
+                    'attributedTo': 'https://europa.example.org/someone-else',
                     'id': 'https://remote.example.net/fnord',
                     'to': ['https://altair.example.com/someone'],
-                    'type': '"Note"'}
+                    'type': 'Note'},
+                found.activity_form,
                 )
 
     @httpretty.activate
