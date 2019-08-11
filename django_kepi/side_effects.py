@@ -1,6 +1,6 @@
 import logging
 from django.conf import settings
-from django_kepi.find import find
+from django_kepi.find import find, is_local
 from django_kepi.delivery import deliver
 
 logger = logging.getLogger(name='django_kepi')
@@ -88,36 +88,131 @@ def create(activity):
 
     import django_kepi.models as kepi_models
     from django_kepi.create import create as kepi_create
+    from django_kepi.models.audience import AUDIENCE_FIELD_KEYS
 
-    raw_material = dict([('f_'+f, v)
-        for f,v in activity['object'].items()])
+    raw_material = activity['object'].copy()
 
-    if issubclass(getattr(kepi_models,
-        raw_material['f_type']),
-        kepi_models.Activity):
+    f_type = raw_material['type'].title()
 
+    logger.debug('Raw material before adjustments is %s.',
+            raw_material)
+
+    for field in AUDIENCE_FIELD_KEYS.union(['attributedTo']):
+        # copy audiences, per
+        # https://www.w3.org/TR/activitypub/ 6.2
+        if field in activity:
+            value = activity[field]
+            if value:
+                raw_material[field] = value
+
+    try:
+        if issubclass(getattr(kepi_models,
+            f_type),
+            kepi_models.Activity):
+
+            logger.warn('Attempt to use Create to create '+\
+                    'an object of type %s. '+\
+                    'Create can only create non-activities. '+\
+                    'Deleting original Create.',
+                    f_type)
+
+            return False
+    except AttributeError:
         logger.warn('Attempt to use Create to create '+\
                 'an object of type %s. '+\
-                'Create can only create non-activities. '+\
-                'Deleting original Create.',
-                raw_material['f_type'])
-
+                'I have no idea what that is!',
+                f_type)
         return False
 
-    if raw_material.get('attributedTo',None)!=activity['actor']:
-        logger.warn('Attribution on object is %s, but '+\
-                'actor on Create is %s; '+\
-                'fixing this and continuing',
-                raw_material.get('attributedTo', None),
-                activity['actor'],
-                )
+    if 'actor' in activity:
+        attributedTo = raw_material.get('attributedTo', None)
 
-    raw_material['attributedTo'] = activity['actor']
+        if attributedTo!=activity['actor']:
+            logger.warn('Attribution on object is %s, but '+\
+                    'actor on Create is %s; '+\
+                    'fixing this and continuing',
+                    attributedTo,
+                    activity['actor'],
+                    )
+            raw_material['attributedTo'] = activity['actor']
 
-    # XXX and also copy audiences, per
-    # https://www.w3.org/TR/activitypub/ 6.2
+    logger.debug('Raw material after adjustments is %s.',
+            raw_material)
 
-    creation = kepi_create(**raw_material,
+    def it_is_relevant(something, activity):
+
+        logger.debug('Checking whether the new object is relevant to us.')
+
+        for f,v in something.items():
+            if (f not in AUDIENCE_FIELD_KEYS) and \
+                    f!='attributedTo':
+                continue
+
+            if type(v)!=list:
+                v=[v]
+
+            logger.debug('  -- checking %s, currently %s',
+                    f, v)
+            for a in v:
+                logger.debug('  -- is %s local?', a)
+                if is_local(a):
+                    logger.debug('    -- yes!')
+                    return True
+
+        try:
+            tags = something['tag']
+            logger.debug('  -- checking mentions; tags are %s',
+                    tags)
+            for tag in tags:
+                if tag['type'].title()!='Mention':
+                    continue
+
+                logger.debug('  -- is %s local?', tag['href'])
+                if is_local(tag['href']):
+                    logger.debug('    -- yes!')
+                    return True
+
+        except KeyError:
+            logger.debug('  -- failed to find anything out '+\
+                    'from the mentions.')
+
+        try:
+            inReplyTo = something['inReplyTo']
+
+            logger.debug('  -- checking inReplyTo, currently %s',
+                    inReplyTo)
+
+            if find(inReplyTo, local_only=True):
+                logger.debug('    -- which is one of ours, so yes')
+                return True
+        except KeyError:
+            logger.debug('  -- failed to find anything out '+\
+                    'from inReplyTo.')
+
+
+        logger.debug('  -- does actor %s have local followers?',
+                activity['actor'])
+        try:
+            if kepi_models.Following.objects.filter(
+                    following = activity['actor'],
+                    ):
+                logger.debug('    -- yes!')
+                return True
+        except KeyError:
+            logger.debug('  -- failed to find anything out '+\
+                    'about local followers of actor.')
+
+        logger.debug('  -- no, so it\'s irrelevant.')
+        return False
+
+    if not it_is_relevant(raw_material, activity):
+        logger.warn('Attempt to use Create to create '+\
+                'an object which isn\'t addressed to us. '+\
+                'To be honest, that\'s none of our business.')
+        return False
+
+    creation = kepi_create(
+            value = raw_material,
             is_local = activity.is_local,
             run_side_effects = False)
     activity['object'] = creation

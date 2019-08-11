@@ -4,27 +4,40 @@ from django_kepi.create import create
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
 from django_kepi.models.item import Item
+from .. import create_local_person
 import logging
 import json
+from django.conf import settings
 
-SENDER_ID = 'https://example.com/actor'
-SENDER_DOMAIN = 'example.com'
-SENDER_FOLLOWERS = 'https://example.com/followers'
-
-RECIPIENT_ID = 'https://altair.example.com/users/fred'
+REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
+LOCAL_FRED = 'https://testserver/users/fred'
 
 logger = logging.getLogger(name='django_kepi')
 
 class TestCreate(TestCase):
 
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+        self._fred = create_local_person(
+                name = 'fred',
+                )
+
     def _send_create_for_object(self,
-            object_form):
+            object_form,
+            sender = None,
+            ):
+
+        if sender is None:
+            sender = self._fred.id
+
+        if 'id' not in object_form:
+            object_form['id'] = sender+'#bar'
 
         create_form = {
                 '@context': 'https://www.w3.org/ns/activitystreams',
-                'id': SENDER_ID + '#foo',
+                'id': sender + '#foo',
                 'type': 'Create',
-                'actor': SENDER_ID,
+                'actor': sender,
                 'object': object_form,
         }
 
@@ -36,7 +49,7 @@ class TestCreate(TestCase):
         logger.info('Created activity: %s', activity)
 
         statuses = Item.objects.filter(
-                f_attributedTo=json.dumps(SENDER_ID),
+                f_attributedTo=sender,
                 )
 
         try:
@@ -50,7 +63,6 @@ class TestCreate(TestCase):
 
     def test_unknown_object_type(self):
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Banana',
             'content': 'Lorem ipsum',
           }
@@ -64,7 +76,6 @@ class TestCreate(TestCase):
 
     def test_standalone(self):
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
           }
@@ -90,7 +101,6 @@ class TestCreate(TestCase):
 
     def test_public(self):
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'to': 'https://www.w3.org/ns/activitystreams#Public',
@@ -117,7 +127,6 @@ class TestCreate(TestCase):
 
     def test_unlisted(self):
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'cc': 'https://www.w3.org/ns/activitystreams#Public',
@@ -144,10 +153,9 @@ class TestCreate(TestCase):
 
     def test_private(self):
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
-            'to': 'http://example.com/followers',
+            'to': 'https://testserver/users/fred/followers',
           }
 
         status = self._send_create_for_object(object_form)
@@ -171,13 +179,10 @@ class TestCreate(TestCase):
 
     def test_limited(self):
 
-        recipient = create_local_person()
-
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
-            'to': recipient.id,
+            'to': self._fred.id,
           }
 
         status = self._send_create_for_object(object_form)
@@ -193,24 +198,15 @@ class TestCreate(TestCase):
                 msg = 'status is limited',
                 )
 
-        self.assertEqual(
-                status.is_silent,
-                True,
-                msg = 'status is silent',
-                )
-
     def test_direct(self):
 
-        recipient = create_local_person()
-
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
-            'to': RECIPIENT_ID,
+            'to': LOCAL_FRED,
             'tag': {
                 'type': 'Mention',
-                'href': RECIPIENT_ID,
+                'href': LOCAL_FRED,
                 },
           }
 
@@ -232,7 +228,6 @@ class TestCreate(TestCase):
         original_status = create_local_note()
 
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'inReplyTo': original_status.id,
@@ -271,16 +266,13 @@ class TestCreate(TestCase):
 
     def test_with_mentions(self):
 
-        recipient = create_local_person()
-
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'tag': [
               {
                 'type': 'Mention',
-                'href': recipient.id,
+                'href': self._fred.id,
               },
             ],
           }
@@ -293,15 +285,14 @@ class TestCreate(TestCase):
                 )
 
         self.assertIn(
-                recipient.id,
+                self._fred.id,
                 status.mentions,
-                msg = 'status mentions recipient',
+                msg = 'status mentions self._fred',
                 )
 
     def test_with_mentions_missing_href(self):
 
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'tag': [
@@ -332,17 +323,17 @@ class TestCreate(TestCase):
 
         following = Following(
                 follower = local_user,
-                following = SENDER_ID,
+                following = REMOTE_ALICE,
                 )
         following.save()
 
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
           }
 
-        status = self._send_create_for_object(object_form)
+        status = self._send_create_for_object(object_form,
+                sender=REMOTE_ALICE)
 
         self.assertIsNotNone(
                 status,
@@ -360,7 +351,6 @@ class TestCreate(TestCase):
         local_status = create_local_note()
 
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'inReplyTo': local_status.id,
@@ -384,7 +374,6 @@ class TestCreate(TestCase):
         local_user = create_local_person()
 
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'Note',
             'content': 'Lorem ipsum',
             'to': local_user.id,
@@ -408,7 +397,6 @@ class TestCreate(TestCase):
         local_user = create_local_person()
 
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'note',
             'content': 'lorem ipsum',
             'cc': local_user.id,
@@ -432,13 +420,12 @@ class TestCreate(TestCase):
         local_user = create_local_person()
 
         object_form = {
-            'id': SENDER_ID + '#bar',
             'type': 'note',
             'content': 'lorem ipsum',
-            'cc': local_user.id,
           }
 
-        status = self._send_create_for_object(object_form)
+        status = self._send_create_for_object(object_form,
+                sender = REMOTE_ALICE)
 
         self.assertIsNone(
                 status,

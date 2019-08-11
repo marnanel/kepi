@@ -1,10 +1,9 @@
 from django.db import models
 from collections import defaultdict
+from .. import PUBLIC_IDS
 import logging
 
 logger = logging.getLogger('django_kepi')
-
-PUBLIC = 'https://www.w3.org/ns/activitystreams#Public'
 
 FIELD_AUDIENCE = 0x01 # literally "audience"
 FIELD_TO       = 0x02 
@@ -24,6 +23,7 @@ FIELD_CHOICES = [
         ]
 
 AUDIENCE_FIELD_NAMES = dict([(v,f) for (f,v) in FIELD_CHOICES])
+AUDIENCE_FIELD_KEYS = set([v for (f,v) in FIELD_CHOICES])
 
 class Audience(models.Model):
 

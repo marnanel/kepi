@@ -74,8 +74,9 @@ class Actor(thing.Object):
         """
         return '%s#main-key' % (self.url,)
 
-    def list_path(self, name):
-        return settings.KEPI['COLLECTION_PATH'] % {
+    def list_url(self, name):
+        return settings.KEPI['COLLECTION_URL'] % {
+                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                 'username': self.f_preferredUsername,
                 'listname': name,
                 }
@@ -99,7 +100,7 @@ class Actor(thing.Object):
             if name in ('inbox', 'outbox',
                     'followers', 'following',
                     ):
-                return self.list_path(name)
+                return self.list_url(name)
             elif name=='privateKey':
                 return self.privateKey
 

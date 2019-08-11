@@ -1,5 +1,6 @@
 from django.db import models
 from . import thing, audience
+from .. import PUBLIC_IDS
 import logging
 
 logger = logging.getLogger(name='django_kepi')
@@ -27,9 +28,15 @@ class Item(thing.Object):
         logger.debug('%s: checking visibility in audiences: %s',
                 self.number, str(audiences))
 
-        if audience.PUBLIC in audiences.get('to', []):
+        audience_to = set(audiences.get('to', []))
+        audience_cc = set(audiences.get('cc', []))
+
+        if not audience_to.union(audience_cc):
+            logger.debug('  -- neither to nor cc, so direct')
+            return 'direct'
+        elif PUBLIC_IDS.intersection(audience_to):
             return 'public'
-        elif audience.PUBLIC in audiences.get('cc', []):
+        elif PUBLIC_IDS.intersection(audience_cc):
             return 'unlisted'
 
         actor = find(self.account, local_only=True)
@@ -41,10 +48,30 @@ class Item(thing.Object):
             logger.debug('%s: checking visibility from poster: %s',
                     self.number, actor)
 
-            if actor['following'] in audiences.get('to', []):
+            followers_url = actor['followers']
+
+            logger.debug('  -- is %s in %s?',
+                    followers_url, audience_to)
+
+            if followers_url in audience_to:
+                logger.debug('    -- yes, so private')
                 return 'private'
 
-        return 'direct'
+        # By now, it's either direct or limited.
+        # Direct means there's a mention with a
+        # recipient's name in it.
+
+        mentions = self.mentions
+
+        logger.debug('  -- is %s in %s?',
+                audience_to, mentions)
+
+        if audience_to.intersection(mentions):
+            logger.debug('    -- yes, so it\'s direct')
+            return 'direct'
+
+        logger.debug('  -- fallback to limited')
+        return 'limited'
 
     @property
     def text(self):
@@ -111,8 +138,8 @@ class Item(thing.Object):
         from django_kepi.models.mention import Mention
 
         logger.info('Finding Mentions for %s', self)
-        return [x.to_actor for x in
-                Mention.objects.filter(from_status=self)]
+        return set([x.to_actor for x in
+                Mention.objects.filter(from_status=self)])
 
     @property
     def conversation(self):

@@ -36,7 +36,7 @@ KEPI = {
         'ACTIVITY_URL_FORMAT': 'https://%(hostname)s/%(number)s',
         'USER_URL_FORMAT': 'https://%(hostname)s/users/%(username)s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
-        'COLLECTION_PATH': '/users/%(username)s/%(listname)s',
+        'COLLECTION_URL': 'https://%(hostname)s/users/%(username)s/%(listname)s',
         'SHARED_INBOX': 'https://%(hostname)s/sharedInbox',
         'TOMBSTONES': True,
         }

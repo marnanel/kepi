@@ -11,6 +11,12 @@ logger = logging.getLogger(name='django_kepi')
 
 ATSIGN_CONTEXT = "https://www.w3.org/ns/activitystreams", 
 
+PUBLIC_IDS = set([
+        'https://www.w3.org/ns/activitystreams#Public',
+        'as:Public',
+        'Public',
+        ])
+
 # Decorator
 def implements_activity_type(f_type):
     def register(cls):
