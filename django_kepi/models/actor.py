@@ -108,6 +108,13 @@ class Actor(thing.Object):
 
         return super().__getitem__(name)
 
+    @property
+    def activity_form(self):
+        result = super().activity_form
+
+        result['wombat'] = 1
+        return result
+
 ##############################
 
 class Application(Actor):

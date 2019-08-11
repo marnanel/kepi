@@ -94,8 +94,14 @@ class CollectionTests(TestCase):
         self.assertEqual(result['id'], full_path(page_number))
         self.assertEqual(result['totalItems'], expectedTotalItems)
         self.assertEqual(result['type'], 'OrderedCollectionPage')
-        self.assertEqual(result['orderedItems'], expectedOnPage)
         self.assertEqual(result['partOf'], full_path(None))
+        self.assertEqual(len(expectedOnPage), len(result['orderedItems']))
+
+        for actual, expected in zip(result['orderedItems'], expectedOnPage):
+            if type(expected)==dict:
+                self.assertDictContainsSubset(expected, actual)
+            else:
+                self.assertEqual(expected, actual)
 
         if page_number!=1:
             self.assertIn('prev', result)
@@ -140,8 +146,6 @@ class CollectionTests(TestCase):
                 )
 
     def test_followers_and_following(self):
-
-        self.maxDiff = None
 
         people = {}
 
