@@ -436,7 +436,29 @@ class UserCollectionView(KepiView):
         except Collection.DoesNotExist:
 
             if self._default_to_existing:
-                logger.debug('  -- does not exist; doing nothing')
+                logger.debug('  -- does not exist; creating it')
+
+                try:
+                    owner = Actor.objects.get(
+                            remote_url = None,
+                            f_preferredUsername = username,
+                    )
+                except Actor.DoesNotExist:
+                    logger.debug('    -- but user %s doesn\'t exist; bailing',
+                            username)
+                    return
+
+                the_collection = Collection(
+                        owner = owner,
+                        name = listname)
+
+                the_collection.save()
+
+                the_collection.append(request.activity)
+
+                logger.debug('    -- done: collection is %s',
+                        the_collection)
+
                 return
             else:
                 logger.debug('  -- does not exist; 404')
@@ -517,26 +539,13 @@ class OutboxView(UserCollectionView):
 
     _default_to_existing = True
 
-    def activity_store(self, request, *args, **kwargs):
-        # XXX this is too similar to the same method
-        # XXX in InboxView; move it into a superclass
-
-        from django_kepi.models.collection import Collection
-
-        inbox_name = Collection.build_name(
-                username = kwargs['username'],
-                collectionname = 'outbox',
+    def activity_store(self, request,
+            username, *args, **kwargs):
+        super().activity_store(
+                request,
+                username = username,
+                listname = 'outbox',
                 )
-
-        inbox = Collection.get(
-                name = inbox_name,
-                create_if_missing = True,
-                )
-
-        logger.debug('%s: storing %s',
-                inbox_name, request.activity)
-
-        inbox.append(request.activity)
 
     def post(self, request, *args, **kwargs):
         logger.debug('Outbox: received %s',

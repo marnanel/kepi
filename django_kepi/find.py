@@ -174,7 +174,8 @@ def is_local(url):
 
 def find(url,
         local_only=False,
-        do_not_fetch=False):
+        do_not_fetch=False,
+        object_to_store=None):
     """
     Finds an object.
 
@@ -202,7 +203,8 @@ def find(url,
     is_local = parsed_url.hostname in settings.ALLOWED_HOSTS
 
     if is_local:
-        return find_local(parsed_url.path)
+        return find_local(parsed_url.path,
+                object_to_store=object_to_store)
     else:
         if local_only:
             logger.info('find: url==%s but is_local==False; ignoring',
@@ -210,4 +212,5 @@ def find(url,
             return None
 
         return find_remote(
-                url=url)
+                url=url,
+                do_not_fetch=do_not_fetch)

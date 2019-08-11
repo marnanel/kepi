@@ -76,6 +76,9 @@ BOOST = {
 
 class TestOutbox(TestCase):
 
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+
     # XXX Add a boolean flag about whether to authenticate self
     def _get(self,
             url,

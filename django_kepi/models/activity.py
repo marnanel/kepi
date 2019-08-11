@@ -22,7 +22,7 @@ class Activity(thing.Object):
     def go_into_outbox_if_local(self):
 
         from django_kepi.models.collection import Collection
-        from django_kepi.find import find_local
+        from django_kepi.find import find
 
         if not self.is_local:
             return
@@ -36,7 +36,8 @@ class Activity(thing.Object):
         outbox_url = actor['outbox']
         logger.debug('  -- which is %s', outbox_url)
 
-        outbox = find_local(outbox_url,
+        outbox = find(outbox_url,
+                local_only=True,
                 object_to_store=self)
 
 ##############################
