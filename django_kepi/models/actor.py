@@ -88,9 +88,15 @@ class Actor(thing.Object):
     def __setitem__(self, name, value):
         if name=='privateKey':
             self.privateKey = value
+            logger.info('%s: setting private key to %s',
+                    self, self.privateKey)
+            self.save()
         elif name=='publicKey':
             self.f_publicKey = json.dumps(value,
                     sort_keys = True)
+            logger.info('%s: setting public key to %s',
+                    self, self.f_publicKey)
+            self.save()
         else:
             super().__setitem__(name, value)
 
@@ -105,7 +111,15 @@ class Actor(thing.Object):
                 return self.privateKey
 
         if name=='publicKey':
-            return json.loads(self.f_publicKey)
+            if not self.f_publicKey:
+                logger.debug('%s: we have no known public key',
+                        self)
+                return None
+
+            result = json.loads(self.f_publicKey)
+            logger.debug('%s: public key is %s',
+                    self, result)
+            return result
 
         return super().__getitem__(name)
 
@@ -113,7 +127,6 @@ class Actor(thing.Object):
     def activity_form(self):
         result = super().activity_form
 
-        result['wombat'] = 1
         return result
 
 ##############################
