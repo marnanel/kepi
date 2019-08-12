@@ -76,16 +76,12 @@ class IncomingMessage(models.Model):
 
     content_type = models.CharField(max_length=255, default='')
     date = models.CharField(max_length=255, default='')
-    digest = models.CharField(max_length=255, default='')
     host = models.CharField(max_length=255, default='')
     path = models.CharField(max_length=255, default='')
     signature = models.CharField(max_length=255, default='')
     body = models.TextField(default='')
-    actor = models.CharField(max_length=255, default='')
     key_id = models.CharField(max_length=255, default='')
     is_local_user = models.BooleanField(default=False)
-
-    waiting_for = models.URLField(default=None, null=True)
 
     @property
     def actor(self):
@@ -115,6 +111,8 @@ class IncomingMessage(models.Model):
             return self._fields
         except AttributeError:
             self._fields = json.loads(self.body)
+            logger.info('%s: fields are %s',
+                    self, self._fields)
             return self._fields
 
     @property
@@ -126,6 +124,9 @@ def validate(path, headers, body, is_local_user):
     if isinstance(body, bytes):
         body = str(body, encoding='UTF-8')
 
+    logger.info('Begin validation. Body is %s',
+            body)
+
     # make sure this is a real dict.
     # httpsig.utils.CaseInsensitiveDict doesn't
     # reimplement get(), which cases confusion.
@@ -135,7 +136,6 @@ def validate(path, headers, body, is_local_user):
     message = IncomingMessage(
             content_type = headers['content-type'],
             date = headers.get('date', ''),
-            digest = '', # FIXME ???
             host = headers.get('host', ''),
             path = path,
             signature = headers.get('signature', ''),
