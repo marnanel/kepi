@@ -70,7 +70,7 @@ def create(
     logger.debug('Class for %s is %s', value['type'], cls)
     del value['type']
 
-    if 'url' and 'remote_url' in value:
+    if 'url' in value and 'remote_url' in value:
         if value['url']!=value['remote_url']:
             logger.warn('url and remote_url differ (%s vs %s)',
                     value['url'], value['remote_url'])
