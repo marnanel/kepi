@@ -31,28 +31,6 @@ BOBS_FOLLOWERS = LOCAL_BOB+'/followers'
 PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
 
 CONTEXT_URL = "https://www.w3.org/ns/activitystreams"
-MESSAGE_CONTEXT = ["https://www.w3.org/ns/activitystreams",
-        "https://w3id.org/security/v1",
-        {"manuallyApprovesFollowers":"as:manuallyApprovesFollowers",
-            "sensitive":"as:sensitive",
-            "movedTo":{"@id":"as:movedTo",
-                "@type":"@id"},
-            "alsoKnownAs":{"@id":"as:alsoKnownAs",
-                "@type":"@id"},
-            "Hashtag":"as:Hashtag",
-            "ostatus":"http://ostatus.org#",
-            "atomUri":"ostatus:atomUri",
-            "inReplyToAtomUri":"ostatus:inReplyToAtomUri",
-            "conversation":"ostatus:conversation",
-            "toot":"http://joinmastodon.org/ns#",
-            "Emoji":"toot:Emoji",
-            "focalPoint":{"@container":"@list",
-                "@id":"toot:focalPoint"},
-            "featured":{"@id":"toot:featured",
-                "@type":"@id"},
-            "schema":"http://schema.org#",
-            "PropertyValue":"schema:PropertyValue",
-            "value":"schema:value"}]
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -124,6 +102,7 @@ def mock_remote_object(
         content = '',
         status = 200,
         as_post = False,
+        on_fetch = None,
         ):
 
     headers = {
@@ -140,12 +119,18 @@ def mock_remote_object(
     else:
         method = httpretty.GET
 
+    def return_body(request, url, stuff):
+        logger.info('%s: fetched', url)
+        if on_fetch is not None:
+            on_fetch()
+        return status, stuff, body
+
     httpretty.register_uri(
             method,
             url,
             status=status,
             headers=headers,
-            body = body,
+            body = return_body,
             match_querystring = True,
             )
 
@@ -158,16 +143,21 @@ def create_remote_person(
         url,
         name,
         publicKey,
+        on_fetch = None,
         **fields):
 
-    mock_remote_object(
-            url=url,
-            content=json.dumps(remote_user(
+    body = json.dumps(
+            remote_user(
                 url=url,
                 name=name,
                 publicKey = publicKey,
                 **fields,
-                )),
+                ))
+
+    mock_remote_object(
+            url=url,
+            on_fetch=on_fetch,
+            content=body,
             )
 
 def create_remote_collection(
@@ -219,7 +209,7 @@ def test_message_body_and_headers(secret='',
         **fields):
 
     body = dict([(f[2:],v) for f,v in fields.items() if f.startswith('f_')])
-    body['@context'] = MESSAGE_CONTEXT
+    body['@context'] = CONTEXT_URL
     body['Host'] = host
 
     headers = {
@@ -255,6 +245,8 @@ def test_message_body_and_headers(secret='',
 
     if 'id' not in body:
         body['id'] = ACTIVITY_ID
+
+    body = json.dumps(body, indent=2, sort_keys=True)
 
     return body, headers
 
@@ -324,7 +316,7 @@ def remote_user(url, name,
         followers=None,
         ):
         result = {
-                '@context': MESSAGE_CONTEXT,
+                '@context': CONTEXT_URL,
                 'id': url,
                 'type': 'Person',
                 'following': '',
@@ -349,3 +341,13 @@ def remote_user(url, name,
                     }
 
         return result
+
+def remote_object_is_recorded(url):
+
+    from django_kepi.models import Object
+
+    try:
+        result = Object.objects.get(remote_url=url)
+        return True
+    except Object.DoesNotExist:
+        return False
