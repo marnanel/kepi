@@ -72,7 +72,8 @@ def find_local(path,
     return result
 
 def find_remote(url,
-        do_not_fetch=False):
+        do_not_fetch=False,
+        run_delivery=False):
 
     from django_kepi.models.thing import Object 
 
@@ -140,6 +141,10 @@ def find_remote(url,
             ))
         return None
 
+    logger.debug('%s: response was: %s' % (
+        url, response.text,
+        ))
+
     try:
         content = json.loads(response.text)
     except json.JSONDecodeError:
@@ -154,16 +159,17 @@ def find_remote(url,
             ))
         return None
 
-    content_with_f = dict([
-        ('f_'+f, v)
+    content_without_at = dict([
+        (f, v)
         for f, v in content.items()
         if not f.startswith('@')
         ])
 
     result = create(
             is_local_user = False,
-            **content_with_f,
+            value = content_without_at,
             remote_url = url,
+            run_delivery = run_delivery,
             )
 
     return result
