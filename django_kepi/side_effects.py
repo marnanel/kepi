@@ -141,6 +141,8 @@ def create(activity):
 
     def it_is_relevant(something, activity):
 
+        from django_kepi.models import Audience
+
         logger.debug('Checking whether the new object is relevant to us.')
 
         for f,v in something.items():
@@ -148,12 +150,15 @@ def create(activity):
                     f!='attributedTo':
                 continue
 
-            if type(v)!=list:
+            if type(v) in [str, bytes]:
                 v=[v]
 
             logger.debug('  -- checking %s, currently %s',
                     f, v)
             for a in v:
+                if isinstance(a, Audience):
+                    a = a.recipient
+
                 logger.debug('  -- is %s local?', a)
                 if is_local(a):
                     logger.debug('    -- yes!')
