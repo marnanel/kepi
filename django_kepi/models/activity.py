@@ -7,18 +7,6 @@ logger = logging.getLogger(name='django_kepi')
 
 class Activity(thing.Object):
 
-    @property
-    def activity_form(self):
-        result = super().activity_form
-
-        if self.f_type=='"Create"':
-            # Special case. "Create" activities
-            # have the object written out in full.
-
-            result['object'] = self['object__obj'].activity_form
-
-        return result
-
     def go_into_outbox_if_local(self):
 
         from django_kepi.models.collection import Collection
@@ -43,7 +31,14 @@ class Activity(thing.Object):
 ##############################
 
 class Create(Activity):
-    pass
+
+    @property
+    def activity_form(self):
+        result = super().activity_form
+
+        result['object'] = self['object__obj'].activity_form
+
+        return result
 
 class Update(Activity):
     pass

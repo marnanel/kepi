@@ -1,5 +1,6 @@
 from django.test import TestCase
-from django_kepi.models import create, Audience
+from django_kepi.models import Audience
+from django_kepi.create import create
 from . import create_local_person, REMOTE_FRED, REMOTE_JIM
 
 class TestAudience(TestCase):
