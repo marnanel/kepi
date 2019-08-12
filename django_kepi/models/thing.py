@@ -201,7 +201,7 @@ class Object(PolymorphicModel):
 
         if 'obj' in name_parts and result is not None:
             result = find(result,
-                    local_only=True)
+                    do_not_fetch=True)
 
         return result
 

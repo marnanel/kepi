@@ -36,7 +36,13 @@ class Create(Activity):
     def activity_form(self):
         result = super().activity_form
 
-        result['object'] = self['object__obj'].activity_form
+        our_object = self['object__obj']
+
+        if our_object is None:
+            logger.warn('%s: object of Create (%s) is not known!',
+                    self, result['object'])
+        else:
+            result['object'] = our_object.activity_form
 
         return result
 
