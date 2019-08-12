@@ -13,6 +13,12 @@ import warnings
 
 logger = logging.getLogger(name='django_kepi')
 
+# Fields in "Object" which you can set and get directly
+# by subscripting the Object. This doesn't include
+# any field beginning with "f_", because you can
+# always set and get those by removing the prefix.
+FIELDS_YOU_CAN_SUBSCRIPT_FOR = set(['remote_url'])
+
 ######################
 
 def _new_number():
@@ -169,7 +175,8 @@ class Object(PolymorphicModel):
 
         if hasattr(self, 'f_'+name):
             result = getattr(self, 'f_'+name)
-
+        elif name in FIELDS_YOU_CAN_SUBSCRIPT_FOR:
+            result = getattr(self, name)
         elif name in AUDIENCE_FIELD_NAMES:
             try:
                 result = Audience.objects.filter(
@@ -210,6 +217,10 @@ class Object(PolymorphicModel):
 
         if hasattr(self, 'f_'+name):
             setattr(self, 'f_'+name, value)
+            self.save()
+        elif name in FIELDS_YOU_CAN_SUBSCRIPT_FOR:
+            setattr(self, name, value)
+            self.save()
         elif name in AUDIENCE_FIELD_NAMES:
 
             if self.pk is None:
