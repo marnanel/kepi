@@ -126,13 +126,19 @@ def validate(path, headers, body, is_local_user):
     if isinstance(body, bytes):
         body = str(body, encoding='UTF-8')
 
+    # make sure this is a real dict.
+    # httpsig.utils.CaseInsensitiveDict doesn't
+    # reimplement get(), which cases confusion.
+    headers = dict([(f.lower(), v)
+        for f,v in headers.items()])
+
     message = IncomingMessage(
             content_type = headers['content-type'],
             date = headers.get('date', ''),
             digest = '', # FIXME ???
             host = headers.get('host', ''),
             path = path,
-            signature = headers.get('Signature', ''),
+            signature = headers.get('signature', ''),
             body = body,
             is_local_user = is_local_user,
             )
@@ -171,8 +177,9 @@ def _run_validation(
 
     try:
         actor = django_kepi.find.find(message.actor)
-    except json.decoder.JSONDecodeError:
-        logger.info('%s: invalid JSON; dropping', message)
+    except json.decoder.JSONDecodeError as jde:
+        logger.info('%s: invalid JSON; dropping: %s',
+                message, jde)
         return None
     except UnicodeDecodeError:
         logger.info('%s: invalid UTF-8; dropping', message)
@@ -193,8 +200,15 @@ def _run_validation(
 
     # XXX key used to sign must "_obviously_belong_to" the actor
 
-    key = actor['publicKey']
-    key = key['publicKeyPem']
+    try:
+        key = actor['publicKey']
+        key = key['publicKeyPem']
+    except TypeError as te:
+        logger.info('%s: actor has an invalid public key (%s); dropping message',
+                message, te,
+                )
+        return None
+
     logger.debug('Verifying; key=%s, path=%s, host=%s',
             key, message.path, message.host)
 
