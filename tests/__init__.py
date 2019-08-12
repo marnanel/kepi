@@ -223,25 +223,24 @@ def test_message_body_and_headers(secret='',
     else:
         key_id = body['actor']+'#main-key'
 
-    if not signed:
-        return body, headers
+    if signed:
 
-    signer = httpsig.HeaderSigner(
-            secret=secret,
-            algorithm='rsa-sha256',
-            key_id = key_id,
-            headers=['(request-target)', 'host', 'date', 'content-type'],
-            )
+        signer = httpsig.HeaderSigner(
+                secret=secret,
+                algorithm='rsa-sha256',
+                key_id = key_id,
+                headers=['(request-target)', 'host', 'date', 'content-type'],
+                )
 
-    headers = signer.sign(
-            headers,
-            method='POST',
-            path=path,
-            )
+        headers = signer.sign(
+                headers,
+                method='POST',
+                path=path,
+                )
 
-    SIGNATURE = 'Signature'
-    if headers['Authorization'].startswith(SIGNATURE):
-        headers['Signature'] = headers['Authorization'][len(SIGNATURE)+1:]
+        SIGNATURE = 'Signature'
+        if headers['Authorization'].startswith(SIGNATURE):
+            headers['Signature'] = headers['Authorization'][len(SIGNATURE)+1:]
 
     if 'id' not in body:
         body['id'] = ACTIVITY_ID
@@ -291,7 +290,7 @@ def post_test_message(
             )
 
     if content is None:
-        content = json.dumps(body)
+        content = body
 
     logger.debug("Test message is %s",
             body)
