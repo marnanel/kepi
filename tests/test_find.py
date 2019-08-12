@@ -15,12 +15,15 @@ STUFF = {
         "@context": "https://www.w3.org/ns/activitystreams",
         "id": REMOTE_URL,
         "type": "Note",
-        "to": ["https://altair.example.com/someone"],
+        "to": ["https://testserver/someone"],
         "attributedTo": "https://europa.example.org/someone-else",
         "content": "I've got a lovely bunch of coconuts.",
     }
 
 class TestFind(TestCase):
+
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
 
     def _mock_remote_stuff(self):
         mock_remote_object(
@@ -47,7 +50,7 @@ class TestFind(TestCase):
                 {
                     'attributedTo': 'https://europa.example.org/someone-else',
                     'id': 'https://remote.example.net/fnord',
-                    'to': ['https://altair.example.com/someone'],
+                    'to': ['https://testserver/someone'],
                     'type': 'Note'},
                 found.activity_form,
                 )
@@ -84,7 +87,7 @@ class TestFind(TestCase):
 
         found = find(settings.KEPI['ACTIVITY_URL_FORMAT'] % {
             'number': 'walrus',
-            'hostname': 'altair.example.com',
+            'hostname': 'testserver',
             })
 
         self.assertIsNone(
