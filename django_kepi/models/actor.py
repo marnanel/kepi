@@ -157,7 +157,7 @@ class Actor(thing.Object):
         result['icon'] = {
                 "type":"Image",
                 "mediaType":"image/jpeg",
-                "url": 'https://%(hostname)s/static/defaults/avatar0.jpg' % {
+                "url": 'https://%(hostname)s/static/defaults/avatar_0.jpg' % {
                     'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                     },
                 }
