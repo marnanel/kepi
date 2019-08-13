@@ -1,5 +1,15 @@
+# test_deliver.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+# This file contains two classes to test delivery,
+# for historical reasons.
+
 from django.test import TestCase, Client
 from django_kepi.delivery import deliver
+from django_kepi.create import create
 from django_kepi.models import Object
 import django_kepi.views
 from unittest.mock import Mock, patch
@@ -29,6 +39,9 @@ def _message_became_activity(url=ACTIVITY_ID):
 
 class TestDeliverTasks(TestCase):
 
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+
     def _run_delivery(
             self,
             activity_fields,
@@ -36,7 +49,7 @@ class TestDeliverTasks(TestCase):
             remote_user_endpoints,
             ):
 
-        a = Object.create(**activity_fields)
+        a = create(value=activity_fields)
         a.save()
 
         for who, what in remote_user_details.items():
@@ -61,8 +74,8 @@ class TestDeliverTasks(TestCase):
 
         alice = create_local_person(
                 name = 'alice',
-                f_publicKey = keys['public'],
-                f_privateKey = keys['private'],
+                publicKey = keys['public'],
+                privateKey = keys['private'],
                 )
 
         self._run_delivery(
@@ -91,13 +104,13 @@ class TestDeliverTasks(TestCase):
         keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
         alice = create_local_person(
                 name = 'alice',
-                f_publicKey = keys0['public'],
-                f_privateKey = keys0['private'],
+                publicKey = keys0['public'],
+                privateKey = keys0['private'],
                 )
         bob = create_local_person(
                 name = 'bob',
-                f_publicKey = keys1['public'],
-                f_privateKey = keys1['private'],
+                publicKey = keys1['public'],
+                privateKey = keys1['private'],
                 )
 
         self._run_delivery(
@@ -115,41 +128,16 @@ class TestDeliverTasks(TestCase):
 
         # FIXME add some assertions!
 
-# for investigation, rather than long-term testing
-class TestBob(TestCase):
-    def test_bob(self):
-        alice = create_local_person(
-                name = 'alice',
-                )
-
-        bob = create_local_person(
-                name = 'bob',
-                )
-
-        # XXX add follower / following.
-        # XXX create_local_person's view is not embellishing its activity_form.
-
-        c = Client()
-        logger.info('bob %s', c.get('/users/bob').content)
-        logger.info('bob friends %s', c.get('/users/bob/following').content)
-        logger.info('bob friends p1 %s', c.get('/users/bob/following?page=1').content)
-
-# XXX Extra: make proof against infinite recursion honeytrap.
-# XXX Extra: check bcc and bto don't appear in the sent messages.
-# XXX Extra: check all versions of "Public" are equivalent.
-# XXX Extra: check what happens if the remote key is junk
-
 class TestDelivery(TestCase):
 
     def _set_up_remote_user_mocks(self):
 
         keys = json.load(open('tests/keys/keys-0001.json', 'r'))
-        # XXX These also need follower collections
 
         create_remote_person(
                 url = REMOTE_FRED,
                 name = 'fred',
-                f_publicKey = keys['public'],
+                publicKey = keys['public'],
                 inbox = FREDS_INBOX,
                 followers = FREDS_FOLLOWERS,
                 )
@@ -167,7 +155,7 @@ class TestDelivery(TestCase):
         create_remote_person(
                 url = REMOTE_JIM,
                 name = 'jim',
-                f_publicKey = keys['public'],
+                publicKey = keys['public'],
                 inbox = JIMS_INBOX,
                 followers = JIMS_FOLLOWERS,
                 )
@@ -196,26 +184,40 @@ class TestDelivery(TestCase):
 
         # I know these aren't mocks. This is just for consistency.
         create_local_person(name='alice',
-                f_privateKey = keys['private'])
+                privateKey = keys['private'])
         create_local_person(name='bob')
 
-    @patch.object(django_kepi.views.InboxView, 'post')
+    @patch.object(django_kepi.views.activitypub.InboxView, 'activity_store')
     @httpretty.activate
     def _test_delivery(self,
             fake_local_request,
             to,
             expected,
             ):
+        """
+        Delivers a Like, and makes assertions about what happened.
+        Also, creates all the background stuff needed to do so.
+
+        "to" is a list of ActivityPub IDs which we'll put in
+            the "to" field of the Like.
+        "expected" is a list of strings asserting which inboxes
+            get touched. Remote inboxes are represented by
+            the name of the user (like "jim"); local inboxes
+            are represented by the URL path, minus the
+            leading slash.
+        """
 
         self._set_up_remote_user_mocks()
         self._set_up_remote_request_mocks()
         self._set_up_local_user_mocks()
 
-        like = Object.create(
-                f_type = 'Like',
-                f_actor = LOCAL_ALICE,
-                f_object = REMOTE_FRED,
-                to = to,
+        like = create(
+                value = {
+                    'type': 'Like',
+                    'actor': LOCAL_ALICE,
+                    'object': REMOTE_FRED,
+                    'to': to,
+                    },
                 )
         like.save()
 
@@ -231,15 +233,13 @@ class TestDelivery(TestCase):
                         REMOTE_PATH_NAMES.get(req.path, req.path),
                         )
 
-        for req in fake_local_request.mock_calls:
-            kwargs = req[2]
-            if 'name' not in kwargs:
-                continue
-
-            if kwargs['name'] is None:
-                touched.append('shared-local')
-            else:
-                touched.append(kwargs['name'])
+        if fake_local_request.call_args:
+            for req in fake_local_request.call_args:
+                try:
+                    path = req[0].path
+                    touched.append(path)
+                except KeyError:
+                    pass
 
         logger.info('Inboxes touched: %s', touched)
         logger.info('  " "  expected: %s', expected)
@@ -252,13 +252,13 @@ class TestDelivery(TestCase):
     def test_simple_remote_and_local(self):
         self._test_delivery(
                 to=[REMOTE_FRED, LOCAL_BOB],
-                expected=['fred', 'shared-local'],
+                expected=['fred', '/sharedInbox'],
                 )
 
     def test_simple_local(self):
         self._test_delivery(
                 to=[LOCAL_BOB],
-                expected=['shared-local'],
+                expected=['/sharedInbox'],
                 )
 
     def test_simple_remote(self):
@@ -294,5 +294,5 @@ class TestDelivery(TestCase):
     def test_remote_followers(self):
         self._test_delivery(
                 to=[REMOTE_FRED, FREDS_FOLLOWERS],
-                expected=['fred', 'jim', 'shared-local'],
+                expected=['fred', 'jim', '/sharedInbox'],
                 )
