@@ -43,6 +43,18 @@ class TombstoneException(Exception):
     def __str__(self):
         return self.tombstone.__str__()
 
+###################################
+
+COLLECTION_TYPES = set([
+    'OrderedCollection',
+    'OrderedCollectionPage',
+    ])
+
+class Collection(dict):
+    pass
+
+###################################
+
 def find_local(path,
         object_to_store=None):
 
@@ -165,12 +177,18 @@ def find_remote(url,
         if not f.startswith('@')
         ])
 
-    result = create(
-            is_local_user = False,
-            value = content_without_at,
-            remote_url = url,
-            run_delivery = run_delivery,
-            )
+    if content['type'] in COLLECTION_TYPES:
+        # It might be better if find() downloaded
+        # an entire Collection if it finds the index.
+        # At present we expect the caller to do it.
+        result = Collection(content_without_at)
+    else:
+        result = create(
+                is_local_user = False,
+                value = content_without_at,
+                remote_url = url,
+                run_delivery = run_delivery,
+                )
 
     return result
 
