@@ -78,6 +78,12 @@ def create(
         # in either case there's no point in keeping url around
         del value['url']
 
+    if 'id' in value and 'url' in value:
+        if value['id']!=value['url']:
+            logger.warn('id and url differ (%s vs %s)',
+                    value['id'], value['url'])
+        del value['url']
+
     ########################
 
     # Right, we need to create an object.
@@ -89,6 +95,9 @@ def create(
                     )
             del value['id']
             result.save()
+            logger.warn('  -- created local copy of remote object %s '+\
+                    '(url was %s)',
+                result, result.remote_url)
         except django.db.utils.IntegrityError:
             logger.warn('We already have an object with remote_url=%s',
                 value['id'])
@@ -97,13 +106,8 @@ def create(
         result = cls(
                 )
         result.save()
-
-    try:
-        result.save()
-    except Exception as e:
-        logger.warn('Couldn\'t save the new object (%s); dropping it',
-            e)
-        return None
+        logger.warn('  -- created local object %s',
+            result)
 
     for f,v in value.items():
         try:
