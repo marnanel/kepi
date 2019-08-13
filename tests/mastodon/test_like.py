@@ -1,9 +1,11 @@
 from tests import create_local_note, create_local_person
+from unittest import skip
 from django_kepi.create import create
 from django.test import TestCase
 
 class TestLike(TestCase):
 
+    @skip("this assumes we can ask Person.has_favourited(); we can't yet")
     def test_like(self):
 
         sender = create_local_person('sender')
