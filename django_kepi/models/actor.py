@@ -7,6 +7,10 @@ import json
 
 logger = logging.getLogger(name='django_kepi')
 
+LIST_NAMES = [
+'inbox', 'outbox', 'followers', 'following', 'featured',
+]
+
 ######################
 
 class Actor(thing.Object):
@@ -103,9 +107,7 @@ class Actor(thing.Object):
     def __getitem__(self, name):
         if self.is_local:
 
-            if name in ('inbox', 'outbox',
-                    'followers', 'following',
-                    ):
+            if name in LIST_NAMES:
                 return self.list_url(name)
             elif name=='privateKey':
                 return self.privateKey
@@ -126,6 +128,47 @@ class Actor(thing.Object):
     @property
     def activity_form(self):
         result = super().activity_form
+
+        result['publicKey'] = {
+            'id': self.id + '#main-key',
+            'owner': self.id,
+            'publicKeyPem': result['publicKey'],
+            }
+
+        for listname in LIST_NAMES:
+            result[listname] = self.list_url(listname)
+
+        result['url'] = self.id
+        result['name'] = self.f_preferredUsername
+
+        result['endpoints'] = {}
+        if 'SHARED_INBOX' in settings.KEPI:
+            result['endpoints']['sharedInbox'] = \
+                    settings.KEPI['SHARED_INBOX'] % {
+           'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                            }
+
+        result['tags'] = []
+        result['attachment'] = []
+
+        result['summary'] = '(Kepi user)'
+
+        # default images, for now
+        result['icon'] = {
+                "type":"Image",
+                "mediaType":"image/jpeg",
+                "url": 'https://%(hostname)s/static/defaults/avatar0.jpg' % {
+                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    },
+                }
+
+        result['header'] = {
+                "type":"Image",
+                "mediaType":"image/jpeg",
+                "url": 'https://%(hostname)s/static/defaults/header.jpg' % {
+                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    },
+                }
 
         return result
 
