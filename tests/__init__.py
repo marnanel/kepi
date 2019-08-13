@@ -20,8 +20,8 @@ FREDS_INBOX = REMOTE_FRED+'/inbox'
 JIMS_INBOX = REMOTE_JIM+'/inbox'
 REMOTE_SHARED_INBOX = 'https://remote.example.org/shared-inbox'
 
-LOCAL_ALICE = 'https://altair.example.com/users/alice'
-LOCAL_BOB = 'https://altair.example.com/users/bob'
+LOCAL_ALICE = 'https://testserver/users/alice'
+LOCAL_BOB = 'https://testserver/users/bob'
 
 FREDS_FOLLOWERS = REMOTE_FRED+'/followers'
 JIMS_FOLLOWERS = REMOTE_JIM+'/followers'
@@ -86,7 +86,7 @@ def create_local_person(name='jemima',
 
 def create_local_note(**kwargs):
     spec = {
-        'id': 'https://altair.example.com/testing-note',
+        'id': 'https://testserver/testing-note',
         'type': 'Note',
         'content': 'This is just a test.',
         }
