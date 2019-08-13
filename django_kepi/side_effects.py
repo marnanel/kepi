@@ -218,7 +218,7 @@ def create(activity):
 
     creation = kepi_create(
             value = raw_material,
-            is_local = activity.is_local,
+            is_local_user = activity.is_local,
             run_side_effects = False)
     activity['object'] = creation
     activity.save()
