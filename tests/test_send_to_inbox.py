@@ -33,6 +33,7 @@ BOB_INBOX_URL = 'https://bobs-computer.example.net/users/bob/inbox'
 OBJECT_FORM = {
         "@context": ["https://www.w3.org/ns/activitystreams",
             {"@language": "en"}],
+        "id": "https://bobs-computer.example.net/object/1",
         "type": "Note",
         'attributedTo': BOB_ID,
         "name": "Chris liked 'Minimal ActivityPub update client'",
