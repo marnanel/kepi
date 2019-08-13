@@ -5,6 +5,7 @@ from polymorphic.models import PolymorphicModel
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.thingfield import ThingField
 from django_kepi.models.mention import Mention
+from .. import ATSIGN_CONTEXT
 import django_kepi.side_effects as side_effects
 import logging
 import random
@@ -136,6 +137,7 @@ class Object(PolymorphicModel):
     @property
     def activity_form(self):
         result = {
+            '@context': ATSIGN_CONTEXT,
             'id': self.url,
             'type': self.f_type,
             }
