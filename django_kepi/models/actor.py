@@ -8,7 +8,7 @@ import json
 logger = logging.getLogger(name='django_kepi')
 
 LIST_NAMES = [
-'inbox', 'outbox', 'followers', 'following', 'featured',
+'inbox', 'outbox', 'followers', 'following',
 ]
 
 ######################
