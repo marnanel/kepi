@@ -45,7 +45,6 @@ class Object(PolymorphicModel):
 
     remote_url = models.URLField(
             max_length=255,
-            unique=True,
             null=True,
             blank=True,
             default=None,
