@@ -173,6 +173,7 @@ def _signer_for_local_actor(local_actor):
                 secret=local_actor.privateKey,
                 algorithm='rsa-sha256',
                 headers=['(request-target)', 'host', 'date', 'content-type'],
+                sign_header='signature',
                 )
     except httpsig.utils.HttpSigException as hse:
         logger.warn('Local private key was not honoured.')
