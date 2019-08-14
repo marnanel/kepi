@@ -13,9 +13,6 @@ import httpretty
 import logging
 import json
 
-# This is a version of test_inbox based on test_outbox;
-# they'll be merged in the future.
-
 REMOTE_DAVE_ID = "https://dave.example.net/users/dave"
 REMOTE_DAVE_DOMAIN = urlparse(REMOTE_DAVE_ID).netloc
 REMOTE_DAVE_FOLLOWERS = REMOTE_DAVE_ID + 'followers'
