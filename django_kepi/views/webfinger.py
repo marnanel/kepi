@@ -1,3 +1,15 @@
+# views/webfinger.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+Implements ".well-known/webfinger".
+See [https://tools.ietf.org/html/rfc7033](RFC 7033)
+for the full details.
+"""
+
 import django.views
 from django.conf import settings
 from django.shortcuts import render

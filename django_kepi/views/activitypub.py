@@ -1,3 +1,18 @@
+# views/activitypub.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+Various views. See views/README.md if you're wondering
+about the ACTIVITY_* methods.
+
+This module is too large and should be split up.
+Everything ends up here if it doesn't have a particular
+place to go.
+"""
+
 from django_kepi import ATSIGN_CONTEXT
 import django_kepi.validation
 from django_kepi.find import find, is_local
