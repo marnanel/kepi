@@ -8,7 +8,7 @@ logger = logging.getLogger(name='django_kepi')
 class Mention(models.Model):
 
     from_status = models.ForeignKey(
-            'django_kepi.Item',
+            'django_kepi.Object',
             on_delete = models.DO_NOTHING,
             )
 
@@ -26,8 +26,6 @@ class Mention(models.Model):
     def set_from_tags(cls,
             status,
             tags):
-
-        from django_kepi.models.actor import Actor
 
         cls.objects.filter(
                 from_status = status,
