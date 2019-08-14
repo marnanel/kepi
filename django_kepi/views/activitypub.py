@@ -290,6 +290,7 @@ class ActorView(ThingView):
         try:
             activity_object = Actor.objects.get(
                     f_preferredUsername=kwargs['username'],
+                    remote_url = None,
                     )
 
         except Actor.DoesNotExist:
@@ -331,6 +332,7 @@ class FollowingView(KepiView):
 
         person = Actor.objects.get(
                 f_preferredUsername=kwargs['username'],
+                remote_url = None,
                 )
 
         logging.debug('Finding followers of %s: %s',
@@ -354,6 +356,7 @@ class FollowersView(KepiView):
 
         person = Actor.objects.get(
                 f_preferredUsername=kwargs['username'],
+                remote_url = None,
                 )
 
         logging.debug('Finding followers of %s: %s',

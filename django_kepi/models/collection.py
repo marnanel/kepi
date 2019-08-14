@@ -67,6 +67,7 @@ class Collection(models.Model):
         try:
             owner = Actor.objects.get(
                     f_preferredUsername = username,
+                    remote_url = None,
                     )
         except Actor.DoesNotExist:
             logger.info("  -- can't get %s because %s doesn't exist",
