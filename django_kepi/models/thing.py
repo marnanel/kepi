@@ -318,7 +318,9 @@ class Object(PolymorphicModel):
 
         try:
             super().save(*args, **kwargs)
-        except IntegrityError:
+        except IntegrityError as ie:
+            logger.info('Integrity error on save (%s); retrying',
+                    ie)
             self.number = _new_number()
             return self.save(*args, **kwargs)
 

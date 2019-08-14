@@ -1,3 +1,13 @@
+# urls.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+These are URL patterns, to include from your app's urls.py.
+"""
+
 from django.urls import path, re_path
 import django_kepi.views
 

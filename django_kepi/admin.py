@@ -1,3 +1,14 @@
+# admin.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+These classes are used by the admin system to interact
+with kepi's models.
+"""
+
 from django.contrib import admin
 from polymorphic.admin import *
 from django_kepi.models import *

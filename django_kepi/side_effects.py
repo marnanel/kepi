@@ -1,3 +1,16 @@
+# side_effects.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+The functions here are run as side-effects when you
+create an object. For example, if you create an object
+of type "Delete", then delete() will be run with
+the new activity as a parameter.
+"""
+
 import logging
 from django.conf import settings
 from django_kepi.find import find, is_local

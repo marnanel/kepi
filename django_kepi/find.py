@@ -1,3 +1,13 @@
+# find.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+This module contains find(), which finds objects.
+"""
+
 from django.db import models
 import requests
 import logging
@@ -14,6 +24,12 @@ logger = logging.getLogger(name='django_kepi')
 
 class Fetch(models.Model):
 
+    """
+    A record of something having been fetched from a
+    particular URL at a particular time. It doesn't
+    contain the actual data; it just keeps the cache fresh.
+    """
+
     url = models.URLField(
             primary_key = True,
             )
@@ -23,6 +39,13 @@ class Fetch(models.Model):
             )
 
 class ThingRequest(HttpRequest):
+
+    """
+    These are fake HttpRequests which we send to the views
+    as an ACTIVITY_GET or ACTIVITY_STORE method.
+
+    For more information, see the docstring in views/.
+    """
 
     def __init__(self, path, object_to_store):
         super().__init__()
@@ -36,6 +59,7 @@ class ThingRequest(HttpRequest):
             self.activity = object_to_store
 
 class TombstoneException(Exception):
+    # XXX obsolete; remove
     def __init__(self, tombstone, *args, **kwargs):
         self.tombstone = tombstone
         super().__init__(*args, **kwargs)
@@ -51,12 +75,26 @@ COLLECTION_TYPES = set([
     ])
 
 class Collection(dict):
+    """
+    The contents of a remote object of any type in COLLECTION_TYPES.
+    """
     pass
 
 ###################################
 
 def find_local(path,
         object_to_store=None):
+
+    """
+    Finds a local object and returns it.
+    Optionally, passes it another object.
+
+    path -- the path to the object. Note: not the URL.
+        The URL is redundant because we know this object is local.
+    object_to_store -- something to give the object when we find it.
+        For example, if "path" refers to someone's inbox,
+        "object_to_store" might be an activity to add to it.
+    """
 
     try:
         resolved = django.urls.resolve(path)
@@ -86,6 +124,23 @@ def find_local(path,
 def find_remote(url,
         do_not_fetch=False,
         run_delivery=False):
+    """
+    Finds a remote object and returns it.
+    We return None if the object couldn't be found, or was
+    somehow invalid. Otherwise, we create a local copy of
+    the object and return that. 
+
+    As a special case, if the remote object is a collection type,
+    we return a find.Collection (which is just a dict subclass)
+    containing its fields.
+
+    url -- the URL of the remote object.
+    do_not_fetch -- True if we should give up and return None
+        when the cache doesn't hold the remote object; False
+        (the default) if we should go and get it via HTTP.
+    run_delivery -- whether to deliver the found object to
+        its stated audiences. This is usually not what you want.
+    """
 
     from django_kepi.models.thing import Object 
 
@@ -194,6 +249,9 @@ def find_remote(url,
     return result
 
 def is_local(url):
+    """
+    True if "url" resides on the local server.
+    """
     parsed_url = urlparse(url)
     return parsed_url.hostname in settings.ALLOWED_HOSTS
 
@@ -204,24 +262,23 @@ def find(url,
     """
     Finds an object.
 
-    address: the URL of the object. 
-    local_only: whether to restrict ourselves to local URLs.
+    Keyword arguments:
+    address -- the URL of the object. 
+    local_only -- whether to restrict ourselves to local URLs.
+    object_to_store -- if the address is a local collection,
+        this is an object to add to that collection.
 
-    If the address is local, we look the object up using
-    Django's usual dispatcher.
+    If the address is local, we pass it to find_local(),
+    which will look the object up using Django's usual dispatcher.
+    If it isn't found, we return None.
 
-    If it isn't found, and local_only is set, we return None.
+    If the address is remote, we pass it to find_remote(),
+    which will look for the object in the cache and return it.
+    If it's not in the cache, and "do_not_fetch" is True,
+    we return None. Otherwise, we fetch the object over HTTP.
 
-    Otherwise, we check the cache. If the JSON source of the
-    object is in the cache, we parse it and return it.
-
-    Otherwise, we dereference the URL.
-
-    The result can be None, if the object doesn't exist locally
-    or isn't found remotely, and for remote objects this fact
-    may be cached.
-
-    Results other than None are guaranteed to be subscriptable.
+    The reason for using "local_only" instead of just calling
+    find_local() is that this function parses URLs for you.
     """
 
     parsed_url = urlparse(url)

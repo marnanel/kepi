@@ -1,3 +1,13 @@
+# create.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+This module contains create(), which creates objects.
+"""
+
 from django_kepi.models import *
 import django.db.utils
 import logging
@@ -10,6 +20,30 @@ def create(
         run_delivery=True,
         value=None,
         **kwargs):
+
+    """
+    Creates a kepi object.
+
+    Keyword arguments:
+    value -- the fields of the new object, as a dict.
+        Must contain a key "type".
+    is_local_user -- True if the object is being created by a
+        local user, False if we received it across the network.
+    run_side_effects -- whether the new object should cause
+        its usual side effects. For example, creating a Delete
+        object should have the side-effect of deleting something.
+    run_delivery -- whether we should attempt to deliver the
+        new object to whatever audiences it lists.
+
+    Any extra keyword arguments are taken to be fields of the
+    new object, just as if they had appeared in "value".
+    Any of these keywords may be prefixed with "f_" to avoid
+    confusing Python's parser. For example, you could write
+        f_type = "Create"
+    to set the "type" field to "Create".
+
+    Don't confuse create() with objects of type Create!
+    """
 
     from django_kepi.delivery import deliver
 

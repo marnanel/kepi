@@ -1,3 +1,14 @@
+# delivery.py
+#
+# Part of kepi, an ActivityPub daemon and library.
+# Copyright (c) 2018-2019 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+This module contains deliver(), which delivers objects
+to their audiences.
+"""
+
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 from django_kepi.find import find, find_local
@@ -20,6 +31,12 @@ from . import PUBLIC_IDS
 logger = logging.getLogger(name='django_kepi.delivery')
 
 def _rfc822_datetime(when=None):
+    """
+    Formats a datetime to the RFC822 standard.
+
+    (The standard is silly, because GMT should be UTC,
+    but we have to use it anyway.)
+    """
     if when is None:
         when = datetime.datetime.utcnow()
     else:
@@ -28,6 +45,15 @@ def _rfc822_datetime(when=None):
     return datetime.datetime.utcnow().strftime("%a, %d %b %Y %T GMT")
 
 def _find_local_actor(activity_form):
+    """
+    Given an activity, as a dict, return the local Actor
+    who apparently created it. If there is no such Actor,
+    or if the Actor is remote, or if there's no Actor
+    at all, return None.
+
+    If the activity has no "actor" field, we use
+    the "attributedTo" field.
+    """
 
     parts = None
     for fieldname in ['actor', 'attributedTo']:
@@ -148,6 +174,11 @@ def _recipients_to_inboxes(recipients):
 
 def _activity_form_to_outgoing_string(activity_form,
         local_actor = None):
+    """
+    Formats an activity ready to be sent out as
+    an HTTP response.
+    """
+    # XXX local_actor can be removed
 
     format_for_delivery = activity_form.copy()
     for blind_field in ['bto', 'bcc']:
@@ -163,6 +194,13 @@ def _activity_form_to_outgoing_string(activity_form,
     return message
 
 def _signer_for_local_actor(local_actor):
+
+    """
+    Given an Actor object representing a local actor,
+    return an httpsig.HeaderSigner object which can
+    sign headers for them.
+    """
+
     if local_actor is None:
         logger.info('not signing outgoing messages because we have no known actor')
         return None
@@ -183,6 +221,12 @@ def _signer_for_local_actor(local_actor):
         return None
 
 class LocalDeliveryRequest(HttpRequest):
+
+    """
+    These are fake HttpRequests which we send to the views
+    as an ACTIVITY_STORE method. For more information,
+    see the docstring in views/.
+    """
 
     def __init__(self, content, activity, path, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -205,6 +249,18 @@ def _deliver_local(
         parsed_target_url,
         message,
         ):
+
+    """
+    Deliver an activity to a local actor.
+
+    Keyword arguments:
+    activity -- the activity we're delivering.
+    inbox -- the URL of the inbox, only used in logging
+    parsed_target_url -- the result of urlparse(url)
+    message -- the activity as a formatted string
+        (as it would appear if we were sending this out over HTTP)
+    """
+
     logger.debug('%s: %s is local',
             activity, inbox)
 
@@ -240,6 +296,20 @@ def _deliver_remote(
         signer,
         ):
 
+    """
+    Deliver an activity to a remote actor.
+
+    Keyword arguments:
+    activity -- the activity we're delivering.
+    inbox -- the URL of the inbox
+    parsed_target_url -- the result of urlparse(url)
+    message -- the activity as a formatted string
+        (as it would appear if we were sending this out over HTTP)
+    signer -- an httpsig.HeaderSigner for the
+        local actor who sent this activity, or None
+        if there isn't one.
+    """
+
     headers = {
             'Date': _rfc822_datetime(),
             'Host': parsed_target_url.netloc,
@@ -272,6 +342,18 @@ def deliver(
         activity_id,
         incoming = False,
         ):
+
+    """
+    Deliver an activity to an actor.
+
+    Keyword arguments:
+    activity_id -- the "number" field of an Object
+    incoming -- True if we just received this, False otherwise
+
+    This function is a shared task; it will be run by Celery behind
+    the scenes.
+    """
+
     try:
         activity = django_kepi.models.Object.objects.get(number=activity_id)
     except django_kepi.models.Object.DoesNotExist:
