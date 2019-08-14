@@ -85,10 +85,6 @@ class Actor(thing.Object):
                 'listname': name,
                 }
 
-    @property
-    def publicKey(self):
-        result = self['publicKey']
-
     def __setitem__(self, name, value):
         if name=='privateKey':
             self.privateKey = value
@@ -129,11 +125,12 @@ class Actor(thing.Object):
     def activity_form(self):
         result = super().activity_form
 
-        result['publicKey'] = {
-            'id': self.id + '#main-key',
-            'owner': self.id,
-            'publicKeyPem': result['publicKey'],
-            }
+        if 'publicKey' in result:
+            result['publicKey'] = {
+                'id': self.id + '#main-key',
+                'owner': self.id,
+                'publicKeyPem': result['publicKey'],
+                }
 
         for listname in LIST_NAMES:
             result[listname] = self.list_url(listname)
