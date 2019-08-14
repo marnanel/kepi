@@ -81,6 +81,7 @@ class IncomingMessage(models.Model):
     signature = models.CharField(max_length=255, default='')
     body = models.TextField(default='')
     key_id = models.CharField(max_length=255, default='')
+    digest = models.CharField(max_length=255, default='')
     is_local_user = models.BooleanField(default=False)
 
     @property
@@ -126,6 +127,8 @@ def validate(path, headers, body, is_local_user):
 
     logger.info('Begin validation. Body is %s',
             body)
+    logger.info('and headers are %s',
+            headers)
 
     # make sure this is a real dict.
     # httpsig.utils.CaseInsensitiveDict doesn't
@@ -139,6 +142,7 @@ def validate(path, headers, body, is_local_user):
             host = headers.get('host', ''),
             path = path,
             signature = headers.get('signature', ''),
+            digest = headers.get('digest', ''),
             body = body,
             is_local_user = is_local_user,
             )
@@ -212,12 +216,28 @@ def _run_validation(
     logger.debug('Verifying; key=%s, path=%s, host=%s',
             key, message.path, message.host)
 
+    logger.debug('All params: %s', {
+            'headers': {
+                'Content-Type': message.content_type,
+                'Date': message.date,
+                'Signature': message.signature,
+                'Host': message.host,
+                'Digest': message.digest,
+                },
+            'secret': key,
+            'method': 'POST',
+            'path': message.path,
+            'host': message.host,
+            'sign_header': 'Signature',
+            })
+
     hv = HeaderVerifier(
             headers = {
                 'Content-Type': message.content_type,
                 'Date': message.date,
                 'Signature': message.signature,
                 'Host': message.host,
+                'Digest': message.digest,
                 },
             secret = key,
             method = 'POST',
