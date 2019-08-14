@@ -121,7 +121,8 @@ def find_remote(url,
         pass
 
     if do_not_fetch:
-        logger.info('%s: do_not_fetch was set, so returning None')
+        logger.info('%s: do_not_fetch was set, so returning None',
+                url)
         return None
 
     logger.info('%s: performing the GET', url)
