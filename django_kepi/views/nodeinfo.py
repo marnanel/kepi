@@ -61,13 +61,13 @@ class NodeinfoPart2(django.views.View):
         result = {
                 "version": "2.0",
                 "software" : {
-                    "name": "Kepi",
+                    "name": "kepi",
                     "version": __version__,
                 },
                 "protocols": ['activitypub'],
                 "services": {
-                    "inbound": [''],
-                    "outbound": [''],
+                    "inbound": [],
+                    "outbound": [],
                     },
                 "openRegistrations": False,
                 "usage": {
@@ -75,7 +75,6 @@ class NodeinfoPart2(django.views.View):
                         # When this information is meaningful,
                         # we can implement this more seriously.
                         "total": 1,
-                        "activeHalfYear": 1,
                         "activeMonth": 1,
                         },
                     "localPosts": 0,
