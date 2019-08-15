@@ -28,5 +28,7 @@ urlpatterns = [
 
         path('.well-known/host-meta', django_kepi.views.HostMeta.as_view()),
         path('.well-known/webfinger', django_kepi.views.Webfinger.as_view()),
+        path('.well-known/nodeinfo', django_kepi.views.NodeinfoPart1.as_view()),
+        path('nodeinfo.json', django_kepi.views.NodeinfoPart2.as_view()),
         ]
 
