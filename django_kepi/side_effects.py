@@ -43,6 +43,10 @@ def follow(activity):
     from django_kepi.models.following import Following
     from django_kepi.create import create
 
+    if not is_local(activity['object']):
+        logger.info('Following a remote user has no local side-effects.')
+        return True
+
     local_user = find(activity['object'], local_only=True)
     remote_user = find(activity['actor'])
 
