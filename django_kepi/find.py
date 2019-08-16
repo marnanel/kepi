@@ -252,6 +252,9 @@ def is_local(url):
     """
     True if "url" resides on the local server.
     """
+    if hasattr(url, 'url'):
+        url = url.url
+
     parsed_url = urlparse(url)
     return parsed_url.hostname in settings.ALLOWED_HOSTS
 
