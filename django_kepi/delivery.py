@@ -55,11 +55,18 @@ def _find_local_actor(activity_form):
     the "attributedTo" field.
     """
 
+    from django_kepi.models.thing import Object
+
     parts = None
     for fieldname in ['actor', 'attributedTo']:
         if fieldname in activity_form:
-            parts = urlparse(activity_form[fieldname])
-            break
+            value = activity_form[fieldname]
+
+            if isinstance(value, Object):
+                return value
+            else:
+                parts = urlparse(activity_form[fieldname])
+                break
 
     if parts is None:
         return None
