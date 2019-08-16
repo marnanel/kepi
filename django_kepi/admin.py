@@ -213,3 +213,7 @@ class CollectionAdmin(admin.ModelAdmin):
 @admin.register(IncomingMessage)
 class IncomingMessageAdmin(admin.ModelAdmin):
     pass
+
+@admin.register(Following)
+class FollowingAdmin(admin.ModelAdmin):
+    pass
