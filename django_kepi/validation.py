@@ -76,7 +76,7 @@ class IncomingMessage(models.Model):
             raise ValueError("Key ID not found in %s" % (self.signature,))
 
     def __str__(self):
-        return str(self.id)
+        return '%s %s' % (self.id, self.received_date)
 
     @property
     def fields(self):
