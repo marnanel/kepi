@@ -19,6 +19,7 @@ def create(
         run_side_effects=True,
         run_delivery=True,
         value=None,
+        incoming=False,
         **kwargs):
 
     """
@@ -169,7 +170,7 @@ def create(
 
     if run_delivery:
         deliver(result.number,
-                incoming = True)
+                incoming = incoming)
 
     return result
 
