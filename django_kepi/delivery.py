@@ -363,7 +363,7 @@ def deliver(
     Deliver an activity to an actor.
 
     Keyword arguments:
-    activity_id -- the "number" field of an Object
+    activity_id -- the "number" field of an Activity
     incoming -- True if we just received this, False otherwise
 
     This function is a shared task; it will be run by Celery behind
@@ -371,8 +371,8 @@ def deliver(
     """
 
     try:
-        activity = django_kepi.models.Object.objects.get(number=activity_id)
-    except django_kepi.models.Object.DoesNotExist:
+        activity = django_kepi.models.Activity.objects.get(number=activity_id)
+    except django_kepi.models.Activity.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)
         return None

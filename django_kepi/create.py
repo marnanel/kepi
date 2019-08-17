@@ -47,6 +47,7 @@ def create(
     """
 
     from django_kepi.delivery import deliver
+    from django_kepi.models.activity import Activity
 
     if value is None:
         value = {}
@@ -168,7 +169,7 @@ def create(
                 result.save()
             return None
 
-    if run_delivery:
+    if run_delivery and isinstance(result, Activity):
         deliver(result.number,
                 incoming = incoming)
 
