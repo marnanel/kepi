@@ -63,12 +63,11 @@ def follow(activity):
         accept_the_request = create(
                 f_to = remote_user.url,
                 f_type = 'Accept',
-                f_actor = activity['object'],
-                f_object = activity.url,
+                f_actor = local_user,
+                f_object = activity.id,
                 run_side_effects = False,
+                run_delivery = True,
                 )
-
-        deliver(accept_the_request.number)
 
     else:
         logger.info('Local user %s does not have auto_follow set.',
