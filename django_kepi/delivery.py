@@ -103,12 +103,6 @@ def _recipients_to_inboxes(recipients):
             logger.debug('  -- ignoring public')
             continue
 
-        if is_local(recipient):
-            logger.debug('  -- %s is local; use directly',
-                    recipient)
-            inboxes.add(recipient)
-            continue
-
         discovered = find(recipient)
 
         if discovered is None:
@@ -118,6 +112,31 @@ def _recipients_to_inboxes(recipients):
 
         logger.debug('  -- "%s" found as %s',
                 recipient, discovered)
+
+        if is_local(recipient):
+
+            if hasattr(discovered, 'first'):
+                logger.debug('  -- %s is a local collection',
+                        recipient)
+
+                new_recipients = set([f.follower for f in discovered])
+
+                new_recipients = new_recipients.difference(
+                        original_recipients)
+
+                logger.debug('  -- we add: %s',
+                        new_recipients)
+
+                recipients.extend(new_recipients)
+
+            else:
+                logger.debug('  -- %s is local; use directly',
+                        recipient)
+                inboxes.add(recipient)
+
+            continue
+
+        # so, it exists and it's remote
 
         if 'type' not in discovered:
             logger.debug('    -- has no type (weird)')
@@ -285,6 +304,9 @@ def _deliver_local(
     except django.urls.Resolver404:
         logger.debug('%s: -- not found', parsed_target_url.path)
         return
+
+    logger.debug('%s is handled by %s',
+            parsed_target_url.path, resolved)
 
     request = LocalDeliveryRequest(
             content = message,
