@@ -37,97 +37,6 @@ def _message_became_activity(url=ACTIVITY_ID):
     except Object.DoesNotExist:
         return False
 
-class TestDeliverTasks(TestCase):
-
-    def setUp(self):
-        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
-
-    def _run_delivery(
-            self,
-            activity_fields,
-            remote_user_details,
-            remote_user_endpoints,
-            ):
-
-        a = create(value=activity_fields)
-        a.save()
-
-        for who, what in remote_user_details.items():
-            mock_remote_object(
-                    url = who,
-                    content = json.dumps(what),
-                    )
-
-        for who in remote_user_endpoints:
-            mock_remote_object(
-                    url = who,
-                    content = 'Thank you',
-                    as_post = True,
-                    )
-
-        deliver(a.number)
-
-    @httpretty.activate
-    def test_deliver_remote(self):
-
-        keys = json.load(open('tests/keys/keys-0000.json', 'r'))
-
-        alice = create_local_person(
-                name = 'alice',
-                publicKey = keys['public'],
-                privateKey = keys['private'],
-                )
-
-        self._run_delivery(
-                activity_fields = {
-                    'type': 'Follow',
-                    'actor': LOCAL_ALICE,
-                    'object': REMOTE_FRED,
-                    'to': [REMOTE_FRED],
-                    },
-                remote_user_details = {
-                    REMOTE_FRED: remote_user(
-                        url=REMOTE_FRED,
-                        name='Fred',
-                        sharedInbox=REMOTE_SHARED_INBOX,
-                        ),
-                    },
-                remote_user_endpoints = [
-                    REMOTE_SHARED_INBOX,
-                    ],
-                )
-
-    @httpretty.activate
-    def test_deliver_local(self):
-
-        keys0 = json.load(open('tests/keys/keys-0000.json', 'r'))
-        keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
-        alice = create_local_person(
-                name = 'alice',
-                publicKey = keys0['public'],
-                privateKey = keys0['private'],
-                )
-        bob = create_local_person(
-                name = 'bob',
-                publicKey = keys1['public'],
-                privateKey = keys1['private'],
-                )
-
-        self._run_delivery(
-                activity_fields = {
-                    'type': 'Follow',
-                    'actor': LOCAL_ALICE,
-                    'object': LOCAL_BOB,
-                    'to': [LOCAL_BOB],
-                    },
-                remote_user_details = {
-                    },
-                remote_user_endpoints = [
-                    ],
-                )
-
-        # FIXME add some assertions!
-
 class TestDelivery(TestCase):
 
     def _set_up_remote_user_mocks(self):
@@ -187,7 +96,7 @@ class TestDelivery(TestCase):
                 privateKey = keys['private'])
         create_local_person(name='bob')
 
-    @patch.object(django_kepi.views.activitypub.InboxView, 'activity_store')
+    @patch.object(django_kepi.views.activitypub.ActorView, 'activity_store')
     @httpretty.activate
     def _test_delivery(self,
             fake_local_request,
@@ -221,8 +130,6 @@ class TestDelivery(TestCase):
                 )
         like.save()
 
-        deliver(like.number)
-
         #################
         # Assertions
 
@@ -233,16 +140,11 @@ class TestDelivery(TestCase):
                         REMOTE_PATH_NAMES.get(req.path, req.path),
                         )
 
-        if fake_local_request.call_args:
-            for req in fake_local_request.call_args:
-                try:
-                    path = req[0].path
-                    touched.append(path)
-                except KeyError:
-                    pass
+        for obj, kwargs in fake_local_request.call_args_list:
+            touched.append(kwargs['username'])
 
-        logger.info('Inboxes touched: %s', touched)
-        logger.info('  " "  expected: %s', expected)
+        logger.info('Inboxes touched:  %s', sorted(touched))
+        logger.info('Inboxes expected: %s', sorted(expected))
 
         self.assertListEqual(
                 sorted(touched),
@@ -252,13 +154,13 @@ class TestDelivery(TestCase):
     def test_simple_remote_and_local(self):
         self._test_delivery(
                 to=[REMOTE_FRED, LOCAL_BOB],
-                expected=['fred', '/sharedInbox'],
+                expected=['fred', 'bob'],
                 )
 
     def test_simple_local(self):
         self._test_delivery(
                 to=[LOCAL_BOB],
-                expected=['/sharedInbox'],
+                expected=['bob'],
                 )
 
     def test_simple_remote(self):
@@ -294,5 +196,5 @@ class TestDelivery(TestCase):
     def test_remote_followers(self):
         self._test_delivery(
                 to=[REMOTE_FRED, FREDS_FOLLOWERS],
-                expected=['fred', 'jim', '/sharedInbox'],
+                expected=['fred', 'jim', 'alice', 'bob'],
                 )
