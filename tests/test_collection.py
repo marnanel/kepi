@@ -3,9 +3,11 @@ from unittest import skip
 from django_kepi.models import *
 import datetime
 import json
-from django_kepi import logger
 from django_kepi.find import find
 from . import *
+import logging
+
+logger = logging.Logger('django_kepi')
 
 EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json'
