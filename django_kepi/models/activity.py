@@ -17,7 +17,7 @@ class Activity(thing.Object):
         if not self.is_local:
             return
 
-        actor = self['actor__obj']
+        actor = self['actor__find']
 
         logger.info('%s: going into %s\'s outbox',
                 self.number,
@@ -59,7 +59,7 @@ class Delete(Activity):
     pass
 
 class Follow(Activity):
-    _explicit_object_field = True
+    pass
 
 class Add(Activity):
     pass

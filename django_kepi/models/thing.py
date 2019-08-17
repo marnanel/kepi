@@ -200,9 +200,11 @@ class Object(PolymorphicModel):
             except ThingField.DoesNotExist:
                 result = None
 
-        if 'obj' in name_parts and result is not None:
+        if 'find' in name_parts and result is not None:
             result = find(result,
                     do_not_fetch=True)
+        elif 'obj' in name_parts and result is not None:
+            result = Object.get_by_url(url=result)
 
         return result
 
@@ -322,6 +324,32 @@ class Object(PolymorphicModel):
                     ie)
             self.number = _new_number()
             return self.save(*args, **kwargs)
+
+    @classmethod
+    def get_by_url(cls, url):
+        """
+        Retrieves an Object whose URL is "url".
+
+        This differs from find() in that it can
+        find objects which were submitted to us over HTTP
+        (as opposed to generated locally or fetched by us).
+        find() would ignore these.
+        """
+
+        from django_kepi.find import find
+
+        result = find(url,
+                local_only = True)
+
+        if result is None:
+            try:
+                result = cls.objects.get(
+                        remote_url = url,
+                        )
+            except cls.DoesNotExist:
+                result = None
+
+        return result
 
 ######################################
 
