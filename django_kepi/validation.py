@@ -18,7 +18,6 @@ import re
 from django.conf import settings
 from urllib.parse import urlparse
 import django_kepi.find
-import django_kepi.create
 import django.core.exceptions
 from httpsig.verify import HeaderVerifier
 
@@ -159,6 +158,7 @@ def _run_validation(
     """
 
     from django_kepi.delivery import deliver
+    from django_kepi.create import create
 
     logger.info('%s: begin validation',
             message_id)
@@ -252,10 +252,12 @@ def _run_validation(
 
     logger.debug('%s: validation passed!', message)
 
-    result = django_kepi.create.create(
+    result = create(
             sender=actor,
             is_local_user = message.is_local_user,
             **(message.activity_form),
+            run_delivery = True,
+            incoming = True,
             )
 
     if result is None:
@@ -263,8 +265,5 @@ def _run_validation(
         return
 
     logger.info('%s: produced new Thing %s', message, result)
-
-    deliver(result.number,
-            incoming = True)
 
     return result
