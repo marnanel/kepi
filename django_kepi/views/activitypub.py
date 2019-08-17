@@ -350,7 +350,7 @@ class FollowingView(KepiView):
                 remote_url = None,
                 )
 
-        logging.debug('Finding followers of %s: %s',
+        logger.debug('Finding followers of %s: %s',
                 kwargs['username'], person)
 
         return Following.objects.filter(follower=person.url,
@@ -374,7 +374,7 @@ class FollowersView(KepiView):
                 remote_url = None,
                 )
 
-        logging.debug('Finding followers of %s: %s',
+        logger.debug('Finding followers of %s: %s',
                 kwargs['username'], person)
 
         return Following.objects.filter(following=person.url,
