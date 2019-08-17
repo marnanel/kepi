@@ -18,9 +18,9 @@ REMOTE_DAVE_DOMAIN = urlparse(REMOTE_DAVE_ID).netloc
 REMOTE_DAVE_FOLLOWERS = REMOTE_DAVE_ID + 'followers'
 REMOTE_DAVE_KEY = REMOTE_DAVE_ID + '#main-key'
 
-ALICE_ID = 'https://altair.example.com/users/alice'
+ALICE_ID = 'https://testserver/users/alice'
 INBOX = ALICE_ID+'/inbox'
-INBOX_HOST = 'altair.example.com'
+INBOX_HOST = 'testserver'
 ALICE_SOLE_INBOX_PATH = '/users/alice/inbox'
 
 BOB_ID = 'https://bobs-computer.example.net/users/bob'
@@ -48,6 +48,9 @@ logger = logging.getLogger(name='django_kepi')
 
 class TestInbox2(TestCase):
 
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+
     def _send(self,
             content,
             recipient = None,
@@ -58,7 +61,7 @@ class TestInbox2(TestCase):
             ):
 
         settings.ALLOWED_HOSTS = [
-                'altair.example.com',
+                'testserver',
                 'testserver',
                 ]
 
@@ -150,7 +153,7 @@ class TestInbox2(TestCase):
 
         self.assertDictContainsSubset(
                 subset = {
-                    "actor": "https://altair.example.com/users/alice",
+                    "actor": "https://testserver/users/alice",
                     "to": [
                         "https://bobs-computer.example.net/users/bob"
                         ],
