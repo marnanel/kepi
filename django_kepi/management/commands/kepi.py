@@ -26,6 +26,48 @@ class Command(BaseCommand):
             )
         logger.info('Follow created: %s', obj)
 
+    def _handle_post(self, *args, **options):
+        self.stdout.write('Note\n')
+
+        note = create(value={
+            'type': 'Note',
+            'attributedTo': self._actor,
+            'to': self._actor['followers'],
+            'cc': 'https://www.w3.org/ns/activitystreams#Public',
+            'content': options['text'],
+            },
+            is_local_user=True,
+            )
+        logger.info('Note created: %s', note)
+
+        creation = create(value={
+            'type': 'Create',
+            'actor': self._actor,
+            'object': note,
+            'to': self._actor['followers'],
+            'cc': 'https://www.w3.org/ns/activitystreams#Public',
+            },
+            is_local_user=True,
+            run_side_effects=False,
+            run_delivery=True,
+            )
+        logger.info('Create created: %s', creation)
+
+    def _handle_posts(self, *args, **options):
+        results = Item.objects.filter(
+                f_attributedTo = self._actor.id,
+                )
+
+        if not results.exists():
+            self.stdout.write(
+                    self.style.ERROR(
+                        "No posts found."
+                        ))
+            return
+
+        for obj in results:
+            self.stdout.write(' - %s' % (obj,))
+
     def add_arguments(self, parser):
 
         parser.add_argument('--actor', '-a',
@@ -42,6 +84,15 @@ class Command(BaseCommand):
         parser_follow.add_argument('whom',
                 help='account to follow',
                 )
+
+        parser_post = subparsers.add_parser('post')
+        parser_post.set_defaults(func=self._handle_post)
+        parser_post.add_argument('text',
+                help='what to post. (Enclose in quotes if it contains spaces.)',
+                )
+
+        parser_posts = subparsers.add_parser('posts')
+        parser_posts.set_defaults(func=self._handle_posts)
 
     def _find_source_username(self):
         if ENVIRON_USER in os.environ:
