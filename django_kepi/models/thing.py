@@ -338,10 +338,12 @@ class Object(PolymorphicModel):
 
         from django_kepi.find import find
 
+        logger.debug('     -- finding object with url %s', url)
         result = find(url,
                 local_only = True)
 
         if result is None:
+            logger.debug('       -- not local; trying remote_url')
             try:
                 result = cls.objects.get(
                         remote_url = url,
@@ -349,6 +351,7 @@ class Object(PolymorphicModel):
             except cls.DoesNotExist:
                 result = None
 
+        logger.debug('       -- found %s', result)
         return result
 
 ######################################
