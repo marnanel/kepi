@@ -76,7 +76,8 @@ def _find_local_actor(activity_form):
 
     return find_local(parts.path)
 
-def _recipients_to_inboxes(recipients):
+def _recipients_to_inboxes(recipients,
+        local_actor=None):
     """
     Find inbox URLs for a set of recipients.
 
@@ -100,7 +101,12 @@ def _recipients_to_inboxes(recipients):
     for recipient in recipients:
 
         if recipient in PUBLIC_IDS:
-            logger.debug('  -- ignoring public')
+            if local_actor is not None:
+                logger.debug('  -- treating public as %s\'s outbox',
+                        local_actor)
+                inboxes.add(local_actor['outbox'])
+            else:
+                logger.debug('  -- ignoring public')
             continue
 
         discovered = find(recipient)
@@ -417,9 +423,8 @@ def deliver(
 
     # Actors don't get told about their own activities
     if not incoming:
-        if 'actor' in activity_form and \
-                activity_form['actor'] in recipients:
-            recipients.remove(activity_form['actor'])
+        if local_actor is not None and local_actor.id in recipients:
+            recipients.remove(local_actor.id)
 
     if not recipients:
         logger.debug('%s: there are no recipients; giving up',
@@ -439,7 +444,8 @@ def deliver(
 
         # Dereference collections.
 
-        inboxes = _recipients_to_inboxes(recipients)
+        inboxes = _recipients_to_inboxes(recipients,
+                local_actor=local_actor)
 
         if not inboxes:
             logger.debug('%s: there are no inboxes to send to; giving up',
