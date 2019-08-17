@@ -4,20 +4,24 @@ from django_kepi.create import create
 from . import create_local_person, REMOTE_FRED, REMOTE_JIM
 
 class TestAudience(TestCase):
-    
-    def test_add_audiences_for(self):
-        narcissus = create_local_person(
+
+    def setUp(self):
+        self._narcissus = create_local_person(
                 name = 'narcissus',
                 )
 
-        like = create(
+    def test_add_audiences_for(self):
+
+        self._like = create(
                 f_type = 'Like',
-                f_actor = narcissus,
-                f_object = narcissus,
+                f_actor = self._narcissus,
+                f_object = self._narcissus,
+                run_side_effects = False,
+                run_delivery = False,
                 )
 
         a = Audience.add_audiences_for(
-                thing = like,
+                thing = self._like,
                 field = 'to',
                 value = [
                     REMOTE_FRED,
@@ -26,7 +30,7 @@ class TestAudience(TestCase):
                 )
 
         results = Audience.objects.filter(
-                parent = like,
+                parent = self._like,
                 )
 
         self.assertEqual(len(results), 2)
@@ -34,19 +38,18 @@ class TestAudience(TestCase):
         self.assertEqual(results[1].recipient, REMOTE_JIM)
 
     def test_create(self):
-        narcissus = create_local_person(
-                name = 'narcissus',
-                )
 
-        like = create(
+        self._like = create(
                 f_type = 'Like',
-                f_actor = narcissus,
-                f_object = narcissus,
+                f_actor = self._narcissus,
+                f_object = self._narcissus,
                 to = [ REMOTE_FRED, REMOTE_JIM, ],
+                run_side_effects = False,
+                run_delivery = False,
                 )
 
         results = Audience.objects.filter(
-                parent = like,
+                parent = self._like,
                 )
 
         self.assertEqual(len(results), 2)
@@ -54,19 +57,18 @@ class TestAudience(TestCase):
         self.assertEqual(results[1].recipient, REMOTE_JIM)
 
     def test_get_audiences_for(self):
-        narcissus = create_local_person(
-                name = 'narcissus',
-                )
 
-        like = create(
+        self._like = create(
                 f_type = 'Like',
-                f_actor = narcissus,
-                f_object = narcissus,
+                f_actor = self._narcissus,
+                f_object = self._narcissus,
+                run_side_effects = False,
+                run_delivery = False,
                 )
 
         for fieldname in ['to', 'cc', 'bcc']:
             a = Audience.add_audiences_for(
-                    thing = like,
+                    thing = self._like,
                     field = fieldname,
                     value = [
                         REMOTE_FRED,
@@ -75,7 +77,7 @@ class TestAudience(TestCase):
                     )
 
         self.assertDictEqual(
-                Audience.get_audiences_for(like),
+                Audience.get_audiences_for(self._like),
                 {'to': ['https://remote.example.org/users/fred',
                     'https://remote.example.org/users/jim'],
                     'cc': ['https://remote.example.org/users/fred',
@@ -85,7 +87,7 @@ class TestAudience(TestCase):
                     })
 
         self.assertDictEqual(
-                Audience.get_audiences_for(like,
+                Audience.get_audiences_for(self._like,
                     hide_blind = True,
                     ),
                 {'to': ['https://remote.example.org/users/fred',
@@ -93,6 +95,3 @@ class TestAudience(TestCase):
                     'cc': ['https://remote.example.org/users/fred',
                         'https://remote.example.org/users/jim'],
                     })
-
-
-
