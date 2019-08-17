@@ -5,11 +5,7 @@ __author__ = 'Marnanel Thurman'
 __license__ = 'GPL-2'
 __copyright__ = 'Copyright (c) 2018 Marnanel Thurman'
 
-import logging
-
-logger = logging.getLogger(name='django_kepi')
-
-ATSIGN_CONTEXT = "https://www.w3.org/ns/activitystreams", 
+ATSIGN_CONTEXT = "https://www.w3.org/ns/activitystreams"
 
 PUBLIC_IDS = set([
         'https://www.w3.org/ns/activitystreams#Public',
