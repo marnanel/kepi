@@ -40,7 +40,7 @@ class Activity(thing.Object):
         our_object = self['object__obj']
 
         if our_object is None:
-            logger.warn('%s: object of Create (%s) is not known!',
+            logger.warn('%s: object of action (%s) is not known!',
                     self, result['object'])
         else:
             result['object'] = our_object.activity_form
@@ -74,7 +74,7 @@ class Undo(Activity):
     pass
 
 class Accept(Activity):
-    pass
+    _explicit_object_field = True
 
 class Reject(Activity):
     pass
