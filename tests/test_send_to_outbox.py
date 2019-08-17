@@ -32,11 +32,8 @@ OBJECT_FORM = {
         "type": "Note",
         'attributedTo': ALICE_ID,
         "name": "Chris liked 'Minimal ActivityPub update client'",
-        "object": "https://rhiaro.co.uk/2016/05/minimal-activitypub",
-        "to": ["https://rhiaro.co.uk/#amy",
-            "https://dustycloud.org/followers",
-            "https://rhiaro.co.uk/followers/"],
-        "cc": "https://e14n.com/evan"
+        "object": "https://example.net/2016/05/minimal-activitypub",
+        "to": [PUBLIC],
         }
 
 CREATE_FORM = {

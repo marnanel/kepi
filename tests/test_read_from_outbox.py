@@ -67,7 +67,6 @@ BOOST = {
             "https://www.w3.org/ns/activitystreams#Public"
             ],
         "cc": [
-            "https://weirder.earth.example.net/users/natrix",
             "https://altair.example.com/users/alice/followers"
             ],
         "object": "https://weirder.earth.example.net/users/natrix/statuses/102504233649665656",
