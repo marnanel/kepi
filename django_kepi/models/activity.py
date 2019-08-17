@@ -7,6 +7,8 @@ logger = logging.getLogger(name='django_kepi')
 
 class Activity(thing.Object):
 
+    _explicit_object_field = False
+
     def go_into_outbox_if_local(self):
 
         from django_kepi.models.collection import Collection
@@ -28,13 +30,12 @@ class Activity(thing.Object):
                 local_only=True,
                 object_to_store=self)
 
-##############################
-
-class Create(Activity):
-
     @property
     def activity_form(self):
         result = super().activity_form
+
+        if not self._explicit_object_field:
+            return result
 
         our_object = self['object__obj']
 
@@ -46,6 +47,11 @@ class Create(Activity):
 
         return result
 
+##############################
+
+class Create(Activity):
+    _explicit_object_field = True
+
 class Update(Activity):
     pass
 
@@ -53,7 +59,7 @@ class Delete(Activity):
     pass
 
 class Follow(Activity):
-    pass
+    _explicit_object_field = True
 
 class Add(Activity):
     pass
