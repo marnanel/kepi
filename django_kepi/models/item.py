@@ -164,8 +164,21 @@ class Image(Item):
     pass
 
 class Note(Item):
-    # Why isn't it a subclass of Document?
-    pass
+
+    # Why isn't Note a subclass of Document?
+
+    def __str__(self):
+
+        content = self['content']
+
+        if len(content)>70:
+            content = content[:68]+'...'
+
+        result = '%s "%s"' % (
+                self.number,
+                content)
+
+        return result
 
 class Page(Item):
     # i.e. a web page
