@@ -11,7 +11,7 @@ to their audiences.
 
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-from django_kepi.find import find, find_local
+from django_kepi.find import find, find_local, is_local
 import django_kepi.models
 from httpsig.verify import HeaderVerifier
 from urllib.parse import urlparse
@@ -103,6 +103,12 @@ def _recipients_to_inboxes(recipients):
             logger.debug('  -- ignoring public')
             continue
 
+        if is_local(recipient):
+            logger.debug('  -- %s is local; use directly',
+                    recipient)
+            inboxes.add(recipient)
+            continue
+
         discovered = find(recipient)
 
         if discovered is None:
@@ -179,18 +185,21 @@ def _recipients_to_inboxes(recipients):
 
     return inboxes
 
-def _activity_form_to_outgoing_string(activity_form,
-        local_actor = None):
+def _activity_form_to_outgoing_string(activity_form):
     """
     Formats an activity ready to be sent out as
     an HTTP response.
     """
-    # XXX local_actor can be removed
+
+    from django_kepi import ATSIGN_CONTEXT
 
     format_for_delivery = activity_form.copy()
     for blind_field in ['bto', 'bcc']:
         if blind_field in format_for_delivery: 
             del format_for_delivery[blind_field]
+
+    if '@context' not in format_for_delivery:
+        format_for_delivery['@context'] = ATSIGN_CONTEXT
 
     message = json.dumps(
             format_for_delivery,
@@ -386,7 +395,8 @@ def deliver(
 
     # Actors don't get told about their own activities
     if not incoming:
-        if activity_form['actor'] in recipients:
+        if 'actor' in activity_form and \
+                activity_form['actor'] in recipients:
             recipients.remove(activity_form['actor'])
 
     if not recipients:
@@ -419,7 +429,6 @@ def deliver(
 
         message = _activity_form_to_outgoing_string(
                 activity_form = activity_form,
-                local_actor = local_actor,
                 )
 
         signer = _signer_for_local_actor(
