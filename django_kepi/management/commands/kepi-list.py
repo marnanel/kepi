@@ -16,8 +16,8 @@ class Command(KepiCommand):
 
         super().handle(*args, **options)
 
-        results = Item.objects.filter(
-                f_attributedTo = self._actor.id,
+        results = Object.objects.filter(
+                remote_url = None,
                 )
 
         if not results.exists():

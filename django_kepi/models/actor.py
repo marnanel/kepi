@@ -67,9 +67,15 @@ class Actor(thing.Object):
 
     def __str__(self):
         if self.is_local:
-            return 'local user {}'.format(self.f_preferredUsername)
+            return '({}) @{}'.format(
+                    self.number,
+                    self.f_preferredUsername,
+                    )
         else:
-            return 'remote user {}'.format(self.remote_url)
+            return '({}) remote user {}'.format(
+                    self.number,
+                    self.remote_url,
+                    )
 
     @property
     def key_name(self):

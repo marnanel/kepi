@@ -174,7 +174,7 @@ class Note(Item):
         if len(content)>70:
             content = content[:68]+'...'
 
-        result = '%s "%s"' % (
+        result = '(%s) "%s"' % (
                 self.number,
                 content)
 

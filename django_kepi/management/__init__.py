@@ -35,8 +35,12 @@ class KepiCommand(BaseCommand):
                 default=None)
 
     def handle(self, *args, **options):
+
+        # Written out like this so it's easier to add things
         if options['debug_mode']:
             settings.DEBUG = True
+        else:
+            settings.DEBUG = False
 
         if options['actor'] is None:
             options['actor'] = self._actor_name()
