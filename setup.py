@@ -20,7 +20,7 @@ version = get_version('django_kepi')
 setup(
     name='kepi',
     version=version,
-    url='https://gitlab.com/marnanel/django-kepi/',
+    url='https://gitlab.com/marnanel/kepi/',
     license='GPL-2',
     description='ActivityPub for Django',
     long_description=README,
@@ -34,6 +34,11 @@ setup(
     #zip_safe=False,
     classifiers=[
         # XXX fixme
-    ]
+    ],
+    entry_points = {
+        'console_scripts': [
+            'kepi=django_kepi.command_line:main',
+            ],
+        },
 )
 
