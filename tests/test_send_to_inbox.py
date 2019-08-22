@@ -4,9 +4,8 @@ from tests import *
 from django_kepi.create import create
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
-from django_kepi.models.item import Item
+from django_kepi.models.item import AcItem
 from django_kepi.models.following import Following
-from django_kepi.models.activity import Activity
 from django.test import Client
 from urllib.parse import urlparse
 import httpretty
@@ -125,7 +124,7 @@ class TestInbox2(TestCase):
                     },
                 )
 
-        items = Item.objects.filter(
+        items = AcItem.objects.filter(
                 f_attributedTo=BOB_ID,
                 )
 
@@ -183,7 +182,7 @@ class TestInbox2(TestCase):
                 path = ALICE_SOLE_INBOX_PATH,
                 )
 
-        items = Item.objects.filter(
+        items = AcItem.objects.filter(
                 f_attributedTo=BOB_ID,
                 )
 
@@ -213,7 +212,7 @@ class TestInbox2(TestCase):
                 path = INBOX_PATH,
                 )
 
-        items = Item.objects.filter(
+        items = AcItem.objects.filter(
                 f_attributedTo=BOB_ID,
                 )
 
@@ -228,7 +227,7 @@ class TestInbox2(TestCase):
                 content = 'Hello',
                 )
 
-        items = Item.objects.filter(
+        items = AcItem.objects.filter(
                 f_attributedTo=BOB_ID,
                 )
 
@@ -243,7 +242,7 @@ class TestInbox2(TestCase):
                 content = INVALID_UTF8,
                 )
 
-        items = Item.objects.filter(
+        items = AcItem.objects.filter(
                 f_attributedTo=BOB_ID,
                 )
 

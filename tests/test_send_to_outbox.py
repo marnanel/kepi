@@ -4,9 +4,9 @@ from tests import *
 from django_kepi.create import create
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
-from django_kepi.models.item import Item
-from django_kepi.models.thing import Object
-from django_kepi.models.activity import Activity
+from django_kepi.models.item import AcItem
+from django_kepi.models.acobject import AcObject
+from django_kepi.models.activity import AcActivity
 from django.test import Client
 from urllib.parse import urlparse
 import httpretty
@@ -119,8 +119,8 @@ class TestOutbox(TestCase):
             logger.debug('Received %s:', url)
             logger.debug('  -- %s', page)
 
-            if 'orderedItems' in page:
-                result.extend(page['orderedItems'])
+            if 'orderedAcItems' in page:
+                result.extend(page['orderedAcItems'])
 
             if linkname not in page:
                 # XXX testing
@@ -142,7 +142,7 @@ class TestOutbox(TestCase):
                 signed = False,
                 )
 
-        statuses = Item.objects.filter(
+        statuses = AcItem.objects.filter(
                 f_attributedTo=ALICE_ID,
                 )
 
@@ -156,7 +156,7 @@ class TestOutbox(TestCase):
                 content = CREATE_FORM,
                 )
 
-        statuses = Item.objects.filter(
+        statuses = AcItem.objects.filter(
                 f_attributedTo=ALICE_ID,
                 )
 
@@ -185,7 +185,7 @@ class TestOutbox(TestCase):
                 sender = sender,
                 )
 
-        statuses = Item.objects.filter(
+        statuses = AcItem.objects.filter(
                 f_attributedTo=REMOTE_DAVE_ID,
                 )
 
@@ -219,7 +219,7 @@ class TestOutbox(TestCase):
                 sender = sender,
                 )
 
-        statuses = Item.objects.filter(
+        statuses = AcItem.objects.filter(
                 f_attributedTo=sender.id,
                 )
 
@@ -230,13 +230,13 @@ class TestOutbox(TestCase):
     @httpretty.activate
     def test_unwrapped_object(self):
 
-        items_before = list(Object.objects.all())
+        items_before = list(AcObject.objects.all())
 
         self._send(
                 content = OBJECT_FORM,
                 )
 
-        items_after = list(Object.objects.all())
+        items_after = list(AcObject.objects.all())
 
         # This should have created two objects:
         # the Note we sent, and an implict Create.
@@ -254,7 +254,7 @@ class TestOutbox(TestCase):
                 content = create,
                 )
 
-        activities = Activity.objects.filter(
+        activities = AcActivity.objects.filter(
                 active = True,
                 )
 
@@ -278,10 +278,10 @@ class TestOutbox(TestCase):
             )
 
         self.assertEqual(
-                len(Object.objects.filter(f_actor=ALICE_ID)),
+                len(AcObject.objects.filter(f_actor=ALICE_ID)),
                 1)
 
-        # TODO When Actors have liked() and Things have likes(),
+        # TODO When AcActors have liked() and AcObjects have likes(),
         # test those here too.
 
     def test_update(self):
@@ -308,7 +308,7 @@ class TestOutbox(TestCase):
                     }
             )
 
-        note = Item.objects.get(f_attributedTo = ALICE_ID)
+        note = AcItem.objects.get(f_attributedTo = ALICE_ID)
 
         self.assertEqual(
                 note['content'],
@@ -339,7 +339,7 @@ class TestOutbox(TestCase):
                     }
             )
 
-        note = Item.objects.get(f_attributedTo = BOB_ID)
+        note = AcItem.objects.get(f_attributedTo = BOB_ID)
 
         # no change, because Alice doesn't own this note
         self.assertEqual(

@@ -8,7 +8,7 @@ logger = logging.getLogger(name='django_kepi')
 class Mention(models.Model):
 
     from_status = models.ForeignKey(
-            'django_kepi.Object',
+            'django_kepi.AcObject',
             on_delete = models.DO_NOTHING,
             )
 

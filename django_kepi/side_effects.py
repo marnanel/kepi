@@ -123,8 +123,8 @@ def create(activity):
 
     try:
         if issubclass(getattr(kepi_models,
-            f_type),
-            kepi_models.Activity):
+            'Ac'+f_type),
+            kepi_models.AcActivity):
 
             logger.warn('Attempt to use Create to create '+\
                     'an object of type %s. '+\

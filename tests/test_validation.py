@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django_kepi.validation import IncomingMessage, validate
-from django_kepi.models import Object
+from django_kepi.models import AcObject
 from unittest import skip
 import httpretty
 from . import *

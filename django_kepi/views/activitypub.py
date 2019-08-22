@@ -280,11 +280,11 @@ class ThingView(KepiView):
         try:
             logger.debug('Looking up Object by id==%s',
                     kwargs['id'])
-            activity_object = Object.objects.get(
+            activity_object = AcObject.objects.get(
                     number=kwargs['id'],
                     )
 
-        except Object.DoesNotExist:
+        except AcObject.DoesNotExist:
             logger.info('  -- unknown: %s', kwargs)
             return None
         except django.core.exceptions.ValidationError:
@@ -303,12 +303,12 @@ class ActorView(ThingView):
                 kwargs['username'])
 
         try:
-            activity_object = Actor.objects.get(
+            activity_object = AcActor.objects.get(
                     f_preferredUsername=kwargs['username'],
                     remote_url = None,
                     )
 
-        except Actor.DoesNotExist:
+        except AcActor.DoesNotExist:
             logger.info('  -- unknown user: %s', kwargs)
             return None
         except django.core.exceptions.ValidationError:
@@ -345,7 +345,7 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['username'])
 
-        person = Actor.objects.get(
+        person = AcActor.objects.get(
                 f_preferredUsername=kwargs['username'],
                 remote_url = None,
                 )
@@ -365,7 +365,7 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['username'])
 
-        person = Actor.objects.get(
+        person = AcActor.objects.get(
                 f_preferredUsername=kwargs['username'],
                 remote_url = None,
                 )
@@ -385,7 +385,7 @@ class AllUsersView(KepiView):
 
         logger.debug('Finding all users.')
 
-        return Actor.objects.all()
+        return AcActor.objects.all()
 
     def _modify_list_item(self, obj):
         return obj.activity_form
@@ -453,11 +453,11 @@ class UserCollectionView(KepiView):
                 logger.debug('  -- does not exist; creating it')
 
                 try:
-                    owner = Actor.objects.get(
+                    owner = AcActor.objects.get(
                             remote_url = None,
                             f_preferredUsername = username,
                     )
-                except Actor.DoesNotExist:
+                except AcActor.DoesNotExist:
                     logger.debug('    -- but user %s doesn\'t exist; bailing',
                             username)
                     return

@@ -10,7 +10,7 @@
 from django.test import TestCase, Client
 from django_kepi.delivery import deliver
 from django_kepi.create import create
-from django_kepi.models import Object
+from django_kepi.models import AcObject
 import django_kepi.views
 from unittest.mock import Mock, patch
 from . import *
@@ -32,9 +32,9 @@ REMOTE_PATH_NAMES = {
 
 def _message_became_activity(url=ACTIVITY_ID):
     try:
-        result = Object.objects.get(remote_url=url)
+        result = AcObject.objects.get(remote_url=url)
         return True
-    except Object.DoesNotExist:
+    except AcObject.DoesNotExist:
         return False
 
 class TestDelivery(TestCase):

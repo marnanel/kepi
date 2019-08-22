@@ -15,6 +15,6 @@ import django_kepi.models as kepi_models
 class ObjectAdminForm(forms.ModelForm):
 
     class Meta:
-        model = kepi_models.Object
+        model = kepi_models.AcObject
         exclude = [
                 ]

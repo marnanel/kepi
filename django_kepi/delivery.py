@@ -46,23 +46,23 @@ def _rfc822_datetime(when=None):
 
 def _find_local_actor(activity_form):
     """
-    Given an activity, as a dict, return the local Actor
-    who apparently created it. If there is no such Actor,
-    or if the Actor is remote, or if there's no Actor
+    Given an activity, as a dict, return the local AcActor
+    who apparently created it. If there is no such AcActor,
+    or if the AcActor is remote, or if there's no Actor
     at all, return None.
 
     If the activity has no "actor" field, we use
     the "attributedTo" field.
     """
 
-    from django_kepi.models.thing import Object
+    from django_kepi.models.acobject import AcObject
 
     parts = None
     for fieldname in ['actor', 'attributedTo']:
         if fieldname in activity_form:
             value = activity_form[fieldname]
 
-            if isinstance(value, Object):
+            if isinstance(value, AcObject):
                 return value
             else:
                 parts = urlparse(activity_form[fieldname])
@@ -399,8 +399,8 @@ def deliver(
     """
 
     try:
-        activity = django_kepi.models.Activity.objects.get(number=activity_id)
-    except django_kepi.models.Activity.DoesNotExist:
+        activity = django_kepi.models.AcActivity.objects.get(number=activity_id)
+    except django_kepi.models.AcActivity.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)
         return None

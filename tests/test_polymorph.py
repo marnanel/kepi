@@ -18,13 +18,13 @@ class TestPolymorph(TestCase):
         t = create(
                 f_type = 'Note',
                 )
-        self.assertIsInstance(t, Item)
+        self.assertIsInstance(t, AcItem)
 
     def test_person(self):
         t = create(
                 f_type = 'Person',
                 )
-        self.assertIsInstance(t, Actor)
+        self.assertIsInstance(t, AcActor)
 
     @skip('Are Object etc really abstract?')
     def test_abstract(self):

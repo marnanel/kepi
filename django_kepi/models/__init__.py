@@ -1,27 +1,27 @@
-from .thing import Object
+from .acobject import AcObject
 from .thingfield import ThingField
-from .activity import Activity, Create, Update, Delete, Follow, Add, Remove, \
-        Like, Undo, Accept, Reject, Announce
-from .actor import Actor, Application, Group, Organization, Person, Service
+from .activity import AcActivity, AcCreate, AcUpdate, AcDelete, AcFollow, AcAdd, AcRemove, \
+        AcLike, AcUndo, AcAccept, AcReject, AcAnnounce
+from .actor import AcActor, AcApplication, AcGroup, AcOrganization, AcPerson, AcService
 from .audience import Audience, AUDIENCE_FIELD_NAMES
 from .following import Following
 from .mention import Mention
-from .item import Item, Article, Audio, Document, Event, Image, Note, Page, \
-        Place, Profile, Relationship, Video
+from .item import AcItem, AcArticle, AcAudio, AcDocument, AcEvent, AcImage, AcNote, AcPage, \
+        AcPlace, AcProfile, AcRelationship, AcVideo
 from .collection import Collection, CollectionMember
 
 __all__ = [
-        'Object',
+        'AcObject',
         'ThingField',
-        'Activity', 'Create', 'Update', 'Delete', 'Follow', 'Add', 'Remove', \
-                'Like', 'Undo', 'Accept', 'Reject', 'Announce', 'Actor',
-        'Application', 'Group', 'Organization', 'Person', 'Service',
+        'AcActivity', 'AcCreate', 'AcUpdate', 'AcDelete', 'AcFollow', 'AcAdd', 'AcRemove', \
+                'AcLike', 'AcUndo', 'AcAccept', 'AcReject', 'AcAnnounce', 'AcActor',
+        'AcApplication', 'AcGroup', 'AcOrganization', 'AcPerson', 'AcService',
         'Audience',
         'AUDIENCE_FIELD_NAMES',
         'Following',
         'Mention',
-        'Item', 'Article', 'Audio', 'Document', 'Event', 'Image', 'Note', \
-                'Page', 'Place', 'Profile', 'Relationship', 'Video',
+        'AcItem', 'AcArticle', 'AcAudio', 'AcDocument', 'AcEvent', 'AcImage', 'AcNote', \
+                'AcPage', 'AcPlace', 'AcProfile', 'AcRelationship', 'AcVideo',
         'Collection',
         'CollectionMember',
         ]

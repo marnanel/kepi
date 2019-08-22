@@ -3,7 +3,7 @@ from tests import create_local_note, create_local_person
 from django_kepi.create import create
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.mention import Mention
-from django_kepi.models.item import Item
+from django_kepi.models.item import AcItem
 from .. import create_local_person
 import logging
 import json
@@ -48,7 +48,7 @@ class TestCreate(TestCase):
 
         logger.info('Created activity: %s', activity)
 
-        statuses = Item.objects.filter(
+        statuses = AcItem.objects.filter(
                 f_attributedTo=sender,
                 )
 

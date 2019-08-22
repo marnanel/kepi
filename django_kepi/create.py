@@ -47,7 +47,7 @@ def create(
     """
 
     from django_kepi.delivery import deliver
-    from django_kepi.models.activity import Activity
+    from django_kepi.models.activity import AcActivity
 
     if value is None:
         value = {}
@@ -90,17 +90,18 @@ def create(
             logger.warn("Remote Objects must have an id; dropping message")
             return None
 
+    class_name = 'Ac'+value['type']
     try:
         import django_kepi.models as kepi_models
-        cls = getattr(locals()['kepi_models'], value['type'])
+        cls = getattr(locals()['kepi_models'], class_name)
     except AttributeError:
         logger.warn("There's no type called %s",
-                value['type'])
+                class_name)
         return None
     except KeyError:
         logger.warn("The class '%s' wasn't exported properly. "+\
                 "This shouldn't happen.",
-                value['type'])
+                class_name)
         return None
 
     logger.debug('Class for %s is %s', value['type'], cls)
@@ -169,7 +170,7 @@ def create(
                 result.save()
             return None
 
-    if run_delivery and isinstance(result, Activity):
+    if run_delivery and isinstance(result, AcActivity):
         deliver(result.number,
                 incoming = incoming)
 

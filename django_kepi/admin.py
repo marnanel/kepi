@@ -18,184 +18,184 @@ import django_kepi.forms as kepi_forms
 ###################################
 
 class ObjectChildAdmin(PolymorphicChildModelAdmin):
-    base_model = Object
+    base_model = AcObject
     base_form = kepi_forms.ObjectAdminForm
 
 ###################################
 
 # Why is this such an enormous faff?
 
-@admin.register(Activity)
+@admin.register(AcActivity)
 class ActivityChildAdmin(ObjectChildAdmin):
     child_models = (
-        Activity, Create, Update, Delete, Follow, Add, Remove, \
-                Like, Undo, Accept, Reject, Announce,
+        AcActivity, AcCreate, AcUpdate, AcDelete, AcFollow, AcAdd, AcRemove, \
+                AcLike, AcUndo, AcAccept, AcReject, AcAnnounce,
                 )
 
-    base_model = Activity
+    base_model = AcActivity
 
-@admin.register(Create)
+@admin.register(AcCreate)
 class CreateChildAdmin(ActivityChildAdmin):
-    base_model = Create
+    base_model = AcCreate
 
-@admin.register(Update)
+@admin.register(AcUpdate)
 class UpdateChildAdmin(ActivityChildAdmin):
-    base_model = Update
+    base_model = AcUpdate
 
-@admin.register(Delete)
+@admin.register(AcDelete)
 class DeleteChildAdmin(ActivityChildAdmin):
-    base_model = Delete
+    base_model = AcDelete
 
-@admin.register(Follow)
+@admin.register(AcFollow)
 class FollowChildAdmin(ActivityChildAdmin):
-    base_model = Follow
+    base_model = AcFollow
 
-@admin.register(Add)
+@admin.register(AcAdd)
 class AddChildAdmin(ActivityChildAdmin):
-    base_model = Add
+    base_model = AcAdd
 
-@admin.register(Remove)
+@admin.register(AcRemove)
 class RemoveChildAdmin(ActivityChildAdmin):
-    base_model = Remove
+    base_model = AcRemove
 
-@admin.register(Like)
+@admin.register(AcLike)
 class LikeChildAdmin(ActivityChildAdmin):
-    base_model = Like
+    base_model = AcLike
 
-@admin.register(Undo)
+@admin.register(AcUndo)
 class UndoChildAdmin(ActivityChildAdmin):
-    base_model = Undo
+    base_model = AcUndo
 
-@admin.register(Accept)
+@admin.register(AcAccept)
 class AcceptChildAdmin(ActivityChildAdmin):
-    base_model = Accept
+    base_model = AcAccept
 
-@admin.register(Reject)
+@admin.register(AcReject)
 class RejectChildAdmin(ActivityChildAdmin):
-    base_model = Reject
+    base_model = AcReject
 
-@admin.register(Announce)
+@admin.register(AcAnnounce)
 class AnnounceChildAdmin(ActivityChildAdmin):
-    base_model = Announce
+    base_model = AcAnnounce
 
 ###################################
 
-@admin.register(Actor)
+@admin.register(AcActor)
 class ActorChildAdmin(ObjectChildAdmin):
 
     child_models = (
-        Application, Group, Organization, Person, Service,
+        AcApplication, AcGroup, AcOrganization, AcPerson, AcService,
         )
-    base_model = Actor
+    base_model = AcActor
 
-@admin.register(Application)
+@admin.register(AcApplication)
 class ApplicationChildAdmin(ActorChildAdmin):
-    base_model = Application
+    base_model = AcApplication
 
-@admin.register(Group)
+@admin.register(AcGroup)
 class GroupChildAdmin(ActorChildAdmin):
-    base_model = Group
+    base_model = AcGroup
 
-@admin.register(Organization)
+@admin.register(AcOrganization)
 class OrganizationChildAdmin(ActorChildAdmin):
-    base_model = Organization
+    base_model = AcOrganization
 
-@admin.register(Person)
+@admin.register(AcPerson)
 class PersonChildAdmin(ActorChildAdmin):
-    base_model = Person
+    base_model = AcPerson
 
-@admin.register(Service)
+@admin.register(AcService)
 class ServiceChildAdmin(ActorChildAdmin):
-    base_model = Service
+    base_model = AcService
 
 #####################################
 
-@admin.register(Item)
+@admin.register(AcItem)
 class ItemChildAdmin(ObjectChildAdmin):
-    base_model = Item
+    base_model = AcItem
 
     child_models = (
-            Article, Audio, Document, Event, Image, Note, \
-            Page, Place, Profile, Relationship, Video,
+            AcArticle, AcAudio, AcDocument, AcEvent, AcImage, AcNote,\
+            AcPage, AcPlace, AcProfile, AcRelationship, AcVideo,
         )
 
-@admin.register(Article)
+@admin.register(AcArticle)
 class ArticleChildAdmin(ItemChildAdmin):
-    base_model = Article
+    base_model = AcArticle
 
-@admin.register(Audio)
+@admin.register(AcAudio)
 class AudioChildAdmin(ItemChildAdmin):
-    base_model = Audio
+    base_model = AcAudio
 
-@admin.register(Document)
+@admin.register(AcDocument)
 class DocumentChildAdmin(ItemChildAdmin):
-    base_model = Document
+    base_model = AcDocument
 
-@admin.register(Event)
+@admin.register(AcEvent)
 class EventChildAdmin(ItemChildAdmin):
-    base_model = Event
+    base_model = AcEvent
 
-@admin.register(Image)
+@admin.register(AcImage)
 class ImageChildAdmin(ItemChildAdmin):
-    base_model = Image
+    base_model = AcImage
 
-@admin.register(Note)
+@admin.register(AcNote)
 class NoteChildAdmin(ItemChildAdmin):
-    base_model = Note
+    base_model = AcNote
 
-@admin.register(Page)
+@admin.register(AcPage)
 class PageChildAdmin(ItemChildAdmin):
-    base_model = Page
+    base_model = AcPage
 
-@admin.register(Place)
+@admin.register(AcPlace)
 class PlaceChildAdmin(ItemChildAdmin):
-    base_model = Place
+    base_model = AcPlace
 
-@admin.register(Profile)
+@admin.register(AcProfile)
 class ProfileChildAdmin(ItemChildAdmin):
-    base_model = Profile
+    base_model = AcProfile
 
-@admin.register(Relationship)
+@admin.register(AcRelationship)
 class RelationshipChildAdmin(ItemChildAdmin):
-    base_model = Relationship
+    base_model = AcRelationship
 
-@admin.register(Video)
+@admin.register(AcVideo)
 class VideoChildAdmin(ItemChildAdmin):
-    base_model = Video
+    base_model = AcVideo
 
 ###################################
 
-@admin.register(Object)
+@admin.register(AcObject)
 class ObjectParentAdmin(PolymorphicParentModelAdmin):
-    base_model = Object
+    base_model = AcObject
     child_models = (
-            Create,
-            Update,
-            Delete,
-            Follow,
-            Add,
-            Remove,
-            Like,
-            Undo,
-            Accept,
-            Reject,
-            Announce,
-            Application,
-            Group,
-            Organization,
-            Person,
-            Service,
-            Article,
-            Audio,
-            Document,
-            Event,
-            Image,
-            Note,
-            Page,
-            Place,
-            Profile,
-            Relationship,
-            Video,
+            AcCreate,
+            AcUpdate,
+            AcDelete,
+            AcFollow,
+            AcAdd,
+            AcRemove,
+            AcLike,
+            AcUndo,
+            AcAccept,
+            AcReject,
+            AcAnnounce,
+            AcApplication,
+            AcGroup,
+            AcOrganization,
+            AcPerson,
+            AcService,
+            AcArticle,
+            AcAudio,
+            AcDocument,
+            AcEvent,
+            AcImage,
+            AcNote,
+            AcPage,
+            AcPlace,
+            AcProfile,
+            AcRelationship,
+            AcVideo,
             )
     list_filter = (PolymorphicChildModelFilter, )
 

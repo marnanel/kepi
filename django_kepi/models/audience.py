@@ -28,7 +28,7 @@ AUDIENCE_FIELD_KEYS = set([v for (f,v) in FIELD_CHOICES])
 class Audience(models.Model):
 
     parent = models.ForeignKey(
-            'django_kepi.Object',
+            'django_kepi.AcObject',
             on_delete = models.CASCADE,
             )
 

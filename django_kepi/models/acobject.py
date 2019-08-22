@@ -14,8 +14,8 @@ import warnings
 
 logger = logging.getLogger(name='django_kepi')
 
-# Fields in "Object" which you can set and get directly
-# by subscripting the Object. This doesn't include
+# Fields in "AcObject" which you can set and get directly
+# by subscripting the AcObject. This doesn't include
 # any field beginning with "f_", because you can
 # always set and get those by removing the prefix.
 FIELDS_YOU_CAN_SUBSCRIPT_FOR = set(['remote_url'])
@@ -27,7 +27,7 @@ def _new_number():
 
 ######################
 
-class Object(PolymorphicModel):
+class AcObject(PolymorphicModel):
 
     number = models.CharField(
             max_length=8,
@@ -131,7 +131,7 @@ class Object(PolymorphicModel):
 
     @property
     def f_type(self):
-        return self.__class__.__name__
+        return self.__class__.__name__[2:]
 
     @property
     def activity_form(self):
@@ -204,7 +204,7 @@ class Object(PolymorphicModel):
             result = find(result,
                     do_not_fetch=True)
         elif 'obj' in name_parts and result is not None:
-            result = Object.get_by_url(url=result)
+            result = AcObject.get_by_url(url=result)
 
         return result
 
@@ -328,7 +328,7 @@ class Object(PolymorphicModel):
     @classmethod
     def get_by_url(cls, url):
         """
-        Retrieves an Object whose URL is "url".
+        Retrieves an AcObject whose URL is "url".
 
         This differs from find() in that it can
         find objects which were submitted to us over HTTP
@@ -367,8 +367,8 @@ def _normalise_type_for_thing(v):
         return v # also booleans
     elif isinstance(v, list):
         return v # and lists as well
-    elif isinstance(v, Object):
-        return v.url # Objects can deal with themselves
+    elif isinstance(v, AcObject):
+        return v.url # AcObjects can deal with themselves
 
     # okay, it's something weird
 

@@ -13,7 +13,6 @@ for the full details.
 import django.views
 from django.conf import settings
 from django.shortcuts import render
-from django_kepi.models.actor import Actor
 from django.http import HttpResponse
 from django_kepi import __version__
 import logging

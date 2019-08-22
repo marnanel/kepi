@@ -1,5 +1,5 @@
 from django.db import models
-from . import thing, audience
+from . import acobject, audience
 from .. import PUBLIC_IDS
 import logging
 
@@ -7,7 +7,7 @@ logger = logging.getLogger(name='django_kepi')
 
 ######################
 
-class Item(thing.Object):
+class AcItem(acobject.AcObject):
 
     f_content = models.CharField(
             max_length=255,
@@ -148,22 +148,22 @@ class Item(thing.Object):
 
 ##############################
 
-class Article(Item):
+class AcArticle(AcItem):
     pass
 
-class Audio(Item):
+class AcAudio(AcItem):
     pass
 
-class Document(Item):
+class AcDocument(AcItem):
     pass
 
-class Event(Item):
+class AcEvent(AcItem):
     pass
 
-class Image(Item):
+class AcImage(AcItem):
     pass
 
-class Note(Item):
+class AcNote(AcItem):
 
     # Why isn't Note a subclass of Document?
 
@@ -180,18 +180,18 @@ class Note(Item):
 
         return result
 
-class Page(Item):
+class AcPage(AcItem):
     # i.e. a web page
     pass
 
-class Place(Item):
+class AcPlace(AcItem):
     pass
 
-class Profile(Item):
+class AcProfile(AcItem):
     pass
 
-class Relationship(Item):
+class AcRelationship(AcItem):
     pass
 
-class Video(Item):
+class AcVideo(AcItem):
     pass

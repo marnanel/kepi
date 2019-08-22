@@ -5,7 +5,7 @@
 # Licensed under the GNU Public License v2.
 
 from django.test import TestCase
-from django_kepi.models import Object
+from django_kepi.models import AcObject
 from django_kepi.create import create
 from unittest import skip
 from . import remote_object_is_recorded, create_local_person
@@ -24,7 +24,7 @@ SAMPLE_NOTE = {
         "type": "Note",
         }
 
-class TestObject(TestCase):
+class TestAcObject(TestCase):
 
     def test_bad_type(self):
 
@@ -39,7 +39,7 @@ class TestObject(TestCase):
 
     def test_remote_no_id(self):
 
-        from django_kepi.models import Object
+        from django_kepi.models import AcObject
 
         create(
             f_type = "Create",
@@ -48,10 +48,10 @@ class TestObject(TestCase):
             is_local_user = False,
             sender="https://remote.example.com")
 
-        with self.assertRaises(Object.DoesNotExist,
+        with self.assertRaises(AcObject.DoesNotExist,
                 msg="remote objects with no ID don't get created",
                 ):
-            result = Object.objects.get(
+            result = AcObject.objects.get(
                     f_actor=REMOTE_FRED,
                     active=True,
                     )

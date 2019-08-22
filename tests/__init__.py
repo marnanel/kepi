@@ -1,6 +1,6 @@
 from django_kepi.create import create
 from django_kepi.validation import IncomingMessage, validate
-from django_kepi.models.actor import Actor
+from django_kepi.models.actor import AcActor
 from django.conf import settings
 import django.test
 import httpretty
@@ -98,7 +98,6 @@ def create_local_note(**kwargs):
 
 def mock_remote_object(
         url,
-        ftype = 'Object',
         content = '',
         status = 200,
         as_post = False,
@@ -343,10 +342,10 @@ def remote_user(url, name,
 
 def remote_object_is_recorded(url):
 
-    from django_kepi.models import Object
+    from django_kepi.models import AcObject
 
     try:
-        result = Object.objects.get(remote_url=url)
+        result = AcObject.objects.get(remote_url=url)
         return True
-    except Object.DoesNotExist:
+    except AcObject.DoesNotExist:
         return False

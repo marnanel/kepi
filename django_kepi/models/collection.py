@@ -7,7 +7,7 @@ logger = logging.getLogger(name='django_kepi')
 class Collection(models.Model):
 
     owner = models.ForeignKey(
-            'django_kepi.Actor',
+            'django_kepi.AcActor',
             on_delete = models.DO_NOTHING,
             )
 
@@ -51,7 +51,7 @@ class Collection(models.Model):
     def get(cls, name,
             create_if_missing=True):
 
-        from django_kepi.models.actor import Actor
+        from django_kepi.models.actor import AcActor
 
         try:
             username, collectionname = name.split('/')
@@ -65,11 +65,11 @@ class Collection(models.Model):
                 username, collectionname)
 
         try:
-            owner = Actor.objects.get(
+            owner = AcActor.objects.get(
                     f_preferredUsername = username,
                     remote_url = None,
                     )
-        except Actor.DoesNotExist:
+        except AcActor.DoesNotExist:
             logger.info("  -- can't get %s because %s doesn't exist",
                     name, username,
                     )
@@ -134,7 +134,7 @@ class CollectionMember(models.Model):
         )
 
     member = models.ForeignKey(
-            'django_kepi.Object',
+            'django_kepi.AcObject',
             on_delete = models.DO_NOTHING,
             )
 

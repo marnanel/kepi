@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from . import thing
+from . import acobject
 import django_kepi.crypto
 import logging
 import json
@@ -13,14 +13,11 @@ LIST_NAMES = [
 
 ######################
 
-class Actor(thing.Object):
+class AcActor(acobject.AcObject):
     """
-    An Actor is a kind of Object representing a person,
+    An AcActor is a kind of AcObject representing a person,
     an organisation, a bot, or anything else that can
-    post stuff and interact with other Actors.
-
-    The most important thing about Actors specifically
-    is that they own a public/private key pair.
+    post stuff and interact with other AcActors.
     """
 
     privateKey = models.TextField(
@@ -177,17 +174,17 @@ class Actor(thing.Object):
 
 ##############################
 
-class Application(Actor):
+class AcApplication(AcActor):
     pass
 
-class Group(Actor):
+class AcGroup(AcActor):
     pass
 
-class Organization(Actor):
+class AcOrganization(AcActor):
     pass
 
-class Person(Actor):
+class AcPerson(AcActor):
     pass
 
-class Service(Actor):
+class AcService(AcActor):
     pass

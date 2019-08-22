@@ -1,11 +1,11 @@
-from . import thing
+from . import acobject
 import logging
 
 logger = logging.getLogger(name='django_kepi')
 
 ######################
 
-class Activity(thing.Object):
+class AcActivity(acobject.AcObject):
 
     _explicit_object_field = False
 
@@ -49,7 +49,7 @@ class Activity(thing.Object):
 
 ##############################
 
-class Create(Activity):
+class AcCreate(AcActivity):
     _explicit_object_field = True
 
     def __str__(self):
@@ -58,13 +58,13 @@ class Create(Activity):
                 self['object__obj'].__str__(),
                 )
 
-class Update(Activity):
+class AcUpdate(AcActivity):
     pass
 
-class Delete(Activity):
+class AcDelete(AcActivity):
     pass
 
-class Follow(Activity):
+class AcFollow(AcActivity):
     def __str__(self):
 
         return '(%s) request that %s follow %s' % (
@@ -73,19 +73,19 @@ class Follow(Activity):
                 self['object'],
                 )
 
-class Add(Activity):
+class AcAdd(AcActivity):
     pass
 
-class Remove(Activity):
+class AcRemove(AcActivity):
     pass
 
-class Like(Activity):
+class AcLike(AcActivity):
     pass
 
-class Undo(Activity):
+class AcUndo(AcActivity):
     pass
 
-class Accept(Activity):
+class AcAccept(AcActivity):
     _explicit_object_field = True
 
     def __str__(self):
@@ -95,7 +95,7 @@ class Accept(Activity):
                 self['object__obj'].__str__(),
                 )
 
-class Reject(Activity):
+class AcReject(AcActivity):
     def __str__(self):
 
         return '(%s) reject %s' % (
@@ -103,6 +103,6 @@ class Reject(Activity):
                 self['object__obj'].__str__(),
                 )
 
-class Announce(Activity):
+class AcAnnounce(AcActivity):
     # aka "boost"
     pass

@@ -13,7 +13,7 @@ for the full details.
 import django.views
 from django.conf import settings
 from django.shortcuts import render
-from django_kepi.models.actor import Actor
+from django_kepi.models.actor import AcActor
 from django.http import HttpResponse
 import logging
 import re
@@ -60,11 +60,11 @@ class Webfinger(django.views.View):
                     )
 
         try:
-            whoever = Actor.objects.get(
+            whoever = AcActor.objects.get(
                     remote_url = None,
                     f_preferredUsername = username,
                 )
-        except Actor.DoesNotExist:
+        except AcActor.DoesNotExist:
             return HttpResponse(
                     status = 404,
                     reason = 'no such user',

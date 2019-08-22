@@ -38,7 +38,7 @@ class Fetch(models.Model):
             default = timezone.now,
             )
 
-class ThingRequest(HttpRequest):
+class ActivityRequest(HttpRequest):
 
     """
     These are fake HttpRequests which we send to the views
@@ -109,7 +109,7 @@ def find_local(path,
             str(resolved.kwargs),
             )
 
-    request = ThingRequest(
+    request = ActivityRequest(
             path=path,
             object_to_store=object_to_store,
             )
@@ -142,7 +142,7 @@ def find_remote(url,
         its stated audiences. This is usually not what you want.
     """
 
-    from django_kepi.models.thing import Object 
+    from django_kepi.models.acobject import AcObject 
 
     logger.debug('%s: find remote', url)
 
@@ -157,14 +157,14 @@ def find_remote(url,
         # We fetched it in the past.
 
         try:
-            result = Object.objects.get(
+            result = AcObject.objects.get(
                     remote_url = url,
                     )
             logger.debug('%s: already fetched, and it\'s %s',
                     url, result)
 
             return result
-        except Object.DoesNotExist:
+        except AcObject.DoesNotExist:
             logger.debug('%s: we already know it wasn\'t there',
                     url)
 
