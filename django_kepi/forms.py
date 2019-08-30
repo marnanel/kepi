@@ -12,9 +12,8 @@ the admin interface. It's not very elaborate yet.
 from django import forms
 import django_kepi.models as kepi_models
 
-class ObjectAdminForm(forms.ModelForm):
+class PersonAdminForm(forms.ModelForm):
 
     class Meta:
-        model = kepi_models.AcObject
-        exclude = [
-                ]
+        model = kepi_models.AcPerson
+        fields = ['f_preferredUsername']
