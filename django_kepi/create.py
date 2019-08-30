@@ -162,7 +162,6 @@ def create(
         if not success:
             logger.debug('  -- deleting original object')
             try:
-                # FIXME This fails because "delete" is a type name!
                 result.delete()
             except:
                 logger.debug('    -- deletion failed; marking inactive')
