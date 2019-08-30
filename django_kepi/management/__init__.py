@@ -27,6 +27,7 @@ class KepiCommand(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--actor', '-a',
+                help='actor to act as',
                 type=str,
                 default=None)
         parser.add_argument('--debug-mode', '-d',
