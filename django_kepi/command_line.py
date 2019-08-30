@@ -62,5 +62,10 @@ def main():
         show_help()
         return
 
-    call_command(KEPI_PREFIX + sys.argv[1],
-            *sys.argv[2:])
+    try:
+        call_command(KEPI_PREFIX + sys.argv[1],
+                *sys.argv[2:])
+    except KeyError:
+        sys.stderr.write('No such command: %s\n', sys.argv[1])
+        sys.stderr.write('For a list of commands, run:\n')
+        sys.stderr.write('    %s --help\n', sys.argv[0])
