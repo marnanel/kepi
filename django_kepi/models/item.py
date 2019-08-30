@@ -167,6 +167,9 @@ class AcNote(AcItem):
 
     # Why isn't Note a subclass of Document?
 
+    class Meta:
+        verbose_name = 'note'
+
     def __str__(self):
 
         content = self['content']

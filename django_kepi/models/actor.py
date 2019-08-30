@@ -191,7 +191,9 @@ class AcOrganization(AcActor):
     pass
 
 class AcPerson(AcActor):
-    pass
+    class Meta:
+        verbose_name = 'person'
+        verbose_name_plural = 'people'
 
 class AcService(AcActor):
     pass

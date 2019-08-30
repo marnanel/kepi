@@ -9,6 +9,10 @@ class AcActivity(acobject.AcObject):
 
     _explicit_object_field = False
 
+    class Meta:
+        verbose_name = 'activity'
+        verbose_name_plural = 'activities'
+
     def go_into_outbox_if_local(self):
 
         from django_kepi.models.collection import Collection
