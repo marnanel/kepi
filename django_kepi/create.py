@@ -18,6 +18,7 @@ def create(
         is_local_user=True,
         run_side_effects=True,
         run_delivery=True,
+        using_commandline_names=False,
         value=None,
         incoming=False,
         **kwargs):
@@ -35,6 +36,9 @@ def create(
         object should have the side-effect of deleting something.
     run_delivery -- whether we should attempt to deliver the
         new object to whatever audiences it lists.
+    using_commandline_names -- if True, "value" is given
+        using the conventions for the kepi commandline.
+        If False (the default), it uses ActivityPub naming.
 
     Any extra keyword arguments are taken to be fields of the
     new object, just as if they had appeared in "value".
@@ -48,6 +52,7 @@ def create(
 
     from django_kepi.delivery import deliver
     from django_kepi.models.activity import AcActivity
+    from django_kepi.commandviews import view_class_for
 
     if value is None:
         value = {}
@@ -120,6 +125,10 @@ def create(
             logger.warn('id and url differ (%s vs %s)',
                     value['id'], value['url'])
         del value['url']
+
+    if using_commandline_names:
+        view = view_class_for(cls)
+        value = view.commandline_names_to_activitypub(value)
 
     ########################
 

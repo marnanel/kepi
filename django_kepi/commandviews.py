@@ -61,6 +61,36 @@ class ObjectCommandView(object):
 
         return result
 
+    @classmethod
+    def commandline_names_to_activitypub(cls,
+            names):
+
+        logger.debug('No conversion needed between commandline names '+\
+                'and ActivityPub: %s',
+            names)
+
+        return names
+
+    @classmethod
+    def _rename_dict_fields(
+            cls,
+            names,
+            corrigenda,
+            ):
+
+        for acname, ourname in corrigenda:
+
+            if acname in names:
+                continue
+
+            if ourname not in names:
+                continue
+
+            names[acname] = names[ourname]
+            del names[ourname]
+
+        return names
+
 class ItemCommandView(ObjectCommandView):
     
     def _items_inner(self,
@@ -84,9 +114,14 @@ class ItemCommandView(ObjectCommandView):
             result[field] = getattr(s, field)
 
         return result
- 
+
 class ActorCommandView(ObjectCommandView):
     
+    _fields_to_rename = [
+            ('preferredUsername', 'username'),
+            ('summary', 'bio'),
+            ]
+
     def _items_inner(self,
             verbosity=0,
             ):
@@ -99,8 +134,8 @@ class ActorCommandView(ObjectCommandView):
                 ]:
             result[field] = s[field]
 
-        result['bio'] = s['summary']
-        result['username'] = s['preferredUsername']
+        for acname, ourname in self._fields_to_rename:
+            result[ourname] = s[acname]
 
         for field in [
                 'auto_follow',
@@ -118,6 +153,17 @@ class ActorCommandView(ObjectCommandView):
             result[field] = v
 
         return result
+
+    @classmethod
+    def commandline_names_to_activitypub(cls,
+            names):
+
+        names = cls._rename_dict_fields(
+                names,
+                cls._fields_to_rename,
+                )
+
+        return names
 
 class ActivityCommandView(ObjectCommandView):
     pass
