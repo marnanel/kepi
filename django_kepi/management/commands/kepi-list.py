@@ -16,14 +16,14 @@ class Command(KepiCommand):
 
         super().handle(*args, **options)
 
-        results = Object.objects.filter(
+        results = AcObject.objects.filter(
                 remote_url = None,
                 )
 
         if not results.exists():
             self.stdout.write(
                     self.style.ERROR(
-                        "No posts found."
+                        "Nothing found."
                         ))
             return
 

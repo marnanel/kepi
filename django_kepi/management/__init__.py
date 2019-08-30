@@ -48,14 +48,10 @@ class KepiCommand(BaseCommand):
                 return
 
         try:
-            self._actor = Actor.objects.get(
+            self._actor = AcActor.objects.get(
                     remote_url = None,
                     active = True,
                     f_preferredUsername = options['actor'],
                     )
-        except Actor.DoesNotExist:
-            self.stdout.write(self.style.ERROR(
-                "%s is not a known actor." % (options['actor'],)))
-            raise ValueError("Not a known actor.")
-
-
+        except AcActor.DoesNotExist:
+            self._actor = None
