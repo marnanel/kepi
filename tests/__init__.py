@@ -53,10 +53,6 @@ def create_local_person(name='jemima',
     spec = {
         'name': name,
         'preferredUsername': name,
-        'id': settings.KEPI['USER_URL_FORMAT'] % {
-            'username': name,
-            'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-            },
         'type': 'Person',
         'endpoints': {
             'sharedInbox': settings.KEPI['SHARED_INBOX'] % {
@@ -71,9 +67,13 @@ def create_local_person(name='jemima',
     spec.update(kwargs)
 
     if 'publicKey' in spec:
+        user_id = settings.KEPI['USER_URL_FORMAT'] % {
+            'username': name,
+            'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+            }
         spec['publicKey'] = {
-            'id': spec['id']+'#main-key',
-            'owner': spec['id'],
+            'id': user_id+'#main-key',
+            'owner': user_id,
             'publicKeyPem': spec['publicKey'],
         }
 
@@ -86,9 +86,22 @@ def create_local_person(name='jemima',
 
 def create_local_note(**kwargs):
     spec = {
-        'id': 'https://testserver/testing-note',
         'type': 'Note',
         'content': 'This is just a test.',
+        }
+
+    spec.update(kwargs)
+
+    result = create(**spec)
+    return result
+
+def create_local_like(**kwargs):
+
+    note = create_local_note()
+
+    spec = {
+        'type': 'Like',
+        'object': note.id,
         }
 
     spec.update(kwargs)
