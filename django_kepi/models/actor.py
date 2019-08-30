@@ -39,6 +39,13 @@ class AcActor(acobject.AcObject):
             )
 
     @property
+    def short_id(self):
+        if self.is_local:
+            return '@{}'.format(self.f_preferredUsername)
+        else:
+            return __super__.short_id
+
+    @property
     def url(self):
         if self.remote_url is not None:
             return self.remote_url

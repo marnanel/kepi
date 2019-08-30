@@ -68,6 +68,14 @@ class AcObject(PolymorphicModel):
     def id(self):
         return self.url
 
+    @property
+    def short_id(self):
+        """
+        Returns a short unique identifier for this object.
+        Generally, this will be the object's "number" field.
+        """
+        return self.number
+
     def __str__(self):
 
         if self.active:
