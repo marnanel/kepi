@@ -1,3 +1,4 @@
+from django.db import models
 from . import acobject
 import logging
 
@@ -8,6 +9,13 @@ logger = logging.getLogger(name='django_kepi')
 class AcActivity(acobject.AcObject):
 
     _explicit_object_field = False
+
+    f_actor = models.CharField(
+            max_length=255,
+            default=None,
+            null=True,
+            blank=True,
+            )
 
     class Meta:
         verbose_name = 'activity'

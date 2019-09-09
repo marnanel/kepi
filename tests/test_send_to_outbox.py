@@ -278,7 +278,7 @@ class TestOutbox(TestCase):
             )
 
         self.assertEqual(
-                len(AcObject.objects.filter(f_actor=ALICE_ID)),
+                len(AcActivity.objects.filter(f_actor=ALICE_ID)),
                 1)
 
         # TODO When AcActors have liked() and AcObjects have likes(),

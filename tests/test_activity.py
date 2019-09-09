@@ -5,7 +5,7 @@
 # Licensed under the GNU Public License v2.
 
 from django.test import TestCase
-from django_kepi.models import AcObject
+from django_kepi.models import AcObject, AcActivity
 from django_kepi.create import create
 from unittest import skip
 from . import remote_object_is_recorded, create_local_person
@@ -51,7 +51,7 @@ class TestAcObject(TestCase):
         with self.assertRaises(AcObject.DoesNotExist,
                 msg="remote objects with no ID don't get created",
                 ):
-            result = AcObject.objects.get(
+            result = AcActivity.objects.get(
                     f_actor=REMOTE_FRED,
                     active=True,
                     )

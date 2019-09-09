@@ -34,13 +34,7 @@ class AcObject(PolymorphicModel):
             primary_key=True,
             unique=True,
             default=_new_number,
-            )
-
-    f_actor = models.CharField(
-            max_length=255,
-            default=None,
-            null=True,
-            blank=True,
+            editable=False,
             )
 
     remote_url = models.URLField(
