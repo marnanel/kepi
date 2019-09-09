@@ -16,4 +16,25 @@ class PersonAdminForm(forms.ModelForm):
 
     class Meta:
         model = kepi_models.AcPerson
-        fields = ['f_preferredUsername']
+
+        fields = [
+                'f_preferredUsername',
+                'f_summary',
+                'icon',
+                'header',
+                'auto_follow',
+            ]
+
+
+class NoteAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = kepi_models.AcNote
+
+        fields = [
+                'f_content',
+                'f_attributedTo',
+            ]
+
+    f_content = forms.CharField(
+            widget = forms.Textarea)

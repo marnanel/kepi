@@ -33,6 +33,7 @@ class PersonAdmin(admin.ModelAdmin):
 
 @admin.register(AcNote)
 class NoteAdmin(admin.ModelAdmin):
+    form = kepi_forms.NoteAdminForm
     base_model = AcNote
 
 ###################################
