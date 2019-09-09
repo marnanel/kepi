@@ -28,14 +28,39 @@ class AcActor(acobject.AcObject):
     f_publicKey = models.TextField(
             blank=True,
             null=True,
+            verbose_name='public key',
             )
 
     auto_follow = models.BooleanField(
             default=True,
+            help_text="If True, follow requests will be accepted automatically.",
             )
 
     f_preferredUsername = models.CharField(
             max_length=255,
+            help_text="Something short, like 'alice'.",
+            verbose_name='username',
+            )
+
+    f_summary = models.TextField(
+            max_length=255,
+            help_text="Your biography. Something like "+\
+                    "'I enjoy falling down rabbitholes.'",
+            default='',
+            verbose_name='bio',
+            )
+
+    icon = models.ImageField(
+            help_text="A small square image used to identify you.",
+            null=True,
+            verbose_name='icon',
+            )
+
+    header = models.ImageField(
+            help_text="A large image, wider than it's tall, which appears "+\
+                    "at the top of your profile page.",
+            null=True,
+            verbose_name='header image',
             )
 
     @property
