@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django_kepi.models import *
 from django_kepi.create import create
-from django_kepi.management import KepiCommand, object_by_keyword
+from django_kepi.management import KepiCommand, objects_by_keywords
 import os
 import logging
 import json
@@ -71,7 +71,7 @@ class Command(KepiCommand):
         print('Target: %s' % (activity['target'],))
 
     def _show_item(self, item, *args, **options):
-        print('== item %s ==:' % (item.number,))
+        print('== item %s ==' % (item.number,))
 
         # XXX date etc
         # XXX find activity which created it
@@ -115,15 +115,17 @@ class Command(KepiCommand):
 
         super().handle(*args, **options)
 
-        for name in options['id']:
-            logger.debug('Showing: %s', name)
+        logger.debug('Showing: %s', options['id'])
 
-            thing = object_by_keyword(name)
+        try:
+            things = objects_by_keywords(options['id'])
+            logger.debug('  -- which are: %s', things)
 
-            logger.debug('  -- which is %s', thing)
-
-            if thing is None:
-                continue
-
-            self._show_thing(thing, *args, **options)
+            for thing in things:
+                self._show_thing(thing, *args, **options)
+        except KeyError as ke:
+            logger.debug('  -- which don\'t all exist: %s',
+                    ke.args[0])
+            self.stdout.write(self.style.WARNING(
+                ke.args[0],))
 

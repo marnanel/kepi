@@ -58,7 +58,31 @@ class KepiCommand(BaseCommand):
         except AcActor.DoesNotExist:
             self._actor = None
 
-def object_by_keyword(keyword):
+def objects_by_keywords(keywords):
+    """
+    Finds a set of kepi objects specified by a series of keywords.
+
+    "keywords" is a list of strings.
+    Returns a list of objects on success.
+
+    An ID number consists of eight hex digits.
+
+    If any of the strings in "keywords" contain one or more
+    bracketed ID numbers, this function returns a list of the
+    objects those numbers represent, in order.
+    In this case, no other representation of an object will be considered.
+    It doesn't matter if some of the lines don't contain any
+    bracketed numbers at all.
+    If any of the numbers don't correspond to a current object,
+    raises KeyError.
+
+    Otherwise, each string in "keywords" must represent either:
+      - an ID number, as above
+      - a username preceded by @
+    If any string doesn't represent either, raise KeyError.
+    Otherwise, we return a list of the objects referred to,
+    in the same order.
+    """
 
     def object_by_number(number):
         try:
@@ -69,42 +93,46 @@ def object_by_keyword(keyword):
                     )
 
         except AcObject.DoesNotExist:
-            self.stdout.write(self.style.WARNING(
+            raise KeyError(
                 'There is nothing with the number %s.' % (number,)
-                ))
-            return None
+                )
 
         return result
 
-    keyword = keyword.lower()
+    bracketed_eight_digits_match = re.findall(r'\(([0-9a-f]{8})\)',
+            ' '.join(keywords),
+            re.IGNORECASE,
+            )
+    if bracketed_eight_digits_match:
+        return [object_by_number(n) for n in bracketed_eight_digits_match]
 
-    username_match = re.match(r'@([a-z0-9_-]+)$', keyword)
+    result = []
+    for keyword in keywords:
+        username_match = re.match(r'@([a-z0-9_-]+)$', keyword,
+                re.IGNORECASE)
 
-    if username_match:
-        try:
-            somebody = AcActor.objects.get(
-                    remote_url = None,
-                    f_preferredUsername = username_match.group(1),
+        if username_match:
+            try:
+                somebody = AcActor.objects.get(
+                        remote_url = None,
+                        f_preferredUsername = username_match.group(1),
+                        )
+
+                result.append(somebody)
+                continue
+
+            except AcActor.DoesNotExist:
+                raise KeyError(
+                    'There is no user named %s.' % (keyword,)
                     )
 
-            return somebody
+        eight_digits_match = re.match(r'([0-9a-f]{8})$', keyword)
+        if eight_digits_match:
+            result.append(object_by_number(eight_digits_match.group(1)))
+            continue
 
-        except AcActor.DoesNotExist:
-            self.stdout.write(self.style.WARNING(
-                'There is no user keywordd %s.' % (keyword,)
-                ))
-            return None
+        raise KeyError(
+            'I don\'t know what %s means.' % (keyword,)
+            )
 
-    eight_digits_match = re.match('([0-9a-f]{8})$', keyword)
-    if eight_digits_match:
-        return object_by_number(eight_digits_match.group(1))
-
-    bracketed_eight_digits_match = re.match('\(([0-9a-f]{8})\)',
-            keyword)
-    if bracketed_eight_digits_match:
-        return object_by_number(bracketed_eight_digits_match.group(1))
-
-    self.stdout.write(self.style.WARNING(
-        'I don\'t know what %s means.' % (keyword,)
-        ))
-    return None
+    return result
