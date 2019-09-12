@@ -24,9 +24,16 @@ class Command(KepiCommand):
 
         super().handle(*args, **options)
 
+        actor = self._actor
+        if actor is None:
+            self.stdout.write(self.style.ERROR(
+                'You need to specify an actor, using --actor <username>.',
+                ))
+            return
+
         note = create(value={
             'type': 'Note',
-            'attributedTo': self._actor,
+            'attributedTo': actor,
             'to': self._actor['followers'],
             'cc': 'https://www.w3.org/ns/activitystreams#Public',
             'content': options['text'],
@@ -35,11 +42,17 @@ class Command(KepiCommand):
             )
         logger.info('Note created: %s', note)
 
+        if note is None:
+            self.stdout.write(self.style.WARNING(
+                'No note was created. (Try --debug-mode to discover why.)',
+                ))
+            return
+
         creation = create(value={
             'type': 'Create',
-            'actor': self._actor,
+            'actor': actor,
             'object': note,
-            'to': self._actor['followers'],
+            'to': actor['followers'],
             'cc': 'https://www.w3.org/ns/activitystreams#Public',
             },
             is_local_user=True,
@@ -48,4 +61,10 @@ class Command(KepiCommand):
             )
         logger.info('Create created: %s', creation)
 
+        if creation is None:
+            self.stdout.write(self.style.WARNING(
+                'No creation activity was created. (Try --debug-mode to discover why.)',
+                ))
+            return
 
+        self.stdout.write('Created: %s' % (note,))
