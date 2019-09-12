@@ -246,6 +246,11 @@ def _signer_for_local_actor(local_actor):
         logger.info('not signing outgoing messages because we have no known actor')
         return None
 
+    if local_actor.privateKey is None:
+        logger.warn('not signing outgoing messages because local actor %s '+\
+                'has no private key!', local_actor)
+        return None
+
     try:
         return httpsig.HeaderSigner(
                 key_id=local_actor.key_name,
