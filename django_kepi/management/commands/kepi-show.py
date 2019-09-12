@@ -3,6 +3,7 @@ from django.conf import settings
 from django_kepi.models import *
 from django_kepi.create import create
 from django_kepi.management import KepiCommand, objects_by_keywords
+from collections import abc
 import os
 import logging
 import json
@@ -37,10 +38,6 @@ class Command(KepiCommand):
     ################################
 
     def _show_actor(self, somebody, *args, **options):
-        self.stdout.write('== %s ==' % (somebody,))
-        self.stdout.write('')
-        self.stdout.write('URL: %s' % (somebody.url,))
-        self.stdout.write('Bio: %s' % (somebody.f_summary,))
 
         followers = Following.objects.filter(
                 following = somebody,
@@ -48,42 +45,87 @@ class Command(KepiCommand):
         following = Following.objects.filter(
                 follower = somebody,
                 )
-        self.stdout.write('Followers: %d.  Following: %d.  Auto-follow? %s' % (
-            followers.count(),
-            following.count(),
-            somebody.auto_follow,))
-
         statuses = AcItem.objects.filter(
                 remote_url = None,
                 f_attributedTo = somebody.url,
                 )
 
-        self.stdout.write('Statuses: %d' % (statuses.count(),))
-        for status in statuses:
-            self.stdout.write('  (%s) %s' % (status.number, status.f_content,))
+        result = [
+                ('url', somebody.url),
+                ('bio', somebody.f_summary),
+                ('auto-follow', somebody.auto_follow),
+                ('followers', followers),
+                ('following', following),
+                ('statuses', statuses),
+                ]
+
+        self._display_table(result,
+                title=somebody.f_preferredUsername,
+                )
 
     def _show_activity(self, activity, *args, **options):
-        print('== activity %s ==' % (activity.number,))
 
-        print('Type: %s' % (activity.f_type,))
-        print('Actor: %s' % (activity['actor'],))
-        print('Object: %s' % (activity['object'],))
-        print('Target: %s' % (activity['target'],))
+        result = [
+        ('type', activity.f_type),
+        ('actor', activity['actor']),
+        ('object', activity['object']),
+        ('target', activity['target']),
+        ]
+
+        self._display_table(result,
+                title='activity %s' % (activity.number,),
+                )
 
     def _show_item(self, item, *args, **options):
-        print('== item %s ==' % (item.number,))
 
         # XXX date etc
         # XXX find activity which created it
-        # XXX audiences; also, direct/public/whatever
-        print('By: %s' % (item['attributedTo'],))
-        print('Content: %s' % (item['content'],))
+
+        result = [
+                ('by', item['attributedTo']),
+                ('content', item['content']),
+                ]
+        result.extend(item.audiences.items())
+
+        self._display_table(result,
+                title='item %s' % (item.number,),
+                )
+
+    def _display_table(self, items,
+            title=None):
+
+        if title:
+            print('== %s ==' % (title,))
+
+        width = max([len(f) for f,v in items])
+
+        for f,v in items:
+            print('%*s: ' % (
+                width,
+                f,
+                ),
+                end='')
+
+            if isinstance(v, str):
+                print(v)
+            elif isinstance(v, abc.Iterable):
+
+                if len(v)<2:
+                    print(v)
+                    continue
+
+                print(len(v))
+
+                spaces = (' '*width)+'    '
+
+                for line in v:
+                    print(spaces+str(line))
+            else:
+                print(v)
 
     def _show_raw_object(self, thing, *args, **options):
-        for f,v in sorted(thing.activity_form.items()):
-            print('%s: %s' % (
-                    f, v,)
-                    )
+        self._display_table(
+            sorted(thing.activity_form.items()))
 
     def _show_json(self, thing, *args, **options):
 
