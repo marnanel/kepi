@@ -3,6 +3,7 @@ from django_kepi.models import *
 from django.conf import settings
 import logging
 import os
+import re
 
 ENVIRON_USER = 'KEPI_USER'
 
@@ -56,3 +57,54 @@ class KepiCommand(BaseCommand):
                     )
         except AcActor.DoesNotExist:
             self._actor = None
+
+def object_by_keyword(keyword):
+
+    def object_by_number(number):
+        try:
+            result = AcObject.objects.get(
+                    # we don't require remote_url to be None
+                    # if they're giving us an exact number
+                    number = number,
+                    )
+
+        except AcObject.DoesNotExist:
+            self.stdout.write(self.style.WARNING(
+                'There is nothing with the number %s.' % (number,)
+                ))
+            return None
+
+        return result
+
+    keyword = keyword.lower()
+
+    username_match = re.match(r'@([a-z0-9_-]+)$', keyword)
+
+    if username_match:
+        try:
+            somebody = AcActor.objects.get(
+                    remote_url = None,
+                    f_preferredUsername = username_match.group(1),
+                    )
+
+            return somebody
+
+        except AcActor.DoesNotExist:
+            self.stdout.write(self.style.WARNING(
+                'There is no user keywordd %s.' % (keyword,)
+                ))
+            return None
+
+    eight_digits_match = re.match('([0-9a-f]{8})$', keyword)
+    if eight_digits_match:
+        return object_by_number(eight_digits_match.group(1))
+
+    bracketed_eight_digits_match = re.match('\(([0-9a-f]{8})\)',
+            keyword)
+    if bracketed_eight_digits_match:
+        return object_by_number(bracketed_eight_digits_match.group(1))
+
+    self.stdout.write(self.style.WARNING(
+        'I don\'t know what %s means.' % (keyword,)
+        ))
+    return None

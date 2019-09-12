@@ -2,9 +2,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django_kepi.models import *
 from django_kepi.create import create
-from django_kepi.management import KepiCommand
+from django_kepi.management import KepiCommand, object_by_keyword
 import os
-import re
 import logging
 import json
 
@@ -108,74 +107,23 @@ class Command(KepiCommand):
         elif isinstance(thing, AcItem):
             self._show_item(thing, *args, **options)
         else:
-            self._show_thing(thing, *args, **options)
+            self._show_raw_object(thing, *args, **options)
 
     ################################
-
-    def _show_by_number(self, number, *args, **options):
-        try:
-            something = AcObject.objects.get(
-                    # we don't require remote_url to be None
-                    # if they're giving us an exact number
-                    number = number,
-                    )
-
-        except AcObject.DoesNotExist:
-            self.stdout.write(self.style.WARNING(
-                'There is nothing with the number %s.' % (number,)
-                ))
-            return
-
-        self._show_thing(something,
-                *args, **options)
-
-        return
-
-    def _show_by_keyword(self, name, *args, **options):
-
-        name = name.lower()
-
-        username_match = re.match(r'@([a-z0-9_-]+)$', name)
-
-        if username_match:
-            try:
-                somebody = AcActor.objects.get(
-                        remote_url = None,
-                        f_preferredUsername = username_match.group(1),
-                        )
-
-                self._show_thing(somebody,
-                        *args, **options)
-
-                return
-
-            except AcActor.DoesNotExist:
-                self.stdout.write(self.style.WARNING(
-                    'There is no user named %s.' % (name,)
-                    ))
-                return
-
-        eight_digits_match = re.match('[0-9a-f]{8}$', name)
-        if eight_digits_match:
-            self._show_by_number(eight_digits_match.group(0),
-                    *args, **options)
-            return
-
-        bracketed_eight_digits_match = re.match('\(([0-9a-f]{8})\)$',
-                name)
-        if bracketed_eight_digits_match:
-            self._show_by_number(bracketed_eight_digits_match.group(1),
-                    *args, **options)
-            return
-
-        self.stdout.write(self.style.WARNING(
-            'I don\'t know what %s means.' % (name,)
-            ))
 
     def handle(self, *args, **options):
 
         super().handle(*args, **options)
 
-        for thing in options['id']:
-            logger.debug('Showing: %s', thing)
-            self._show_by_keyword(thing, *args, **options)
+        for name in options['id']:
+            logger.debug('Showing: %s', name)
+
+            thing = object_by_keyword(name)
+
+            logger.debug('  -- which is %s', thing)
+
+            if thing is None:
+                continue
+
+            self._show_thing(thing, *args, **options)
+
