@@ -85,7 +85,7 @@ def objects_by_keywords(keywords):
     def object_by_number(number):
         try:
             result = AcObject.objects.get(
-                    number = number,
+                    id = '/'+number,
                     )
 
         except AcObject.DoesNotExist:
