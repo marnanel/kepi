@@ -65,9 +65,8 @@ class Collection(models.Model):
                 username, collectionname)
 
         try:
-            owner = AcActor.objects.get(
+            owner = AcActor.objects.get_local_only(
                     f_preferredUsername = username,
-                    remote_url = None,
                     )
         except AcActor.DoesNotExist:
             logger.info("  -- can't get %s because %s doesn't exist",

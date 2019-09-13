@@ -254,9 +254,7 @@ class TestOutbox(TestCase):
                 content = create,
                 )
 
-        activities = AcActivity.objects.filter(
-                active = True,
-                )
+        activities = AcActivity.objects.all()
 
         self.assertEqual(
                 len(activities),

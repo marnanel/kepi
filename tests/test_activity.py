@@ -53,7 +53,6 @@ class TestAcObject(TestCase):
                 ):
             result = AcActivity.objects.get(
                     f_actor=REMOTE_FRED,
-                    active=True,
                     )
             logger.warn('  -- remote object was found: %s',
                     result)

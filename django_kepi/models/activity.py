@@ -32,7 +32,7 @@ class AcActivity(acobject.AcObject):
         actor = self['actor__find']
 
         logger.info('%s: going into %s\'s outbox',
-                self.number,
+                self.id,
                 actor.f_preferredUsername)
 
         outbox_url = actor['outbox']
@@ -66,7 +66,7 @@ class AcCreate(AcActivity):
 
     def __str__(self):
         return '(%s) create of %s' % (
-                self.number,
+                self.id,
                 self['object__obj'].__str__(),
                 )
 
@@ -80,7 +80,7 @@ class AcFollow(AcActivity):
     def __str__(self):
 
         return '(%s) request that %s follow %s' % (
-                self.number,
+                self.id,
                 self['actor'],
                 self['object'],
                 )
@@ -103,7 +103,7 @@ class AcAccept(AcActivity):
     def __str__(self):
 
         return '(%s) accept %s' % (
-                self.number,
+                self.id,
                 self['object__obj'].__str__(),
                 )
 
@@ -111,7 +111,7 @@ class AcReject(AcActivity):
     def __str__(self):
 
         return '(%s) reject %s' % (
-                self.number,
+                self.id,
                 self['object__obj'].__str__(),
                 )
 

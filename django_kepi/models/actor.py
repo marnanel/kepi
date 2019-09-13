@@ -72,13 +72,13 @@ class AcActor(acobject.AcObject):
 
     @property
     def url(self):
-        if self.remote_url is not None:
-            return self.remote_url
-
-        return settings.KEPI['USER_URL_FORMAT'] % {
-                'username': self.f_preferredUsername,
-                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                }
+        if self.is_local:
+            return settings.KEPI['USER_URL_FORMAT'] % {
+                    'username': self.f_preferredUsername,
+                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    }
+        else:
+            return self.id
 
     def _after_create(self):
         if self.privateKey is None and self.f_publicKey is None:
@@ -97,13 +97,12 @@ class AcActor(acobject.AcObject):
     def __str__(self):
         if self.is_local:
             return '({}) @{}'.format(
-                    self.number,
+                    self.id,
                     self.f_preferredUsername,
                     )
         else:
-            return '({}) remote user {}'.format(
-                    self.number,
-                    self.remote_url,
+            return '({}) [remote user]'.format(
+                    self.id,
                     )
 
     @property
@@ -170,7 +169,7 @@ class AcActor(acobject.AcObject):
         for listname in LIST_NAMES:
             result[listname] = self.list_url(listname)
 
-        result['url'] = self.id
+        result['url'] = self.url
         result['name'] = self.f_preferredUsername
 
         result['endpoints'] = {}

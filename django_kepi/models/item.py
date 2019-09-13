@@ -26,7 +26,7 @@ class AcItem(acobject.AcObject):
 
         audiences = audience.Audience.get_audiences_for(self)
         logger.debug('%s: checking visibility in audiences: %s',
-                self.number, str(audiences))
+                self.id, str(audiences))
 
         audience_to = set(audiences.get('to', []))
         audience_cc = set(audiences.get('cc', []))
@@ -43,10 +43,10 @@ class AcItem(acobject.AcObject):
 
         if actor is None:
             logger.debug('%s: posted by %s, whom we don\'t know about',
-                    self.number, self.account)
+                    self.id, self.account)
         else:
             logger.debug('%s: checking visibility from poster: %s',
-                    self.number, actor)
+                    self.id, actor)
 
             followers_url = actor['followers']
 
@@ -178,7 +178,7 @@ class AcNote(AcItem):
             content = content[:68]+'...'
 
         result = '(%s) "%s"' % (
-                self.number,
+                self.id,
                 content)
 
         return result

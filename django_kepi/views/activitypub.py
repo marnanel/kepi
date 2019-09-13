@@ -281,7 +281,7 @@ class ThingView(KepiView):
             logger.debug('Looking up Object by id==%s',
                     kwargs['id'])
             activity_object = AcObject.objects.get(
-                    number=kwargs['id'],
+                    id='/'+kwargs['id'],
                     )
 
         except AcObject.DoesNotExist:
@@ -303,9 +303,8 @@ class ActorView(ThingView):
                 kwargs['username'])
 
         try:
-            activity_object = AcActor.objects.get(
+            activity_object = AcActor.objects.get_local_only(
                     f_preferredUsername=kwargs['username'],
-                    remote_url = None,
                     )
 
         except AcActor.DoesNotExist:
@@ -345,9 +344,8 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['username'])
 
-        person = AcActor.objects.get(
+        person = AcActor.objects.get_local_only(
                 f_preferredUsername=kwargs['username'],
-                remote_url = None,
                 )
 
         logger.debug('Finding followers of %s: %s',
@@ -365,13 +363,10 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['username'])
 
-        person = AcActor.objects.get(
+        person = AcActor.objects.get_local_only(
                 f_preferredUsername=kwargs['username'],
-                remote_url = None,
                 )
 
-        logger.debug('Finding followers of %s: %s',
-                kwargs['username'], person)
 
         return Following.objects.filter(following=person.url,
                 pending=False)
@@ -453,8 +448,7 @@ class UserCollectionView(KepiView):
                 logger.debug('  -- does not exist; creating it')
 
                 try:
-                    owner = AcActor.objects.get(
-                            remote_url = None,
+                    owner = AcActor.objects.get_local_only(
                             f_preferredUsername = username,
                     )
                 except AcActor.DoesNotExist:

@@ -50,9 +50,7 @@ class KepiCommand(BaseCommand):
                 return
 
         try:
-            self._actor = AcActor.objects.get(
-                    remote_url = None,
-                    active = True,
+            self._actor = AcActor.objects.get_local_only(
                     f_preferredUsername = options['actor'],
                     )
         except AcActor.DoesNotExist:
@@ -87,8 +85,6 @@ def objects_by_keywords(keywords):
     def object_by_number(number):
         try:
             result = AcObject.objects.get(
-                    # we don't require remote_url to be None
-                    # if they're giving us an exact number
                     number = number,
                     )
 
@@ -113,8 +109,7 @@ def objects_by_keywords(keywords):
 
         if username_match:
             try:
-                somebody = AcActor.objects.get(
-                        remote_url = None,
+                somebody = AcActor.objects.get_local_only(
                         f_preferredUsername = username_match.group(1),
                         )
 

@@ -60,8 +60,7 @@ class Webfinger(django.views.View):
                     )
 
         try:
-            whoever = AcActor.objects.get(
-                    remote_url = None,
+            whoever = AcActor.objects.get_local_only(
                     f_preferredUsername = username,
                 )
         except AcActor.DoesNotExist:

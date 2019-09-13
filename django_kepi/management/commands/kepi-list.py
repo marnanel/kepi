@@ -16,9 +16,7 @@ class Command(KepiCommand):
 
         super().handle(*args, **options)
 
-        results = AcObject.objects.filter(
-                remote_url = None,
-                )
+        results = AcObject.objects.filter_local_only()
 
         if not results.exists():
             self.stdout.write(

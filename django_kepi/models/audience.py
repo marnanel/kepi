@@ -46,7 +46,7 @@ class Audience(models.Model):
 
     def __str__(self):
         return '[%s %12s %s]' % (
-                self.parent.number,
+                self.parent.id,
                 self.get_field_display(),
                 self.recipient,
                 )

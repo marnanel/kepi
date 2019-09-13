@@ -158,7 +158,7 @@ def find_remote(url,
 
         try:
             result = AcObject.objects.get(
-                    remote_url = url,
+                    id = url,
                     )
             logger.debug('%s: already fetched, and it\'s %s',
                     url, result)
@@ -242,7 +242,7 @@ def find_remote(url,
         result = create(
                 is_local_user = False,
                 value = content_without_at,
-                remote_url = url,
+                id = url,
                 run_delivery = run_delivery,
                 )
 
@@ -255,8 +255,38 @@ def is_local(url):
     if hasattr(url, 'url'):
         url = url.url
 
+    if url.startswith('/'):
+        return True
+
     parsed_url = urlparse(url)
     return parsed_url.hostname in settings.ALLOWED_HOSTS
+
+def _local_lookup(number):
+    """
+    Helper function to find an object when we actually have
+    its ID number.
+
+    "number" is the number preceded by a slash.
+    For example, "/2bad4dec".
+
+    """
+
+    from django_kepi.models import AcObject
+
+    try:
+        result = AcObject.objects.get(
+                id=number,
+                )
+        logger.debug('%s: found %s',
+                number, result)
+
+        return result
+
+    except AcObject.DoesNotExist:
+        logger.debug('%s: does not exist',
+                number)
+
+        return None
 
 def find(url,
         local_only=False,
@@ -283,6 +313,9 @@ def find(url,
     The reason for using "local_only" instead of just calling
     find_local() is that this function parses URLs for you.
     """
+
+    if url.startswith('/'):
+        return _local_lookup(url)
 
     parsed_url = urlparse(url)
     is_local = parsed_url.hostname in settings.ALLOWED_HOSTS

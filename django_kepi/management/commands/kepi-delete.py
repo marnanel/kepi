@@ -53,8 +53,7 @@ class Command(KepiCommand):
             following.count(),
             somebody.auto_follow,))
 
-        statuses = AcItem.objects.filter(
-                remote_url = None,
+        statuses = AcItem.objects.filter_local_only(
                 f_attributedTo = somebody.url,
                 )
 

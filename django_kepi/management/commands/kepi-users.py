@@ -31,9 +31,7 @@ class Command(KepiCommand):
             self._list(*args, **options)
 
     def _list(self, *args, **options):
-        results = AcActor.objects.filter(
-                remote_url = None,
-                )
+        results = AcActor.objects.filter_local_only()
 
         if not results.exists():
             self.stdout.write(

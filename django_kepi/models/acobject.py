@@ -2,6 +2,7 @@ from django.db import models, IntegrityError
 from django.conf import settings
 from django.utils import timezone
 from polymorphic.models import PolymorphicModel
+from polymorphic.managers import PolymorphicManager
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.thingfield import ThingField
 from django_kepi.models.mention import Mention
@@ -14,78 +15,84 @@ import warnings
 
 logger = logging.getLogger(name='django_kepi')
 
-# Fields in "AcObject" which you can set and get directly
-# by subscripting the AcObject. This doesn't include
-# any field beginning with "f_", because you can
-# always set and get those by removing the prefix.
-FIELDS_YOU_CAN_SUBSCRIPT_FOR = set(['remote_url'])
-
 ######################
 
 def _new_number():
-    return '%08x' % (random.randint(0, 0xffffffff),)
+    return '/%08x' % (random.randint(0, 0xffffffff),)
+
+######################
+
+class KepiManager(PolymorphicManager):
+
+    # TODO: This should allow filtering on names
+    # without their f_... prefixes, and also
+    # transparently on ThingFields.
+
+    def find_local_only(self, *args, **kwargs):
+        self._adjust_kwargs_for_local_only(kwargs)
+        return self.find(*args, **kwargs)
+
+    def get_local_only(self, *args, **kwargs):
+        self._adjust_kwargs_for_local_only(kwargs)
+        return self.get(*args, **kwargs)
+
+    def _adjust_kwargs_for_local_only(self, kwargs):
+
+        LOCAL_ONLY = 'id__startswith'
+
+        if LOCAL_ONLY in kwargs:
+            raise ValueError(('%s is already an argument; '+\
+                    'this should never happen') % (LOCAL_ONLY,))
+        kwargs[LOCAL_ONLY] = '/'
 
 ######################
 
 class AcObject(PolymorphicModel):
 
-    number = models.CharField(
-            max_length=8,
+    id = models.CharField(
+            max_length=255,
             primary_key=True,
             unique=True,
+            blank=False,
             default=_new_number,
             editable=False,
             )
 
-    remote_url = models.URLField(
-            max_length=255,
-            null=True,
-            blank=True,
-            default=None,
-            )
-
-    active = models.BooleanField(
-            default=True,
-            )
+    objects = KepiManager()
 
     @property
     def url(self):
-        if self.remote_url is not None:
-            return self.remote_url
-
-        return settings.KEPI['ACTIVITY_URL_FORMAT'] % {
-                'number': self.number,
-                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                }
-
-    @property
-    def id(self):
-        return self.url
+        if self.id.startswith('/'):
+            return settings.KEPI['ACTIVITY_URL_FORMAT'] % {
+                    'number': self.id[1:],
+                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    }
+        else:
+            return self.id
 
     @property
-    def short_id(self):
-        """
-        Returns a short unique identifier for this object.
-        Generally, this will be the object's "number" field.
-        """
-        return self.number
+    def number(self):
+        if self.id.startswith('/'):
+            return self.id[1:]
+        else:
+            return None
 
     def __str__(self):
 
-        if self.active:
-            inactive_warning = ''
+        if self.is_local:
+            details = '(%s)' % (self.id[1:],)
         else:
-            inactive_warning = ' INACTIVE'
+            details = self.id
 
-        details = self.url
-
-        result = '[%s %s %s%s]' % (
-                self.number,
-                self.f_type,
+        result = '[%s %s]' % (
                 details,
-                inactive_warning,
+                self.f_type,
                 )
         return result
+
+    @property
+    def short_id(self):
+        return self.id
 
     @property
     def pretty(self):
@@ -96,9 +103,6 @@ class AcObject(PolymorphicModel):
                 ('type', self.f_type),
                 ]
 
-        if not self.active:
-            items.append( ('_active', False) )
-
         for f, v in sorted(self.activity_form.items()):
 
             if f in ['type']:
@@ -108,8 +112,6 @@ class AcObject(PolymorphicModel):
 
         items.extend( [
                 ('actor', self.f_actor),
-                ('_number', self.number),
-                ('_remote_url', self.remote_url),
                 ] )
 
         for f, v in items:
@@ -178,8 +180,6 @@ class AcObject(PolymorphicModel):
 
         if hasattr(self, 'f_'+name):
             result = getattr(self, 'f_'+name)
-        elif name in FIELDS_YOU_CAN_SUBSCRIPT_FOR:
-            result = getattr(self, name)
         elif name in AUDIENCE_FIELD_NAMES:
             try:
                 result = Audience.objects.filter(
@@ -215,16 +215,13 @@ class AcObject(PolymorphicModel):
         value = _normalise_type_for_thing(value)
 
         logger.debug('  -- %8s %12s %s',
-                self.number,
+                self.id,
                 name,
                 value,
                 )
 
         if hasattr(self, 'f_'+name):
             setattr(self, 'f_'+name, value)
-            self.save()
-        elif name in FIELDS_YOU_CAN_SUBSCRIPT_FOR:
-            setattr(self, name, value)
             self.save()
         elif name in AUDIENCE_FIELD_NAMES:
 
@@ -291,13 +288,7 @@ class AcObject(PolymorphicModel):
 
     @property
     def is_local(self):
-
-        from django_kepi.find import is_local
-
-        if not self.remote_url:
-            return True
-
-        return is_local(self.remote_url)
+        return self.id.startswith('/')
 
     def entomb(self):
         logger.info('%s: entombing', self)
@@ -307,12 +298,11 @@ class AcObject(PolymorphicModel):
             return
 
         if not self.is_local:
-            raise ValueError("%s: you can't entomb remote things %s",
-                    self, str(self.remote_url))
+            raise ValueError("%s: you can't entomb remote things",
+                    self)
 
         self['former_type'] = self.f_type
         self['deleted'] = timezone.now()
-        self.active = False
 
         self.save()
         logger.info('%s: entombed', self)
@@ -321,11 +311,18 @@ class AcObject(PolymorphicModel):
 
         try:
             super().save(*args, **kwargs)
+            logger.debug('%s: saved', self)
         except IntegrityError as ie:
-            logger.info('Integrity error on save (%s); retrying',
-                    ie)
-            self.number = _new_number()
-            return self.save(*args, **kwargs)
+            if self.is_local and kwargs.get('_tries_left',0)>0:
+                logger.info('Integrity error on save (%s); retrying',
+                        ie)
+                self.id = _new_number()
+                kwargs['_tries_left'] -= 1
+                return self.save(*args, **kwargs)
+            else:
+                logger.info('Integrity error on save (%s); failed',
+                        ie)
+                raise ie
 
     @classmethod
     def get_by_url(cls, url):
@@ -345,10 +342,10 @@ class AcObject(PolymorphicModel):
                 local_only = True)
 
         if result is None:
-            logger.debug('       -- not local; trying remote_url')
+            logger.debug('       -- not local; trying remote')
             try:
                 result = cls.objects.get(
-                        remote_url = url,
+                        id = url,
                         )
             except cls.DoesNotExist:
                 result = None

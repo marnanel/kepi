@@ -112,14 +112,6 @@ def create(
     logger.debug('Class for %s is %s', value['type'], cls)
     del value['type']
 
-    if 'url' in value and 'remote_url' in value:
-        if value['url']!=value['remote_url']:
-            logger.warn('url and remote_url differ (%s vs %s)',
-                    value['url'], value['remote_url'])
-
-        # in either case there's no point in keeping url around
-        del value['url']
-
     if 'id' in value and 'url' in value:
         if value['id']!=value['url']:
             logger.warn('id and url differ (%s vs %s)',
@@ -137,15 +129,14 @@ def create(
     if 'id' in value:
         try:
             result = cls(
-                    remote_url = value['id'],
+                    id = value['id'],
                     )
-            del value['id']
             result.save()
-            logger.warn('  -- created local copy of remote object %s '+\
-                    '(url was %s)',
-                result, result.remote_url)
+            logger.info('  -- created local copy of remote object %s ',
+                result)
+            del value['id']
         except django.db.utils.IntegrityError:
-            logger.warn('We already have an object with remote_url=%s',
+            logger.warn('We already have an object with id=%s; ignoring',
                 value['id'])
             return None
     else:
@@ -169,17 +160,12 @@ def create(
     if run_side_effects:
         success = result.run_side_effects()
         if not success:
-            logger.debug('  -- deleting original object')
-            try:
-                result.delete()
-            except:
-                logger.debug('    -- deletion failed; marking inactive')
-                result.active = False
-                result.save()
+            logger.debug('  -- side-effects failed; deleting original object')
+            result.delete()
             return None
 
     if run_delivery and isinstance(result, AcActivity):
-        deliver(result.number,
+        deliver(result.id,
                 incoming = incoming)
 
     return result

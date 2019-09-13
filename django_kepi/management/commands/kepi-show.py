@@ -45,8 +45,7 @@ class Command(KepiCommand):
         following = Following.objects.filter(
                 follower = somebody,
                 )
-        statuses = AcItem.objects.filter(
-                remote_url = None,
+        statuses = AcItem.objects.filter_local_only(
                 f_attributedTo = somebody.url,
                 )
 

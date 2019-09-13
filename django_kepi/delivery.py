@@ -396,7 +396,7 @@ def deliver(
     Deliver an activity to an actor.
 
     Keyword arguments:
-    activity_id -- the "number" field of an Activity
+    activity_id -- the "id" field of an Activity
     incoming -- True if we just received this, False otherwise
 
     This function is a shared task; it will be run by Celery behind
@@ -404,7 +404,7 @@ def deliver(
     """
 
     try:
-        activity = django_kepi.models.AcActivity.objects.get(number=activity_id)
+        activity = django_kepi.models.AcActivity.objects.get(id=activity_id)
     except django_kepi.models.AcActivity.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)
@@ -428,8 +428,9 @@ def deliver(
 
     # Actors don't get told about their own activities
     if not incoming:
-        if local_actor is not None and local_actor.id in recipients:
-            recipients.remove(local_actor.id)
+        if local_actor is not None and local_actor.url in recipients:
+            logger.info('  -- removing actor from recipients')
+            recipients.remove(local_actor.url)
 
     if not recipients:
         logger.debug('%s: there are no recipients; giving up',

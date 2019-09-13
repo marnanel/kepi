@@ -8,6 +8,7 @@
 # for historical reasons.
 
 from django.test import TestCase, Client
+from django.conf import settings
 from django_kepi.delivery import deliver
 from django_kepi.create import create
 from django_kepi.models import AcObject
@@ -30,14 +31,10 @@ REMOTE_PATH_NAMES = {
         '/users/jim/inbox': 'jim',
         }
 
-def _message_became_activity(url=ACTIVITY_ID):
-    try:
-        result = AcObject.objects.get(remote_url=url)
-        return True
-    except AcObject.DoesNotExist:
-        return False
-
 class TestDelivery(TestCase):
+
+    def setUp(self):
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
 
     def _set_up_remote_user_mocks(self):
 
