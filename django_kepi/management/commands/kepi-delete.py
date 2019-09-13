@@ -117,7 +117,7 @@ class Command(KepiCommand):
         try:
             things = objects_by_keywords(options['id'])
             logger.info('Requesting deletion of %s, which give %s',
-                    name, things)
+                    options['id'], things)
         except KeyError as ke:
             self.stdout.write(self.style.ERROR(
                 ke.args[0],))
