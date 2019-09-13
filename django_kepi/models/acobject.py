@@ -28,9 +28,9 @@ class KepiManager(PolymorphicManager):
     # without their f_... prefixes, and also
     # transparently on ThingFields.
 
-    def find_local_only(self, *args, **kwargs):
+    def filter_local_only(self, *args, **kwargs):
         self._adjust_kwargs_for_local_only(kwargs)
-        return self.find(*args, **kwargs)
+        return self.filter(*args, **kwargs)
 
     def get_local_only(self, *args, **kwargs):
         self._adjust_kwargs_for_local_only(kwargs)
