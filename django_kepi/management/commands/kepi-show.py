@@ -59,7 +59,7 @@ class Command(KepiCommand):
                 ]
 
         self._display_table(result,
-                title=somebody.f_preferredUsername,
+                title='@'+somebody.f_preferredUsername,
                 )
 
     def _show_activity(self, activity, *args, **options):
@@ -108,10 +108,6 @@ class Command(KepiCommand):
             if isinstance(v, str):
                 print(v)
             elif isinstance(v, abc.Iterable):
-
-                if len(v)<2:
-                    print(v)
-                    continue
 
                 print(len(v))
 
