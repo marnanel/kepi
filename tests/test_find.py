@@ -6,6 +6,7 @@ from . import *
 import httpretty
 import json
 import logging
+from django_kepi.utils import as_json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -28,7 +29,7 @@ class TestFind(TestCase):
     def _mock_remote_stuff(self):
         mock_remote_object(
                 REMOTE_URL,
-                content = json.dumps(STUFF),
+                content = as_json(STUFF),
                 )
 
     @httpretty.activate

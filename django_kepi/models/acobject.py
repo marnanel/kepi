@@ -10,7 +10,6 @@ from .. import ATSIGN_CONTEXT
 import django_kepi.side_effects as side_effects
 import logging
 import random
-import json
 import warnings
 
 logger = logging.getLogger(name='django_kepi')
@@ -62,7 +61,6 @@ class AcObject(PolymorphicModel):
 
     published = models.DateTimeField(
             default = timezone.now,
-            editable = False,
             )
 
     @property
@@ -186,6 +184,10 @@ class AcObject(PolymorphicModel):
 
         if hasattr(self, 'f_'+name):
             result = getattr(self, 'f_'+name)
+        elif name in [
+                'published',
+                ]:
+            result = getattr(self, name)
         elif name in AUDIENCE_FIELD_NAMES:
             try:
                 result = Audience.objects.filter(
@@ -229,6 +231,11 @@ class AcObject(PolymorphicModel):
         if hasattr(self, 'f_'+name):
             setattr(self, 'f_'+name, value)
             self.save()
+        elif name in [
+                'published',
+                ]:
+            setattr(self, name, value)
+            self.save()
         elif name in AUDIENCE_FIELD_NAMES:
 
             if self.pk is None:
@@ -242,6 +249,8 @@ class AcObject(PolymorphicModel):
                     value = value,
                     )
         else:
+
+            from django_kepi.utils import as_json
 
             if self.pk is None:
                 # See above
@@ -258,7 +267,8 @@ class AcObject(PolymorphicModel):
                         field = name,
                         )
 
-            another.value = json.dumps(value)
+
+            another.value = as_json(value)
             another.save()
 
         # Special-cased side effects:

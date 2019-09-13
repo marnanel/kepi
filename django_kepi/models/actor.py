@@ -3,7 +3,6 @@ from django.conf import settings
 from . import acobject
 import django_kepi.crypto
 import logging
-import json
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -126,8 +125,11 @@ class AcActor(acobject.AcObject):
                     self, self.privateKey)
             self.save()
         elif name=='publicKey':
-            self.f_publicKey = json.dumps(value,
-                    sort_keys = True)
+
+            from django_kepi.utils import as_json
+
+            self.f_publicKey = as_json(value,
+                    indent=None)
             logger.info('%s: setting public key to %s',
                     self, self.f_publicKey)
             self.save()
@@ -148,7 +150,9 @@ class AcActor(acobject.AcObject):
                         self)
                 return None
 
-            result = json.loads(self.f_publicKey)
+            from json import loads
+
+            result = loads(self.f_publicKey)
             logger.debug('%s: public key is %s',
                     self, result)
             return result

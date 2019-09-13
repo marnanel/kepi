@@ -217,6 +217,7 @@ def _activity_form_to_outgoing_string(activity_form):
     """
 
     from django_kepi import ATSIGN_CONTEXT
+    from django_kepi.utils import as_json
 
     format_for_delivery = activity_form.copy()
     for blind_field in ['bto', 'bcc']:
@@ -226,10 +227,8 @@ def _activity_form_to_outgoing_string(activity_form):
     if '@context' not in format_for_delivery:
         format_for_delivery['@context'] = ATSIGN_CONTEXT
 
-    message = json.dumps(
+    message = as_json(
             format_for_delivery,
-            sort_keys = True,
-            indent = 2,
             )
 
     return message

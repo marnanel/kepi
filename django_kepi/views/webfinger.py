@@ -18,6 +18,7 @@ from django.http import HttpResponse
 import logging
 import re
 import json
+from django_kepi.utils import as_json
 
 logger = logging.Logger('django_kepi')
 
@@ -93,7 +94,7 @@ class Webfinger(django.views.View):
         return HttpResponse(
                 status = 200,
                 reason = 'Here you go',
-                content = bytes(json.dumps(result, indent=2),
+                content = bytes(as_json(result),
                     encoding='utf-8'),
                 content_type='application/jrd+json; charset=utf-8')
 

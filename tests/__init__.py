@@ -1,6 +1,7 @@
 from django_kepi.create import create
 from django_kepi.validation import IncomingMessage, validate
 from django_kepi.models.actor import AcActor
+from django_kepi.utils import as_json
 from django.conf import settings
 import django.test
 import httpretty
@@ -158,7 +159,7 @@ def create_remote_person(
         on_fetch = None,
         **fields):
 
-    body = json.dumps(
+    body = as_json(
             remote_user(
                 url=url,
                 name=name,
@@ -182,7 +183,7 @@ def create_remote_collection(
 
     mock_remote_object(
             url=url,
-            content=json.dumps({
+            content=as_json({
                     "@context" : "https://www.w3.org/ns/activitystreams",
                     "id" : url,
                     "type" : "OrderedCollection",
@@ -211,7 +212,7 @@ def create_remote_collection(
 
         mock_remote_object(
             url = PAGE_URL_FORMAT % (url, i),
-            content=json.dumps(fields),
+            content=as_json(fields),
             )
 
 def test_message_body_and_headers(secret='',
@@ -257,7 +258,7 @@ def test_message_body_and_headers(secret='',
     if 'id' not in body:
         body['id'] = ACTIVITY_ID
 
-    body = json.dumps(body, indent=2, sort_keys=True)
+    body = as_json(body)
 
     return body, headers
 
@@ -275,7 +276,7 @@ def test_message(secret='', **fields):
             host = headers['host'],
             path = INBOX_PATH,
             signature = headers['Signature'],
-            body = json.dumps(body, sort_keys=True),
+            body = as_json(body),
             )
 
     result.save()

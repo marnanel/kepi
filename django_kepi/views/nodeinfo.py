@@ -17,7 +17,7 @@ from django.http import HttpResponse
 from django_kepi import __version__
 import logging
 import re
-import json
+from django_kepi.utils import as_json
 
 logger = logging.Logger('django_kepi')
 
@@ -43,7 +43,7 @@ class NodeinfoPart1(django.views.View):
         return HttpResponse(
                 status = 200,
                 reason = 'Here you go',
-                content = bytes(json.dumps(result, indent=2),
+                content = bytes(as_json(result),
                     encoding='utf-8'),
                 content_type='application/json; '+\
                         'profile=http://nodeinfo.diaspora.software/ns/schema/2.0#')
@@ -86,7 +86,7 @@ class NodeinfoPart2(django.views.View):
         return HttpResponse(
                 status = 200,
                 reason = 'Here you go',
-                content = bytes(json.dumps(result, indent=2),
+                content = bytes(as_json(result),
                     encoding='utf-8'),
                 content_type='application/json; '+\
                         'profile=http://nodeinfo.diaspora.software/ns/schema/2.0#')

@@ -6,7 +6,6 @@ from django_kepi.management import KepiCommand, objects_by_keywords
 from collections import abc
 import os
 import logging
-import json
 
 logger = logging.Logger('django_kepi')
 
@@ -82,9 +81,13 @@ class Command(KepiCommand):
 
         result = [
                 ('by', item['attributedTo']),
+                ('date', item['published']),
                 ('content', item['content']),
+                ('visibility', item.visibility),
                 ]
-        result.extend(item.audiences.items())
+
+        if item.is_reply:
+            result.append(('reply_to', item['replyTo']))
 
         self._display_table(result,
                 title='item %s' % (item.number,),
@@ -124,10 +127,9 @@ class Command(KepiCommand):
 
     def _show_json(self, thing, *args, **options):
 
-        print(json.dumps(
-            thing.activity_form,
-            indent=2,
-            sort_keys=True))
+        from django_kepi.utils import as_json
+
+        print(as_json(thing.activity_form))
 
     ################################
 
