@@ -60,6 +60,11 @@ class AcObject(PolymorphicModel):
 
     objects = KepiManager()
 
+    published = models.DateTimeField(
+            default = timezone.now,
+            editable = False,
+            )
+
     @property
     def url(self):
         if self.id.startswith('/'):
@@ -143,6 +148,7 @@ class AcObject(PolymorphicModel):
             '@context': ATSIGN_CONTEXT,
             'id': self.url,
             'type': self.f_type,
+            'published': self.published,
             }
 
         for name in dir(self):
