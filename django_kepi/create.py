@@ -86,15 +86,6 @@ def create(
                     str(k))
             del value[k]
 
-    if 'id' in value:
-        if is_local_user:
-            logger.warn('Removing "id" field at local Object creation')
-            del value['id']
-    else:
-        if not is_local_user:
-            logger.warn("Remote Objects must have an id; dropping message")
-            return None
-
     class_name = 'Ac'+value['type']
     try:
         import django_kepi.models as kepi_models
@@ -132,7 +123,7 @@ def create(
                     id = value['id'],
                     )
             result.save()
-            logger.info('  -- created local copy of remote object %s ',
+            logger.info('  -- created object %s',
                 result)
             del value['id']
         except django.db.utils.IntegrityError:
@@ -143,7 +134,7 @@ def create(
         result = cls(
                 )
         result.save()
-        logger.warn('  -- created local object %s',
+        logger.warn('  -- created object %s',
             result)
 
     for f,v in value.items():
