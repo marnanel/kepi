@@ -80,7 +80,7 @@ class TestCommandView(TestCase):
                     )
 
         for ourname, acname in [
-                ('username', 'preferredUsername'),
+                ('username', 'id'),
                 ('bio', 'summary'),
                 ]:
             self.assertEqual(

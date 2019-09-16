@@ -53,7 +53,7 @@ class Command(KepiCommand):
 
         spec = {
             'type': 'Person',
-            'preferredUsername': new_name,
+            'id': '@'+new_name,
                 }
 
         logger.debug('Creating object with spec %s',

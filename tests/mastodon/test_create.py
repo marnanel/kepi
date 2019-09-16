@@ -28,7 +28,7 @@ class TestCreate(TestCase):
             ):
 
         if sender is None:
-            sender = self._fred.id
+            sender = self._fred.url
 
         if 'id' not in object_form:
             object_form['id'] = sender+'#bar'

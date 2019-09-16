@@ -32,6 +32,7 @@ class Webfinger(django.views.View):
         try:
             user = request.GET['resource']
         except:
+            logger.info('webfinger request had no username specified')
             return HttpResponse(
                     status = 400,
                     reason = 'no resource for webfinger',
@@ -42,8 +43,10 @@ class Webfinger(django.views.View):
         # Generally, user resources should be prefaced with "acct:",
         # per RFC7565. We support this, but we don't enforce it.
         user = re.sub(r'^acct:', '', user)
+        logger.info('webfinger request for %s', user)
 
         if '@' not in user:
+            logger.info('  -- no @ sign; bailing')
             return HttpResponse(
                     status = 404,
                     reason = 'absolute name required',
@@ -54,6 +57,8 @@ class Webfinger(django.views.View):
         username, hostname = user.split('@', 2)
 
         if hostname not in settings.ALLOWED_HOSTS:
+            logger.info('  -- %s is not local; bailing',
+                    hostname)
             return HttpResponse(
                     status = 404,
                     reason = 'not this server',
@@ -61,10 +66,12 @@ class Webfinger(django.views.View):
                     )
 
         try:
-            whoever = AcActor.objects.get_local_only(
-                    f_preferredUsername = username,
+            whoever = AcActor.objects.get(
+                    id = '@'+username,
                 )
         except AcActor.DoesNotExist:
+            logger.info('  -- we don\'t have anyone called %s',
+                    username)
             return HttpResponse(
                     status = 404,
                     reason = 'no such user',
@@ -90,6 +97,9 @@ class Webfinger(django.views.View):
                         "href" : actor_url,
                     },
                     ]}
+
+        logger.debug('  -- webfinger for %s was successful',
+                user)
 
         return HttpResponse(
                 status = 200,

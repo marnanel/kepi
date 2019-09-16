@@ -303,8 +303,8 @@ class ActorView(ThingView):
                 kwargs['username'])
 
         try:
-            activity_object = AcActor.objects.get_local_only(
-                    f_preferredUsername=kwargs['username'],
+            activity_object = AcActor.objects.get(
+                    id='@'+kwargs['username'],
                     )
 
         except AcActor.DoesNotExist:
@@ -344,8 +344,8 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['username'])
 
-        person = AcActor.objects.get_local_only(
-                f_preferredUsername=kwargs['username'],
+        person = AcActor.objects.get(
+                id='@'+kwargs['username'],
                 )
 
         logger.debug('Finding followers of %s: %s',
@@ -363,8 +363,8 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['username'])
 
-        person = AcActor.objects.get_local_only(
-                f_preferredUsername=kwargs['username'],
+        person = AcActor.objects.get(
+                id='@'+kwargs['username'],
                 )
 
 
@@ -402,7 +402,7 @@ class UserCollectionView(KepiView):
                 username, listname)
         try:
             the_collection = Collection.objects.get(
-                    owner__f_preferredUsername = username,
+                    owner__id = '@'+username,
                     name = listname)
 
             logger.debug('  -- found collection: %s',
@@ -434,7 +434,7 @@ class UserCollectionView(KepiView):
                 username, listname)
         try:
             the_collection = Collection.objects.get(
-                    owner__f_preferredUsername = username,
+                    owner__id = '@'+username,
                     name = listname)
 
             logger.debug('  -- found collection: %s. Appending %s.',
@@ -448,8 +448,8 @@ class UserCollectionView(KepiView):
                 logger.debug('  -- does not exist; creating it')
 
                 try:
-                    owner = AcActor.objects.get_local_only(
-                            f_preferredUsername = username,
+                    owner = AcActor.objects.get(
+                            id = '@'+username,
                     )
                 except AcActor.DoesNotExist:
                     logger.debug('    -- but user %s doesn\'t exist; bailing',

@@ -3,6 +3,7 @@ from django.conf import settings
 from . import acobject
 import django_kepi.crypto
 import logging
+import re
 
 logger = logging.getLogger(name='django_kepi')
 
@@ -35,12 +36,6 @@ class AcActor(acobject.AcObject):
             help_text="If True, follow requests will be accepted automatically.",
             )
 
-    f_preferredUsername = models.CharField(
-            max_length=255,
-            help_text="Something short, like 'alice'.",
-            verbose_name='username',
-            )
-
     f_summary = models.TextField(
             max_length=255,
             help_text="Your biography. Something like "+\
@@ -62,18 +57,22 @@ class AcActor(acobject.AcObject):
             verbose_name='header image',
             )
 
-    @property
-    def short_id(self):
-        if self.is_local:
-            return '@{}'.format(self.f_preferredUsername)
-        else:
-            return __super__.short_id
+    def _generate_id(self):
+        return None
+
+    def _check_provided_id(self):
+        if not re.match(r'@[a-z0-9_-]+$', self.id,
+                re.IGNORECASE):
+            raise ValueError("Actor IDs begin with an @ "+\
+                    "followed by one or more characters from "+\
+                    "A-Z, a-z, 0-9, underscore, or hyphen. "+\
+                    "You gave: "+self.id)
 
     @property
     def url(self):
         if self.is_local:
             return settings.KEPI['USER_URL_FORMAT'] % {
-                    'username': self.f_preferredUsername,
+                    'username': self.id[1:],
                     'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                     }
         else:
@@ -95,12 +94,11 @@ class AcActor(acobject.AcObject):
 
     def __str__(self):
         if self.is_local:
-            return '({}) @{}'.format(
+            return '[{}]'.format(
                     self.id,
-                    self.f_preferredUsername,
                     )
         else:
-            return '({}) [remote user]'.format(
+            return '[remote user {}]'.format(
                     self.id,
                     )
 
@@ -114,7 +112,7 @@ class AcActor(acobject.AcObject):
     def list_url(self, name):
         return settings.KEPI['COLLECTION_URL'] % {
                 'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                'username': self.f_preferredUsername,
+                'username': self.id[1:],
                 'listname': name,
                 }
 
@@ -174,7 +172,7 @@ class AcActor(acobject.AcObject):
             result[listname] = self.list_url(listname)
 
         result['url'] = self.url
-        result['name'] = self.f_preferredUsername
+        result['name'] = self.id[1:]
 
         result['endpoints'] = {}
         if 'SHARED_INBOX' in settings.KEPI:

@@ -36,7 +36,6 @@ class TestKepiView(TestCase):
                     'name': 'alice',
                     'id': 'https://testserver/users/alice',
                     'type': 'Person',
-                    'preferredUsername': 'alice',
                     },
                 result,
                 )

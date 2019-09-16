@@ -53,7 +53,7 @@ def create_local_person(name='jemima',
 
     spec = {
         'name': name,
-        'preferredUsername': name,
+        'id': '@'+name,
         'type': 'Person',
         'endpoints': {
             'sharedInbox': settings.KEPI['SHARED_INBOX'] % {

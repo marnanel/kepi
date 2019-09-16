@@ -58,7 +58,7 @@ class Command(KepiCommand):
                 ]
 
         self._display_table(result,
-                title='@'+somebody.f_preferredUsername,
+                title=somebody.id,
                 )
 
     def _show_activity(self, activity, *args, **options):

@@ -23,6 +23,7 @@ class TestPolymorph(TestCase):
     def test_person(self):
         t = create(
                 f_type = 'Person',
+                id = '@wombat',
                 )
         self.assertIsInstance(t, AcActor)
 

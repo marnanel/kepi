@@ -18,7 +18,6 @@ class PersonAdminForm(forms.ModelForm):
         model = kepi_models.AcPerson
 
         fields = [
-                'f_preferredUsername',
                 'f_summary',
                 'icon',
                 'header',

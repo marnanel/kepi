@@ -6,18 +6,14 @@ from polymorphic.managers import PolymorphicManager
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.thingfield import ThingField
 from django_kepi.models.mention import Mention
-from .. import ATSIGN_CONTEXT
+from .. import ATSIGN_CONTEXT, URL_REGEXP, SERIAL_NUMBER_REGEXP
 import django_kepi.side_effects as side_effects
 import logging
 import random
 import warnings
+import re
 
 logger = logging.getLogger(name='django_kepi')
-
-######################
-
-def _new_number():
-    return '/%08x' % (random.randint(0, 0xffffffff),)
 
 ######################
 
@@ -53,7 +49,7 @@ class AcObject(PolymorphicModel):
             primary_key=True,
             unique=True,
             blank=False,
-            default=_new_number,
+            default=None,
             editable=False,
             )
 
@@ -70,6 +66,11 @@ class AcObject(PolymorphicModel):
                     'number': self.id[1:],
                     'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                     }
+        elif self.id.startswith('@'):
+            return settings.KEPI['USER_URL_FORMAT'] % {
+                    'username': self.id[1:],
+                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    }
         else:
             return self.id
 
@@ -82,15 +83,11 @@ class AcObject(PolymorphicModel):
 
     def __str__(self):
 
-        if self.is_local:
-            details = '(%s)' % (self.id[1:],)
-        else:
-            details = self.id
-
         result = '[%s %s]' % (
-                details,
+                self.id,
                 self.f_type,
                 )
+
         return result
 
     @property
@@ -304,7 +301,7 @@ class AcObject(PolymorphicModel):
 
     @property
     def is_local(self):
-        return self.id.startswith('/')
+        return self.id[0] in '/@'
 
     def entomb(self):
         logger.info('%s: entombing', self)
@@ -323,22 +320,65 @@ class AcObject(PolymorphicModel):
         self.save()
         logger.info('%s: entombed', self)
 
+    def _generate_id(self):
+        """
+        Returns a value for "id" on a new object, where
+        the caller has omitted to supply an "id" value.
+        The new value should be unique.
+
+        If this method returns None, the object will
+        not be created.
+        """
+        return '/%08x' % (random.randint(0, 0xffffffff),)
+
+    def _check_provided_id(self):
+        """
+        Checks self.id to see whether it's valid for
+        this kind of AcObject. It may normalise the value.
+
+        If the value is valid, returns.
+        If the value is invalid, raises ValueError.
+
+        This method is not called if self.id is a valid
+        URL, because that means it's a remote object
+        and our naming rules won't apply.
+        """
+        if re.match(SERIAL_NUMBER_REGEXP, self.id,
+                re.IGNORECASE):
+
+            self.id = self.id.lower()
+            logger.debug('id==%s which is a valid serial number',
+                    self.id)
+            return
+
+        raise ValueError("Object IDs begin with a slash "+\
+                "followed by eight characters from "+\
+                "0-9 or a-f. "+\
+                "You gave: "+self.id)
+
     def save(self, *args, **kwargs):
+
+        if self.id is None:
+            self.id = self._generate_id()
+
+            if self.id is None:
+                raise ValueError("You need to specify an id "+\
+                        "on %s objects." % (self.__class__.__name__,))
+        else:
+            if re.match(URL_REGEXP, self.id,
+                    re.IGNORECASE):
+                logger.debug('id==%s which is a valid URL',
+                        self.id)
+            else:
+                self._check_provided_id()
 
         try:
             super().save(*args, **kwargs)
             logger.debug('%s: saved', self)
         except IntegrityError as ie:
-            if self.is_local and kwargs.get('_tries_left',0)>0:
-                logger.info('Integrity error on save (%s); retrying',
-                        ie)
-                self.id = _new_number()
-                kwargs['_tries_left'] -= 1
-                return self.save(*args, **kwargs)
-            else:
-                logger.info('Integrity error on save (%s); failed',
-                        ie)
-                raise ie
+            logger.info('Integrity error on save (%s); failed',
+                    ie)
+            raise ie
 
     @classmethod
     def get_by_url(cls, url):
