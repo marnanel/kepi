@@ -40,7 +40,7 @@ class Collection(models.Model):
 
     def __str__(self):
         return '%s/%s' % (
-                self.owner.f_preferredUsername,
+                self.owner.id,
                 self.name,
                 )
 

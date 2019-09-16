@@ -33,7 +33,7 @@ class AcActivity(acobject.AcObject):
 
         logger.info('%s: going into %s\'s outbox',
                 self.id,
-                actor.f_preferredUsername)
+                actor.id)
 
         outbox_url = actor['outbox']
         logger.debug('  -- which is %s', outbox_url)

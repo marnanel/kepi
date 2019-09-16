@@ -42,7 +42,7 @@ class Command(KepiCommand):
             return
 
         for obj in results:
-            self.stdout.write('%s' % (obj.f_preferredUsername,))
+            self.stdout.write('%s' % (obj.id,))
 
     def _create(self, *args, **options):
 

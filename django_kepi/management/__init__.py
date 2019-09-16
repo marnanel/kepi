@@ -50,8 +50,8 @@ class KepiCommand(BaseCommand):
                 return
 
         try:
-            self._actor = AcActor.objects.get_local_only(
-                    f_preferredUsername = options['actor'],
+            self._actor = AcActor.objects.get(
+                    id = '@'+options['actor'],
                     )
         except AcActor.DoesNotExist:
             self._actor = None
