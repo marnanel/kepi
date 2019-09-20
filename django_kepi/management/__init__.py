@@ -11,20 +11,15 @@ logger = logging.Logger('django_kepi')
 
 class KepiCommand(BaseCommand):
 
-    def _actor_name(self):
-        if ENVIRON_USER in os.environ:
-            return os.environ[ENVIRON_USER]
-
-        # possibly also:
-        #    - if there's only one user, use that
-        #    - if there's a user with the same name as
-        #       the current Unix user, use that
-
-        self.stdout.write(self.style.ERROR(
-            "Which user are you? Use --actor, or set %s." % (
-                ENVIRON_USER,
-                )))
-        return None
+    def _get_actor_name(self):
+        if self._actor is None:
+            self.stdout.write(self.style.ERROR(
+                "Which user are you? Use --actor, or set %s." % (
+                    ENVIRON_USER,
+                    )))
+            raise ValueError('actor not specified')
+        else:
+            return self._actor
 
     def add_arguments(self, parser):
         parser.add_argument('--actor', '-a',
@@ -45,16 +40,21 @@ class KepiCommand(BaseCommand):
             settings.DEBUG = False
 
         if options['actor'] is None:
-            options['actor'] = self._actor_name()
-            if options['actor'] is None:
-                return
-
-        try:
-            self._actor = AcActor.objects.get(
-                    id = '@'+options['actor'],
-                    )
-        except AcActor.DoesNotExist:
-            self._actor = None
+            if ENVIRON_USER in os.environ:
+                self._actor = os.environ[ENVIRON_USER]
+            else:
+                # possibly also:
+                #    - if there's only one user, use that
+                #    - if there's a user with the same name as
+                #       the current Unix user, use that
+                self._actor = None
+        else:
+            try:
+                self._actor = AcActor.objects.get(
+                        id = '@'+options['actor'],
+                        )
+            except AcActor.DoesNotExist:
+                self._actor = None
 
 def objects_by_keywords(keywords):
     """
