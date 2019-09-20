@@ -33,12 +33,12 @@ class KepiManager(PolymorphicManager):
 
     def _adjust_kwargs_for_local_only(self, kwargs):
 
-        LOCAL_ONLY = 'id__startswith'
+        LOCAL_ONLY = 'id__regex'
 
         if LOCAL_ONLY in kwargs:
             raise ValueError(('%s is already an argument; '+\
                     'this should never happen') % (LOCAL_ONLY,))
-        kwargs[LOCAL_ONLY] = '/'
+        kwargs[LOCAL_ONLY] = r'^[/@]'
 
 ######################
 
