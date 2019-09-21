@@ -43,7 +43,7 @@ class Command(KepiCommand):
             self.stdout.write(self.style.ERROR(
                 ke.args[0],))
             logger.info('Requesting deletion of %s failed: %s',
-                    name, ke.args[0])
+                    options['id'], ke.args[0])
             return
 
         if not options['yes']:
