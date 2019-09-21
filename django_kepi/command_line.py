@@ -1,5 +1,6 @@
 import kepi.settings
 from django.core.management import get_commands, call_command
+from django.core.management.base import CommandError
 from django.conf import settings
 from pkg_resources import resource_filename
 import django
@@ -62,10 +63,10 @@ def main():
         show_help()
         return
 
-    success = call_command(KEPI_PREFIX + sys.argv[1],
+    try:
+        call_command(KEPI_PREFIX + sys.argv[1],
                 *sys.argv[2:])
-
-    if not success:
-        sys.stderr.write('No such command: %s\n' % (sys.argv[1],))
+    except Exception as e:
+        sys.stderr.write('%s\n' % (e,))
         sys.stderr.write('For a list of commands, run:\n')
         sys.stderr.write('    %s --help\n' % (sys.argv[0],))
