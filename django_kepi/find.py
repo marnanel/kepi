@@ -22,6 +22,12 @@ import mimeparse
 
 logger = logging.getLogger(name='django_kepi')
 
+def is_short_id(s):
+    try:
+        return str(s)[0] in '/@'
+    except IndexError:
+        return False
+
 class Fetch(models.Model):
 
     """
@@ -96,8 +102,10 @@ def find_local(path,
         "object_to_store" might be an activity to add to it.
     """
 
+    from django.urls import resolve
+
     try:
-        resolved = django.urls.resolve(path)
+        resolved = resolve(path)
     except django.urls.Resolver404:
         logger.debug('%s: -- not found', path)
         return None
@@ -251,23 +259,28 @@ def find_remote(url,
 def is_local(url):
     """
     True if "url" resides on the local server.
+
+    False otherwise. Returns False even if
+    the string argument is not in fact a URL.
     """
     if hasattr(url, 'url'):
         url = url.url
 
-    if url.startswith('/'):
+    if is_short_id(url):
         return True
 
     parsed_url = urlparse(url)
     return parsed_url.hostname in settings.ALLOWED_HOSTS
 
-def _local_lookup(number):
+def _short_id_lookup(number):
     """
     Helper function to find an object when we actually have
-    its ID number.
+    its short_id number.
 
-    "number" is the number preceded by a slash.
-    For example, "/2bad4dec".
+    "number" is the number preceded by a slash
+    (for example, "/2bad4dec"),
+    or a name preceded by an atpersat
+    (for example, "@alice").
 
     """
 
@@ -287,6 +300,29 @@ def _local_lookup(number):
                 number)
 
         return None
+
+def short_id_to_url(v):
+    """
+    If v is a short_id (such as "/1234abcd" or "@alice",
+    this transforms it into a URL.
+
+    Otherwise, v is returned unchanged.
+    """
+    if not is_short_id(v):
+        return v
+
+    hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME']
+
+    if v[0]=='@':
+        return settings.KEPI['USER_URL_FORMAT'] % {
+                'hostname': hostname,
+                'username': v[1:],
+                }
+    else:
+        return settings.KEPI['ACTIVITY_URL_FORMAT'] % {
+                'hostname': hostname,
+                'number': v[1:],
+                }
 
 def find(url,
         local_only=False,
@@ -314,8 +350,11 @@ def find(url,
     find_local() is that this function parses URLs for you.
     """
 
-    if url.startswith('/'):
-        return _local_lookup(url)
+    if not url:
+        return None
+
+    if is_short_id(url):
+        return _short_id_lookup(url)
 
     parsed_url = urlparse(url)
     is_local = parsed_url.hostname in settings.ALLOWED_HOSTS
