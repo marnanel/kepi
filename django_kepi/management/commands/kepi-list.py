@@ -12,11 +12,23 @@ class Command(KepiCommand):
 
     help = 'list objects'
 
+    def add_arguments(self, parser):
+
+        super().add_arguments(parser)
+
+        parser.add_argument('--all',
+                help='show cached remote objects as well',
+                action='store_true',
+                )
+
     def handle(self, *args, **options):
 
         super().handle(*args, **options)
 
-        results = AcObject.objects.filter_local_only()
+        if options['all']:
+            results = AcObject.objects.all()
+        else:
+            results = AcObject.objects.filter_local_only()
 
         if not results.exists():
             self.stdout.write(
