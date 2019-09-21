@@ -64,7 +64,6 @@ class Command(KepiCommand):
                 is_local_user = True,
                 run_side_effects = True,
                 run_delivery = False,
-                using_commandline_names = True,
                 )
 
         logger.info('Created object: %s',

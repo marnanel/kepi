@@ -55,7 +55,6 @@ class Command(KepiCommand):
                 is_local_user = True,
                 run_side_effects = not options['no_side_effects'],
                 run_delivery = not options['no_delivery'],
-                using_commandline_names = True,
                 )
 
         logger.info('Created object: %s',
