@@ -1,6 +1,7 @@
 from django.db import models
 from . import acobject, audience
 from .. import PUBLIC_IDS
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(name='django_kepi')
@@ -145,6 +146,29 @@ class AcItem(acobject.AcObject):
     def conversation(self):
         # FIXME I really don't understand conversation values
         return None
+
+    @property
+    def activity_form(self):
+        result = super().activity_form
+
+        result['url'] = result['id']
+
+        # defaults
+        for f, default in [
+                ('inReplyTo', None),
+                ('sensitive', False),
+                ('attachment', []),
+                ('tag', []),
+                ]:
+            if f not in result:
+                result[f] = default
+
+        if 'content' in result and 'contentMap' not in result:
+            result['contentMap'] = {
+                    settings.LANGUAGE_CODE: result['content'],
+                    }
+
+        return result
 
 ##############################
 
