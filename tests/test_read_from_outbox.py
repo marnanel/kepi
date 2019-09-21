@@ -115,11 +115,6 @@ class TestOutbox(TestCase):
                 result.extend(page['orderedItems'])
 
             if linkname not in page:
-                # XXX testing
-                json.dump(page, open('tests/examples/current-outbox.json', 'w'),
-                        indent=4)
-                # XXX end testing
-
                 logger.info('  -- done; collection contains: %s',
                         result)
                 return result
