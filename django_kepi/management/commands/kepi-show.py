@@ -44,9 +44,10 @@ class Command(KepiCommand):
         following = Following.objects.filter(
                 follower = somebody,
                 )
-        statuses = AcItem.objects.filter_local_only(
-                f_attributedTo = somebody.url,
-                )
+        statuses = [x['object__obj'] for x in
+                AcCreate.objects.filter(
+                f_actor = somebody.short_id,
+                )]
 
         result = [
                 ('url', somebody.url),
