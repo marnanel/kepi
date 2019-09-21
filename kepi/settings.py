@@ -33,6 +33,7 @@ SECRET_KEY = 'cmfy8%_q^u#bix$_4bq!p^8eq@=46bb*a7ztmg4i)l8jo(kl%^'
 DEBUG = True
 
 KEPI = {
+        # FIXME: general object format, not just for activities
         'ACTIVITY_URL_FORMAT': 'https://%(hostname)s/%(number)s',
         'USER_URL_FORMAT': 'https://%(hostname)s/users/%(username)s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
