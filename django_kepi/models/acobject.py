@@ -76,7 +76,7 @@ class AcObject(PolymorphicModel):
 
     @property
     def number(self):
-        if self.id.startswith('/'):
+        if self.is_local:
             return self.id[1:]
         else:
             return None
@@ -139,6 +139,9 @@ class AcObject(PolymorphicModel):
 
     @property
     def activity_form(self):
+
+        from django_kepi.find import short_id_to_url
+
         result = {
             '@context': ATSIGN_CONTEXT,
             'id': self.url,
@@ -151,6 +154,7 @@ class AcObject(PolymorphicModel):
                 continue
 
             value = getattr(self, name)
+            value = short_id_to_url(value)
 
             if not isinstance(value, str):
                 continue
@@ -301,7 +305,8 @@ class AcObject(PolymorphicModel):
 
     @property
     def is_local(self):
-        return self.id[0] in '/@'
+        from django_kepi.find import is_local
+        return is_local(self.id)
 
     def entomb(self):
         logger.info('%s: entombing', self)
@@ -423,7 +428,7 @@ def _normalise_type_for_thing(v):
     elif isinstance(v, list):
         return v # and lists as well
     elif isinstance(v, AcObject):
-        return v.url # AcObjects can deal with themselves
+        return v.short_id # AcObjects can deal with themselves
 
     # okay, it's something weird
 
