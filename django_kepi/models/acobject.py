@@ -6,7 +6,7 @@ from polymorphic.managers import PolymorphicManager
 from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from django_kepi.models.thingfield import ThingField
 from django_kepi.models.mention import Mention
-from .. import ATSIGN_CONTEXT, URL_REGEXP, SERIAL_NUMBER_REGEXP
+from .. import URL_REGEXP, SERIAL_NUMBER_REGEXP
 import django_kepi.side_effects as side_effects
 import logging
 import random
@@ -143,7 +143,6 @@ class AcObject(PolymorphicModel):
         from django_kepi.find import short_id_to_url
 
         result = {
-            '@context': ATSIGN_CONTEXT,
             'id': self.url,
             'type': self.f_type,
             'published': self.published,
