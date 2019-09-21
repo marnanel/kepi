@@ -15,7 +15,7 @@ place to go.
 
 from django_kepi import ATSIGN_CONTEXT
 import django_kepi.validation
-from django_kepi.find import find, is_local
+from django_kepi.find import find, is_local, short_id_to_url
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
@@ -344,18 +344,12 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['username'])
 
-        person = AcActor.objects.get(
-                id='@'+kwargs['username'],
-                )
-
-        logger.debug('Finding followers of %s: %s',
-                kwargs['username'], person)
-
-        return Following.objects.filter(follower=person.url,
+        return Following.objects.filter(
+                follower='@'+kwargs['username'],
                 pending=False)
 
     def _modify_list_item(self, obj):
-        return obj.following
+        return short_id_to_url(obj.following)
 
 class FollowersView(KepiView):
 
@@ -363,16 +357,12 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['username'])
 
-        person = AcActor.objects.get(
-                id='@'+kwargs['username'],
-                )
-
-
-        return Following.objects.filter(following=person.url,
+        return Following.objects.filter(
+                following='@'+kwargs['username'],
                 pending=False)
 
     def _modify_list_item(self, obj):
-        return obj.follower
+        return short_id_to_url(obj.follower)
 
 class AllUsersView(KepiView):
 
