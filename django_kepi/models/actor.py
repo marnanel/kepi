@@ -91,6 +91,7 @@ class AcActor(acobject.AcObject):
                 key = django_kepi.crypto.Key()
                 self.privateKey = key.private_as_pem()
                 self.f_publicKey = key.public_as_pem()
+                self.save()
 
     def __str__(self):
         if self.is_local:
@@ -163,8 +164,8 @@ class AcActor(acobject.AcObject):
 
         if 'publicKey' in result:
             result['publicKey'] = {
-                'id': self.id + '#main-key',
-                'owner': self.id,
+                'id': self.url + '#main-key',
+                'owner': self.url,
                 'publicKeyPem': result['publicKey'],
                 }
 
@@ -173,6 +174,9 @@ class AcActor(acobject.AcObject):
 
         result['url'] = self.url
         result['name'] = self.id[1:]
+        result['preferredUsername'] = self.id[1:]
+
+        del result['published']
 
         result['endpoints'] = {}
         if 'SHARED_INBOX' in settings.KEPI:
@@ -181,7 +185,7 @@ class AcActor(acobject.AcObject):
            'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                             }
 
-        result['tags'] = []
+        result['tag'] = []
         result['attachment'] = []
 
         result['summary'] = '(Kepi user)'
@@ -195,7 +199,7 @@ class AcActor(acobject.AcObject):
                     },
                 }
 
-        result['header'] = {
+        result['image'] = {
                 "type":"Image",
                 "mediaType":"image/jpeg",
                 "url": 'https://%(hostname)s/static/defaults/header.jpg' % {
