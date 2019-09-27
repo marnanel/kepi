@@ -4,13 +4,14 @@ from django_kepi.models import *
 import datetime
 import json
 from django_kepi.find import find
+from django_kepi.utils import as_json
 from . import *
 import logging
 
 logger = logging.Logger('django_kepi')
 
 EXAMPLE_SERVER = 'http://testserver'
-JSON_TYPE = 'application/activity+json'
+JSON_TYPE = 'application/activity+json; charset=utf-8'
 PAGE_LENGTH = 50
 
 class CollectionTests(TestCase):
@@ -49,6 +50,13 @@ class CollectionTests(TestCase):
         else:
             self.assertIn('first', result)
             self.assertEqual(result['first'], EXAMPLE_SERVER+path+'?page=1')
+
+            self.assertIn('last', result)
+
+            lastpage = 1 + int((expectedTotalItems+1)/PAGE_LENGTH)
+
+            self.assertEqual(result['last'], EXAMPLE_SERVER+path+\
+                    ('?page=%d' % (lastpage,)))
 
         self.assertEqual(result['id'], EXAMPLE_SERVER+path)
         self.assertEqual(result['totalItems'], expectedTotalItems)
@@ -116,6 +124,53 @@ class CollectionTests(TestCase):
             self.assertEqual(result['next'], full_path(page_number+1))
         else:
             self.assertNotIn('next', result)
+
+    @skip("this is really slow")
+    def test_lots_of_entries(self):
+        alice = create_local_person(name='alice')
+
+        PATH = '/users/alice/outbox'
+        NUMBER_OF_PASSES = 100
+        statuses = []
+
+        for i in range(0, 103):
+
+            logger.info(' =================== test_lots_of_entries, pass %d / %d',
+                i, NUMBER_OF_PASSES)
+
+            logger.info(' == Index?')
+            self.check_collection(
+                    path=PATH,
+                    expectedTotalItems=len(statuses),
+                    )
+
+            lastpage = int((len(statuses))/PAGE_LENGTH)
+
+            # nb that "page" here is 0-based, but
+            # ActivityPub sees it as 1-based
+
+            for page in range(lastpage+1):
+
+                logger.info(' == Page %d/%d?', page, lastpage)
+
+                if page==lastpage:
+                    expecting = statuses[page*PAGE_LENGTH:]
+                else:
+                    expecting = statuses[page*PAGE_LENGTH:((page+1)*PAGE_LENGTH)]
+
+                expecting = [json.loads(x) for x in expecting]
+
+                self.check_collection_page(
+                        path=PATH,
+                        page_number=page+1,
+                        expectedTotalItems=len(statuses),
+                        expectedOnPage=expecting,
+                        )
+
+            statuses.append(as_json(create_local_note(
+                    attributedTo = alice,
+                    content = 'Status %d' % (i,),
+                    ).activity_form))
 
     def test_usageByOtherApps(self):
 
