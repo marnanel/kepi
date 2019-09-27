@@ -119,7 +119,7 @@ class AcItem(acobject.AcObject):
 
     @property
     def is_reply(self):
-        return 'inReplyTo' in self
+        return self['inReplyTo'] is not None
 
     @property
     def in_reply_to_account(self):
