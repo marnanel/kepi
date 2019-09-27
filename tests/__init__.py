@@ -1,6 +1,6 @@
 from django_kepi.create import create
 from django_kepi.validation import IncomingMessage, validate
-from django_kepi.models.actor import AcActor
+from django_kepi.models import AcObject, AcActor
 from django_kepi.utils import as_json
 from django.conf import settings
 import django.test
@@ -85,16 +85,28 @@ def create_local_person(name='jemima',
 
     return result
 
-def create_local_note(**kwargs):
-    spec = {
-        'type': 'Note',
-        'content': 'This is just a test.',
-        }
+def create_local_note(
+        attributedTo = None,
+        **kwargs):
 
-    spec.update(kwargs)
+    if isinstance(attributedTo, AcObject):
+        attributedTo = attributedTo.id
+
+    spec = {
+            'type': 'Create',
+            'actor': attributedTo,
+            'object': {
+                'type': 'Note',
+                'attributedTo': attributedTo,
+                'content': 'This is just a test.',
+                },
+            'to': [PUBLIC],
+            }
+
+    spec['object'].update(kwargs)
 
     result = create(**spec)
-    return result
+    return result['object__obj']
 
 def create_local_like(**kwargs):
 
