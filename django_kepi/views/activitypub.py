@@ -149,6 +149,9 @@ class KepiView(django.views.View):
 
     def _to_json(self, data):
 
+        if '@context' not in data:
+            data['@context'] = ATSIGN_CONTEXT
+
         if 'former_type' in data:
             data['type'] = 'Tombstone'
 
@@ -160,7 +163,7 @@ class KepiView(django.views.View):
                     }
                 )
 
-        result['Content-Type'] = 'application/activity+json'
+        result['Content-Type'] = 'application/activity+json; charset=utf-8'
 
         if 'former_type' in data:
             result.reason = 'Entombed'
@@ -232,15 +235,27 @@ class KepiView(django.views.View):
             # Index page.
             logger.debug("    -- it's a request for the index")
 
+            count = items.count()
+
             result = {
                     "@context": ATSIGN_CONTEXT,
                     "type": "OrderedCollection",
                     "id": index_url,
-                    "totalItems" : items.count(),
+                    "totalItems" : count,
                     }
 
-            if items.exists():
-                    result["first"] = "{}?page=1".format(our_url,)
+            if count>0:
+                    result["first"] = self._make_query_page_url(
+                            request = request,
+                            page_number = 1,
+                            )
+
+                    result["last"] = self._make_query_page_url(
+                            request = request,
+                            page_number = int(
+                                1 + ((count+1)/PAGE_LENGTH),
+                            ),
+                            )
 
         return self._to_json(result)
 
