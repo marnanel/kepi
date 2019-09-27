@@ -122,13 +122,13 @@ def create(activity):
                 raw_material[field] = value
 
     try:
-        if issubclass(getattr(kepi_models,
+        if not issubclass(getattr(kepi_models,
             'Ac'+f_type),
-            kepi_models.AcActivity):
+            kepi_models.AcItem):
 
             logger.warn('Attempt to use Create to create '+\
                     'an object of type %s. '+\
-                    'Create can only create non-activities. '+\
+                    'Create can\'t create actors or activities. '+\
                     'Deleting original Create.',
                     f_type)
 
