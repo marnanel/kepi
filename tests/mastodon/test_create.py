@@ -30,12 +30,8 @@ class TestCreate(TestCase):
         if sender is None:
             sender = self._fred.url
 
-        if 'id' not in object_form:
-            object_form['id'] = sender+'#bar'
-
         create_form = {
                 '@context': 'https://www.w3.org/ns/activitystreams',
-                'id': sender + '#foo',
                 'type': 'Create',
                 'actor': sender,
                 'object': object_form,
@@ -43,23 +39,16 @@ class TestCreate(TestCase):
 
         logger.info('Submitting Create activity: %s', create_form)
 
-        activity = create(**create_form,
+        activity = create(
+                value = create_form,
                 is_local=False)
 
-        logger.info('Created activity: %s', activity)
-
-        statuses = AcItem.objects.filter(
-                f_attributedTo=sender,
-                )
-
-        try:
-            result = statuses[0]
-        except IndexError:
-            result = None
-
-        logger.info('New status: %s', result)
-
-        return result
+        if activity is None:
+            logger.info('  -- no activity was created')
+            return None
+        else:
+            logger.info('  -- created activity: %s', activity)
+            return activity['object__obj']
 
     def test_unknown_object_type(self):
         object_form = {
@@ -225,7 +214,7 @@ class TestCreate(TestCase):
 
     def test_as_reply(self):
 
-        original_status = create_local_note()
+        original_status = create_local_note(attributedTo=LOCAL_FRED)
 
         object_form = {
             'type': 'Note',
@@ -348,7 +337,7 @@ class TestCreate(TestCase):
 
     def test_when_sender_replies_to_local_status(self):
 
-        local_status = create_local_note()
+        local_status = create_local_note(attributedTo=LOCAL_FRED)
 
         object_form = {
             'type': 'Note',
