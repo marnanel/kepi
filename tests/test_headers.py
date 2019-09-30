@@ -9,17 +9,16 @@ class TestHeaders(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
-
-    def test_link(self):
-
-        alice = create_local_person('alice')
-        client = Client()
-        alice_url = settings.KEPI['USER_URL_FORMAT'] % {
+        self.alice = create_local_person('alice')
+        self.client = Client()
+        self.alice_url = settings.KEPI['USER_URL_FORMAT'] % {
                 'username': 'alice',
                 'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                 }
 
-        response = client.get(alice_url,
+    def test_link(self):
+
+        response = self.client.get(self.alice_url,
                 HTTP_ACCEPT = MIME_TYPE,
                 )
 
@@ -35,3 +34,25 @@ class TestHeaders(TestCase):
                     '<https://testserver/users/alice>; '+\
                     'rel="alternate"; type="application/activity+json"',
                     ])
+
+    def test_standard_headers(self):
+
+        response = self.client.get(self.alice_url,
+                HTTP_ACCEPT = MIME_TYPE,
+                )
+
+        for field, value in [
+                ('X-Content-Type-Options', 'nosniff'),
+                ('X-XSS-Protection', '1; mode=block'),
+                ('Vary', 'Accept, Accept-Encoding, Origin'),
+                ('Cache-Control', 'max-age=180, public'),
+                ('Transfer-Encoding', 'chunked'),
+                ('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload'),
+                ('Referrer-Policy', 'no-referrer-when-downgrade'),
+                ('X-Frame-Options', 'DENY'),
+                ]:
+
+            self.assertEqual(
+                    response[field],
+                    value,
+                    )
