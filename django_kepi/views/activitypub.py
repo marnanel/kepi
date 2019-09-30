@@ -314,6 +314,9 @@ class ThingView(KepiView):
 class ActorView(ThingView):
 
     def activity_get(self, request, *args, **kwargs):
+
+        self._username = kwargs['username']
+
         logger.debug('Looking up Actor by username==%s',
                 kwargs['username'])
 
@@ -352,6 +355,57 @@ class ActorView(ThingView):
                 inbox_name, request.activity)
 
         inbox.append(request.activity)
+
+    def _to_json(self, data):
+        """
+        Adds the Link header to an Actor's record.
+
+        The Link header is described in RFC 5988,
+        and <https://www.w3.org/wiki/LinkHeader>.
+        """
+
+        result = super()._to_json(data)
+
+        user_url = settings.KEPI['USER_URL_FORMAT'] % {
+                'username': self._username,
+                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                }
+
+        webfinger_url = 'https://%s/.well-known/webfinger?resource=%s' % (
+                        settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                        urllib.parse.quote(
+                            'acct:%(name)s@%(host)s' % {
+                                'name': self._username,
+                                'host': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                                }))
+        links = [
+                {
+                    'url': webfinger_url,
+                    'rel': 'lrdd',
+                    'type': 'application/xrd+xml',
+                    },
+
+                # TODO: rel: alternate, type: application/atom+xml,
+                # but that will be set by tophat and not kepi
+
+                {
+                    'url': user_url,
+                    'rel': 'alternate',
+                    'type': 'application/activity+json',
+                    },
+                ]
+
+        link_value = ', '.join([
+                    '<%(url)s>; rel="%(rel)s"; type="%(type)s"' % x
+                    for x in links
+                    ])
+
+        logger.info('Setting Link header to: %s',
+            link_value)
+
+        result['Link'] = link_value
+
+        return result
 
 class FollowingView(KepiView):
 
