@@ -79,6 +79,7 @@ DATABASES = {
 ALLOWED_HOSTS = [
         'altair.example.com',
         'sirius.example.com',
+        'localhost',
         ]
 
 ROOT_URLCONF = 'kepi.urls'
