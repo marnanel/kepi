@@ -4,6 +4,8 @@ django
 requests
 requests-http-signature
 cryptography
+pillow
+celery>4.0.0
 django-celery
 httpretty
 httpsig
