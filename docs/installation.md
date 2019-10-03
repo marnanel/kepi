@@ -27,7 +27,7 @@ by typing
 source kepienv/bin/activate
 ```
 
-Your prompt should now have `(kepivenv)` at the start.
+Your prompt should now have `(kepienv)` at the start.
 
 Grab kepi from gitlab
 ---------------------
