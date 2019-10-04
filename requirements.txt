@@ -13,3 +13,11 @@ django-celery-results
 django-polymorphic
 python-mimeparse
 gunicorn
+django-markdown
+oauth2-provider
+django-cors-headers
+django-oauth-toolkit
+django-rest-framework
+djangorestframework-xml
+djangorestframework-constant-field
+django-fields

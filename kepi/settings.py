@@ -64,8 +64,14 @@ INSTALLED_APPS = (
         'djcelery',
         'django_celery_results',
 
-        'django_kepi',
+        'rest_framework',
+        'oauth2_provider',
+        'corsheaders',
+        'django_fields',
         'polymorphic',
+
+        'django_kepi',
+        'trilby_api',
 
         )
 
@@ -135,6 +141,52 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+AUTHENTICATION_BACKENDS = (
+        'oauth2_provider.backends.OAuth2Backend',
+        'django.contrib.auth.backends.ModelBackend',
+)
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+OAUTH2_PROVIDER = {
+
+        'SCOPES': {
+            'read': 'Read messages',
+            'write': 'Post messages',
+            'follow': 'Follow other users',
+            },
+
+        'ALLOWED_REDIRECT_URI_SCHEMES': ['urn', 'http', 'https'],
+
+        }
+
+REST_FRAMEWORK = {
+
+        'DEFAULT_PERMISSION_CLASSES': (
+            'rest_framework.permissions.IsAuthenticated',
+            ),
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+            ),
+
+#        'PAGE_SIZE': 50,
+        }
+
+AUTH_USER_MODEL = 'trilby_api.TrilbyUser'
 
 try:
     from .local_config import *
