@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import *
 
-endpoints = [
+urlpatterns = [
 
     path('v1/instance', Instance.as_view()),
     path('v1/apps', Apps.as_view()),
