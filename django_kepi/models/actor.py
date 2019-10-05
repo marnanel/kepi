@@ -25,6 +25,12 @@ class AcActor(acobject.AcObject):
             null=True,
             )
 
+    f_name = models.TextField(
+            verbose_name='name',
+            help_text = 'Your name, in human-friendly form. '+\
+                'Something like "Alice Liddell".',
+            )
+
     f_publicKey = models.TextField(
             blank=True,
             null=True,
@@ -39,7 +45,7 @@ class AcActor(acobject.AcObject):
     f_summary = models.TextField(
             max_length=255,
             help_text="Your biography. Something like "+\
-                    "'I enjoy falling down rabbitholes.'",
+                    '"I enjoy falling down rabbitholes."',
             default='',
             verbose_name='bio',
             )
@@ -67,16 +73,6 @@ class AcActor(acobject.AcObject):
                     "followed by one or more characters from "+\
                     "A-Z, a-z, 0-9, underscore, or hyphen. "+\
                     "You gave: "+self.id)
-
-    @property
-    def url(self):
-        if self.is_local:
-            return settings.KEPI['USER_URL_FORMAT'] % {
-                    'username': self.id[1:],
-                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    }
-        else:
-            return self.id
 
     def _after_create(self):
         if self.privateKey is None and self.f_publicKey is None:
@@ -123,6 +119,7 @@ class AcActor(acobject.AcObject):
             logger.info('%s: setting private key to %s',
                     self, self.privateKey)
             self.save()
+
         elif name=='publicKey':
 
             from django_kepi.utils import as_json
@@ -136,12 +133,36 @@ class AcActor(acobject.AcObject):
             super().__setitem__(name, value)
 
     def __getitem__(self, name):
+
         if self.is_local:
 
             if name in LIST_NAMES:
                 return self.list_url(name)
             elif name=='privateKey':
                 return self.privateKey
+            elif name=='preferredUsername':
+                return self.id[1:]
+            elif name=='url':
+                return self.url
+            elif name=='icon':
+                return 'https://%(hostname)s/static/defaults/avatar_0.jpg' % {
+                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    }
+            elif name=='header':
+                return 'https://%(hostname)s/static/defaults/header.jpg' % {
+                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    }
+            elif name=='email':
+                # FIXME this is not really the email address!
+                return '{}@{}'.format(
+                        self.id[1:],
+                        settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                        )
+            elif name=='feedURL':
+                return settings.KEPI['USER_FEED_URLS'].format(
+                        username = self.id[1:],
+                        hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                        )
 
         if name=='publicKey':
             if not self.f_publicKey:
@@ -156,7 +177,8 @@ class AcActor(acobject.AcObject):
                     self, result)
             return result
 
-        return super().__getitem__(name)
+        result = super().__getitem__(name)
+        return result
 
     @property
     def activity_form(self):
@@ -172,11 +194,16 @@ class AcActor(acobject.AcObject):
         for listname in LIST_NAMES:
             result[listname] = self.list_url(listname)
 
-        result['url'] = self.url
-        result['name'] = self.id[1:]
-        result['preferredUsername'] = self.id[1:]
+        for attribute in [
+                'url',
+                'preferredUsername',
+                ]:
+            result[attribute] = self[attribute]
 
-        del result['published']
+        for delendum in [
+                'published',
+                ]:
+            del result[delendum]
 
         result['endpoints'] = {}
         if 'SHARED_INBOX' in settings.KEPI:

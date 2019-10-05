@@ -59,6 +59,10 @@ class AcObject(PolymorphicModel):
             default = timezone.now,
             )
 
+    updated = models.DateTimeField(
+            auto_now = True,
+            )
+
     @property
     def url(self):
         if self.id.startswith('/'):
@@ -186,6 +190,9 @@ class AcObject(PolymorphicModel):
             result = getattr(self, 'f_'+name)
         elif name in [
                 'published',
+                'updated',
+                'url',
+                'id',
                 ]:
             result = getattr(self, name)
         elif name in AUDIENCE_FIELD_NAMES:
@@ -282,6 +289,7 @@ class AcObject(PolymorphicModel):
                     status=self,
                     tags=value,
                     )
+
     @property
     def audiences(self):
         return Audience.get_audiences_for(self)
@@ -304,8 +312,7 @@ class AcObject(PolymorphicModel):
 
     @property
     def is_local(self):
-        from django_kepi.find import is_local
-        return is_local(self.id)
+        return self.id and self.id[0] in '@/'
 
     def entomb(self):
         logger.info('%s: entombing', self)
