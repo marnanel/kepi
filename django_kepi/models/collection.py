@@ -125,6 +125,14 @@ class Collection(models.Model):
 
         return '%s/%s' % (username, collectionname)
 
+    @property
+    def contents(self):
+        # FIXME make a property "members" which
+        # dereferences each member properly
+        return CollectionMember.objects.filter(
+                parent = self,
+                )
+
 class CollectionMember(models.Model):
 
     parent = models.ForeignKey(
