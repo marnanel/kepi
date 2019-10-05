@@ -7,47 +7,45 @@
         xmlns:ostatus="http://ostatus.org/schema/1.0"
         xmlns:mastodon="http://mastodon.social/schema/1.0">
 
-        <id>{{ user.feedURL }}</id>
-        <title>{{ user.username }}</title>
-        <subtitle>{{ user.note }}</subtitle>
+        <id>{{ self }}</id>
+        <title>{{ user.name }}</title>
+        <subtitle>{{ user.summary }}</subtitle>
 
-        <updated>{{ user.updated |date:"Y-m-d\TH:i:s\Z" }}</updated>
-        <icon>{{ user.avatar }}</icon>
-        <logo>{{ user.avatar }}</logo>
+        <updated>{{ user.updated | date:"Y-m-d\TH:i:s\Z" }}</updated>
+        <icon>{{ user.icon }}</icon>
+        <logo>{{ user.icon }}</logo>
 
         <author>
-                <id>{{ user.profileURL }}</id>
+                <id>{{ user.id }}</id>
                 <activity:object-type>http://activitystrea.ms/schema/1.0/person</activity:object-type>
-                <uri>{{ user.profileURL }}</uri>
-                <name>{{ user.username }}</name>
-                <email>{{ user.username }}@{{ server_name }}</email>
-                <summary type="html">&lt;p&gt;{{ user.note | escape }}&lt;/p&gt;</summary>
-                <link rel="avatar" type="image/jpeg" media:width="120" media:height="120" href="{{ user.avatar }}"/>
+                <uri>{{ user.url }}</uri>
+                <name>{{ user.id }}</name>
+                <email>{{ user.email }}</email>
+                <summary type="html">&lt;p&gt;{{ user.summary | escape }}&lt;/p&gt;</summary>
+                <link rel="avatar" type="image/jpeg" media:width="120" media:height="120" href="{{ user.icon }}"/>
                 <link rel="header" type="image/jpeg" media:width="700" media:height="335" href="{{ user.header }}"/>
-                <poco:preferredUsername>{{ user.username }}</poco:preferredUsername>
-                <poco:displayName>{{ user.username }}</poco:displayName>
-                <poco:note>{{ user.note }}</poco:note>
+                <poco:preferredUsername>{{ user.preferredUsername }}</poco:preferredUsername>
+                <poco:displayName>{{ user.name }}</poco:displayName>
+                <poco:note>{{ user.summary }}</poco:note>
                 <mastodon:scope>public</mastodon:scope>
         </author>
 
         <link rel="self" type="application/atom+xml" href="{{ user.feedURL }}"/>
-        <link rel="hub" href="{{ hubURL }}"/>
-        <link rel="salmon" href="{{ user.salmonURL }}"/>
         {% for s in statuses %}
         <entry>
                 <id>{{ s.url }}</id>
-                <published>{{ s.created_at|date:"Y-m-d\TH:i:s\Z" }}</published>
-                <updated>{{ s.created_at|date:"Y-m-d\TH:i:s\Z" }}</updated>
-                <title>{{ s.title }}</title>
+                <published>{{ s.published | date:"Y-m-d\TH:i:s\Z" }}</published>
+                <updated>{{ s.updated | date:"Y-m-d\TH:i:s\Z" }}</updated>
+                <title>{{ s.object__find.content }}</title>
                 <activity:object-type>http://activitystrea.ms/schema/1.0/note</activity:object-type>
                 <activity:verb>http://activitystrea.ms/schema/1.0/post</activity:verb>
-                <link rel="alternate" type="application/activity+json" href="{{ s.activityURL }}"/>
+                <link rel="alternate" type="application/activity+json" href="{{ s.url }}"/>
                 <link rel="alternate" type="text/html" href="{{ s.url }}"/>
-                <content type="html" xml:lang="{{ s.language }}">&lt;p&gt;{{ s.content | escape }}&lt;/p&gt;</content>
+                <content type="html" xml:lang="{{ s.object__find.language }}">&lt;p&gt;{{ s.object__find.content | escape }}&lt;/p&gt;</content>
                 <link rel="mentioned" ostatus:object-type="http://activitystrea.ms/schema/1.0/collection" href="http://activityschema.org/collection/public" />
                 <mastodon:scope>public</mastodon:scope>
-                <link rel="self" type="application/atom+xml" href="{{ s.atomURL }}" />
-                <ostatus:conversation ref="{{ s.conversation }}" />
+                <link rel="self" type="application/atom+xml" href="{{ s.url }}" />
+                <ostatus:conversation ref="{{ s.object__find.conversation }}" />
         </entry>
         {% endfor %}
 </feed>

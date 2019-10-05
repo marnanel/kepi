@@ -14,6 +14,7 @@ from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+import django_kepi.models as kepi_models
 import json
 import re
 
@@ -105,14 +106,19 @@ class UserFeed(View):
 
     def get(self, request, username, *args, **kwargs):
 
-        user = get_object_or_404(TrilbyUser, username=username)
-        statuses = Status.objects.filter(posted_by=user)
+        user = get_object_or_404(kepi_models.AcActor,
+                id = '@'+username,
+                )
+
+        statuses = [x.member for x in kepi_models.Collection.get(
+                username+'/outbox',
+                ).contents]
 
         context = {
+                'self': request.build_absolute_uri(),
                 'user': user,
                 'statuses': statuses,
-                'server_name': settings.KEPI['HOSTNAME'],
-                'hubURL': settings.KEPI['HUB'],
+                'server_name': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
             }
 
         result = render(
@@ -122,15 +128,12 @@ class UserFeed(View):
                 content_type='application/atom+xml',
                 )
 
-        link_context = {
-                'hostname': settings.KEPI['HOSTNAME'],
-                'username': user.username,
-                'acct': user.acct(),
-                }
-
         links = ', '.join(
                 [ '<{}>; rel="{}"; type="{}"'.format(
-                    settings.KEPI.get(uri, username=user.username, acct=user.display_name),
+                    settings.KEPI[uri].format(
+                        hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                        username = user.id[1:],
+                        ),
                     rel, mimetype)
                     for uri, rel, mimetype in
                     [
@@ -187,14 +190,14 @@ class UserActivityView(FIXMEview):
                 "image": {
                     "type": "Image",
                     # XXX enormous hack until we get media working properly
-                    "url": "https://{}/static/defaults/header.jpg".format(settings.KEPI['HOSTNAME']),
+                    "url": "https://{}/static/defaults/header.jpg".format(settings.KEPI['LOCAL_OBJECT_HOSTNAME']),
                     #"url": user.header,
                     "mediaType": "image/jpeg",
                     },
                 "icon": {
                     "type": "Image",
                     # XXX enormous hack until we get media working properly
-                    "url": "https://{}/static/defaults/avatar_1.jpg".format(settings.KEPI['HOSTNAME']),
+                    "url": "https://{}/static/defaults/avatar_1.jpg".format(settings.KEPI['LOCAL_OBJECT_HOSTNAME']),
                     #"url": user.avatar,
                     "mediaType": "image/jpeg",
                     },
@@ -329,7 +332,7 @@ class Webfinger(generics.GenericAPIView):
 
         username, hostname = user.split('@', 2)
 
-        if hostname!=settings.KEPI['HOSTNAME']:
+        if hostname!=settings.KEPI['LOCAL_OBJECT_HOSTNAME']:
             return HttpResponse(
                     status = 404,
                     reason = 'not this server',
@@ -366,7 +369,7 @@ class HostMeta(View):
     def get(self, request):
 
         context = {
-                'server_name': settings.KEPI['HOSTNAME'],
+                'server_name': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
             }
 
         result = render(
