@@ -378,6 +378,12 @@ class ActorView(ThingView):
                                 'name': self._username,
                                 'host': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                                 }))
+
+        atom_url = settings.KEPI['USER_FEED_URLS'].format(
+                username = self._username,
+                hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                )
+
         links = [
                 {
                     'url': webfinger_url,
@@ -385,8 +391,11 @@ class ActorView(ThingView):
                     'type': 'application/xrd+xml',
                     },
 
-                # TODO: rel: alternate, type: application/atom+xml,
-                # but that will be set by tophat and not kepi
+                {
+                    'url': atom_url,
+                    'rel': 'alternate',
+                    'type': 'application/atom+xml',
+                    },
 
                 {
                     'url': user_url,
