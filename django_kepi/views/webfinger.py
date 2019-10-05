@@ -92,9 +92,23 @@ class Webfinger(django.views.View):
 
                 "links":[
                     {
-                        "rel"  : "self",
-                        "type" : "application/activity+json",
-                        "href" : actor_url,
+                    'rel': 'http://webfinger.net/rel/profile-page',
+                    'type': 'text/html',
+                    'href': actor_url,
+                    },
+                    {
+                    'rel': 'http://schemas.google.com/g/2010#updates-from',
+                    'type': 'application/atom+xml',
+                    'href': whoever['feedURL'],
+                    },
+                    {
+                    'rel': 'self',
+                    'type': 'application/activity+json',
+                    'href': actor_url,
+                    },
+                    {
+                    'rel': 'http://ostatus.org/schema/1.0/subscribe',
+                    'template': settings.KEPI['AUTHORIZE_FOLLOW_TEMPLATE'],
                     },
                     ]}
 
