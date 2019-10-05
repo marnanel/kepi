@@ -9,7 +9,7 @@ urlpatterns = [
         path(r'admin/', admin.site.urls),
         # path('', kepi.views.FrontPageView.as_view()), # or something
         path(r'', include(django_kepi.urls)),
-        path(r'', include(django_kepi.urls)),
+        path(r'', include(trilby_api.urls)),
 ]
 
 if settings.DEBUG:
