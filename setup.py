@@ -27,7 +27,11 @@ setup(
     long_description_content_type='text/markdown',
     author='Marnanel Thurman',
     author_email='marnanel@thurman.org.uk',
-    packages=['kepi', 'django_kepi'],
+    packages=[
+        'kepi',
+        'django_kepi',
+        'trilby_api',
+        ],
     include_package_data=True,
     install_requires=[],
     python_requires=">=3.0",
