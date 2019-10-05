@@ -74,9 +74,18 @@ class AcItem(acobject.AcObject):
         logger.debug('  -- fallback to limited')
         return 'limited'
 
+    def __getitem__(self, name):
+
+        if self.is_local:
+            if name=='language':
+                return settings.LANGUAGE_CODE
+
+        result = super().__getitem__(name)
+        return result
+
     @property
     def text(self):
-        return self['content']
+        return self.f_content
 
     @property
     def thread(self):
@@ -196,7 +205,7 @@ class AcNote(AcItem):
 
     def __str__(self):
 
-        content = self['content']
+        content = self.f_content
 
         if len(content)>70:
             content = content[:68]+'...'
