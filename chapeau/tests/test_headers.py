@@ -31,6 +31,9 @@ class TestHeaders(TestCase):
                     'acct%3Aalice%40testserver>; rel="lrdd"; '+\
                     'type="application/xrd+xml"',
 
+                    '<https://testserver/users/alice/feed>; '+\
+                    'rel="alternate"; type="application/atom+xml"',
+
                     '<https://testserver/users/alice>; '+\
                     'rel="alternate"; type="application/activity+json"',
                     ])
