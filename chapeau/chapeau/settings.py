@@ -5,7 +5,7 @@ djcelery.setup_loader()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-ROOT_URLCONF = 'kepi.urls'
+ROOT_URLCONF = 'chapeau.urls'
 
 TEMPLATES = [
     {
@@ -23,7 +23,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'kepi.wsgi.application'
+WSGI_APPLICATION = 'chapeau.wsgi.application'
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -72,7 +72,7 @@ INSTALLED_APPS = (
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'kepi.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'chapeau.sqlite3'),
     }
 }
 
@@ -81,8 +81,6 @@ ALLOWED_HOSTS = [
         'sirius.example.com',
         'localhost',
         ]
-
-ROOT_URLCONF = 'kepi.urls'
 
 CELERY = {
         'task_ignore_result': True,

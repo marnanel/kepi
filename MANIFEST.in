@@ -1,5 +1,5 @@
 include LICENSE
 include README.md
-recursive-include django_kepi *.py
-recursive-include django_kepi/migrations *.py
-recursive-include django_kepi/templates *.xml
+recursive-include django_chapeau *.py
+recursive-include django_chapeau/migrations *.py
+recursive-include django_chapeau/templates *.xml

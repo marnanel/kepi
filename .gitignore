@@ -9,4 +9,4 @@ build/
 dist/
 static
 examples/
-kepi/local_config.py
+chapeau/chapeau/local_config.py
