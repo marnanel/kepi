@@ -15,12 +15,12 @@ def get_version(package):
     init_py = open(os.path.join(package, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
-version = get_version('django_kepi')
+version = get_version('django_chapeau')
 
 setup(
-    name='kepi',
+    name='chapeau',
     version=version,
-    url='https://gitlab.com/marnanel/kepi/',
+    url='https://gitlab.com/marnanel/chapeau/',
     license='GPL-2',
     description='ActivityPub for Django',
     long_description=README,
@@ -28,9 +28,7 @@ setup(
     author='Marnanel Thurman',
     author_email='marnanel@thurman.org.uk',
     packages=[
-        'kepi',
-        'django_kepi',
-        'trilby_api',
+        'chapeau',
         ],
     include_package_data=True,
     install_requires=[],
@@ -41,7 +39,7 @@ setup(
     ],
     entry_points = {
         'console_scripts': [
-            'kepi=django_kepi.command_line:main',
+            'chapeau=chapeau.django_kepi.command_line:main',
             ],
         },
 )
