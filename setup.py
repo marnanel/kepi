@@ -15,14 +15,14 @@ def get_version(package):
     init_py = open(os.path.join(package, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
-version = get_version('django_chapeau')
+version = get_version('chapeau/django_kepi')
 
 setup(
     name='chapeau',
     version=version,
     url='https://gitlab.com/marnanel/chapeau/',
     license='GPL-2',
-    description='ActivityPub for Django',
+    description='ActivityPub social media daemon',
     long_description=README,
     long_description_content_type='text/markdown',
     author='Marnanel Thurman',
