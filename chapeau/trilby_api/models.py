@@ -1,6 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from chapeau.kepi.models import AcPerson
+from chapeau.kepi.create import create
+import chapeau.trilby_api.models
+
+def _create_actor(username):
+    actor = {
+            'id': '@'+username,
+            'type': 'Person',
+            }
+
+    return create(
+            value=actor,
+            )
 
 class TrilbyUser(AbstractUser):
 
@@ -21,9 +33,19 @@ class TrilbyUser(AbstractUser):
 
     actor = models.OneToOneField(
             AcPerson,
-            on_delete=models.DO_NOTHING,
+            on_delete=models.CASCADE,
             unique=True,
-            null=True,
+            default=None,
             )
 
+    def save(self, *args, **kwargs):
+        
+        try:
+            self.actor
+        except TrilbyUser.actor.RelatedObjectDoesNotExist:
+            self.actor = _create_actor(
+                    username = self.username,
+                    )
+
+        super().save(*args, **kwargs)
 
