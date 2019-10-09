@@ -1,6 +1,9 @@
 import os
 import djcelery
+import logging
 djcelery.setup_loader()
+
+logger = logging.Logger(name='chapeau')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -189,4 +192,4 @@ AUTH_USER_MODEL = 'trilby_api.TrilbyUser'
 try:
     from .local_config import *
 except ModuleNotFoundError:
-    pass
+    logger.warn("chapeau's local_config.py not found! Running with default settings")
