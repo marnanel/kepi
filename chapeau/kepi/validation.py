@@ -17,7 +17,6 @@ import uuid
 import re
 from django.conf import settings
 from urllib.parse import urlparse
-import chapeau.kepi.find
 import django.core.exceptions
 from httpsig.verify import HeaderVerifier
 
@@ -159,6 +158,7 @@ def _run_validation(
 
     from chapeau.kepi.delivery import deliver
     from chapeau.kepi.create import create
+    from chapeau.kepi.find import find
 
     logger.info('%s: begin validation',
             message_id)
@@ -179,7 +179,7 @@ def _run_validation(
         return None
 
     try:
-        actor = kepi.find.find(message.actor)
+        actor = find(message.actor)
     except json.decoder.JSONDecodeError as jde:
         logger.info('%s: invalid JSON; dropping: %s',
                 message, jde)
