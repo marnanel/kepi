@@ -1,9 +1,9 @@
 from django.test import TestCase
 from tests import create_local_note, create_local_person
-from django_kepi.create import create
-from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
-from django_kepi.models.mention import Mention
-from django_kepi.models.item import AcItem
+from chapeau.kepi.create import create
+from chapeau.kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
+from chapeau.kepi.models.mention import Mention
+from chapeau.kepi.models.item import AcItem
 from .. import create_local_person
 import logging
 import json
@@ -12,7 +12,7 @@ from django.conf import settings
 REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 class TestCreate(TestCase):
 
@@ -306,7 +306,7 @@ class TestCreate(TestCase):
 
     def test_when_sender_is_followed_by_local_users(self):
 
-        from django_kepi.models.following import Following
+        from chapeau.kepi.models.following import Following
 
         local_user = create_local_person()
 

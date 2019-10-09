@@ -1,7 +1,7 @@
 import os
 import re
 from io import open
-from setuptools import find_packages, setup
+from setuptools import setup
 
 # much of this was cribbed from django_rest_framework
 
@@ -15,7 +15,7 @@ def get_version(package):
     init_py = open(os.path.join(package, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
-version = get_version('chapeau/django_kepi')
+version = get_version('chapeau/kepi')
 
 setup(
     name='chapeau',
@@ -27,19 +27,17 @@ setup(
     long_description_content_type='text/markdown',
     author='Marnanel Thurman',
     author_email='marnanel@thurman.org.uk',
-    packages=[
-        'chapeau',
-        ],
+    packages=['chapeau'],
     include_package_data=True,
     install_requires=[],
     python_requires=">=3.0",
-    #zip_safe=False,
+    zip_safe=False, # for now, anyway
     classifiers=[
         # XXX fixme
     ],
     entry_points = {
         'console_scripts': [
-            'chapeau=chapeau.django_kepi.command_line:main',
+            'chapeau=chapeau.kepi.command_line:main',
             ],
         },
 )

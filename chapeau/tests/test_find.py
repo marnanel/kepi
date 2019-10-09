@@ -1,14 +1,14 @@
 from django.test import TestCase
-from django_kepi.find import find
-from django_kepi.create import create
+from chapeau.kepi.find import find
+from chapeau.kepi.create import create
 from django.conf import settings
 from . import *
 import httpretty
 import json
 import logging
-from django_kepi.utils import as_json
+from chapeau.kepi.utils import as_json
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 REMOTE_URL = 'https://remote.example.net/fnord'
 

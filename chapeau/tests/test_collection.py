@@ -1,14 +1,14 @@
 from django.test import TestCase, Client
 from unittest import skip
-from django_kepi.models import *
+from chapeau.kepi.models import *
 import datetime
 import json
-from django_kepi.find import find
-from django_kepi.utils import as_json
+from chapeau.kepi.find import find
+from chapeau.kepi.utils import as_json
 from . import *
 import logging
 
-logger = logging.Logger('django_kepi')
+logger = logging.Logger('chapeau')
 
 EXAMPLE_SERVER = 'http://testserver'
 JSON_TYPE = 'application/activity+json; charset=utf-8'

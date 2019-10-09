@@ -1,6 +1,6 @@
 # test_deliver.py
 #
-# Part of kepi, an ActivityPub daemon and library.
+# Part of chapeau, an ActivityPub daemon.
 # Copyright (c) 2018-2019 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
@@ -9,10 +9,10 @@
 
 from django.test import TestCase, Client
 from django.conf import settings
-from django_kepi.delivery import deliver
-from django_kepi.create import create
-from django_kepi.models import AcObject
-import django_kepi.views
+from chapeau.kepi.delivery import deliver
+from chapeau.kepi.create import create
+from chapeau.kepi.models import AcObject
+import chapeau.kepi.views as kepi_views
 from unittest.mock import Mock, patch
 from . import *
 import logging
@@ -24,7 +24,7 @@ import requests
 # FIXME test caching
 # FIXME test invalid keys
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 REMOTE_PATH_NAMES = {
         '/users/fred/inbox': 'fred',
@@ -93,7 +93,7 @@ class TestDelivery(TestCase):
                 privateKey = keys['private'])
         create_local_person(name='bob')
 
-    @patch.object(django_kepi.views.activitypub.ActorView, 'activity_store')
+    @patch.object(kepi_views.activitypub.ActorView, 'activity_store')
     @httpretty.activate
     def _test_delivery(self,
             fake_local_request,

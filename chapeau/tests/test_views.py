@@ -3,7 +3,7 @@ from . import *
 import logging
 import json
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 def _response_to_dict(response):
 

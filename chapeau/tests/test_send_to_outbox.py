@@ -1,12 +1,12 @@
 from django.test import TestCase
 from unittest import skip
 from tests import *
-from django_kepi.create import create
-from django_kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
-from django_kepi.models.mention import Mention
-from django_kepi.models.item import AcItem
-from django_kepi.models.acobject import AcObject
-from django_kepi.models.activity import AcActivity
+from chapeau.kepi.create import create
+from chapeau.kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
+from chapeau.kepi.models.mention import Mention
+from chapeau.kepi.models.item import AcItem
+from chapeau.kepi.models.acobject import AcObject
+from chapeau.kepi.models.activity import AcActivity
 from django.test import Client
 from urllib.parse import urlparse
 import httpretty
@@ -44,7 +44,7 @@ CREATE_FORM = {
         'object': OBJECT_FORM,
         }
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 class TestOutbox(TestCase):
 

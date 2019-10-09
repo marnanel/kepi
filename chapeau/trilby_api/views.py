@@ -14,7 +14,7 @@ from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
-import django_kepi.models as kepi_models
+import chapeau.kepi.models as kepi_models
 import json
 import re
 
@@ -29,7 +29,7 @@ class Instance(View):
             'title': settings.KEPI['INSTANCE_NAME'],
             'description': settings.KEPI['INSTANCE_DESCRIPTION'],
             'email': settings.KEPI['CONTACT_EMAIL'],
-            'version': 'un_chapeau 0.0.1',
+            'version': 'un_0.0.1',
             'urls': {},
             'languages': settings.KEPI['LANGUAGES'],
             'contact_account': settings.KEPI['CONTACT_ACCOUNT'],
@@ -249,7 +249,7 @@ class ActivityOutboxView(FIXMEview):
     def _stringify_object(self, obj):
         # XXX We'll do this properly soon.
         # It should have views particular to each kind of Status,
-        # and an integration with the Activities in django_kepi.
+        # and an integration with the Activities in kepi.
         return {
          "object" : {
             "atomUri" : obj.atomURL(),

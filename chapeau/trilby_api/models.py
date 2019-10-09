@@ -8,8 +8,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.core.files.images import ImageFile
 from django.conf import settings
-from trilby_api.crypto import Key
-from django_kepi import implements_activity_type
+from chapeau.trilby_api.crypto import Key
+from chapeau.kepi import implements_activity_type
 
 #############################
 
@@ -235,7 +235,7 @@ class TrilbyUser(AbstractUser):
         Blocks another user. The other user should
         henceforth be unaware of our existence.
         """
-        blocking = django_kepi.models.Blocking(
+        blocking = kepi.models.Blocking(
                 blocking=self.actor,
                 blocked=someone.actor)
         blocking.save()
@@ -244,13 +244,13 @@ class TrilbyUser(AbstractUser):
         """
         Unblocks another user.
         """
-        django_kepi.models.Blocking.objects.filter(
+        kepi.models.Blocking.objects.filter(
                 following=self.actor,
                 follower=someone.actor,
                 ).delete()
 
     def is_blocking(self, someone):
-        return django_kepi.models.Blocking.objects.filter(
+        return kepi.models.Blocking.objects.filter(
                 blocking=self.actor,
                 blocker=someone.actor,
                 ).exists()
@@ -268,26 +268,26 @@ class TrilbyUser(AbstractUser):
             raise ValueError("Can't follow: blocked.")
 
         if someone.locked:
-            req = django_kepi.models.RequestingAccess(
+            req = kepi.models.RequestingAccess(
                     hopeful=self.actor,
                     grantor=someone.actor,
                     )
             req.save()
         else:
-            following = django_kepi.models.Following(
+            following = kepi.models.Following(
                     following=someone.actor,
                     follower=self.actor,
                     )
             following.save()
 
     def unfollow(self, someone):
-        django_kepi.models.Following.objects.filter(
+        kepi.models.Following.objects.filter(
                 following=someone.actor,
                 follower=self.actor,
                 ).delete()
  
     def is_following(self, someone):
-        return django_kepi.models.Following.objects.filter(
+        return kepi.models.Following.objects.filter(
                 following=someone.actor,
                 follower=self.actor,
                 ).exists()
@@ -297,19 +297,19 @@ class TrilbyUser(AbstractUser):
         if someone.is_following(self):
             raise ValueError("They are already following you.")
 
-        if not django_kepi.models.RequestingAccess.objects.filter(
+        if not kepi.models.RequestingAccess.objects.filter(
                 hopeful=someone.actor,
                 grantor=self.actor,
                 ).exists():
             raise ValueError("They haven't asked to follow you.")
 
         if accept:
-            following = django_kepi.models.Following(
+            following = kepi.models.Following(
                     following=self.actor,
                     follower=someone.actor)
             following.save()
 
-        django_kepi.models.RequestingAccess.objects.filter(
+        kepi.models.RequestingAccess.objects.filter(
                 hopeful=someone.actor,
                 grantor=self.actor,
                 ).delete()

@@ -1,17 +1,17 @@
 # test_activity.py
 #
-# Part of kepi, an ActivityPub daemon and library.
+# Part of chapeau, an ActivityPub daemon.
 # Copyright (c) 2018-2019 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
 from django.test import TestCase
-from django_kepi.models import AcObject, AcActivity
-from django_kepi.create import create
+from chapeau.kepi.models import AcObject, AcActivity
+from chapeau.kepi.create import create
 from unittest import skip
 from . import remote_object_is_recorded, create_local_person
 import logging
 
-logger = logging.Logger("django_kepi")
+logger = logging.Logger(name='chapeau')
 
 REMOTE_ID_1 = 'https://users.example.com/activity/1'
 REMOTE_ID_2 = 'https://users.example.com/item/2'
@@ -39,7 +39,7 @@ class TestAcObject(TestCase):
 
     def test_remote_no_id(self):
 
-        from django_kepi.models import AcObject
+        from chapeau.kepi.models import AcObject
 
         create(
             f_type = "Create",

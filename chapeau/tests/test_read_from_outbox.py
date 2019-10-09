@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.test import TestCase, Client
-from django_kepi.create import create
+from chapeau.kepi.create import create
 from . import create_local_person
 import httpretty
 import logging
@@ -12,7 +12,7 @@ OUTBOX_PATH = '/users/alice/outbox'
 
 MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 VICTORIA_WOOD = {
             "type": "Create",

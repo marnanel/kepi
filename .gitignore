@@ -1,5 +1,5 @@
 *.pyc
-*.sw[op]
+*.sw?
 __pycache__
 .eggs
 .tox

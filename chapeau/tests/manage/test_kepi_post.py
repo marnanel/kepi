@@ -1,7 +1,7 @@
 from io import StringIO
 from django.test import TestCase
 from django.core.management import call_command
-from django_kepi.models import *
+from chapeau.kepi.models import *
 from .. import create_local_person
 
 class KepiPostTest(TestCase):

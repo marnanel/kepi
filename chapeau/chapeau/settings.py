@@ -5,7 +5,7 @@ djcelery.setup_loader()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-ROOT_URLCONF = 'chapeau.urls'
+ROOT_URLCONF = 'chapeau.chapeau.urls'
 
 TEMPLATES = [
     {
@@ -49,7 +49,7 @@ MIDDLEWARE = [
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        'django_kepi.middleware.add_headers',
+        'chapeau.kepi.middleware.add_headers',
         ]
 
 INSTALLED_APPS = (
@@ -70,8 +70,8 @@ INSTALLED_APPS = (
         'django_fields',
         'polymorphic',
 
-        'django_kepi',
-        'trilby_api',
+        'chapeau.kepi',
+        'chapeau.trilby_api',
 
         )
 
@@ -109,7 +109,7 @@ LOGGING = {
                 },
             },
         'loggers': {
-            'django_kepi': {
+            'chapeau': {
                 'handlers': ['console'],
                 'level': 'DEBUG',
                 },

@@ -7,7 +7,7 @@ NODEINFO_PART_1_URL = 'http://testserver/.well-known/nodeinfo'
 NODEINFO_PART_2_URL = 'http://testserver/nodeinfo.json'
 MIME_TYPE = 'application/json; profile=http://nodeinfo.diaspora.software/ns/schema/2.0#'
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 class TestNodeinfo(TestCase):
 

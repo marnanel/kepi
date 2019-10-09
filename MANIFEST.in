@@ -1,5 +1,4 @@
-include LICENSE
+include LICENSE.txt
 include README.md
-recursive-include django_chapeau *.py
-recursive-include django_chapeau/migrations *.py
-recursive-include django_chapeau/templates *.xml
+recursive-include chapeau *.py
+recursive-include chapeau *.xml

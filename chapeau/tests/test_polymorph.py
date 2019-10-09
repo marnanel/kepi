@@ -1,10 +1,10 @@
 from django.test import TestCase
 from unittest import skip
-from django_kepi.create import create
-from django_kepi.models import *
+from chapeau.kepi.create import create
+from chapeau.kepi.models import *
 import logging
 
-logger = logging.getLogger(name='tests')
+logger = logging.getLogger(name='chapeau')
 
 class TestPolymorph(TestCase):
 

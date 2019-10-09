@@ -1,15 +1,15 @@
 from django.test import TestCase
 from tests import create_local_note, create_local_person
 from unittest import skip
-from django_kepi.create import create
-from django_kepi.models import *
+from chapeau.kepi.create import create
+from chapeau.kepi.models import *
 import logging
 
 SENDER_ID = 'https://example.com/actor'
 SENDER_DOMAIN = 'example.com'
 SENDER_FOLLOWERS = 'https://example.com/followers'
 
-logger = logging.getLogger(name='tests')
+logger = logging.getLogger(name='chapeau')
 
 # XXX Why does this only test updating of profiles?
 # XXX I thought we should update items as well.

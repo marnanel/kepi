@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
-from django_kepi.validation import IncomingMessage, validate
-from django_kepi.models import AcObject
+from chapeau.kepi.validation import IncomingMessage, validate
+from chapeau.kepi.models import AcObject
 from unittest import skip
 import httpretty
 from . import *
@@ -13,7 +13,7 @@ import json
 # FIXME test caching
 # FIXME test invalid keys
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 ACTIVITY_ID = "https://example.com/04b065f8-81c4-408e-bec3-9fb1f7c06408"
 INBOX_HOST = 'europa.example.com'

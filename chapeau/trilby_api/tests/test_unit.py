@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from trilby_api.models import *
+from chapeau.trilby_api.models import *
 
 class UserTests(TestCase):
 

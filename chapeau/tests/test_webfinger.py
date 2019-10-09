@@ -8,7 +8,7 @@ WEBFINGER_BASE_URL = 'https://altair.example.com/.well-known/webfinger'
 WEBFINGER_URL = WEBFINGER_BASE_URL + '?resource={}'
 WEBFINGER_MIME_TYPE = 'application/jrd+json; charset=utf-8'
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 class TestWebfinger(TestCase):
 

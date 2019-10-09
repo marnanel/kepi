@@ -1,7 +1,7 @@
-from django_kepi.create import create
-from django_kepi.validation import IncomingMessage, validate
-from django_kepi.models import AcObject, AcActor
-from django_kepi.utils import as_json
+from chapeau.kepi.create import create
+from chapeau.kepi.validation import IncomingMessage, validate
+from chapeau.kepi.models import AcObject, AcActor
+from chapeau.kepi.utils import as_json
 from django.conf import settings
 import django.test
 import httpretty
@@ -33,7 +33,7 @@ PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
 
 CONTEXT_URL = "https://www.w3.org/ns/activitystreams"
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 def create_local_person(name='jemima',
         load_default_keys_from='tests/keys/keys-0003.json',
@@ -368,7 +368,7 @@ def remote_user(url, name,
 
 def remote_object_is_recorded(url):
 
-    from django_kepi.models import AcObject
+    from chapeau.kepi.models import AcObject
 
     try:
         result = AcObject.objects.get(id=url)

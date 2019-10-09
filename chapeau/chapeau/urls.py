@@ -1,15 +1,15 @@
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf.urls.static import static
-import django_kepi.urls
-import trilby_api.urls
+import chapeau.kepi.urls
+import chapeau.trilby_api.urls
 from . import settings
 
 urlpatterns = [
         path(r'admin/', admin.site.urls),
-        # path('', kepi.views.FrontPageView.as_view()), # or something
-        path(r'', include(django_kepi.urls)),
-        path(r'', include(trilby_api.urls)),
+        # path('', chapeau.tophat_ui.views.FrontPageView.as_view()), # or something
+        path(r'', include(chapeau.kepi.urls)),
+        path(r'', include(chapeau.trilby_api.urls)),
 ]
 
 if settings.DEBUG:

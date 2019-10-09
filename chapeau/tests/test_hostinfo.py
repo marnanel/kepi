@@ -6,7 +6,7 @@ import json
 HOST_META_URL = 'https://altair.example.com/.well-known/host-meta'
 HOST_META_MIME_TYPE = 'application/xrd+xml'
 
-logger = logging.getLogger(name='django_kepi')
+logger = logging.getLogger(name='chapeau')
 
 class TestHostMeta(TestCase):
 
