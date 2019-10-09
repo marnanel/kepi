@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from . import acobject
-import chapeau.kepi.crypto
+import chapeau.kepi.crypto as crypto
 import logging
 import re
 
@@ -84,7 +84,7 @@ class AcActor(acobject.AcObject):
                 logger.info('%s: generating key pair.',
                         self.url)
 
-                key = kepi.crypto.Key()
+                key = crypto.Key()
                 self.privateKey = key.private_as_pem()
                 self.f_publicKey = key.public_as_pem()
                 self.save()

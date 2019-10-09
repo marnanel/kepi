@@ -38,7 +38,7 @@ class TestDelivery(TestCase):
 
     def _set_up_remote_user_mocks(self):
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
 
         create_remote_person(
                 url = REMOTE_FRED,
@@ -86,7 +86,7 @@ class TestDelivery(TestCase):
 
     def _set_up_local_user_mocks(self):
 
-        keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0002.json', 'r'))
 
         # I know these aren't mocks. This is just for consistency.
         create_local_person(name='alice',

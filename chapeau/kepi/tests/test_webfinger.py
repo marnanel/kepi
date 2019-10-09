@@ -13,7 +13,7 @@ logger = logging.getLogger(name='chapeau')
 class TestWebfinger(TestCase):
 
     def setUp(self):
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
 
         create_local_person(
                 name='alice',

@@ -37,7 +37,7 @@ class TestValidationTasks(TestCase):
     @httpretty.activate
     def test_local_lookup(self):
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
 
         alice = create_local_person(
                 name = 'alice',
@@ -67,7 +67,7 @@ class TestValidationTasks(TestCase):
     @httpretty.activate
     def test_remote_user_known(self):
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
         fetched = {
                 'fred': False,
                 }
@@ -108,8 +108,8 @@ class TestValidationTasks(TestCase):
     @httpretty.activate
     def test_remote_user_spoofed(self):
 
-        keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
-        keys2 = json.load(open('tests/keys/keys-0002.json', 'r'))
+        keys1 = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
+        keys2 = json.load(open('chapeau/kepi/tests/keys/keys-0002.json', 'r'))
 
         fetched = {
                 'fred': False,
@@ -153,7 +153,7 @@ class TestValidationTasks(TestCase):
     @httpretty.activate
     def test_remote_user_gone(self):
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
         fetched = {
                 'fred': False,
                 }
@@ -190,7 +190,7 @@ class TestValidationTasks(TestCase):
     @httpretty.activate
     def test_remote_user_unknown(self):
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
         fetched = {
                 'fred': False,
                 }

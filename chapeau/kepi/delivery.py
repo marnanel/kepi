@@ -403,8 +403,8 @@ def deliver(
     """
 
     try:
-        activity = kepi.models.AcActivity.objects.get(id=activity_id)
-    except kepi.models.AcActivity.DoesNotExist:
+        activity = chapeau.kepi.models.AcActivity.objects.get(id=activity_id)
+    except chapeau.kepi.models.AcActivity.DoesNotExist:
         logger.warn("Can't deliver activity %s because it doesn't exist",
                 activity_id)
         return None

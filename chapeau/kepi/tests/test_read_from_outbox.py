@@ -126,7 +126,7 @@ class TestOutbox(TestCase):
             what):
 
         if not hasattr(self, '_example_user'):
-            keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+            keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
 
             alice = create_local_person(
                     name='alice',

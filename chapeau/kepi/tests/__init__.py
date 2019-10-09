@@ -36,7 +36,7 @@ CONTEXT_URL = "https://www.w3.org/ns/activitystreams"
 logger = logging.getLogger(name='chapeau')
 
 def create_local_person(name='jemima',
-        load_default_keys_from='tests/keys/keys-0003.json',
+        load_default_keys_from='chapeau/kepi/tests/keys/keys-0003.json',
         **kwargs):
 
     if 'publicKey' or 'privateKey' not in kwargs:
