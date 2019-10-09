@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import TrilbyUser, Status, Visibility
+from .models import TrilbyUser
+from chapeau.kepi.models import AcItem
+from chapeau.kepi.create import create
 from oauth2_provider.models import Application
 
 #########################################
@@ -94,7 +96,7 @@ class UserSerializerWithSource(UserSerializer):
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Status
+        model = AcItem
         fields = ('id', 'url', 'uri',
                 'account',
                 'in_reply_to_id',
@@ -126,7 +128,7 @@ class StatusSerializer(serializers.ModelSerializer):
         posted_by = self.context['request'].user
         validated_data['posted_by'] = posted_by
 
-        result = Status.objects.create(**validated_data)
+        result = create(value=validated_data)
         return result
 
     id = serializers.IntegerField(
@@ -147,7 +149,7 @@ class StatusSerializer(serializers.ModelSerializer):
             read_only = True)
 
     in_reply_to_id = serializers.PrimaryKeyRelatedField(
-            queryset=Status.objects.all,
+            queryset=AcItem.objects.all,
             required = False)
 
     url = serializers.URLField(
@@ -175,32 +177,3 @@ class StatusSerializer(serializers.ModelSerializer):
     idempotency_key = serializers.CharField(
             write_only = True,
             required = False)
-
-#########################################
-
-class WebfingerSerializer(serializers.ModelSerializer):
-
-    # XXX need read_only=True
-
-    class Meta:
-        model = TrilbyUser
-        fields = [
-                'subject',
-                'aliases',
-                'links',
-                ]
-
-    def get_subject(self, instance):
-        return 'acct:{}'.format(instance.acct())
-
-    def get_aliases(self, instance):
-        return [
-                instance.profileURL(),
-                ]
-
-    def get_links(self, instance):
-        return instance.links()
-
-    subject = serializers.SerializerMethodField()
-    aliases = serializers.SerializerMethodField()
-    links = serializers.SerializerMethodField()

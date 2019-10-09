@@ -8,8 +8,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
-from .models import Status, TrilbyUser, Visibility, iso_date, MessageCapturer
+from .models import TrilbyUser
 from .serializers import *
+from chapeau.kepi.models import AcItem
 from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -71,7 +72,7 @@ class Verify_Credentials(generics.GenericAPIView):
 
 class Statuses(generics.ListCreateAPIView):
 
-    queryset = Status.objects.all()
+    queryset = AcItem.objects.all()
     serializer_class = StatusSerializer
 
 class AbstractTimeline(generics.ListAPIView):
@@ -160,12 +161,7 @@ class UserFeed(View):
 
 ########################################
 
-class FIXMEview(View):
-    pass
-
-########################################
-
-class UserActivityView(FIXMEview):
+class UserActivityView(View):
 
     permission_classes = ()
 
@@ -218,7 +214,7 @@ class UserActivityView(FIXMEview):
 
 ########################################
 
-class ActivityFollowingView(FIXMEview):
+class ActivityFollowingView(View):
 
     def get_collection_items(self, *args, **kwargs):
         kwargs['url'] = settings.KEPI.get('USER_URLS',
@@ -229,7 +225,7 @@ class ActivityFollowingView(FIXMEview):
     def _stringify_object(self, obj):
         return obj.following.url
 
-class ActivityFollowersView(FIXMEview):
+class ActivityFollowersView(View):
 
     def get_collection_items(self, *args, **kwargs):
         kwargs['url'] = settings.KEPI.get('USER_URLS',
@@ -240,7 +236,7 @@ class ActivityFollowersView(FIXMEview):
     def _stringify_object(self, obj):
         return obj.follower.url
 
-class ActivityOutboxView(FIXMEview):
+class ActivityOutboxView(View):
 
     def get_collection_items(self, *args, **kwargs):
         user = get_object_or_404(TrilbyUser, username=kwargs['username'])
@@ -287,118 +283,8 @@ class ActivityOutboxView(FIXMEview):
          ]
       }
 
-class FeaturedCollectionView(FIXMEview):
-
-    # I have no idea what this is, and it doesn't seem to be in the specs.
-    # But Mastodon expects it, so...
-
+class FeaturedCollectionView(View):
+    # FIXME
     def get_collection_items(self, *args, **kwargs):
         return Status.objects.none()
-
-########################################
-
-class Webfinger(generics.GenericAPIView):
-    """
-    RFC7033 webfinger support.
-    """
-
-    serializer_class = WebfingerSerializer
-    permission_classes = ()
-    renderer_classes = (JSONRenderer, )
-
-    def _get_body(self, request):
-
-        try:
-            user = request.GET['resource']
-        except MultiValueDictKeyError:
-            return HttpResponse(
-                    status = 400,
-                    reason = 'no resource for webfinger',
-                    content = 'no resource for webfinger',
-                    content_type = 'text/plain',
-                    )
-
-        # Generally, user resources should be prefaced with "acct:",
-        # per RFC7565. We support this, but we don't enforce it.
-        user = re.sub(r'^acct:', '', user)
-
-        if '@' not in user:
-            return HttpResponse(
-                    status = 404,
-                    reason = 'absolute name required',
-                    content = 'Please use the absolute form of the username.',
-                    content_type = 'text/plain',
-                    )
-
-        username, hostname = user.split('@', 2)
-
-        if hostname!=settings.KEPI['LOCAL_OBJECT_HOSTNAME']:
-            return HttpResponse(
-                    status = 404,
-                    reason = 'not this server',
-                    content = 'That user lives on another server.',
-                    content_type = 'text/plain',
-                    )
-
-        try:
-            queryset = TrilbyUser.objects.get(username=username)
-        except TrilbyUser.DoesNotExist:
-            return HttpResponse(
-                    status = 404,
-                    reason = 'no such user',
-                    content = 'We don\'t have a user with that name.',
-                    content_type = 'text/plain',
-                    )
-
-        serializer = self.serializer_class(queryset)
-        return Response(serializer.data,
-                content_type='application/jrd+json; charset=utf-8')
-
-    def get(self, request):
-        result = self._get_body(request)
-
-        result['Access-Control-Allow-Origin'] = '*'
-        return result
-
-########################################
-
-class HostMeta(View):
-
-    permission_classes = ()
-
-    def get(self, request):
-
-        context = {
-                'server_name': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-            }
-
-        result = render(
-                request=request,
-                template_name='host-meta.xml',
-                context=context,
-                content_type='application/jrd+xml',
-                )
-
-        return result
-
-########################################
-
-class MessageCapturingView(View):
-
-    def post(self, request, *args, **kwargs):
-
-        capture = MessageCapturer(
-                box = request.path,
-                content = str(request.body, encoding='UTF-8'),
-                headers = str(request.META),
-                )
-        capture.save()
-
-        return HttpResponse(
-                status = 200,
-                reason = 'Thank you',
-                content = '',
-                content_type = 'text/plain',
-                )
-
 

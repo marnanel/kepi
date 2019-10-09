@@ -47,6 +47,4 @@ class TrilbyUserAdmin(UserAdmin):
              )
 
 admin.site.register(models.TrilbyUser)
-admin.site.register(models.Status)
-admin.site.register(models.MessageCapturer)
 
