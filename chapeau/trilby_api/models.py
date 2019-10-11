@@ -49,3 +49,15 @@ class TrilbyUser(AbstractUser):
 
         super().save(*args, **kwargs)
 
+    def __getattr__(self, name):
+
+        # If people look up an attribute which isn't on
+        # this TrilbyUser, we pass it through to self.actor.
+        # self.actor is always an AcObject, and these
+        # allow lookup of arbitrary named values
+        # using subscript.
+
+        # If self.actor is None, we get AttributeError
+        # anyway (because getattr on None always raises it).
+
+        return self.actor[name]
