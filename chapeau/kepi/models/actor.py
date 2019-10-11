@@ -164,6 +164,27 @@ class AcActor(acobject.AcObject):
                         hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                         )
 
+            # Mastodon compatibility
+
+            elif name=='following_count':
+                return Following.objects.filter(
+                        follower=self.id,
+                        pending=False).count()
+            elif name=='followers_count':
+                return Following.objects.filter(
+                        following=self.id,
+                        pending=False).count()
+            elif name=='statuses_count':
+                return Collection.objects.get(
+                        owner__id = '@'+username,
+                        name = 'outbox').count()
+            elif name=='locked':
+                return False # TODO
+            elif name=='created_at':
+                return self.published
+            elif name=='note':
+                return self.f_summary
+
         if name=='publicKey':
             if not self.f_publicKey:
                 logger.debug('%s: we have no known public key',
