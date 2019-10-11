@@ -1,5 +1,5 @@
 from django.test import TestCase
-from tests import create_local_note, create_local_person
+from chapeau.kepi.tests import create_local_note, create_local_person
 from unittest import skip
 from chapeau.kepi.create import create
 from chapeau.kepi.models import *

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from unittest import skip
-from tests import *
+from chapeau.kepi.tests import *
 from chapeau.kepi.create import create
 from chapeau.kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from chapeau.kepi.models.mention import Mention
@@ -65,7 +65,7 @@ class TestInbox2(TestCase):
                 ]
 
         if recipientKeys is None:
-            recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
+            recipientKeys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
 
         if recipient is None:
             recipient = create_local_person(
@@ -75,7 +75,7 @@ class TestInbox2(TestCase):
                     )
 
         if senderKeys is None:
-            senderKeys = json.load(open('tests/keys/keys-0002.json', 'r'))
+            senderKeys = json.load(open('chapeau/kepi/tests/keys/keys-0002.json', 'r'))
 
         if sender is None:
             sender = create_remote_person(
@@ -163,7 +163,7 @@ class TestInbox2(TestCase):
 
     @httpretty.activate
     def test_sole_inbox(self):
-        recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        recipientKeys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
         recipient = create_local_person(
                 name = 'alice',
                 publicKey = recipientKeys['public'],
@@ -192,7 +192,7 @@ class TestInbox2(TestCase):
 
     @httpretty.activate
     def test_shared_inbox(self):
-        recipientKeys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        recipientKeys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
         recipient = create_local_person(
                 name = 'alice',
                 publicKey = recipientKeys['public'],

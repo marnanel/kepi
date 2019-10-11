@@ -1,5 +1,5 @@
 from django.test import TestCase
-from tests import create_local_note, create_local_person
+from chapeau.kepi.tests import create_local_note, create_local_person
 from chapeau.kepi.create import create
 from chapeau.kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from chapeau.kepi.models.mention import Mention

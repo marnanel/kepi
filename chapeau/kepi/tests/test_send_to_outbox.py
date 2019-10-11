@@ -1,6 +1,6 @@
 from django.test import TestCase
 from unittest import skip
-from tests import *
+from chapeau.kepi.tests import *
 from chapeau.kepi.create import create
 from chapeau.kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from chapeau.kepi.models.mention import Mention
@@ -63,7 +63,7 @@ class TestOutbox(TestCase):
             ):
 
         if keys is None:
-            keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+            keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
 
         if sender is None:
             sender = create_local_person(
@@ -163,7 +163,7 @@ class TestOutbox(TestCase):
 
     def test_post_by_remote_interloper(self):
 
-        keys = json.load(open('tests/keys/keys-0002.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0002.json', 'r'))
 
         sender = create_remote_person(
                 url = REMOTE_DAVE_ID,
@@ -190,8 +190,8 @@ class TestOutbox(TestCase):
 
     def test_post_by_local_interloper(self):
 
-        keys1 = json.load(open('tests/keys/keys-0001.json', 'r'))
-        keys2 = json.load(open('tests/keys/keys-0002.json', 'r'))
+        keys1 = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
+        keys2 = json.load(open('chapeau/kepi/tests/keys/keys-0002.json', 'r'))
 
         create_local_person(
                 name = 'alice',
@@ -344,7 +344,7 @@ class TestOutbox(TestCase):
 
         c = Client()
 
-        keys = json.load(open('tests/keys/keys-0001.json', 'r'))
+        keys = json.load(open('chapeau/kepi/tests/keys/keys-0001.json', 'r'))
 
         alice = create_local_person(
                 name = 'alice',
