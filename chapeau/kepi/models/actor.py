@@ -144,20 +144,14 @@ class AcActor(acobject.AcObject):
                 return self.id[1:]
             elif name=='url':
                 return self.url
-            elif name=='icon':
+            elif name in ['icon', 'avatar', 'avatar_static']:
                 return 'https://%(hostname)s/static/defaults/avatar_0.jpg' % {
                     'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                     }
-            elif name=='header':
+            elif name in ['header', 'header_static']:
                 return 'https://%(hostname)s/static/defaults/header.jpg' % {
                     'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                     }
-            elif name=='email':
-                # FIXME this is not really the email address!
-                return '{}@{}'.format(
-                        self.id[1:],
-                        settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                        )
             elif name=='feedURL':
                 return settings.KEPI['USER_FEED_URLS'].format(
                         username = self.id[1:],
@@ -184,6 +178,15 @@ class AcActor(acobject.AcObject):
                 return self.published
             elif name=='note':
                 return self.f_summary
+            elif name=='acct':
+                return self.url
+            elif name=='display_name':
+                return self.f_name
+            elif name=='email':
+                raise AttributeError("AcActor doesn't know the "+\
+                    "email address. That's TrilbyUser's problem.")
+            elif name=='moved_to':
+                return None # for now, anyway
 
         if name=='publicKey':
             if not self.f_publicKey:
