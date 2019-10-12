@@ -49,6 +49,10 @@ class TrilbyUser(AbstractUser):
 
         super().save(*args, **kwargs)
 
+    @property
+    def acct(self):
+        return self.actor.url
+
     def __getattr__(self, name):
 
         # If people look up an attribute which isn't on
