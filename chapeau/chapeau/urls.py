@@ -5,10 +5,13 @@ from django.contrib.auth import views as auth_views
 import oauth2_provider.views as oauth2_views
 import chapeau.kepi.urls
 import chapeau.trilby_api.urls
+from chapeau.trilby_api.views import fix_oauth2_redirects
 from . import settings
 
 ##################################
 # OAuth2 provider endpoints
+
+fix_oauth2_redirects()
 
 oauth2_endpoint_views = [
     path('authorize', oauth2_views.AuthorizationView.as_view(), name="authorize"),

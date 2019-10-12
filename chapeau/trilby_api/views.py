@@ -10,14 +10,16 @@ from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
 from .models import TrilbyUser
 from .serializers import *
-from chapeau.kepi.models import AcItem
 from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+import logging
 import chapeau.kepi.models as kepi_models
 import json
 import re
+
+logger = logging.Logger(name='chapeau')
 
 ###########################
 
@@ -40,6 +42,31 @@ class Instance(View):
 
 ###########################
 
+def fix_oauth2_redirects():
+    """
+    Called from chapeau.chapeau.urls to fix a silly oversight
+    in oauth2_provider. This isn't elegant.
+
+    oauth2_provider.http.OAuth2ResponseRedirect checks the
+    URL it's redirecting to, and raises DisallowedRedirect
+    if it's not a recognised protocol. But this breaks apps
+    like Tusky, which registers its own protocol with Android
+    and then redirects to that in order to bring itself
+    back once authentication's done.
+
+    There's no way to fix this as a user of that package.
+    Hence, we have to monkey-patch that class.
+    """
+
+    def fake_validate_redirect(not_self, redirect_to):
+        return True
+
+    from oauth2_provider.http import OAuth2ResponseRedirect as OA2RR
+    OA2RR.validate_redirect = fake_validate_redirect
+    logger.info("Monkey-patched %s.", OA2RR)
+
+###########################
+
 class Apps(View):
 
     def post(self, request, *args, **kwargs):
@@ -47,8 +74,8 @@ class Apps(View):
         new_app = Application(
             name = request.POST['client_name'],
             redirect_uris = request.POST['redirect_uris'],
-            client_type = 'confidential', # ?
-            authorization_grant_type = 'password',
+            client_type = 'confidential',
+            authorization_grant_type = 'authorization-code',
             user = None, # don't need to be logged in
             )
 
@@ -72,19 +99,21 @@ class Verify_Credentials(generics.GenericAPIView):
 
 class Statuses(generics.ListCreateAPIView):
 
-    queryset = AcItem.objects.all()
+    queryset = kepi_models.AcItem.objects.all()
     serializer_class = StatusSerializer
 
 class AbstractTimeline(generics.ListAPIView):
 
     serializer_class = StatusSerializer
-    permission_classes = ()
+    permission_classes = [
+            'rest_framework.permissions.IsAuthenticated',
+            ]
 
-    def get_queryset(self):
-        raise RuntimeError("cannot query abstract timeline")
+    def get_queryset(self, request):
+        raise NotImplementedError("cannot query abstract timeline")
 
     def list(self, request):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset(request)
         serializer = self.serializer_class(queryset,
                 many = True,
                 context = {
@@ -96,8 +125,17 @@ class PublicTimeline(AbstractTimeline):
 
     permission_classes = ()
 
-    def get_queryset(self):
-        return Status.objects.filter(visibility=Visibility('public').name)
+    def get_queryset(self, request):
+        return AcItem.objects.filter(visibility=Visibility('public').name)
+
+class HomeTimeline(AbstractTimeline):
+
+    permission_classes = ()
+
+    def get_queryset(self, request):
+        return kepi_models.Collection.get(
+                user = request.user.actor,
+                collection = 'inbox').members
 
 ########################################
 

@@ -94,7 +94,6 @@ class UserSerializerWithSource(UserSerializer):
                 'note': instance.note,
                 }
 
-
 #########################################
 
 class StatusSerializer(serializers.ModelSerializer):
