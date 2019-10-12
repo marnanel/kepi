@@ -48,36 +48,27 @@ class Collection(models.Model):
     # instead of just name here
 
     @classmethod
-    def get(cls, name,
+    def get(cls,
+            user,
+            collection,
             create_if_missing=True):
+        """
+        Returns a particular Collection.
 
-        from chapeau.kepi.models.actor import AcActor
+        If the named collection does not exist,
+        and if create_if_missing is True (the default),
+        then an empty collection of that name will be created and returned.
 
-        try:
-            username, collectionname = name.split('/')
-        except ValueError:
-            logger.info('collection id in wrong format: %s',
-                    name)
-            raise ValueError('Format of name is "username/collectionname": %s',
-                    name)
+        Otherwise, we raise KeyError.
+        """
 
-        logger.debug('Finding collection %s/%s',
-                username, collectionname)
-
-        try:
-            owner = AcActor.objects.get(
-                    id = '@'+username,
-                    )
-        except AcActor.DoesNotExist:
-            logger.info("  -- can't get %s because %s doesn't exist",
-                    name, username,
-                    )
-            raise KeyError(name)
+        logger.debug('Finding collection "%s" for %s',
+                collection, user.id)
 
         try:
             result = cls.objects.get(
-                    owner = owner,
-                    name = collectionname,
+                    owner = user,
+                    name = collection,
                     )
             logger.debug('  -- found %s', result)
 
@@ -88,8 +79,8 @@ class Collection(models.Model):
             if create_if_missing:
 
                 newCollection = cls(
-                        owner = owner,
-                        name = collectionname,
+                        owner = user,
+                        name = collection,
                         )
                 newCollection.save()
                 logger.debug('  -- not found; created %s',
@@ -99,7 +90,7 @@ class Collection(models.Model):
 
             else:
                 logger.debug(' -- not found')
-                raise KeyError(name)
+                raise KeyError(collection)
 
     @classmethod
     def build_name(cls,
@@ -126,12 +117,10 @@ class Collection(models.Model):
         return '%s/%s' % (username, collectionname)
 
     @property
-    def contents(self):
-        # FIXME make a property "members" which
-        # dereferences each member properly
+    def members(self):
         return CollectionMember.objects.filter(
                 parent = self,
-                )
+                ).select_related('member')
 
 class CollectionMember(models.Model):
 

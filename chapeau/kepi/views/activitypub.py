@@ -317,9 +317,6 @@ class ActorView(ThingView):
 
         self._username = kwargs['username']
 
-        logger.debug('Looking up Actor by username==%s',
-                kwargs['username'])
-
         try:
             activity_object = AcActor.objects.get(
                     id='@'+kwargs['username'],
@@ -341,18 +338,18 @@ class ActorView(ThingView):
 
         from chapeau.kepi.models.collection import Collection
 
-        inbox_name = Collection.build_name(
-                username = kwargs['username'],
-                collectionname = 'inbox',
+        user = AcActor.objects.get(
+                id='@'+kwargs['username'],
                 )
 
         inbox = Collection.get(
-                name = inbox_name,
+                user = user,
+                collection = 'inbox',
                 create_if_missing = True,
                 )
 
-        logger.debug('%s: storing %s',
-                inbox_name, request.activity)
+        logger.debug('%s: inbox: storing %s',
+                user.id, request.activity)
 
         inbox.append(request.activity)
 
