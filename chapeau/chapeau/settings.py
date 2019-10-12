@@ -26,7 +26,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'chapeau.wsgi.application'
+WSGI_APPLICATION = 'chapeau.chapeau.wsgi.application'
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
