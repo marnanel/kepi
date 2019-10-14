@@ -1,50 +1,26 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-import chapeau.trilby_api.models as models
+import chapeau.trilby_api.forms as trilby_forms
+import chapeau.trilby_api.models as trilby_models
+from chapeau.kepi.create import create
 
-class TrilbyUserChangeForm(UserChangeForm):
-    class Meta(UserChangeForm.Meta):
-        model = models.TrilbyUser
-
-class TrilbyUserCreationForm(UserCreationForm):
-    class Meta(UserCreationForm.Meta):
-        model = models.TrilbyUser
-        fields = UserCreationForm.Meta.fields + (
-                'email',
-                )
-
+@admin.register(trilby_models.TrilbyUser)
 class TrilbyUserAdmin(UserAdmin):
+    pass
 
-    form = TrilbyUserChangeForm
-    add_form = TrilbyUserCreationForm
+#    form = trilby_forms.UserForm
 
-    add_fieldsets = UserAdmin.add_fieldsets + (
-            (None, {
-                'classes': 'wide',
-                'fields': (
-                    'email',
-                    ),
-                }),
-            )
+    def save_model(self, request, obj, form, change):
 
-    fieldsets = UserAdmin.fieldsets + (
-            (None, {
-                'fields': (
-                    '_avatar',
-                    '_header',
-                    'locked',
-                    'note',
-                    'linked_url',
-                    'moved_to',
-                    ),
-                }),
-            ('Relationships', {
-                'fields': (
-                    ('following', 'blocking',), 
-                    ),
-                }),
-             )
+        if not change:
+            actor = {
+                    'id': '@'+obj.get_username(),
+                    'type': 'Person',
+                    }
 
-admin.site.register(models.TrilbyUser)
+            obj.actor = create(
+                    value=actor,
+                    )
 
+        super().save_model(request, obj, form, change)
