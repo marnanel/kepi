@@ -1,235 +1,337 @@
 [
+
+
 {
-    "model": "trilby_api.user",
-    "pk": 2,
-    "fields": {
-        "actor_id": null,
-        "password": "pbkdf2_sha256$100000$M0AKN3AhuYDH$Z//LMtbDAcvI5MQ6UXlbOvVP32K+sqKN8R1s9uvmiD0=",
-        "last_login": null,
-        "is_superuser": true,
-        "first_name": "Alice",
-        "last_name": "Test",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2018-05-28T14:18:21Z",
-        "username": "alice",
-        "email": "alice@example.com",
-        "display_name": "Alice Test",
-        "locked": false,
-        "note": "We'll see how deep the rabbithole really goes.",
-        "linked_url": "https://example.com/people/alice",
-        "moved_to": "",
-        "_avatar": "/static/testing/alice.jpg",
-        "_header": "/static/defaults/_header.jpg",
-        "public_key": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJtAZt9hgB/7bNozWtv9Er+Pnf\num97oM8cxRlqRqUXZk0wuST9A0eY5EUsN8j3qc6msZjDPSDQELr/U/o+zJLp/B8s\n7x3iHAHGD4LcQ9AbyDqbhX9JZkmwGx6PIVmbMDANmppqLik36V7cov6BuHz1gFpD\nP+iPjem4mph/KLwugQIDAQAB\n-----END PUBLIC KEY-----",
-        "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXwIBAAKBgQDJtAZt9hgB/7bNozWtv9Er+Pnfum97oM8cxRlqRqUXZk0wuST9\nA0eY5EUsN8j3qc6msZjDPSDQELr/U/o+zJLp/B8s7x3iHAHGD4LcQ9AbyDqbhX9J\nZkmwGx6PIVmbMDANmppqLik36V7cov6BuHz1gFpDP+iPjem4mph/KLwugQIDAQAB\nAoGBAI6sRaQAYCkBzTeWC8E0HmwhN/Z2NKdZL0clb/3JrLtphI5DWBOT/0/5n6hQ\naVouBdvJYcowcgZa3zr+FtPW9s9EKswd4M6VEg7Kb7yvd7iD+6Hl/KY5YkpRutJF\nZVBt20iJi3xi+5D0BvMImD3nE/Zl2MgAJWIBlRywfDOuKS7BAkEA4hIoq0RAbSgf\nVBzzWucpZa4o2Ll35tG9X5zQSmEjWuuIxipsiwcuyHURTEG+45TU/AasyDTvqqm6\nHhG4Z9SpaQJBAORoAzTfuF6Z7I3THSDLQjqWiE10K0qSkrcPf7fMlTdzheQdhS5T\nA4liwuAkpoRKxpvBw+OvCkgaqr34+Oqo4VkCQQC19kPBxofM1HSS8VJ3IoTRkOLT\nvkTiBoPUx5VnqNQaRGasik0fgkKHmqK3rFuHNq5PxNehteoKhd6GgWDaQfOxAkEA\n1KV9rsFGrlSR5qyRJtH11AQH3Ex2bZQuod39I0qF9b1I/0r4jltdJJBdLD8TBIF1\njNeGH7j8Uor5QarFW/tk6QJBAMEYab7c1YTagny4nrKoddPfNyjUF2a7HNHTnCQn\nrbOt963SPr1/dv602FwOzKHAWVw401PfaHWkclEROZTwwEc=\n-----END RSA PRIVATE KEY-----",
-        "default_sensitive": false,
-        "default_visibility": "P",
-        "groups": [],
-        "user_permissions": []
-    }
+  "model": "trilby_api.trilbyuser",
+  "fields": {
+    "password": "pbkdf2_sha256$150000$8QTgpKEqbKjp$ajWTXqX1zFv59JutguiX446KeEAOnQQUnW/7blN78u4=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "alice",
+    "first_name": "",
+    "last_name": "",
+    "email": "alice@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2019-10-14T20:10:09.636Z",
+    "actor": "@alice",
+    "groups": [],
+    "user_permissions": []
+  }
 },
 {
-    "model": "trilby_api.user",
-    "pk": 3,
-    "fields": {
-        "actor_id": null,
-        "password": "pbkdf2_sha256$100000$Z9PA4XcXjlUq$wvgaInG9H7kLeU8mYt0LPVSEP5ZNcH8sUJiFq9CU5Ro=",
-        "last_login": null,
-        "is_superuser": false,
-        "first_name": "Bob",
-        "last_name": "Test",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-05-28T14:20:04Z",
-        "username": "bob",
-        "email": "bob@example.com",
-        "display_name": "Bob Test",
-        "locked": false,
-        "note": "Short for Bob.",
-        "linked_url": "https://example.com/people/bob",
-        "moved_to": "",
-        "_avatar": "/static/testing/bob.jpg",
-        "_header": "/static/defaults/_header.jpg",
-        "public_key": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDPPJ6uNXzpocC9Z1rue3sgZl/W\nnYHjbtkfQCUpdV9lgmtbOgpZrQos5sIB5QxUx+yRAXmdSRsD2q1Kaeeew5T+pv3h\nJKH4XMNZd2mZf1KAuHjPFBjCRGMUwdEEozSy8ZpDAg+jQ2ro8E7wgZ+wsYatSLbQ\n9SIkceGWqxyhabyIqwIDAQAB\n-----END PUBLIC KEY-----",
-        "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXgIBAAKBgQDPPJ6uNXzpocC9Z1rue3sgZl/WnYHjbtkfQCUpdV9lgmtbOgpZ\nrQos5sIB5QxUx+yRAXmdSRsD2q1Kaeeew5T+pv3hJKH4XMNZd2mZf1KAuHjPFBjC\nRGMUwdEEozSy8ZpDAg+jQ2ro8E7wgZ+wsYatSLbQ9SIkceGWqxyhabyIqwIDAQAB\nAoGBAMMfZqDMh+JKhHlROVLWPOYSviYKg2Oq2RANi2/vrXScSYzJpzksLip80yqJ\niQTCgME/TEyFqsQEP6mS8ZyQtlUjoz8j6q/9TFvQrWWHRNgiD9bdXFQr0+F9kxr9\nhdm1h7F5Q0JTGCPwBmL8GXCO8KmbZUMejITNqsIxx3bvzUoRAkEA1Eul1Mwkb/6C\ncBuG0TPfXwluWdzS37XY+ckuQqgA5Jhj+vQTWbGovA/99W5GHHWsHJwGwcqqJJet\nc4slKN3GBwJBAPnmXpAO1NiQMlIVohTfjCusypsSiHJXocigJG/DeEuMIHUJebuH\nr6M7D2ENk7xh/kr3qA6369WokYT+K5Bqnz0CQQDPvApUVUIeeNwoWTcuBOVBeNgL\nhOKv16Cuo6bpwL3G8jt7OFSrAwZKqBdojvR6Ksc045RVEzw0PFuU4YaGG6UHAkBZ\nQ9LvfnzFRuzSqWuWLSwyxawxrHMU9PyTX7DkQ1yLD+jgJZxYQmWY1xXtQx5Momxl\ndwWPDF+vmGEysl/5XDy5AkEAwbbjj3YstPYPnBsAbI0XYHfXxu7aZ+bwPNtH48r3\n3YPAqM+HO0i2ffHjMJCYfbttWiRJRFVHyp3QO/Wtww4DQQ==\n-----END RSA PRIVATE KEY-----",
-        "default_sensitive": false,
-        "default_visibility": "P",
-        "groups": [],
-        "user_permissions": []
-    }
+  "model": "kepi.acobject",
+  "pk": "@alice",
+  "fields": {
+    "polymorphic_ctype": 48,
+    "published": "2019-10-14T20:10:09.834Z",
+    "updated": "2019-10-16T16:45:19.575Z"
+  }
 },
 {
-    "model": "trilby_api.user",
-    "pk": 4,
-    "fields": {
-        "actor_id": null,
-        "password": "pbkdf2_sha256$100000$ufg0BY5asyK7$Qj4spNJu2CyR+jcdbO9kYJOZ7oqEQaErM4A//UuhZnc=",
-        "last_login": null,
-        "is_superuser": false,
-        "first_name": "Carol",
-        "last_name": "Test",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-05-28T14:21:04Z",
-        "username": "carol",
-        "email": "carol@example.com",
-        "display_name": "Carol Test",
-        "locked": false,
-        "note": "Every star shall sing a Carol.",
-        "linked_url": "https://example.com/people/carol",
-        "moved_to": "",
-        "_avatar": "/static/testing/carol.jpg",
-        "_header": "/static/defaults/_header.jpg",
-        "public_key": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCsGqRZbZV2nljTOW2b77fzpkx9\n+iqcNgEnlhdgSIjCPvhzwj6cb0O5RVqPu6krvv+Dgiy89Mb0nregdOstUXzn40Yi\ncg1OOHMitrpAQ+4MsotqspfFZF/Q9qSFom3PxDA55lIHYJJmusVM6bSlrdY8msAs\nL1BieW7065gtjzv6RQIDAQAB\n-----END PUBLIC KEY-----",
-        "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCsGqRZbZV2nljTOW2b77fzpkx9+iqcNgEnlhdgSIjCPvhzwj6c\nb0O5RVqPu6krvv+Dgiy89Mb0nregdOstUXzn40Yicg1OOHMitrpAQ+4MsotqspfF\nZF/Q9qSFom3PxDA55lIHYJJmusVM6bSlrdY8msAsL1BieW7065gtjzv6RQIDAQAB\nAoGACURx/yLIfpeuPsmD3na9GBCnY805yCmcTE5nudaODq+nX0xhZLkVE3/pjX3U\ncTeauLEkyZQAtqFpT+mb1Ffj+t3exqK68k7UwCUI23Gtbr5dRUOivWuN75Sf4xFo\n7vQeSwIot/1PyU7JYXZ9Tq9WMBHcFocCdxu85QSBS40cPIECQQC60bIlj+bN7fvU\nHoPyQbj1vfjbz6vcoeR6v+YGCiSFrzawOEuJ1xUC7c/uivgJUvKumhrOFfwLac+1\nZay2t7khAkEA69X4ft06mfVNo1oM8ly33CO5TKlpFlVPBxEdKMHyZ2ZO1vIK6DsF\nN67YwYI9OoncTvBucZ+Dy2GU0xUeqtSopQJANhtnsjNUUI49onjYFEDutdW4jsk9\n6F/HEbokf9lOLJ3LhAw57Ikrn7aKw3biUakBeopNeySo5BFYRBxXgnABoQJBANlf\nMVoNo1QAy/zCpahGWZlovASzKY9SNjM3TP8iNMGlhQmNswv2SorWeCd0Wec45n1E\nEyhbdOjjGn+sucWPmZkCQD8ekBtzToRvNZjocFJhZdcWMIAo96XsnTAxREKSmbnG\npFHXBWokjDO/rTRbqANocLr0GwFR8UBD70CJLLOCaEg=\n-----END RSA PRIVATE KEY-----",
-        "default_sensitive": false,
-        "default_visibility": "P",
-        "groups": [],
-        "user_permissions": []
-    }
+  "model": "kepi.acactor",
+  "pk": "@alice",
+  "fields": {
+    "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIICWwIBAAKBgQDeDxrtPQDgoEpORMOX73vqXxyRbSDO/tdYMiJX4Eia1IJ/CW+l\nSc+NaM2ybjX7sFSqsrbtqUCT2eWcmCdYtkHZA0BRc+2q2c3WYJMoFxpxBB46Ep7o\nbDhal8Mhj4lOd7Wo4HYl1ehslE0PTLJgT6UR6ia5mtjFCowZEb2Kc8IGswIDAQAB\nAoGABK/QQ1gHtwtSJisyfTEBkcIDCgOeZ/x6h710eo2q9xNkfiaUuThA0U6xFEnL\n3v9Ha/isjNZ44+X7HIxyA7U0LW9N9ukUbFqnbBGaomqKDOKLOvqMvesXmhYj1zIS\njNCorHhxvpRFvgph6H+r8wBjIPbbByDB3PD0BDSkhEUkkLECQQDgO5X6kfHMYSM8\nA7tQG5izus1UQbhBXNZt2FfBhBjGiAEY3Oja3LDeUjId4Jdp3gK0ZbkR0O/x1REw\ngC3ZKwJLAkEA/YSup5C3zecrAUQN8hKhlhlmnXjsqpDbVzuf5BynIAJyf1Fc7w8r\n0p1Hc99VzQPdDrmfaR35TW2WmD+EO1kMOQJARKwa/5VIz0YEi3G9IQiCmLCiB6bk\n7ieniBaUsbBqAgtPArVNHxItnLjhnmLVHFggzezFZB5wDckqLYdkAzl3xwJAdwg8\nRRry4i9/Bqogbh+HVQV6I8fqPy+ifPPW3/EAG0xq3BKksu4JomsMaIBdNdRxj39i\nNKXJLyycP8Ha4U6vKQJAMMKBjGfJRSexAcAaNcP2Zwj4eMpT+QIrfVeYvfHeUT2T\njlbyBTMWuUDFGMjC7zfiRU2IOGoBoHKNR2nC2SWwEw==\n-----END RSA PRIVATE KEY-----",
+    "f_name": "Alice Test",
+    "f_publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDeDxrtPQDgoEpORMOX73vqXxyR\nbSDO/tdYMiJX4Eia1IJ/CW+lSc+NaM2ybjX7sFSqsrbtqUCT2eWcmCdYtkHZA0BR\nc+2q2c3WYJMoFxpxBB46Ep7obDhal8Mhj4lOd7Wo4HYl1ehslE0PTLJgT6UR6ia5\nmtjFCowZEb2Kc8IGswIDAQAB\n-----END PUBLIC KEY-----",
+    "auto_follow": true,
+    "f_summary": "We'll see how deep the rabbithole really goes.",
+    "icon": "/static/testing/alice.jpg",
+    "header": "/static/testing/_header.jpg"
+  }
 },
 {
-    "model": "trilby_api.user",
-    "pk": 5,
-    "fields": {
-        "actor_id": null,
-        "password": "pbkdf2_sha256$100000$RUkxP556EAlO$IqiRKEAjs0AxQebO3ohhnGP9mQCf47LxjmW3V0j7gG8=",
-        "last_login": "2018-07-27T20:51:33.666Z",
-        "is_superuser": true,
-        "first_name": "",
-        "last_name": "",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2018-07-10T19:12:50.728Z",
-        "username": "marnanel",
-        "email": "marnanel@thurman.org.uk",
-        "display_name": "",
-        "locked": false,
-        "note": "",
-        "linked_url": "",
-        "moved_to": "",
-        "_avatar": "",
-        "_header": "",
-        "public_key": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDIUCqW/lyJ9eWkqvE7wpmHacu9\nXOOSWZsx/+B2MM/xQYpUUIMZ3cyI3yMSOa3MS14wMBWdxlWNIMF7gVKHO6L9Ppns\nBfTLbe/QMcssQ5rHv9oAMy/hWHGyaES3vbxzqT2qMxI5bIJRpOJfDlTpAY5AVqrn\n8sYx/1XA9YJOKFkQIQIDAQAB\n-----END PUBLIC KEY-----",
-        "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXQIBAAKBgQDIUCqW/lyJ9eWkqvE7wpmHacu9XOOSWZsx/+B2MM/xQYpUUIMZ\n3cyI3yMSOa3MS14wMBWdxlWNIMF7gVKHO6L9PpnsBfTLbe/QMcssQ5rHv9oAMy/h\nWHGyaES3vbxzqT2qMxI5bIJRpOJfDlTpAY5AVqrn8sYx/1XA9YJOKFkQIQIDAQAB\nAoGAb5YY45w2uLO+hYikcYHqPMD2ujowm6pHBgdgZvayH9c+09E19wbTlbuXseNn\nqdKiWX2vzQBbUA7bOY3FB4h1NllyJlusNGcfdiz8zoW0gYl7pPJ2bUQrKjYO/fVV\ndvKqcdgy8Vsh8XQa1deAAauoAz5z6lqRvMgpFpDv9XQFGjECQQDcgKr8K6Yp1C+F\nt+NqOLvD168zEJiutxNtknl8jocntuNEfzkyDGF8OMEsVqsmXdffxs8mnkJZUJo3\nbrfMVlGTAkEA6I9z0lDJzdsUHgQdGov8H3t4Mp05YuczoOdzi3TNAaSW1ofwVpkw\n79V/zFrLQHYBJNrHcGFUBXTgxmOmQ123+wJBANwu146Lf5dRPEsIftw43rYHD/mr\n3urIAWxu0UUhhbCQnYxuhgyF9Gp4udyuhqT/HGtmOMBVU+ef5v7nXj17DGUCQHH4\ny7RIr33ZXfSP44t9CySKqA92Cge0cxLqGzA/H7EsblfY6yoljVwcb7NA09dVfZ4I\nMjGbIUhDTV0svPDK3z0CQQC1f6idZlB5IfvIhsXrCJuFpK6iqwNrtfjn5GHuMUXe\n8yvE/7Cuz76dFSMnIUPmvdO4ZRfrd4lmC3tRnGzGqZz4\n-----END RSA PRIVATE KEY-----",
-        "default_sensitive": false,
-        "default_visibility": "P",
-        "groups": [],
-        "user_permissions": []
-    }
+  "model": "kepi.acperson",
+  "pk": "@alice",
+  "fields": {}
+},
+
+
+
+
+{
+  "model": "trilby_api.trilbyuser",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$150000$VHOAbPIlHVCu$3SHASQ8aydLjNcVL6ELW95vBb0EsXTAyaEEvKSCx3JM=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "bob",
+    "first_name": "",
+    "last_name": "",
+    "email": "bob@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2019-10-14T20:13:17.412Z",
+    "actor": "@bob",
+    "groups": [],
+    "user_permissions": []
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 3,
-    "fields": {
-        "posted_by": 2,
-        "content": "What's down the rabbit hole?",
-        "created_at": "2018-05-28T14:49:46.057Z",
-        "in_reply_to_id": null,
-        "sensitive": false,
-        "spoiler_text": "",
-        "visibility": "X",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acobject",
+  "pk": "@bob",
+  "fields": {
+    "polymorphic_ctype": 48,
+    "published": "2019-10-14T20:10:09.834Z",
+    "updated": "2019-10-16T16:45:19.575Z"
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 4,
-    "fields": {
-        "posted_by": 2,
-        "content": "some pretty weird stuff tbh",
-        "created_at": "2018-05-28T14:50:19.294Z",
-        "in_reply_to_id": 3,
-        "sensitive": false,
-        "spoiler_text": "",
-        "visibility": "X",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acactor",
+  "pk": "@bob",
+  "fields": {
+    "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCZcj4cSNiugpeilwBg9ymKu6FQPKM86f1aGSdLGDkT5ABLrAea\n/FwkZGpwh0p/p9liIZmpEDPE2t05wXU7wLGQXCowmVzoM4WmEa+ZuvC5d17OR8JC\nn+okvPqzYiUDqv1jgVqERCtvHY5847yvD/b7F2cs6momttmqdt2CYdXF8wIDAQAB\nAoGAEUjmKDIoflfllCy69TFCSQdjtMcaguUUuI52zPsN4D4MWSR9YtRPM3uVkIFy\nPzj9ar7AMWQgK2pABfPTLIeYjgQRFi9iyA4mD6xJxGIAf2a590PIUMjvR/udLvkL\nX2bCwND1BT4ltCm5HfhM0hQ5DPR1mrTGMIZoYBAXnz4nMbECQQDDgDRv4uVo878t\nY2jIq0vIge6T+18yFur8/yANWVy1jR2VD9XkV8jXDwzujTYc5aUngOlUxNLO7J2a\n+r1bdHZLAkEAyO5t7wX0GiCbBGHOfmUk7wa9xfxLhZafumrBBD1SHDDi0EQ5ZtVc\nbrPJp1eL3sncBFENlCiGaQKdY71XUzXF+QJANtBQY3qDheypkolHzNOyWNKNWPJm\n231vf2Xsz7FZfBHH1I5vEynFxv6SSqRPIsUEjFHpmfnhfWD8Q4K/6s95hwJARrvg\nyXdAEn6N88H2rnouwVKPNgZ2E6YNvtNb9YEcyb3P6t9JkdDkhDgYcieYnqpTINXj\nwNdvUcJQ487A0hMpCQJBAJXhIoabiEv+vAGn/zkLI7+PSuujlE9JdPxjHWMSTHGy\na9N3F3pfSDMpRPOAVm/WtxXln+hGuZNZMUOu/2lkDEg=\n-----END RSA PRIVATE KEY-----",
+    "f_name": "Bob Test",
+    "f_publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCZcj4cSNiugpeilwBg9ymKu6FQ\nPKM86f1aGSdLGDkT5ABLrAea/FwkZGpwh0p/p9liIZmpEDPE2t05wXU7wLGQXCow\nmVzoM4WmEa+ZuvC5d17OR8JCn+okvPqzYiUDqv1jgVqERCtvHY5847yvD/b7F2cs\n6momttmqdt2CYdXF8wIDAQAB\n-----END PUBLIC KEY-----",
+    "auto_follow": true,
+    "f_summary": "Short for Bob.",
+    "icon": "/static/testing/bob.jpg",
+    "header": "/static/testing/_header.jpg"
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 5,
-    "fields": {
-        "posted_by": 2,
-        "content": "@bob@localhost Do you know anything about playing cards?",
-        "created_at": "2018-05-28T14:51:00.762Z",
-        "in_reply_to_id": null,
-        "sensitive": false,
-        "spoiler_text": "",
-        "visibility": "X",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acperson",
+  "pk": "@bob",
+  "fields": {}
+},
+
+
+
+
+{
+  "model": "trilby_api.trilbyuser",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$150000$MrqKnFk9LjUW$ioInWqPlX3sVtp9zn127JVd0yoeMhhdZtmk+M5o4IOI=",
+    "last_login": "2019-10-11T13:01:32.781Z",
+    "is_superuser": true,
+    "username": "carol",
+    "first_name": "",
+    "last_name": "",
+    "email": "carol@example.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2019-10-09T17:44:16.309Z",
+    "actor": "@carol",
+    "groups": [],
+    "user_permissions": []
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 6,
-    "fields": {
-        "posted_by": 3,
-        "content": "@alice@localhost No, why?",
-        "created_at": "2018-05-28T14:51:21.110Z",
-        "in_reply_to_id": 5,
-        "sensitive": false,
-        "spoiler_text": "",
-        "visibility": "P",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acobject",
+  "pk": "@carol",
+  "fields": {
+    "polymorphic_ctype": 48,
+    "published": "2019-10-14T20:10:09.834Z",
+    "updated": "2019-10-16T16:45:19.575Z"
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 7,
-    "fields": {
-        "posted_by": 2,
-        "content": "@bob@localhost er, asking for a friend?",
-        "created_at": "2018-05-28T14:51:50.689Z",
-        "in_reply_to_id": 6,
-        "sensitive": false,
-        "spoiler_text": "",
-        "visibility": "X",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acactor",
+  "pk": "@carol",
+  "fields": {
+    "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCVJ9rTVMvmQfE5gugY6CdLdubdluoBf9/mlPBDFKSj8rFRTDSx\nmF7GnkhLN/NuaDu5xzLEynIxEmTq3wYNSj0voF+U/foo2rnd85exx7qbacmGagYX\nbDrCbvz67m2p4GyQgksGy/9OjHlshwAOkswabUfhF6BVedwzz+EemqyZ9QIDAQAB\nAoGACq2OfyQaL8sHPa6HNqdCDuc9el4gNQjGSu/dLnQ3ICyS8KbDu/YUTOROeSIR\niZUpN3DRC+ERYT13n4/lU0S+EgN8YgBnsX+7VsTqyakK0s+Zza7RvLNL1bwCkSao\nY3lowJdZ9FeTXEsA6AXE129Z+eUP3ly5BxxZ3tETHFzUw/kCQQC12Dxdxj4Tp/PY\niskMwsqkLEv+2WtpFKBmJ1ozibjrZHu4XrB09b7PROr/YYa0WP8738mL929LyooZ\nf9fwIHQ5AkEA0fsJMUAMlYHvHI+8QaVrH6Nn3Rg1m13XSlzlgliv4xvOV1YqvegN\nhCXQMAm804cvmQlKmUQMA1G5s9++rr3rnQJANkJOSODVNwI/VVacBO2+j1wUVPfE\n//bCoZiOZqBqh/pUnD/MwSluhOQYhpkwG3IOvmvY9KWhFOlbaZ5m7WSRqQJAJgqF\nus9wuDFHAXSk1XvDcYLoES0OoSwaEdXMmpW4n7ts4XOx4J/GuxcipWFOPUAzhlUh\nl6y1RHCs5QJ3CC9OHQJBAJiYAsgJdHBOX1O6/N4yoGkp4U4ugSoN11DAPdLBzI7w\npaVg5SyP6nO9KMvq9CsTTJohidLqdokLgIuksF04yGg=\n-----END RSA PRIVATE KEY-----",
+    "f_name": "",
+    "f_publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVJ9rTVMvmQfE5gugY6CdLdubd\nluoBf9/mlPBDFKSj8rFRTDSxmF7GnkhLN/NuaDu5xzLEynIxEmTq3wYNSj0voF+U\n/foo2rnd85exx7qbacmGagYXbDrCbvz67m2p4GyQgksGy/9OjHlshwAOkswabUfh\nF6BVedwzz+EemqyZ9QIDAQAB\n-----END PUBLIC KEY-----",
+    "auto_follow": true,
+    "f_summary": "Every star shall sing a Carol.",
+    "icon": "/static/testing/carol.jpg",
+    "header": "/static/testing/_header.jpg"
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 8,
-    "fields": {
-        "posted_by": 3,
-        "content": "This is a private status...",
-        "created_at": "2018-05-28T14:52:31.913Z",
-        "in_reply_to_id": null,
-        "sensitive": false,
-        "spoiler_text": "",
-        "visibility": "X",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acperson",
+  "pk": "@carol",
+  "fields": {}
+},
+
+
+
+{
+  "model": "kepi.acobject",
+  "pk": "/a9d7569f",
+  "fields": {
+    "polymorphic_ctype": 45,
+    "published": "2019-10-16T16:46:10.691Z",
+    "updated": "2019-10-16T16:46:10.693Z"
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 9,
-    "fields": {
-        "posted_by": 3,
-        "content": "he comes back three days later",
-        "created_at": "2018-05-28T14:53:08.142Z",
-        "in_reply_to_id": null,
-        "sensitive": false,
-        "spoiler_text": "spoilers for Mark's gospel",
-        "visibility": "P",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acitem",
+  "pk": "/a9d7569f",
+  "fields": {
+    "f_content": "What's down the rabbit hole?",
+    "f_attributedTo": "@alice"
+  }
 },
 {
-    "model": "trilby_api.status",
-    "pk": 10,
-    "fields": {
-        "posted_by": 3,
-        "content": "This status is unlisted.",
-        "created_at": "2018-05-28T14:53:54.504Z",
-        "in_reply_to_id": null,
-        "sensitive": false,
-        "spoiler_text": "",
-        "visibility": "U",
-        "idempotency_key": ""
-    }
+  "model": "kepi.acnote",
+  "pk": "/a9d7569f",
+  "fields": {
+    "acitem_ptr": "/a9d7569f"
+  }
+},
+
+
+
+{
+  "model": "kepi.acobject",
+  "pk": "/a9d7569e",
+  "fields": {
+    "polymorphic_ctype": 45,
+    "published": "2019-10-16T16:46:10.691Z",
+    "updated": "2019-10-16T16:46:10.693Z"
+  }
+},
+{
+  "model": "kepi.acitem",
+  "pk": "/a9d7569e",
+  "fields": {
+    "f_content": "some pretty weird stuff tbh",
+    "f_attributedTo": "@alice"
+  }
+},
+{
+  "model": "kepi.acnote",
+  "pk": "/a9d7569e",
+  "fields": {
+    "acitem_ptr": "/a9d7569e"
+  }
+},
+
+
+{
+  "model": "kepi.acobject",
+  "pk": "/a9d7569d",
+  "fields": {
+    "polymorphic_ctype": 45,
+    "published": "2019-10-16T16:46:10.691Z",
+    "updated": "2019-10-16T16:46:10.693Z"
+  }
+},
+{
+  "model": "kepi.acitem",
+  "pk": "/a9d7569d",
+  "fields": {
+    "f_content": "@bob Do you know anything about playing cards?",
+    "f_attributedTo": "@alice"
+  }
+},
+{
+  "model": "kepi.acnote",
+  "pk": "/a9d7569d",
+  "fields": {
+    "acitem_ptr": "/a9d7569d"
+  }
+},
+
+
+
+
+{
+  "model": "kepi.acobject",
+  "pk": "/a9d7569c",
+  "fields": {
+    "polymorphic_ctype": 45,
+    "published": "2019-10-16T16:46:10.691Z",
+    "updated": "2019-10-16T16:46:10.693Z"
+  }
+},
+{
+  "model": "kepi.acitem",
+  "pk": "/a9d7569c",
+  "fields": {
+    "f_content": "@bob er, asking for a friend?",
+    "f_attributedTo": "@alice"
+  }
+},
+{
+  "model": "kepi.acnote",
+  "pk": "/a9d7569c",
+  "fields": {
+    "acitem_ptr": "/a9d7569c"
+  }
+},
+
+
+{
+  "model": "kepi.acobject",
+  "pk": "/a9d7569b",
+  "fields": {
+    "polymorphic_ctype": 45,
+    "published": "2019-10-16T16:46:10.691Z",
+    "updated": "2019-10-16T16:46:10.693Z"
+  }
+},
+{
+  "model": "kepi.acitem",
+  "pk": "/a9d7569b",
+  "fields": {
+    "f_content": "This is a private status.",
+    "f_attributedTo": "@carol"
+  }
+},
+{
+  "model": "kepi.acnote",
+  "pk": "/a9d7569b",
+  "fields": {
+    "acitem_ptr": "/a9d7569b"
+  }
+},
+
+
+{
+  "model": "kepi.acobject",
+  "pk": "/a9d7569a",
+  "fields": {
+    "polymorphic_ctype": 45,
+    "published": "2019-10-16T16:46:10.691Z",
+    "updated": "2019-10-16T16:46:10.693Z"
+  }
+},
+{
+  "model": "kepi.acitem",
+  "pk": "/a9d7569a",
+  "fields": {
+    "f_content": "he comes back three days later",
+    "f_attributedTo": "@carol"
+  }
+},
+{
+  "model": "kepi.acnote",
+  "pk": "/a9d7569a",
+  "fields": {
+    "acitem_ptr": "/a9d7569a"
+  }
+},
+
+
+
+{
+  "model": "kepi.acobject",
+  "pk": "/a9d75699",
+  "fields": {
+    "polymorphic_ctype": 45,
+    "published": "2019-10-16T16:46:10.691Z",
+    "updated": "2019-10-16T16:46:10.693Z"
+  }
+},
+{
+  "model": "kepi.acitem",
+  "pk": "/a9d75699",
+  "fields": {
+    "f_content": "This status is unlisted.",
+    "f_attributedTo": "@carol"
+  }
+},
+{
+  "model": "kepi.acnote",
+  "pk": "/a9d75699",
+  "fields": {
+    "acitem_ptr": "/a9d75699"
+  }
 }
 ]
 
