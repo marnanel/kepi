@@ -15,7 +15,4 @@ class TrilbyUser(AbstractUser):
             default=None,
             )
 
-    @property
-    def acct(self):
-        return self.actor.url
 
