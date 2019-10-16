@@ -12,19 +12,6 @@ the admin interface. It's not very elaborate yet.
 from django import forms
 import chapeau.kepi.models as kepi_models
 
-class PersonAdminForm(forms.ModelForm):
-
-    class Meta:
-        model = kepi_models.AcPerson
-
-        fields = [
-                'f_summary',
-                'icon',
-                'header',
-                'auto_follow',
-            ]
-
-
 class NoteAdminForm(forms.ModelForm):
 
     class Meta:

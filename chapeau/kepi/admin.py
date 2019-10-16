@@ -26,11 +26,6 @@ class ActivityAdmin(admin.ModelAdmin):
 
     base_model = AcActivity
 
-@admin.register(AcPerson)
-class PersonAdmin(admin.ModelAdmin):
-    form = kepi_forms.PersonAdminForm
-    base_model = AcPerson
-
 @admin.register(AcNote)
 class NoteAdmin(admin.ModelAdmin):
     form = kepi_forms.NoteAdminForm
