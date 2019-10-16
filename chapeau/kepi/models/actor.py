@@ -140,7 +140,7 @@ class AcActor(acobject.AcObject):
                 return self.list_url(name)
             elif name=='privateKey':
                 return self.privateKey
-            elif name=='preferredUsername':
+            elif name in ('preferredUsername', 'username'):
                 return self.id[1:]
             elif name=='url':
                 return self.url
