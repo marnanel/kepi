@@ -7,13 +7,29 @@ from chapeau.kepi.create import create
 
 @admin.register(trilby_models.TrilbyUser)
 class TrilbyUserAdmin(UserAdmin):
-    pass
 
-#    form = trilby_forms.UserForm
+    fieldsets = (
+            (None, {'fields': ('username', 'name', 'bio', 'email')}),
+            ('Images', {'fields': ('avatar', 'header')}),
+            )
+
+    form = trilby_forms.UserForm
 
     def save_model(self, request, obj, form, change):
 
-        if not change:
+        if change:
+
+            actor = obj.actor
+
+            for field, value in form.cleaned_data.items():
+                actor[field] = value
+
+            actor.save()
+
+        else:
+            # A new TrilbyUser.
+            # Create a new AcPerson and link them up.
+
             actor = {
                     'id': '@'+obj.get_username(),
                     'type': 'Person',
