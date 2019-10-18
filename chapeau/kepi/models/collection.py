@@ -44,9 +44,6 @@ class Collection(models.Model):
                 self.name,
                 )
 
-    # FIXME it ought to be possible to specify username and collectionname
-    # instead of just name here
-
     @classmethod
     def get(cls,
             user,
