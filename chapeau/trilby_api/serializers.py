@@ -22,7 +22,6 @@ class _VisibilityField(serializers.CharField):
 class UserSerializer(serializers.ModelSerializer):
 
     avatar = serializers.CharField(
-            source = 'avatar',
             read_only = True)
     header = serializers.CharField(
             read_only = True)
@@ -43,13 +42,13 @@ class UserSerializer(serializers.ModelSerializer):
     statuses_count = serializers.SerializerMethodField()
 
     def get_following_count(self, obj):
-        return obj.following.count()
+        return obj.actor['following_count']
 
     def get_followers_count(self, obj):
-        return obj.followers.count()
+        return obj.actor['followers_count']
 
     def get_statuses_count(self, obj):
-        return obj.statuses().count()
+        return obj.actor['statuses_count']
 
     class Meta:
         model = TrilbyUser

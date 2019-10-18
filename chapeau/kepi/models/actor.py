@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from . import acobject
+from . import acobject, following, collection
 import chapeau.kepi.crypto as crypto
 import logging
 import re
@@ -158,35 +158,20 @@ class AcActor(acobject.AcObject):
                         hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                         )
 
-            # Mastodon compatibility
-
             elif name=='following_count':
-                return Following.objects.filter(
+                return following.Following.objects.filter(
                         follower=self.id,
                         pending=False).count()
             elif name=='followers_count':
-                return Following.objects.filter(
+                return following.Following.objects.filter(
                         following=self.id,
                         pending=False).count()
             elif name=='statuses_count':
-                return Collection.objects.get(
-                        owner__id = '@'+username,
-                        name = 'outbox').count()
-            elif name=='locked':
-                return False # TODO
-            elif name=='created_at':
-                return self.published
-            elif name=='note':
-                return self.f_summary
-            elif name=='acct':
-                return self.url
-            elif name=='display_name':
-                return self.f_name
-            elif name=='email':
-                raise AttributeError("AcActor doesn't know the "+\
-                    "email address. That's TrilbyUser's problem.")
-            elif name=='moved_to':
-                return None # for now, anyway
+                return collection.Collection.get(
+                        user = self,
+                        collection = 'outbox',
+                        create_if_missing = True,
+                        ).members.count()
 
         if name=='publicKey':
             if not self.f_publicKey:

@@ -15,4 +15,38 @@ class TrilbyUser(AbstractUser):
             default=None,
             )
 
+    @property
+    def acct(self):
+        return self.actor.url
 
+    @property
+    def created_at(self):
+        return self.actor.published
+
+    @property
+    def note(self):
+        return self.actor.f_summary
+
+    @property
+    def display_name(self):
+        return self.actor.f_name
+
+    @property
+    def locked(self):
+        return False # TODO
+
+    @property
+    def moved_to(self):
+        return None # TODO
+
+    @property
+    def linked_url(self):
+        return None # TODO
+
+    @property
+    def default_visibility(self):
+        return 'public' # FIXME
+
+    @property
+    def default_sensitive(self):
+        return False # FIXME
