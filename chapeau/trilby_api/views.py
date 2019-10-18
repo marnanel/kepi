@@ -126,16 +126,20 @@ class PublicTimeline(AbstractTimeline):
     permission_classes = ()
 
     def get_queryset(self, request):
-        return AcItem.objects.filter(visibility=Visibility('public').name)
+        return AcItem.objects.filter(visibility='public')
 
 class HomeTimeline(AbstractTimeline):
 
     permission_classes = ()
 
     def get_queryset(self, request):
-        return kepi_models.Collection.get(
-                user = request.user.actor,
-                collection = 'inbox').members
+
+        if request.user.is_anonymous:
+            return AcItem.objects.filter(visibility='public')
+        else:
+            return kepi_models.Collection.get(
+                    user = request.user.actor,
+                    collection = 'inbox').members
 
 ########################################
 
@@ -326,3 +330,14 @@ class FeaturedCollectionView(View):
     def get_collection_items(self, *args, **kwargs):
         return Status.objects.none()
 
+class Notifications(View):
+    # FIXME
+    def get(self, request, *args, **kwargs):
+        return JsonResponse([],
+                safe=False)
+
+class Filters(View):
+    # FIXME
+    def get(self, request, *args, **kwargs):
+        return JsonResponse([],
+                safe=False)
