@@ -95,7 +95,7 @@ class Verify_Credentials(generics.GenericAPIView):
 
     def get(self, request):
         serializer = UserSerializerWithSource(request.user)
-        return Response(serializer.data)
+        return JsonResponse(serializer.data)
 
 class Statuses(generics.ListCreateAPIView):
 
