@@ -15,7 +15,7 @@ def get_version(package):
     init_py = open(os.path.join(package, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
-version = get_version('chapeau/kepi')
+version = get_version('chapeau')
 
 setup(
     name='chapeau',
@@ -33,7 +33,9 @@ setup(
     python_requires=">=3.0",
     zip_safe=False, # for now, anyway
     classifiers=[
-        # XXX fixme
+        'Environment :: No Input/Output (Daemon)',
+        'Framework :: Django',
+        'Topic :: Communications :: Conferencing',
     ],
     entry_points = {
         'console_scripts': [

@@ -1,10 +1,3 @@
-__title__ = 'chapeau.kepi'
-__version__ = '0.0.30'
-VERSION = __version__
-__author__ = 'Marnanel Thurman'
-__license__ = 'GPL-2'
-__copyright__ = 'Copyright (c) 2018 Marnanel Thurman'
-
 ATSIGN_CONTEXT = "https://www.w3.org/ns/activitystreams"
 
 PUBLIC_IDS = set([
