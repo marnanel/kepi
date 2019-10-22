@@ -106,7 +106,7 @@ class AbstractTimeline(generics.ListAPIView):
 
     serializer_class = StatusSerializer
     permission_classes = [
-            'rest_framework.permissions.IsAuthenticated',
+            IsAuthenticated,
             ]
 
     def get_queryset(self, request):
@@ -130,16 +130,15 @@ class PublicTimeline(AbstractTimeline):
 
 class HomeTimeline(AbstractTimeline):
 
-    permission_classes = ()
+    permission_classes = [
+            IsAuthenticated,
+            ]
 
     def get_queryset(self, request):
 
-        if request.user.is_anonymous:
-            return AcItem.objects.filter(visibility='public')
-        else:
-            return kepi_models.Collection.get(
-                    user = request.user.actor,
-                    collection = 'inbox').members
+        return kepi_models.Collection.get(
+                user = request.user.actor,
+                collection = 'inbox').members
 
 ########################################
 
