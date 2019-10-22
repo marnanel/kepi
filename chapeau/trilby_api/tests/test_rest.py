@@ -20,6 +20,11 @@ ACCOUNT_EXPECTED = [
         ('fields', []),
         ('emojis', []),
 
+        ('avatar', ''),
+        ('header', ''),
+        ('avatar_static', ''),
+        ('header_static', ''),
+
         ('bot', False),
         ]
 

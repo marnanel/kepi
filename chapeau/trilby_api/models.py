@@ -33,6 +33,14 @@ class TrilbyUser(AbstractUser):
         return self.actor.f_name
 
     @property
+    def avatar(self):
+        return self.actor.icon
+
+    @property
+    def header(self):
+        return self.actor.header
+
+    @property
     def locked(self):
         return False # TODO
 

@@ -25,19 +25,17 @@ class UserSerializer(serializers.ModelSerializer):
             source='username',
             read_only = True)
 
-    avatar = serializers.CharField(
-            read_only = True)
-    header = serializers.CharField(
-            read_only = True)
+    avatar = serializers.CharField()
+    header = serializers.CharField()
 
     # for the moment, treat these as the same.
     # the spec doesn't actually explain the difference!
     avatar_static = serializers.CharField(
             source='avatar',
-            read_only = True)
+            )
     header_static = serializers.CharField(
             source='header',
-            read_only = True)
+            )
 
     following_count = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
