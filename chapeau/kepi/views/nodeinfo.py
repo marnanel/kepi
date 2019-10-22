@@ -14,7 +14,7 @@ import django.views
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
-from chapeau.kepi import __version__
+from chapeau import __version__
 import logging
 import re
 from chapeau.kepi.utils import as_json
