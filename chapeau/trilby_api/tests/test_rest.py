@@ -24,9 +24,9 @@ ACCOUNT_EXPECTED = [
         ]
 
 ACCOUNT_SOURCE_EXPECTED = [
-        ('privacy', 'default'),
+        ('privacy', 'public'),
         ('sensitive', False),
-        ('language', 'en'),
+        ('language', settings.KEPI['LANGUAGES'][0]), # FIXME
         ]
 
 class TestRest(TestCase):
@@ -95,10 +95,12 @@ class TestRest(TestCase):
 
         for field, expected in ACCOUNT_EXPECTED:
             self.assertIn(field, content)
-            self.assertEqual(content[field], expected)
+            self.assertEqual(content[field], expected,
+                    msg="field '{}'".format(field))
 
         self.assertIn('source', content)
 
         for field, expected in ACCOUNT_SOURCE_EXPECTED:
             self.assertIn(field, content['source'])
-            self.assertEqual(content['source'][field], expected)
+            self.assertEqual(content['source'][field], expected,
+                    msg="field 'source.{}'".format(field))

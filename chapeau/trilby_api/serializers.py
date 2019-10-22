@@ -21,6 +21,10 @@ class _VisibilityField(serializers.CharField):
 
 class UserSerializer(serializers.ModelSerializer):
 
+    id = serializers.CharField(
+            source='username',
+            read_only = True)
+
     avatar = serializers.CharField(
             read_only = True)
     header = serializers.CharField(
@@ -34,8 +38,6 @@ class UserSerializer(serializers.ModelSerializer):
     header_static = serializers.CharField(
             source='header',
             read_only = True)
-
-    url = serializers.URLField(source='linked_url')
 
     following_count = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
@@ -57,7 +59,6 @@ class UserSerializer(serializers.ModelSerializer):
                 'username',
                 'acct',
                 'display_name',
-                'email',
                 'locked',
                 'avatar',
                 'header',
@@ -72,6 +73,9 @@ class UserSerializer(serializers.ModelSerializer):
                 'header',
                 'header_static',
                 'moved_to',
+                'fields',
+                'emojis',
+                'bot',
                 )
 
 #########################################
@@ -86,11 +90,12 @@ class UserSerializerWithSource(UserSerializer):
 
     source = serializers.SerializerMethodField()
 
-    def get_source(self, instance):
+    def get_source(self, user):
         return {
-                'privacy': instance.default_visibility,
-                'sensitive': instance.default_sensitive,
-                'note': instance.note,
+                'privacy': user.default_visibility,
+                'sensitive': user.default_sensitive,
+                'note': user.note,
+                'language': user.language,
                 }
 
 #########################################

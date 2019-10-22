@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
 from chapeau.kepi.models import AcPerson
 from chapeau.kepi.create import create
+from django.conf import settings
 import chapeau.trilby_api.models
 
 class TrilbyUser(AbstractUser):
@@ -40,8 +41,16 @@ class TrilbyUser(AbstractUser):
         return None # TODO
 
     @property
-    def linked_url(self):
-        return None # TODO
+    def url(self):
+        return self.actor.url
+
+    @property
+    def fields(self):
+        return [] # FIXME
+
+    @property
+    def emojis(self):
+        return [] # FIXME
 
     @property
     def default_visibility(self):
@@ -50,3 +59,11 @@ class TrilbyUser(AbstractUser):
     @property
     def default_sensitive(self):
         return False # FIXME
+
+    @property
+    def bot(self):
+        return False # FIXME
+
+    @property
+    def language(self):
+        return settings.KEPI['LANGUAGES'][0] # FIXME
