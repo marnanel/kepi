@@ -1,7 +1,7 @@
 from chapeau.kepi.create import create
 from chapeau.kepi.validation import IncomingMessage, validate
 from chapeau.kepi.models import AcObject, AcActor
-from chapeau.kepi.utils import as_json
+from chapeau.kepi.utils import as_json, uri_to_url, configured_url
 from django.conf import settings
 import django.test
 import httpretty
@@ -56,22 +56,17 @@ def create_local_person(name='jemima',
         'id': '@'+name,
         'type': 'Person',
         'endpoints': {
-            'sharedInbox': settings.KEPI['SHARED_INBOX'] % {
-                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                },
+            'sharedInbox': configured_url('SHARED_INBOX_LINK'),
             },
-        'inbox': settings.KEPI['SHARED_INBOX'] % {
-                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-            },
+        'inbox': configured_url('SHARED_INBOX_LINK'),
         }
 
     spec.update(kwargs)
 
     if 'publicKey' in spec:
-        user_id = settings.KEPI['USER_URL_FORMAT'] % {
-            'username': name,
-            'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-            }
+        user_id = configured_url('USER_LINK',
+            username = name,
+            )
         spec['publicKey'] = {
             'id': user_id+'#main-key',
             'owner': user_id,

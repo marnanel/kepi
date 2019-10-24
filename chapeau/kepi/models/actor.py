@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from . import acobject, following, collection
 import chapeau.kepi.crypto as crypto
+from chapeau.kepi.utils import configured_url, uri_to_url
 import logging
 import re
 
@@ -107,11 +108,10 @@ class AcActor(acobject.AcObject):
         return '%s#main-key' % (self.url,)
 
     def list_url(self, name):
-        return settings.KEPI['COLLECTION_URL'] % {
-                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                'username': self.id[1:],
-                'listname': name,
-                }
+        return configured_url('COLLECTION_LINK',
+                username = self.id[1:],
+                listname = name,
+                )
 
     def __setitem__(self, name, value):
         if name=='privateKey':
@@ -145,19 +145,13 @@ class AcActor(acobject.AcObject):
             elif name=='url':
                 return self.url
             elif name in ['icon', 'avatar', 'avatar_static']:
-                return 'https://%(hostname)s/static/defaults/avatar_0.jpg' % {
-                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    }
+                return uri_to_url('/static/defaults/avatar_0.jpg')
             elif name in ['header', 'header_static']:
-                return 'https://%(hostname)s/static/defaults/header.jpg' % {
-                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    }
+                return uri_to_url('/static/defaults/header.jpg')
             elif name=='feedURL':
-                return settings.KEPI['USER_FEED_URLS'].format(
+                return configured_url('USER_FEED_LINK',
                         username = self.id[1:],
-                        hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                         )
-
             elif name=='following_count':
                 return following.Following.objects.filter(
                         follower=self.id,
@@ -214,12 +208,9 @@ class AcActor(acobject.AcObject):
                 ]:
             del result[delendum]
 
-        result['endpoints'] = {}
-        if 'SHARED_INBOX' in settings.KEPI:
-            result['endpoints']['sharedInbox'] = \
-                    settings.KEPI['SHARED_INBOX'] % {
-           'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                            }
+        result['endpoints'] = {
+                'sharedInbox': configured_url('SHARED_INBOX_LINK'),
+                }
 
         result['tag'] = []
         result['attachment'] = []
@@ -230,17 +221,13 @@ class AcActor(acobject.AcObject):
         result['icon'] = {
                 "type":"Image",
                 "mediaType":"image/jpeg",
-                "url": 'https://%(hostname)s/static/defaults/avatar_0.jpg' % {
-                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    },
+                "url": self['avatar'],
                 }
 
         result['image'] = {
                 "type":"Image",
                 "mediaType":"image/jpeg",
-                "url": 'https://%(hostname)s/static/defaults/header.jpg' % {
-                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    },
+                "url": self['header'],
                 }
 
         return result

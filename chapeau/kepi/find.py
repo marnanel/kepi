@@ -17,16 +17,11 @@ from urllib.parse import urlparse
 from django.http.request import HttpRequest
 from chapeau.kepi.create import create
 from django.utils import timezone
+from chapeau.kepi.utils import is_short_id
 import json
 import mimeparse
 
 logger = logging.getLogger(name='chapeau')
-
-def is_short_id(s):
-    try:
-        return str(s)[0] in '/@'
-    except IndexError:
-        return False
 
 class Fetch(models.Model):
 
@@ -300,29 +295,6 @@ def _short_id_lookup(number):
                 number)
 
         return None
-
-def short_id_to_url(v):
-    """
-    If v is a short_id (such as "/1234abcd" or "@alice",
-    this transforms it into a URL.
-
-    Otherwise, v is returned unchanged.
-    """
-    if not is_short_id(v):
-        return v
-
-    hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME']
-
-    if v[0]=='@':
-        return settings.KEPI['USER_URL_FORMAT'] % {
-                'hostname': hostname,
-                'username': v[1:],
-                }
-    else:
-        return settings.KEPI['ACTIVITY_URL_FORMAT'] % {
-                'hostname': hostname,
-                'number': v[1:],
-                }
 
 def find(url,
         local_only=False,

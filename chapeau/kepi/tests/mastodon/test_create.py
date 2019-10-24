@@ -242,7 +242,7 @@ class TestCreate(TestCase):
                 )
 
         self.assertEqual(
-                status.in_reply_to_account,
+                status.in_reply_to_account_id,
                 original_status.account,
                 msg = 'status is a reply to the correct account',
                 )

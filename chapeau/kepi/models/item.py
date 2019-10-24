@@ -131,7 +131,7 @@ class AcItem(acobject.AcObject):
         return self['inReplyTo'] is not None
 
     @property
-    def in_reply_to_account(self):
+    def in_reply_to_account_id(self):
         parent = self['inReplyTo__obj']
 
         if parent is None:
@@ -178,6 +178,11 @@ class AcItem(acobject.AcObject):
                     }
 
         return result
+
+    @property
+    def emojis(self):
+        # FIXME
+        return []
 
 ##############################
 

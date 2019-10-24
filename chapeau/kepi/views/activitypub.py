@@ -1,6 +1,6 @@
 # views/activitypub.py
 #
-# Part of  an ActivityPub daemon.
+# Part of chapeau, an ActivityPub daemon.
 # Copyright (c) 2018-2019 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
@@ -15,7 +15,8 @@ place to go.
 
 from chapeau.kepi import ATSIGN_CONTEXT
 import chapeau.kepi.validation
-from chapeau.kepi.find import find, is_local, short_id_to_url
+from chapeau.kepi.find import find, is_local
+from chapeau.kepi.utils import configured_url, short_id_to_url, uri_to_url
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
@@ -172,8 +173,8 @@ class KepiView(django.views.View):
         return result
 
     def _render_object(self, request, something):
-        logger.debug('About to render object: %s',
-                something)
+        logger.debug('About to render object: %s of type %s',
+                something, type(something))
 
         while True:
             try:
@@ -363,22 +364,20 @@ class ActorView(ThingView):
 
         result = super()._to_json(data)
 
-        user_url = settings.KEPI['USER_URL_FORMAT'] % {
-                'username': self._username,
-                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                }
+        user_url = configured_url('USER_LINK',
+                username = self._username,
+                )
 
-        webfinger_url = 'https://%s/.well-known/webfinger?resource=%s' % (
-                        settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+        webfinger_url = uri_to_url(
+            '/.well-known/webfinger?resource=%s' % (
                         urllib.parse.quote(
                             'acct:%(name)s@%(host)s' % {
                                 'name': self._username,
                                 'host': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                                }))
+                                })))
 
-        atom_url = settings.KEPI['USER_FEED_URLS'].format(
+        atom_url = configured_url('USER_FEED_LINK',
                 username = self._username,
-                hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                 )
 
         links = [
@@ -641,10 +640,9 @@ class OutboxView(UserCollectionView):
         if actor is None:
             actor = fields.get('attributedTo', None)
 
-        owner = settings.KEPI['USER_URL_FORMAT'] % {
-                'username': kwargs['username'],
-                'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                }
+        owner = configured_url('USER_LINK',
+                username = kwargs['username'],
+                )
 
         if actor != owner:
             logger.info('Outbox: actor was %s but we needed %s',

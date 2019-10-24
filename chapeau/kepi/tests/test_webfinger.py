@@ -28,6 +28,8 @@ class TestWebfinger(TestCase):
                 'testserver',
                 ]
 
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+
     def _fetch(self, url):
         client = Client()
         response = client.get(
@@ -74,7 +76,7 @@ class TestWebfinger(TestCase):
 
         response = self._fetch(
                 url=WEBFINGER_URL.format(
-                    'alice@altair.example.com',
+                    'alice@testserver',
                     ),
                 )
 
@@ -90,11 +92,11 @@ class TestWebfinger(TestCase):
         parsed = json.loads(response.content)
 
         self.assertEqual(parsed['subject'],
-            'acct:alice@altair.example.com',
+            'acct:alice@testserver',
             )
 
         self.assertIn(
-            'https://altair.example.com/users/alice',
+            'https://testserver/users/alice',
             parsed['aliases'],
             )
         
@@ -102,7 +104,7 @@ class TestWebfinger(TestCase):
                 {
                     'rel': 'self',
                     'type': 'application/activity+json',
-                    'href': 'https://altair.example.com/users/alice',
+                    'href': 'https://testserver/users/alice',
                     },
                 parsed['links'],
                 )

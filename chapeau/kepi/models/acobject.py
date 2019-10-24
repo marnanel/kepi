@@ -6,6 +6,7 @@ from polymorphic.managers import PolymorphicManager
 from chapeau.kepi.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from chapeau.kepi.models.thingfield import ThingField
 from chapeau.kepi.models.mention import Mention
+from chapeau.kepi.utils import configured_path, uri_to_url
 from .. import URL_REGEXP, SERIAL_NUMBER_REGEXP
 import chapeau.kepi.side_effects as side_effects
 import logging
@@ -65,18 +66,25 @@ class AcObject(PolymorphicModel):
 
     @property
     def url(self):
-        if self.id.startswith('/'):
-            return settings.KEPI['ACTIVITY_URL_FORMAT'] % {
-                    'number': self.id[1:],
-                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    }
-        elif self.id.startswith('@'):
-            return settings.KEPI['USER_URL_FORMAT'] % {
-                    'username': self.id[1:],
-                    'hostname': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    }
-        else:
+        uri = self.uri
+
+        if uri is None:
             return self.id
+        else:
+            return uri_to_url(uri)
+
+    @property
+    def uri(self):
+        if self.id.startswith('/'):
+            return configured_path('OBJECT_LINK',
+                    number = self.id[1:],
+                    )
+        elif self.id.startswith('@'):
+            return configured_path('USER_LINK',
+                    username = self.id[1:],
+                    )
+        else:
+            return None
 
     @property
     def number(self):
@@ -144,7 +152,7 @@ class AcObject(PolymorphicModel):
     @property
     def activity_form(self):
 
-        from chapeau.kepi.find import short_id_to_url
+        from chapeau.kepi.utils import short_id_to_url
 
         result = {
             'id': self.url,

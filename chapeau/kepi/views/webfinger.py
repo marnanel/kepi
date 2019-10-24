@@ -18,7 +18,7 @@ from django.http import HttpResponse
 import logging
 import re
 import json
-from chapeau.kepi.utils import as_json
+from chapeau.kepi.utils import as_json, configured_url
 
 logger = logging.Logger('chapeau')
 
@@ -79,10 +79,9 @@ class Webfinger(django.views.View):
                     content_type = 'text/plain',
                     )
 
-        actor_url = settings.KEPI['USER_URL_FORMAT'] % {
-                'username': username,
-                'hostname': hostname,
-                }
+        actor_url = configured_url('USER_LINK',
+                username = username,
+                )
 
         result = {
                 "subject" : "acct:{}@{}".format(username, hostname),
@@ -108,7 +107,7 @@ class Webfinger(django.views.View):
                     },
                     {
                     'rel': 'http://ostatus.org/schema/1.0/subscribe',
-                    'template': settings.KEPI['AUTHORIZE_FOLLOW_TEMPLATE'],
+                    'template': configured_url('AUTHORIZE_FOLLOW_LINK'),
                     },
                     ]}
 

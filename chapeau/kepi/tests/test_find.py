@@ -86,10 +86,9 @@ class TestFind(TestCase):
 
     def test_find_local_404(self):
 
-        found = find(settings.KEPI['ACTIVITY_URL_FORMAT'] % {
-            'number': 'walrus',
-            'hostname': 'testserver',
-            })
+        found = find(configured_url('OBJECT_LINK',
+            number = 'walrus',
+            ))
 
         self.assertIsNone(
                 found,
