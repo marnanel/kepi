@@ -28,21 +28,39 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'chapeau.chapeau.wsgi.application'
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'cmfy8%_q^u#bix$_4bq!p^8eq@=46bb*a7ztmg4i)l8jo(kl%^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+LANGUAGE_CODE = 'en'
+
 KEPI = {
-        # FIXME: general object format, not just for activities
-        'ACTIVITY_URL_FORMAT': 'https://%(hostname)s/%(number)s',
-        'USER_URL_FORMAT': 'https://%(hostname)s/users/%(username)s',
         'LOCAL_OBJECT_HOSTNAME': 'example.com',
-        'COLLECTION_URL': 'https://%(hostname)s/users/%(username)s/%(listname)s',
-        'SHARED_INBOX': 'https://%(hostname)s/sharedInbox',
+
+        'OBJECT_LINK': '/%(number)s',
+        'USER_LINK': '/users/%(username)s',
+        'COLLECTION_LINK': '/users/%(username)s/%(listname)s',
+        'STATUS_LINK': '/users/%(username)s/%(id)s',
+        'STATUS_FEED_LINK': '/users/%(username)s/feed/%(id)s',
+        'USER_FEED_LINK': '/users/%(username)s/feed',
+        'USER_WEBFINGER_LINK': '/.well-known/webfinger?resource=acct:%(username)s@%(hostname)s',
+        'USER_FOLLOWING_LINK': '/users/%(username)s/following',
+        'USER_FOLLOWERS_LINK': '/users/%(username)s/followers',
+        'USER_INBOX_LINK': '/users/%(username)s/inbox',
+        'USER_OUTBOX_LINK': '/users/%(username)s/outbox',
+        'USER_FEATURED_LINK': '/users/%(username)s/featured',
+        'SHARED_INBOX_LINK': '/inbox',
+
         'TOMBSTONES': True,
+
+        'INSTANCE_NAME': 'chapeau server',
+        'INSTANCE_DESCRIPTION': 'this is a test server',
+        'CONTACT_ACCOUNT': 'marnanel',
+        'CONTACT_EMAIL': 'marnanel@example.com',
+        'LANGUAGES': [LANGUAGE_CODE],
+
         }
 
 MIDDLEWARE = [
@@ -119,11 +137,6 @@ LOGGING = {
         }
 
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-
-# Internationalization
-# https://docs.djangoproject.com/en/2.2/topics/i18n/
-
-LANGUAGE_CODE = 'en'
 
 TIME_ZONE = 'UTC'
 
