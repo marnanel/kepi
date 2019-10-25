@@ -26,11 +26,13 @@ class AcItem(acobject.AcObject):
         from chapeau.kepi.find import find
 
         audiences = audience.Audience.get_audiences_for(self)
-        logger.debug('%s: checking visibility in audiences: %s',
-                self.id, str(audiences))
-
         audience_to = set(audiences.get('to', []))
         audience_cc = set(audiences.get('cc', []))
+
+        logger.debug('%s: checking visibility in audiences',
+                self.id)
+        logger.debug('   To: %s', audience_to)
+        logger.debug('   Cc: %s', audience_cc)
 
         if not audience_to.union(audience_cc):
             logger.debug('  -- neither to nor cc, so direct')
@@ -86,6 +88,11 @@ class AcItem(acobject.AcObject):
     @property
     def text(self):
         return self.f_content
+
+    @property
+    def html(self):
+        # FIXME obviously we need to quote this and stuff
+        return '<p>%s</p>' % (self.f_content,)
 
     @property
     def thread(self):
@@ -148,8 +155,8 @@ class AcItem(acobject.AcObject):
         from chapeau.kepi.models.mention import Mention
 
         logger.info('Finding Mentions for %s', self)
-        return set([x.to_actor for x in
-                Mention.objects.filter(from_status=self)])
+        return [x.to_actor for x in
+                Mention.objects.filter(from_status=self)]
 
     @property
     def conversation(self):
@@ -180,9 +187,81 @@ class AcItem(acobject.AcObject):
         return result
 
     @property
+    def language(self):
+        return self['language']
+
+    @property
+    def sensitive(self):
+        # FIXME
+        return False
+
+    @property
+    def spoiler_text(self):
+        # FIXME
+        return ''
+
+    @property
     def emojis(self):
         # FIXME
         return []
+
+    @property
+    def reblogs_count(self):
+        # FIXME
+        return 0
+
+    @property
+    def favourites_count(self):
+        # FIXME
+        return 0
+
+    @property
+    def reblogged(self):
+        return self.reblogs_count!=0
+
+    @property
+    def favourited(self):
+        return self.favourites_count!=0
+
+    @property
+    def muted(self):
+        # FIXME
+        return False
+
+    @property
+    def media_attachments(self):
+        # FIXME
+        return []
+
+    @property
+    def tags(self):
+        # FIXME
+        return []
+
+    @property
+    def card(self):
+        return None
+
+    @property
+    def poll(self):
+        return None
+
+    @property
+    def application(self):
+        return self['_application']
+
+    @property
+    def language(self):
+        return self['language']
+
+    @property
+    def pinned(self):
+        # FIXME
+        return False
+
+    @property
+    def posted_by(self):
+        return self.f_attributedTo
 
 ##############################
 
