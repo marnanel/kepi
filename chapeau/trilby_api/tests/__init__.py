@@ -1,3 +1,7 @@
+from chapeau.trilby_api.models import TrilbyUser
+
+PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
+
 def create_local_trilbyuser(name='jemima'):
 
     from chapeau.kepi.tests import create_local_person
@@ -9,5 +13,32 @@ def create_local_trilbyuser(name='jemima'):
             username = name,
             actor = person)
     result.save()
+
+    return result
+
+def create_local_status(content,
+        posted_by):
+
+    from chapeau.kepi.create import create
+
+    if isinstance(posted_by, TrilbyUser):
+        posted_by = posted_by.actor
+
+    result = create(
+            is_local_user=True,
+            run_side_effects=True,
+            run_delivery=False,
+            incoming=False,
+            value={
+                'type': 'Create',
+                'actor': posted_by.id,
+                'object': {
+                    'type': 'Note',
+                    'attributedTo': posted_by.id,
+                    'content': content,
+                    },
+                'to': [PUBLIC],
+            },
+            )
 
     return result
