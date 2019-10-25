@@ -6,19 +6,6 @@ from oauth2_provider.models import Application
 
 #########################################
 
-class _VisibilityField(serializers.CharField):
-    # Is there really no general enum field?
-    def to_representation(self, obj):
-        return Visibility[obj].value
-
-    def to_internal_value(self, obj):
-        try:
-            return Visibility(obj).name
-        except KeyError:
-            raise serializers.ValidationError('invalid visibility')
-
-#########################################
-
 class UserSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(
@@ -101,12 +88,14 @@ class UserSerializerWithSource(UserSerializer):
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcItem
-        fields = ('id', 'url', 'uri',
+        fields = (
+                'id',
+                'uri',
+                'url',
                 'account',
                 'in_reply_to_id',
                 'in_reply_to_account_id',
                 'reblog',
-                'status',
                 'content',
                 'created_at',
                 'emojis',
@@ -121,6 +110,8 @@ class StatusSerializer(serializers.ModelSerializer):
                 'media_attachments',
                 'mentions',
                 'tags',
+                'card',
+                'poll',
                 'application',
                 'language',
                 'pinned',
@@ -135,48 +126,51 @@ class StatusSerializer(serializers.ModelSerializer):
         result = create(value=validated_data)
         return result
 
-    id = serializers.IntegerField(
+    id = serializers.CharField(
+            source='number',
             read_only = True)
 
-    account = UserSerializer(
+    uri = serializers.URLField(
+            read_only = True)
+
+    url = serializers.URLField(
+            read_only = True)
+
+    account = serializers.CharField(
             source = 'posted_by',
-            read_only = True)
-
-    status = serializers.CharField(
-            write_only = True,
-            source = 'content')
-
-    content = serializers.CharField(
-            read_only = True)
-
-    created_at = serializers.DateTimeField(
             read_only = True)
 
     in_reply_to_id = serializers.PrimaryKeyRelatedField(
             queryset=AcItem.objects.all,
             required = False)
 
-    url = serializers.URLField(
+    in_reply_to_account_id = serializers.PrimaryKeyRelatedField(
+            queryset=AcItem.objects.all,
+            required = False)
+
+    reblog = serializers.URLField(
             read_only = True)
 
-    uri = serializers.URLField(
+    content = serializers.CharField(
+            source='html',
             read_only = True)
 
-    # TODO Media
+    created_at = serializers.DateTimeField(
+            source='published',
+            read_only = True)
+
+   # TODO Media
 
     sensitive = serializers.BooleanField(
             required = False)
     spoiler_text = serializers.CharField(
             required = False)
 
-    visibility = _VisibilityField(
+    visibility = serializers.CharField(
             required = False)
 
-    def visibility_validation(self, value):
-        if value not in Visibility:
-            raise serializers.ValidationError('invalid visibility')
-
-        return value
+    language = serializers.CharField(
+            required = False)
 
     idempotency_key = serializers.CharField(
             write_only = True,

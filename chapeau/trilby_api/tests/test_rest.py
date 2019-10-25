@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 from chapeau.trilby_api.views import *
-from chapeau.trilby_api.tests import create_local_trilbyuser
+from chapeau.trilby_api.tests import *
 from django.conf import settings
 import json
 
@@ -32,6 +32,29 @@ ACCOUNT_SOURCE_EXPECTED = [
         ('privacy', 'public'),
         ('sensitive', False),
         ('language', settings.KEPI['LANGUAGES'][0]), # FIXME
+        ]
+
+STATUS_EXPECTED = [
+        ('account', '@alice'),
+        ('in_reply_to_account_id', None),
+        ('content', '<p>Hello world.</p>'),
+        ('emojis', []),
+        ('reblogs_count', 0),
+        ('favourites_count', 0),
+        ('reblogged', False),
+        ('favourited', False),
+        ('muted', False),
+        ('sensitive', False),
+        ('spoiler_text', ''),
+        ('visibility', 'public'),
+        ('media_attachments', []),
+        ('mentions', []),
+        ('tags', []),
+        ('card', None),
+        ('poll', None),
+        ('application', None),
+        ('language', 'en'),
+        ('pinned', False),
         ]
 
 class TestRest(TestCase):
@@ -109,3 +132,40 @@ class TestRest(TestCase):
             self.assertIn(field, content['source'])
             self.assertEqual(content['source'][field], expected,
                     msg="field 'source.{}'".format(field))
+
+class TestStatuses(TestCase):
+
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+
+    def _create_status(self):
+        self._alice = create_local_trilbyuser(name='alice')
+
+        self._status = create_local_status(
+                content = 'Hello world.',
+                posted_by = self._alice,
+                )
+
+    def test_get_status(self):
+
+        self._create_status()
+
+        request = self.factory.get(
+                '/api/v1/statuses/'+self._status.number,
+                )
+        force_authenticate(request, user=self._alice)
+
+        view = Statuses.as_view()
+
+        result = view(request,
+                id=self._status.number)
+
+        content = json.loads(result.content)
+
+        # FIXME: Need to check that "id" corresponds to "url", etc
+
+        for field, expected in STATUS_EXPECTED:
+            self.assertIn(field, content)
+            self.assertEqual(content[field], expected,
+                    msg="field '{}'".format(field))

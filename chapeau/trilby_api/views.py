@@ -93,14 +93,32 @@ class Verify_Credentials(generics.GenericAPIView):
 
     queryset = TrilbyUser.objects.all()
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         serializer = UserSerializerWithSource(request.user)
         return JsonResponse(serializer.data)
 
 class Statuses(generics.ListCreateAPIView):
 
-    queryset = kepi_models.AcItem.objects.all()
-    serializer_class = StatusSerializer
+    queryset = kepi_models.AcCreate.objects.all()
+
+    def get(self, request, *args, **kwargs):
+
+        queryset = self.get_queryset()
+
+        if 'id' in kwargs:
+            number = '/'+kwargs['id']
+            logger.info('Looking up status numbered %s for %s',
+                    number, request.user)
+
+            create = queryset.get(id=number)
+            serializer = StatusSerializer(create['object__obj'])
+        else:
+            logger.info('Looking up all visible statuses for %s',
+                   request.user)
+            # ... FIXME
+            serializer = StatusSerializer(queryset)
+
+        return JsonResponse(serializer.data)
 
 class AbstractTimeline(generics.ListAPIView):
 
