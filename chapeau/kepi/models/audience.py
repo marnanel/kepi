@@ -92,6 +92,7 @@ class Audience(models.Model):
 
     @classmethod
     def get_audiences_for(cls, thing,
+            audience_type = None,
             hide_blind = False,
             ):
 
@@ -101,13 +102,22 @@ class Audience(models.Model):
                 parent=thing,
                 ):
 
+            fieldname = a.get_field_display()
+
+            if audience_type is not None:
+                if fieldname!=audience_type:
+                    continue
+
             if hide_blind and a.blind:
                 logger.debug('Not counting %s because blind fields are hidden',
                         a)
                 continue
 
-            result[a.get_field_display()].append(a.recipient)
+            result[fieldname].append(a.recipient)
 
-        result = dict(result)
+        if audience_type is not None:
+            result = result[audience_type]
+        else:
+            result = dict(result)
 
         return result

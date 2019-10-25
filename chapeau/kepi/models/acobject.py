@@ -205,9 +205,9 @@ class AcObject(PolymorphicModel):
             result = getattr(self, name)
         elif name in AUDIENCE_FIELD_NAMES:
             try:
-                result = Audience.objects.filter(
-                        parent = self,
-                        field = AUDIENCE_FIELD_NAMES[name],
+                result = Audience.get_audiences_for(
+                        thing = self,
+                        audience_type = name,
                         )
             except Audience.DoesNotExist:
                 result = None
