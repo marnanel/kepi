@@ -120,6 +120,20 @@ class Statuses(generics.ListCreateAPIView):
 
         return JsonResponse(serializer.data)
 
+class StatusContext(generics.ListCreateAPIView):
+
+    queryset = kepi_models.AcCreate.objects.all()
+
+    def get(self, request, *args, **kwargs):
+
+        queryset = self.get_queryset()
+
+        number = '/'+kwargs['id']
+        status = queryset.get(id=number)['object__obj']
+        serializer = StatusContextSerializer(status)
+
+        return JsonResponse(serializer.data)
+
 class AbstractTimeline(generics.ListAPIView):
 
     serializer_class = StatusSerializer

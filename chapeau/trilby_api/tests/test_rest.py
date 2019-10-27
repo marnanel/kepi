@@ -169,3 +169,26 @@ class TestStatuses(TestCase):
             self.assertIn(field, content)
             self.assertEqual(content[field], expected,
                     msg="field '{}'".format(field))
+
+    def test_get_status_context(self):
+
+        self._create_status()
+
+        request = self.factory.get(
+                '/api/v1/statuses/'+self._status.number+'/context',
+                )
+        force_authenticate(request, user=self._alice)
+
+        view = StatusContext.as_view()
+
+        result = view(request,
+                id=self._status.number)
+
+        content = json.loads(result.content)
+
+        self.assertEqual(
+                content,
+                {
+                    'ancestors': [],
+                    'descendants': [],
+                    })

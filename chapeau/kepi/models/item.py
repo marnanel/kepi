@@ -138,6 +138,16 @@ class AcItem(acobject.AcObject):
         return self['inReplyTo'] is not None
 
     @property
+    def ancestors(self):
+        # FIXME
+        return []
+
+    @property
+    def descendants(self):
+        # FIXME - do they want *all* descendants in *all* threads?
+        return []
+
+    @property
     def in_reply_to_account_id(self):
         parent = self['inReplyTo__obj']
 

@@ -8,6 +8,7 @@ urlpatterns = [
     path('api/v1/accounts/verify_credentials', Verify_Credentials.as_view()),
     path('api/v1/statuses', Statuses.as_view()),
     path('api/v1/statuses/<id>', Statuses.as_view()),
+    path('api/v1/statuses/<id>/context', StatusContext.as_view()),
     path('api/v1/notifications', Notifications.as_view()),
     path('api/v1/filters', Filters.as_view()),
     path('api/v1/timelines/public', PublicTimeline.as_view()),

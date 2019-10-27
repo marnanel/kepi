@@ -175,3 +175,19 @@ class StatusSerializer(serializers.ModelSerializer):
     idempotency_key = serializers.CharField(
             write_only = True,
             required = False)
+
+class StatusContextSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcItem
+        fields = (
+                'ancestors',
+                'descendants',
+                )
+
+        ancestors = serializers.ListField(
+                child = serializers.CharField(),
+                read_only = True)
+
+        descendants = serializers.ListField(
+                child = serializers.CharField(),
+                read_only = True)
