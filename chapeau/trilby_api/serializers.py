@@ -1,7 +1,8 @@
 from rest_framework import serializers
+from rest_framework.fields import CurrentUserDefault
 from .models import TrilbyUser
 from chapeau.kepi.models import AcItem
-from chapeau.kepi.create import create
+from chapeau.kepi.create import create as kepi_create
 from oauth2_provider.models import Application
 
 #########################################
@@ -97,6 +98,7 @@ class StatusSerializer(serializers.ModelSerializer):
                 'in_reply_to_account_id',
                 'reblog',
                 'content',
+                'status',
                 'created_at',
                 'emojis',
                 'reblogs_count',
@@ -119,25 +121,32 @@ class StatusSerializer(serializers.ModelSerializer):
                 )
 
     def create(self, validated_data):
-
-        posted_by = self.context['request'].user
+        posted_by = CurrentUserDefault()
         validated_data['posted_by'] = posted_by
+        validated_data['type'] = 'Note'
 
-        result = create(value=validated_data)
+        result = kepi_create(
+                value = validated_data,
+                )
+
         return result
 
     id = serializers.CharField(
             source='number',
+            required = False,
             read_only = True)
 
     uri = serializers.URLField(
+            required = False,
             read_only = True)
 
     url = serializers.URLField(
+            required = False,
             read_only = True)
 
     account = serializers.CharField(
             source = 'posted_by',
+            required = False,
             read_only = True)
 
     in_reply_to_id = serializers.PrimaryKeyRelatedField(
@@ -149,14 +158,24 @@ class StatusSerializer(serializers.ModelSerializer):
             required = False)
 
     reblog = serializers.URLField(
+            required = False,
             read_only = True)
 
+    # "content" is read-only for HTML;
+    # "status" is write-only for text (or Markdown)
     content = serializers.CharField(
             source='html',
+            required = False,
             read_only = True)
+
+    status = serializers.CharField(
+            source='content',
+            required = False,
+            write_only = True)
 
     created_at = serializers.DateTimeField(
             source='published',
+            required = False,
             read_only = True)
 
    # TODO Media

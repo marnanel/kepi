@@ -139,9 +139,10 @@ class TestStatuses(TestCase):
         self.factory = APIRequestFactory()
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
 
-    def _create_status(self):
+    def _create_alice(self):
         self._alice = create_local_trilbyuser(name='alice')
 
+    def _create_status(self):
         self._status = create_local_status(
                 content = 'Hello world.',
                 posted_by = self._alice,
@@ -149,6 +150,7 @@ class TestStatuses(TestCase):
 
     def test_get_status(self):
 
+        self._create_alice()
         self._create_status()
 
         request = self.factory.get(
@@ -161,6 +163,12 @@ class TestStatuses(TestCase):
         result = view(request,
                 id=self._status.number)
 
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
         content = json.loads(result.content)
 
         # FIXME: Need to check that "id" corresponds to "url", etc
@@ -172,6 +180,7 @@ class TestStatuses(TestCase):
 
     def test_get_status_context(self):
 
+        self._create_alice()
         self._create_status()
 
         request = self.factory.get(
@@ -184,6 +193,12 @@ class TestStatuses(TestCase):
         result = view(request,
                 id=self._status.number)
 
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
         content = json.loads(result.content)
 
         self.assertEqual(
@@ -192,3 +207,33 @@ class TestStatuses(TestCase):
                     'ancestors': [],
                     'descendants': [],
                     })
+
+    def test_post_status(self):
+
+        self._create_alice()
+
+        request = self.factory.post(
+                '/api/v1/statuses/',
+                {
+                    'status': 'Hello world',
+                    },
+                format='json',
+                )
+        force_authenticate(request, user=self._alice)
+
+        view = Statuses.as_view()
+
+        result = view(request)
+
+        self.assertEqual(
+                result.status_code,
+                201,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content)
+
+        self.assertEqual(
+                content['content'],
+                '<p>Hello world</p>',
+                )

@@ -14,6 +14,7 @@ from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+from rest_framework import mixins
 import logging
 import chapeau.kepi.models as kepi_models
 import json
@@ -97,9 +98,13 @@ class Verify_Credentials(generics.GenericAPIView):
         serializer = UserSerializerWithSource(request.user)
         return JsonResponse(serializer.data)
 
-class Statuses(generics.ListCreateAPIView):
+class Statuses(generics.ListCreateAPIView,
+        mixins.CreateModelMixin,
+        mixins.DestroyModelMixin,
+        ):
 
     queryset = kepi_models.AcCreate.objects.all()
+    serializer_class = StatusSerializer
 
     def get(self, request, *args, **kwargs):
 
@@ -110,15 +115,41 @@ class Statuses(generics.ListCreateAPIView):
             logger.info('Looking up status numbered %s for %s',
                     number, request.user)
 
-            create = queryset.get(id=number)
-            serializer = StatusSerializer(create['object__obj'])
+            create_activity = queryset.get(id=number)
+            serializer = StatusSerializer(
+                    create_activity['object__obj'],
+                    partial = True,
+                    )
         else:
             logger.info('Looking up all visible statuses for %s',
                    request.user)
             # ... FIXME
-            serializer = StatusSerializer(queryset)
+            serializer = StatusSerializer(
+                    queryset,
+                    )
 
         return JsonResponse(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+
+        if 'status' not in request.data and 'media_ids' not in request.data:
+            return HttpResponse(
+                    status = 400,
+                    content = 'You must supply a status or some media IDs',
+                    )
+
+        serializer = StatusSerializer(
+                data=request.data,
+                )
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+
+        return JsonResponse(
+                serializer.data,
+                status = 201, # Created
+                reason = 'Posted. Hurrah!',
+                json_dumps_params = { 'indent': 2, },
+                )
 
 class StatusContext(generics.ListCreateAPIView):
 
