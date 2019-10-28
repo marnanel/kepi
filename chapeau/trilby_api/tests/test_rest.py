@@ -20,10 +20,10 @@ ACCOUNT_EXPECTED = [
         ('fields', []),
         ('emojis', []),
 
-        ('avatar', ''),
-        ('header', ''),
-        ('avatar_static', ''),
-        ('header_static', ''),
+        ('avatar', 'https://testserver/static/defaults/avatar_0.jpg'),
+        ('header', 'https://testserver/static/defaults/header.jpg'),
+        ('avatar_static', 'https://testserver/static/defaults/avatar_0.jpg'),
+        ('header_static', 'https://testserver/static/defaults/header.jpg'),
 
         ('bot', False),
         ]

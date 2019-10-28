@@ -34,11 +34,11 @@ class TrilbyUser(AbstractUser):
 
     @property
     def avatar(self):
-        return self.actor.icon
+        return self.actor['avatar']
 
     @property
     def header(self):
-        return self.actor.header
+        return self.actor['header']
 
     @property
     def locked(self):
