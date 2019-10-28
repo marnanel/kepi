@@ -99,11 +99,20 @@ class TestRest(TestCase):
                 )
 
     def test_verify_credentials(self):
+        self._user_test(
+                name='verify_credentials',
+                )
 
+    def test_user(self):
+        self._user_test(
+                name='alice',
+                )
+
+    def _user_test(self, name):
         alice = create_local_trilbyuser(name='alice')
 
         request = self.factory.get(
-                '/api/v1/accounts/verify_credentials',
+                '/api/v1/accounts/'+name,
                 )
         force_authenticate(request, user=alice)
 
@@ -132,6 +141,7 @@ class TestRest(TestCase):
             self.assertIn(field, content['source'])
             self.assertEqual(content['source'][field], expected,
                     msg="field 'source.{}'".format(field))
+
 
 class TestStatuses(TestCase):
 

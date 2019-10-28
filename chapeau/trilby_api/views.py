@@ -98,6 +98,17 @@ class Verify_Credentials(generics.GenericAPIView):
         serializer = UserSerializerWithSource(request.user)
         return JsonResponse(serializer.data)
 
+class User(generics.GenericAPIView):
+
+    queryset = TrilbyUser.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        whoever = get_object_or_404(self.get_queryset(),
+                actor__id='@'+kwargs['name'])
+
+        serializer = UserSerializer(whoever)
+        return JsonResponse(serializer.data)
+
 class Statuses(generics.ListCreateAPIView,
         mixins.CreateModelMixin,
         mixins.DestroyModelMixin,
