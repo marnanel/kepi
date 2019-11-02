@@ -183,6 +183,7 @@ class StatusSerializer(serializers.ModelSerializer):
     sensitive = serializers.BooleanField(
             required = False)
     spoiler_text = serializers.CharField(
+            allow_blank = True,
             required = False)
 
     visibility = serializers.CharField(
