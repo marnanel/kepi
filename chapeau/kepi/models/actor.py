@@ -132,6 +132,12 @@ class AcActor(acobject.AcObject):
         else:
             super().__setitem__(name, value)
 
+    def _default_icon(self):
+        which = ord(self.id[1]) % 10
+        return uri_to_url('/static/defaults/avatar_{}.jpg'.format(
+            which,
+            ))
+
     def __getitem__(self, name):
 
         if self.is_local:
@@ -145,7 +151,7 @@ class AcActor(acobject.AcObject):
             elif name=='url':
                 return self.url
             elif name in ['icon', 'avatar', 'avatar_static']:
-                return uri_to_url('/static/defaults/avatar_0.jpg')
+                return self._default_icon()
             elif name in ['header', 'header_static']:
                 return uri_to_url('/static/defaults/header.jpg')
             elif name=='feedURL':

@@ -18,7 +18,7 @@ class TrilbyUser(AbstractUser):
 
     @property
     def acct(self):
-        return self.actor.url
+        return self.actor['username']
 
     @property
     def created_at(self):

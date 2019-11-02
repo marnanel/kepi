@@ -1,5 +1,5 @@
 from django.test import TestCase
-from rest_framework.test import APIRequestFactory, force_authenticate
+from rest_framework.test import force_authenticate, APIClient
 from chapeau.trilby_api.views import *
 from chapeau.trilby_api.tests import *
 from django.conf import settings
@@ -8,7 +8,7 @@ import json
 ACCOUNT_EXPECTED = [
         ('id', 'alice'),
         ('username', 'alice'),
-        ('acct', 'https://testserver/users/alice'),
+        ('acct', 'alice'),
         ('display_name', 'alice'),
         ('locked', False),
 
@@ -20,9 +20,9 @@ ACCOUNT_EXPECTED = [
         ('fields', []),
         ('emojis', []),
 
-        ('avatar', 'https://testserver/static/defaults/avatar_0.jpg'),
+        ('avatar', 'https://testserver/static/defaults/avatar_7.jpg'),
         ('header', 'https://testserver/static/defaults/header.jpg'),
-        ('avatar_static', 'https://testserver/static/defaults/avatar_0.jpg'),
+        ('avatar_static', 'https://testserver/static/defaults/avatar_7.jpg'),
         ('header_static', 'https://testserver/static/defaults/header.jpg'),
 
         ('bot', False),
