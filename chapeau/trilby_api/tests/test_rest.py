@@ -1,5 +1,5 @@
 from django.test import TestCase
-from rest_framework.test import force_authenticate, APIClient
+from rest_framework.test import force_authenticate, APIClient, APIRequestFactory
 from chapeau.trilby_api.views import *
 from chapeau.trilby_api.tests import *
 from django.conf import settings
@@ -218,6 +218,28 @@ class TestStatuses(TestCase):
                     'descendants': [],
                     })
 
+    def test_get_emojis(self):
+        request = self.factory.get(
+                '/api/v1/emojis/',
+                )
+
+        view = Emojis.as_view()
+
+        result = view(request)
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content.decode())
+
+        self.assertEqual(
+                content,
+                [],
+                )
+
     def test_post_status(self):
 
         self._create_alice()
@@ -238,10 +260,10 @@ class TestStatuses(TestCase):
         self.assertEqual(
                 result.status_code,
                 201,
-                msg = result.content,
+                'Result code',
                 )
 
-        content = json.loads(result.content)
+        content = json.loads(result.content.decode())
 
         self.assertEqual(
                 content['content'],

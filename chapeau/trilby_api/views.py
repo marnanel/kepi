@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 import logging
 import chapeau.kepi.models as kepi_models
+from chapeau.kepi.create import create as kepi_create
 import json
 import re
 
@@ -142,13 +143,44 @@ class Statuses(generics.ListCreateAPIView,
 
     def create(self, request, *args, **kwargs):
 
-        if 'status' not in request.data and 'media_ids' not in request.data:
+        data = request.data
+
+        if 'status' not in data and 'media_ids' not in data:
             return HttpResponse(
                     status = 400,
                     content = 'You must supply a status or some media IDs',
                     )
 
-        return super().create(request, *args, **kwargs)
+        create_activity = kepi_create(value={
+            'type': 'Create',
+            'actor': request.user.url,
+            'object': {
+                'type': 'Note',
+                'language': data.get('language', None),
+                'sensitive': data.get('sensitive', False),
+                'content': data.get('status'),
+                'visibility': data.get('visibility', 'public'),
+                'spoiler_text': data.get('spoiler_text', ''),
+                'media_ids': data.get('media_ids', []),
+                # FIXME go through the list and find all the defaults
+                # and which fields are required
+                },
+
+            # FIXME these should be set according to "visibility"
+            'to': [request.user.actor['followers']],
+            'cc': [],
+            })
+
+        serializer = StatusSerializer(
+                create_activity['object__obj'],
+                partial = True,
+                )
+
+        return JsonResponse(
+                serializer.data,
+                status = 201, # Created
+                reason = 'Hot off the press',
+                )
 
 class StatusContext(generics.ListCreateAPIView):
 
@@ -392,6 +424,12 @@ class FeaturedCollectionView(View):
         return Status.objects.none()
 
 class Notifications(View):
+    # FIXME
+    def get(self, request, *args, **kwargs):
+        return JsonResponse([],
+                safe=False)
+
+class Emojis(View):
     # FIXME
     def get(self, request, *args, **kwargs):
         return JsonResponse([],
