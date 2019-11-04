@@ -60,7 +60,7 @@ class NodeinfoPart2(django.views.View):
         result = {
                 "version": "2.0",
                 "software" : {
-                    "name": "kepi",
+                    "name": "chapeau",
                     "version": __version__,
                 },
                 "protocols": ['activitypub'],
