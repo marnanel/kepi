@@ -69,7 +69,7 @@ class TestNodeinfo(TestCase):
 
         self.assertEqual(
             response['software']['name'],
-            'kepi',
+            'chapeau',
             )
 
         self.assertIn(
