@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.fields import CurrentUserDefault
 from .models import TrilbyUser
 from chapeau.kepi.models import AcItem
 from chapeau.kepi.create import create as kepi_create
@@ -121,7 +120,7 @@ class StatusSerializer(serializers.ModelSerializer):
                 )
 
     def create(self, validated_data):
-        posted_by = CurrentUserDefault()
+        posted_by = self.context['request'].user
         validated_data['posted_by'] = posted_by
         validated_data['type'] = 'Note'
 
