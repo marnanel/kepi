@@ -130,6 +130,9 @@ class Statuses(generics.ListCreateAPIView,
             serializer = StatusSerializer(
                     create_activity['object__obj'],
                     partial = True,
+                    context = {
+                        'request': request,
+                        },
                     )
         else:
             logger.info('Looking up all visible statuses for %s',
@@ -137,6 +140,9 @@ class Statuses(generics.ListCreateAPIView,
             # ... FIXME
             serializer = StatusSerializer(
                     queryset,
+                    context = {
+                        'request': request,
+                        },
                     )
 
         return JsonResponse(serializer.data)
@@ -174,6 +180,9 @@ class Statuses(generics.ListCreateAPIView,
         serializer = StatusSerializer(
                 create_activity['object__obj'],
                 partial = True,
+                context = {
+                    'request': request,
+                    },
                 )
 
         return JsonResponse(
