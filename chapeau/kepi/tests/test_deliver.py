@@ -151,43 +151,43 @@ class TestDelivery(TestCase):
     def test_simple_remote_and_local(self):
         self._test_delivery(
                 to=[REMOTE_FRED, LOCAL_BOB],
-                expected=['fred', 'bob'],
+                expected=['alice', 'fred', 'bob'],
                 )
 
     def test_simple_local(self):
         self._test_delivery(
                 to=[LOCAL_BOB],
-                expected=['bob'],
+                expected=['alice', 'bob'],
                 )
 
     def test_simple_remote(self):
         self._test_delivery(
                 to=[REMOTE_FRED],
-                expected=['fred'],
+                expected=['alice', 'fred'],
                 )
 
     def test_not_to_self(self):
         self._test_delivery(
                 to=[LOCAL_ALICE],
-                expected=[],
+                expected=['alice'],
                 )
 
     def test_not_to_public_url(self):
         self._test_delivery(
                 to=[PUBLIC],
-                expected=[],
+                expected=['alice'],
                 )
 
     def test_not_to_public_as(self):
         self._test_delivery(
                 to=['as:Public'],
-                expected=[],
+                expected=['alice'],
                 )
 
     def test_not_to_public_bare(self):
         self._test_delivery(
                 to=['Public'],
-                expected=[],
+                expected=['alice'],
                 )
 
     def test_remote_followers(self):

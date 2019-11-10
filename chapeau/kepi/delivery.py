@@ -425,11 +425,18 @@ def deliver(
         if field in activity_form:
             recipients.update(activity_form[field])
 
-    # Actors don't get told about their own activities
-    if not incoming:
-        if local_actor is not None and local_actor.url in recipients:
-            logger.info('  -- removing actor from recipients')
-            recipients.remove(local_actor.url)
+    if local_actor is not None:
+        if incoming:
+            # Actors don't get told about their own (incoming) activities
+            if local_actor.url in recipients:
+                logger.info('  -- removing actor from recipients')
+                recipients.remove(local_actor.url)
+        else:
+            # but if it originated locally, the status should appear in the
+            # actor's own inbox too
+            if local_actor.url not in recipients:
+                logger.info('  -- adding actor to recipients')
+                recipients.add(local_actor.url)
 
     if not recipients:
         logger.debug('%s: there are no recipients; giving up',
