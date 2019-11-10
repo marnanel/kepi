@@ -215,7 +215,7 @@ class AbstractTimeline(generics.ListAPIView):
     def get_queryset(self, request):
         raise NotImplementedError("cannot query abstract timeline")
 
-    def list(self, request):
+    def get(self, request):
         queryset = self.get_queryset(request)
         serializer = self.serializer_class(queryset,
                 many = True,
@@ -239,9 +239,19 @@ class HomeTimeline(AbstractTimeline):
 
     def get_queryset(self, request):
 
-        return kepi_models.Collection.get(
+        result = []
+
+        inbox = kepi_models.Collection.get(
                 user = request.user.actor,
                 collection = 'inbox').members
+
+        for item in inbox:
+            if item.f_type in [
+                    'Create',
+                    ]:
+                result.append(item['object__obj'])
+
+        return result
 
 ########################################
 
