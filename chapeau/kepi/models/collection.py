@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from .acobject import AcObject
 import logging
 
 logger = logging.getLogger(name='chapeau')
@@ -115,9 +116,11 @@ class Collection(models.Model):
 
     @property
     def members(self):
-        return CollectionMember.objects.filter(
-                parent = self,
-                ).select_related('member')
+        result = AcObject.objects.filter(
+                collectionmember__parent = self,
+                )
+
+        return result
 
 class CollectionMember(models.Model):
 
