@@ -23,8 +23,6 @@ class AcItem(acobject.AcObject):
     @property
     def visibility(self):
 
-        from chapeau.kepi.find import find
-
         audiences = audience.Audience.get_audiences_for(self)
         audience_to = set(audiences.get('to', []))
         audience_cc = set(audiences.get('cc', []))
@@ -42,11 +40,11 @@ class AcItem(acobject.AcObject):
         elif PUBLIC_IDS.intersection(audience_cc):
             return 'unlisted'
 
-        actor = find(self.account, local_only=True)
+        actor = self.actor
 
         if actor is None:
             logger.debug('%s: posted by %s, whom we don\'t know about',
-                    self.id, self.account)
+                    self.id, self.f_attributedTo)
         else:
             logger.debug('%s: checking visibility from poster: %s',
                     self.id, actor)
@@ -155,6 +153,19 @@ class AcItem(acobject.AcObject):
             return None
 
         return parent['attributedTo']
+
+    @property
+    def actor(self):
+        """
+        The AcActor who posted this status.
+
+        We might have no AcActor record for the poster,
+        in which case this property will be None.
+        You can still find the name of the actor in f_attributedTo.
+        """
+        from chapeau.kepi.find import find
+
+        return find(self.f_attributedTo, local_only=True)
 
     @property
     def account(self):
