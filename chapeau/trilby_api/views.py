@@ -95,16 +95,18 @@ class Verify_Credentials(generics.GenericAPIView):
     queryset = TrilbyUser.objects.all()
 
     def get(self, request, *args, **kwargs):
-        serializer = UserSerializerWithSource(request.user)
+        serializer = UserSerializerWithSource(request.user.actor)
         return JsonResponse(serializer.data)
 
 class User(generics.GenericAPIView):
 
-    queryset = TrilbyUser.objects.all()
+    queryset = AcActor.objects.all()
 
     def get(self, request, *args, **kwargs):
-        whoever = get_object_or_404(self.get_queryset(),
-                actor__id='@'+kwargs['name'])
+        whoever = get_object_or_404(
+                self.get_queryset(),
+                id='@'+kwargs['name'],
+                )
 
         serializer = UserSerializer(whoever)
         return JsonResponse(serializer.data)
@@ -159,7 +161,7 @@ class Statuses(generics.ListCreateAPIView,
 
         create_activity = kepi_create(value={
             'type': 'Create',
-            'actor': request.user.url,
+            'actor': request.user.actor.url,
             'object': {
                 'type': 'Note',
                 'language': data.get('language', None),

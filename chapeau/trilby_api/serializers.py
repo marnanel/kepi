@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import TrilbyUser
-from chapeau.kepi.models import AcItem
+from chapeau.kepi.models import AcItem, AcActor
 from chapeau.kepi.create import create as kepi_create
 from oauth2_provider.models import Application
 
@@ -9,36 +8,48 @@ from oauth2_provider.models import Application
 class UserSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(
-            source='username',
             read_only = True)
 
-    avatar = serializers.CharField()
-    header = serializers.CharField()
-
-    # for the moment, treat these as the same.
-    # the spec doesn't actually explain the difference!
-    avatar_static = serializers.CharField(
-            source='avatar',
+    avatar = serializers.URLField(
+            source='icon_or_default',
             )
-    header_static = serializers.CharField(
-            source='header',
+    header = serializers.URLField(
+            source='header_or_default',
             )
 
-    following_count = serializers.SerializerMethodField()
-    followers_count = serializers.SerializerMethodField()
-    statuses_count = serializers.SerializerMethodField()
+    avatar_static = serializers.URLField(
+            source='icon_or_default',
+            )
+    header_static = serializers.URLField(
+            source='header_or_default',
+            )
 
-    def get_following_count(self, obj):
-        return obj.actor['following_count']
+    username = serializers.CharField(
+            source='number',
+            )
 
-    def get_followers_count(self, obj):
-        return obj.actor['followers_count']
+    display_name = serializers.CharField(
+            source='f_name',
+            )
 
-    def get_statuses_count(self, obj):
-        return obj.actor['statuses_count']
+    acct = serializers.CharField(
+            source='number', # TODO: is it?
+            )
+
+    created_at = serializers.DateTimeField(
+            source='published',
+            )
+
+    note = serializers.CharField(
+            source='f_summary',
+            )
+
+    following_count = serializers.IntegerField()
+    followers_count = serializers.IntegerField()
+    statuses_count = serializers.IntegerField()
 
     class Meta:
-        model = TrilbyUser
+        model = AcActor
         fields = (
                 'id',
                 'username',
@@ -79,7 +90,7 @@ class UserSerializerWithSource(UserSerializer):
         return {
                 'privacy': user.default_visibility,
                 'sensitive': user.default_sensitive,
-                'note': user.note,
+                'note': user.f_summary,
                 'language': user.language,
                 }
 
@@ -143,10 +154,9 @@ class StatusSerializer(serializers.ModelSerializer):
             required = False,
             read_only = True)
 
-    account = serializers.CharField(
-            source = 'posted_by',
-            required = False,
-            read_only = True)
+    account = UserSerializer(
+            source = 'actor',
+            )
 
     in_reply_to_id = serializers.PrimaryKeyRelatedField(
             queryset=AcItem.objects.all,

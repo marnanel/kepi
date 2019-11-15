@@ -132,11 +132,22 @@ class AcActor(acobject.AcObject):
         else:
             super().__setitem__(name, value)
 
-    def _default_icon(self):
+    @property
+    def icon_or_default(self):
+        if self.icon:
+            return self.icon
+
         which = ord(self.id[1]) % 10
         return uri_to_url('/static/defaults/avatar_{}.jpg'.format(
             which,
             ))
+
+    @property
+    def header_or_default(self):
+        if self.header:
+            return self.header
+
+        return uri_to_url('/static/defaults/header.jpg')
 
     def __getitem__(self, name):
 
@@ -150,29 +161,10 @@ class AcActor(acobject.AcObject):
                 return self.id[1:]
             elif name=='url':
                 return self.url
-            elif name in ['icon', 'avatar', 'avatar_static']:
-                return self._default_icon()
-            elif name in ['header', 'header_static']:
-                return uri_to_url('/static/defaults/header.jpg')
             elif name=='feedURL':
                 return configured_url('USER_FEED_LINK',
                         username = self.id[1:],
                         )
-            elif name=='following_count':
-                return following.Following.objects.filter(
-                        follower=self.id,
-                        pending=False).count()
-            elif name=='followers_count':
-                return following.Following.objects.filter(
-                        following=self.id,
-                        pending=False).count()
-            elif name=='statuses_count':
-                return collection.Collection.get(
-                        user = self,
-                        collection = 'outbox',
-                        create_if_missing = True,
-                        ).members.count()
-
         if name=='publicKey':
             if not self.f_publicKey:
                 logger.debug('%s: we have no known public key',
@@ -238,7 +230,58 @@ class AcActor(acobject.AcObject):
 
         return result
 
-##############################
+    @property
+    def moved_to(self):
+        return None # TODO
+
+    @property
+    def fields(self):
+        return [] # FIXME
+
+    @property
+    def emojis(self):
+        return [] # FIXME
+
+    @property
+    def locked(self):
+        return False # TODO
+
+    @property
+    def default_visibility(self):
+        return 'public' # FIXME
+
+    @property
+    def default_sensitive(self):
+        return False # FIXME
+
+    @property
+    def bot(self):
+        return False # FIXME
+
+    @property
+    def language(self):
+        return settings.KEPI['LANGUAGES'][0] # FIXME
+
+    @property
+    def following_count(self):
+        return following.Following.objects.filter(
+                follower=self.id,
+                pending=False).count()
+
+    @property
+    def followers_count(self):
+        return following.Following.objects.filter(
+                following=self.id,
+                pending=False).count()
+
+    @property
+    def statuses_count(self):
+        return collection.Collection.get(
+                user = self,
+                collection = 'outbox',
+                create_if_missing = True,
+                ).members.count()
+
 
 class AcApplication(AcActor):
     pass

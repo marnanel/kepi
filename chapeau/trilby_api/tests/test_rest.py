@@ -6,7 +6,7 @@ from django.conf import settings
 import json
 
 ACCOUNT_EXPECTED = [
-        ('id', 'alice'),
+        ('id', '@alice'),
         ('username', 'alice'),
         ('acct', 'alice'),
         ('display_name', 'alice'),
@@ -35,7 +35,6 @@ ACCOUNT_SOURCE_EXPECTED = [
         ]
 
 STATUS_EXPECTED = [
-        ('account', '@alice'),
         ('in_reply_to_account_id', None),
         ('content', '<p>Hello world.</p>'),
         ('emojis', []),
@@ -187,6 +186,14 @@ class TestStatuses(TestCase):
             self.assertIn(field, content)
             self.assertEqual(content[field], expected,
                     msg="field '{}'".format(field))
+
+        self.assertIn('account', content)
+        account = content['account']
+
+        for field, expected in ACCOUNT_EXPECTED:
+            self.assertIn(field, account)
+            self.assertEqual(account[field], expected,
+                    msg="account field '{}'".format(field))
 
     def test_get_status_context(self):
 
