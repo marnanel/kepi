@@ -64,7 +64,7 @@ def follow(activity):
                 f_type = 'Accept',
                 f_actor = local_user.url,
                 f_object = activity.id,
-                run_side_effects = False,
+                run_side_effects = True,
                 run_delivery = True,
                 )
 
