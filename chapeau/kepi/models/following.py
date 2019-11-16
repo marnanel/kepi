@@ -48,16 +48,13 @@ class Following(models.Model):
         f = cls._get_follow(follower, following)
 
         if f is not None:
-
-            logger.warn('follow request failed; %s already exists',
-                f)
-
             if f.pending:
-                raise ValueError('%s has already requested to follow %s',
+                logger.warn('%s has already requested to follow %s',
                         follower, following)
             else:
-                raise ValueError('%s is already following %s',
+                logger.warn('%s is already following %s',
                         follower, following)
+            return
 
         result = Following(
                 follower = follower,
