@@ -11,8 +11,21 @@ This module contains create(), which creates objects.
 from chapeau.kepi.models import *
 import django.db.utils
 import logging
+import json
 
 logger = logging.getLogger(name='chapeau')
+
+def _fix_value_type(v):
+    if type(v) in [str, int, bool]:
+        # simple types are fine
+        return v
+
+    try:
+        result = v.id
+    except AttributeError:
+        result = v
+
+    return result
 
 def create(
         value=None,
@@ -106,31 +119,45 @@ def create(
 
     ########################
 
+    # Split out the values which have a f_* field in the class.
+
+    primary_values = {}
+
+    class_fields = dir(cls)
+    for f,v in list(value.items()):
+
+        if f=='id':
+            new_fieldname = f
+        else:
+            new_fieldname = 'f_'+f
+
+        if new_fieldname in class_fields:
+
+            primary_values[new_fieldname] = _fix_value_type(v)
+            del value[f]
+
+    logger.debug('Primary values are %s; others are %s',
+            primary_values, value)
+
+    ########################
+
     # Right, we need to create an object.
 
-    if 'id' in value:
-        try:
-            result = cls(
-                    id = value['id'],
-                    )
-            result.save()
-            logger.info('  -- created object %s',
-                result)
-            del value['id']
-        except django.db.utils.IntegrityError:
-            logger.warn('We already have an object with id=%s; ignoring',
-                value['id'])
-            return None
-    else:
+    try:
         result = cls(
+                **primary_values,
                 )
         result.save()
-        logger.warn('  -- created object %s',
+        logger.info('  -- created object %s',
             result)
+    except django.db.utils.IntegrityError:
+        logger.warn('We already have an object with id=%s; ignoring',
+            value['id'])
+        return None
 
     for f,v in value.items():
         try:
-            result[f] = v
+            result[f] = _fix_value_type(v)
         except django.db.utils.Error as pe:
             logger.warn('Can\'t set %s=%s on the new object (%s); bailing',
                 f, v, pe)
