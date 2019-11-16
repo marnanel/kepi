@@ -3,6 +3,7 @@ from rest_framework.test import force_authenticate, APIClient, APIRequestFactory
 from chapeau.trilby_api.views import *
 from chapeau.trilby_api.tests import *
 from django.conf import settings
+from unittest import skip
 import json
 
 ACCOUNT_EXPECTED = [
@@ -276,3 +277,38 @@ class TestStatuses(TestCase):
                 content['content'],
                 '<p>Hello world</p>',
                 )
+
+    @skip("serial numbers are not yet exposed")
+    def test_post_multiple_statuses(self):
+
+        self._create_alice()
+
+        previous_serial = 0
+
+        for i in range(0, 9):
+            request = self.factory.post(
+                    '/api/v1/statuses/',
+                    {
+                        'status': 'Hello world %d' % (i,),
+                        },
+                    format='json',
+                    )
+            force_authenticate(request, user=self._alice)
+
+            view = Statuses.as_view()
+
+            result = view(request)
+
+            self.assertEqual(
+                    result.status_code,
+                    201,
+                    'Result code',
+                    )
+
+            content = json.loads(result.content.decode())
+
+            self.assertLess(
+                    previous_serial,
+                    content['serial'])
+
+            previous_serial = content['serial']

@@ -418,12 +418,16 @@ class FollowingView(KepiView):
 
         logger.debug('Finding following of %s:', kwargs['username'])
 
+        user = configured_url('USER_LINK',
+                username = kwargs['username'],
+                )
+
         return Following.objects.filter(
-                follower='@'+kwargs['username'],
+                follower=user,
                 pending=False)
 
     def _modify_list_item(self, obj):
-        return short_id_to_url(obj.following)
+        return obj.following
 
 class FollowersView(KepiView):
 
@@ -431,12 +435,16 @@ class FollowersView(KepiView):
 
         logger.debug('Finding followers of %s:', kwargs['username'])
 
+        user = configured_url('USER_LINK',
+                username = kwargs['username'],
+                )
+
         return Following.objects.filter(
-                following='@'+kwargs['username'],
+                following=user,
                 pending=False)
 
     def _modify_list_item(self, obj):
-        return short_id_to_url(obj.follower)
+        return obj.follower
 
 class AllUsersView(KepiView):
 

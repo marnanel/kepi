@@ -50,32 +50,22 @@ def follow(activity):
     local_user = find(activity['object'], local_only=True)
     remote_user = find(activity['actor'])
 
+    Following.make_request(
+            follower = activity['actor'],
+            following = activity['object'],
+            )
+
     if local_user is not None and local_user.auto_follow:
         logger.info('Local user %s has auto_follow set; must Accept',
                 local_user)
 
-        Following.accept_request(
-                follower = activity['actor'],
-                following = activity['object'],
-                warn_on_unknown = False,
-                )
-
         accept_the_request = create(
                 f_to = remote_user.url,
                 f_type = 'Accept',
-                f_actor = local_user,
+                f_actor = local_user.url,
                 f_object = activity.id,
                 run_side_effects = False,
                 run_delivery = True,
-                )
-
-    else:
-        logger.info('Local user %s does not have auto_follow set.',
-                local_user)
-
-        Following.make_request(
-                follower = activity['actor'],
-                following = activity['object'],
                 )
 
     return True

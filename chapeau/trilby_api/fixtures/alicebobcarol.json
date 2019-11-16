@@ -34,7 +34,7 @@
   "fields": {
     "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIICWwIBAAKBgQDeDxrtPQDgoEpORMOX73vqXxyRbSDO/tdYMiJX4Eia1IJ/CW+l\nSc+NaM2ybjX7sFSqsrbtqUCT2eWcmCdYtkHZA0BRc+2q2c3WYJMoFxpxBB46Ep7o\nbDhal8Mhj4lOd7Wo4HYl1ehslE0PTLJgT6UR6ia5mtjFCowZEb2Kc8IGswIDAQAB\nAoGABK/QQ1gHtwtSJisyfTEBkcIDCgOeZ/x6h710eo2q9xNkfiaUuThA0U6xFEnL\n3v9Ha/isjNZ44+X7HIxyA7U0LW9N9ukUbFqnbBGaomqKDOKLOvqMvesXmhYj1zIS\njNCorHhxvpRFvgph6H+r8wBjIPbbByDB3PD0BDSkhEUkkLECQQDgO5X6kfHMYSM8\nA7tQG5izus1UQbhBXNZt2FfBhBjGiAEY3Oja3LDeUjId4Jdp3gK0ZbkR0O/x1REw\ngC3ZKwJLAkEA/YSup5C3zecrAUQN8hKhlhlmnXjsqpDbVzuf5BynIAJyf1Fc7w8r\n0p1Hc99VzQPdDrmfaR35TW2WmD+EO1kMOQJARKwa/5VIz0YEi3G9IQiCmLCiB6bk\n7ieniBaUsbBqAgtPArVNHxItnLjhnmLVHFggzezFZB5wDckqLYdkAzl3xwJAdwg8\nRRry4i9/Bqogbh+HVQV6I8fqPy+ifPPW3/EAG0xq3BKksu4JomsMaIBdNdRxj39i\nNKXJLyycP8Ha4U6vKQJAMMKBjGfJRSexAcAaNcP2Zwj4eMpT+QIrfVeYvfHeUT2T\njlbyBTMWuUDFGMjC7zfiRU2IOGoBoHKNR2nC2SWwEw==\n-----END RSA PRIVATE KEY-----",
     "f_name": "Alice Test",
-    "f_publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDeDxrtPQDgoEpORMOX73vqXxyR\nbSDO/tdYMiJX4Eia1IJ/CW+lSc+NaM2ybjX7sFSqsrbtqUCT2eWcmCdYtkHZA0BR\nc+2q2c3WYJMoFxpxBB46Ep7obDhal8Mhj4lOd7Wo4HYl1ehslE0PTLJgT6UR6ia5\nmtjFCowZEb2Kc8IGswIDAQAB\n-----END PUBLIC KEY-----",
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDeDxrtPQDgoEpORMOX73vqXxyR\nbSDO/tdYMiJX4Eia1IJ/CW+lSc+NaM2ybjX7sFSqsrbtqUCT2eWcmCdYtkHZA0BR\nc+2q2c3WYJMoFxpxBB46Ep7obDhal8Mhj4lOd7Wo4HYl1ehslE0PTLJgT6UR6ia5\nmtjFCowZEb2Kc8IGswIDAQAB\n-----END PUBLIC KEY-----",
     "auto_follow": true,
     "f_summary": "We'll see how deep the rabbithole really goes.",
     "icon": "/static/testing/alice.jpg",
@@ -84,7 +84,7 @@
   "fields": {
     "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCZcj4cSNiugpeilwBg9ymKu6FQPKM86f1aGSdLGDkT5ABLrAea\n/FwkZGpwh0p/p9liIZmpEDPE2t05wXU7wLGQXCowmVzoM4WmEa+ZuvC5d17OR8JC\nn+okvPqzYiUDqv1jgVqERCtvHY5847yvD/b7F2cs6momttmqdt2CYdXF8wIDAQAB\nAoGAEUjmKDIoflfllCy69TFCSQdjtMcaguUUuI52zPsN4D4MWSR9YtRPM3uVkIFy\nPzj9ar7AMWQgK2pABfPTLIeYjgQRFi9iyA4mD6xJxGIAf2a590PIUMjvR/udLvkL\nX2bCwND1BT4ltCm5HfhM0hQ5DPR1mrTGMIZoYBAXnz4nMbECQQDDgDRv4uVo878t\nY2jIq0vIge6T+18yFur8/yANWVy1jR2VD9XkV8jXDwzujTYc5aUngOlUxNLO7J2a\n+r1bdHZLAkEAyO5t7wX0GiCbBGHOfmUk7wa9xfxLhZafumrBBD1SHDDi0EQ5ZtVc\nbrPJp1eL3sncBFENlCiGaQKdY71XUzXF+QJANtBQY3qDheypkolHzNOyWNKNWPJm\n231vf2Xsz7FZfBHH1I5vEynFxv6SSqRPIsUEjFHpmfnhfWD8Q4K/6s95hwJARrvg\nyXdAEn6N88H2rnouwVKPNgZ2E6YNvtNb9YEcyb3P6t9JkdDkhDgYcieYnqpTINXj\nwNdvUcJQ487A0hMpCQJBAJXhIoabiEv+vAGn/zkLI7+PSuujlE9JdPxjHWMSTHGy\na9N3F3pfSDMpRPOAVm/WtxXln+hGuZNZMUOu/2lkDEg=\n-----END RSA PRIVATE KEY-----",
     "f_name": "Bob Test",
-    "f_publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCZcj4cSNiugpeilwBg9ymKu6FQ\nPKM86f1aGSdLGDkT5ABLrAea/FwkZGpwh0p/p9liIZmpEDPE2t05wXU7wLGQXCow\nmVzoM4WmEa+ZuvC5d17OR8JCn+okvPqzYiUDqv1jgVqERCtvHY5847yvD/b7F2cs\n6momttmqdt2CYdXF8wIDAQAB\n-----END PUBLIC KEY-----",
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCZcj4cSNiugpeilwBg9ymKu6FQ\nPKM86f1aGSdLGDkT5ABLrAea/FwkZGpwh0p/p9liIZmpEDPE2t05wXU7wLGQXCow\nmVzoM4WmEa+ZuvC5d17OR8JCn+okvPqzYiUDqv1jgVqERCtvHY5847yvD/b7F2cs\n6momttmqdt2CYdXF8wIDAQAB\n-----END PUBLIC KEY-----",
     "auto_follow": true,
     "f_summary": "Short for Bob.",
     "icon": "/static/testing/bob.jpg",
@@ -134,7 +134,7 @@
   "fields": {
     "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCVJ9rTVMvmQfE5gugY6CdLdubdluoBf9/mlPBDFKSj8rFRTDSx\nmF7GnkhLN/NuaDu5xzLEynIxEmTq3wYNSj0voF+U/foo2rnd85exx7qbacmGagYX\nbDrCbvz67m2p4GyQgksGy/9OjHlshwAOkswabUfhF6BVedwzz+EemqyZ9QIDAQAB\nAoGACq2OfyQaL8sHPa6HNqdCDuc9el4gNQjGSu/dLnQ3ICyS8KbDu/YUTOROeSIR\niZUpN3DRC+ERYT13n4/lU0S+EgN8YgBnsX+7VsTqyakK0s+Zza7RvLNL1bwCkSao\nY3lowJdZ9FeTXEsA6AXE129Z+eUP3ly5BxxZ3tETHFzUw/kCQQC12Dxdxj4Tp/PY\niskMwsqkLEv+2WtpFKBmJ1ozibjrZHu4XrB09b7PROr/YYa0WP8738mL929LyooZ\nf9fwIHQ5AkEA0fsJMUAMlYHvHI+8QaVrH6Nn3Rg1m13XSlzlgliv4xvOV1YqvegN\nhCXQMAm804cvmQlKmUQMA1G5s9++rr3rnQJANkJOSODVNwI/VVacBO2+j1wUVPfE\n//bCoZiOZqBqh/pUnD/MwSluhOQYhpkwG3IOvmvY9KWhFOlbaZ5m7WSRqQJAJgqF\nus9wuDFHAXSk1XvDcYLoES0OoSwaEdXMmpW4n7ts4XOx4J/GuxcipWFOPUAzhlUh\nl6y1RHCs5QJ3CC9OHQJBAJiYAsgJdHBOX1O6/N4yoGkp4U4ugSoN11DAPdLBzI7w\npaVg5SyP6nO9KMvq9CsTTJohidLqdokLgIuksF04yGg=\n-----END RSA PRIVATE KEY-----",
     "f_name": "",
-    "f_publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVJ9rTVMvmQfE5gugY6CdLdubd\nluoBf9/mlPBDFKSj8rFRTDSxmF7GnkhLN/NuaDu5xzLEynIxEmTq3wYNSj0voF+U\n/foo2rnd85exx7qbacmGagYXbDrCbvz67m2p4GyQgksGy/9OjHlshwAOkswabUfh\nF6BVedwzz+EemqyZ9QIDAQAB\n-----END PUBLIC KEY-----",
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVJ9rTVMvmQfE5gugY6CdLdubd\nluoBf9/mlPBDFKSj8rFRTDSxmF7GnkhLN/NuaDu5xzLEynIxEmTq3wYNSj0voF+U\n/foo2rnd85exx7qbacmGagYXbDrCbvz67m2p4GyQgksGy/9OjHlshwAOkswabUfh\nF6BVedwzz+EemqyZ9QIDAQAB\n-----END PUBLIC KEY-----",
     "auto_follow": true,
     "f_summary": "Every star shall sing a Carol.",
     "icon": "/static/testing/carol.jpg",

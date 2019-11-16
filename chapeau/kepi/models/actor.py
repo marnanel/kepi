@@ -32,7 +32,7 @@ class AcActor(acobject.AcObject):
                 'Something like "Alice Liddell".',
             )
 
-    f_publicKey = models.TextField(
+    publicKey = models.TextField(
             blank=True,
             null=True,
             verbose_name='public key',
@@ -76,7 +76,7 @@ class AcActor(acobject.AcObject):
                     "You gave: "+self.id)
 
     def _after_create(self):
-        if self.privateKey is None and self.f_publicKey is None:
+        if self.privateKey is None and self.publicKey is None:
 
             if not self.is_local:
                 logger.warn('%s: Attempt to save remote without key',
@@ -87,7 +87,7 @@ class AcActor(acobject.AcObject):
 
                 key = crypto.Key()
                 self.privateKey = key.private_as_pem()
-                self.f_publicKey = key.public_as_pem()
+                self.publicKey = key.public_as_pem()
                 self.save()
 
     def __str__(self):
@@ -124,10 +124,10 @@ class AcActor(acobject.AcObject):
 
             from chapeau.kepi.utils import as_json
 
-            self.f_publicKey = as_json(value,
+            self.publicKey = as_json(value,
                     indent=None)
             logger.info('%s: setting public key to %s',
-                    self, self.f_publicKey)
+                    self, self.publicKey)
             self.save()
         else:
             super().__setitem__(name, value)
@@ -166,14 +166,14 @@ class AcActor(acobject.AcObject):
                         username = self.id[1:],
                         )
         if name=='publicKey':
-            if not self.f_publicKey:
+            if not self.publicKey:
                 logger.debug('%s: we have no known public key',
                         self)
                 return None
 
             from json import loads
 
-            result = loads(self.f_publicKey)
+            result = loads(self.publicKey)
             logger.debug('%s: public key is %s',
                     self, result)
             return result

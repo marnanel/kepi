@@ -1,4 +1,5 @@
 from django.db import models
+from chapeau.kepi.utils import short_id_to_url
 import logging
 
 logger = logging.getLogger(name='chapeau')
@@ -41,6 +42,9 @@ class Following(models.Model):
     @classmethod
     def make_request(cls, follower, following):
 
+        follower = short_id_to_url(follower)
+        following = short_id_to_url(following)
+
         f = cls._get_follow(follower, following)
 
         if f is not None:
@@ -69,6 +73,9 @@ class Following(models.Model):
     def accept_request(cls, follower, following,
             warn_on_unknown = True):
 
+        follower = short_id_to_url(follower)
+        following = short_id_to_url(following)
+
         result = cls._get_follow(follower, following)
 
         if result is None:
@@ -94,7 +101,8 @@ class Following(models.Model):
     @classmethod
     def reject_request(cls, follower, following):
 
-        f = cls._get_follow(follower, following)
+        follower = short_id_to_url(follower)
+        following = short_id_to_url(following)
 
         if f is None:
             logger.warn('rejecting follow request; '+
