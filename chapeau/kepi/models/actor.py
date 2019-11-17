@@ -185,12 +185,11 @@ class AcActor(acobject.AcObject):
     def activity_form(self):
         result = super().activity_form
 
-        if 'publicKey' in result:
-            result['publicKey'] = {
-                'id': self.url + '#main-key',
-                'owner': self.url,
-                'publicKeyPem': result['publicKey'],
-                }
+        result['publicKey'] = {
+            'id': self.url + '#main-key',
+            'owner': self.url,
+            'publicKeyPem': self.publicKey,
+            }
 
         for listname in LIST_NAMES:
             result[listname] = self.list_url(listname)

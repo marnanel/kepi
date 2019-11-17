@@ -385,6 +385,17 @@ def _deliver_remote(
     logger.debug('%s: %s: posted. Server replied: %s %s',
             activity, inbox, response.status_code, response.reason)
 
+    if response.status_code>=400 and response.status_code<=499 and \
+            (response.status_code not in [404, 410]):
+
+        # The server thinks we made an error. Log the request we made
+        # so that we can debug it.
+
+        logger.debug("  -- for debugging: our signer was %s",
+                signer.__dict__)
+        logger.debug("  -- and this is how the message ran:")
+        logger.debug("%s\n%s", headers, message)
+
 @shared_task()
 def deliver(
         activity_id,

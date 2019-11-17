@@ -40,6 +40,11 @@ class TestKepiView(TestCase):
                 result,
                 )
 
+        self.assertIn(
+                'publicKey',
+                result,
+                )
+
     def test_multiple_kepi_view(self):
 
         alice = create_local_person('alice')
