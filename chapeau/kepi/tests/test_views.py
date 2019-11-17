@@ -5,6 +5,8 @@ import json
 
 logger = logging.getLogger(name='chapeau')
 
+ALICE_SUMMARY = 'Remember Alice? It\'s a song about Alice.'
+
 def _response_to_dict(response):
 
     result = json.loads(response.content.decode('utf-8'))
@@ -25,7 +27,9 @@ class TestKepiView(TestCase):
 
     def test_single_kepi_view(self):
 
-        alice = create_local_person('alice')
+        alice = create_local_person('alice',
+                summary = ALICE_SUMMARY,
+                )
 
         c = Client()
         response = c.get('/users/alice')
@@ -43,6 +47,11 @@ class TestKepiView(TestCase):
         self.assertIn(
                 'publicKey',
                 result,
+                )
+
+        self.assertEqual(
+                result['summary'],
+                ALICE_SUMMARY,
                 )
 
     def test_multiple_kepi_view(self):

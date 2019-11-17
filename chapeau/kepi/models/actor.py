@@ -212,9 +212,6 @@ class AcActor(acobject.AcObject):
         result['tag'] = []
         result['attachment'] = []
 
-        result['summary'] = '(Kepi user)'
-
-        # default images, for now
         result['icon'] = {
                 "type":"Image",
                 "mediaType":"image/jpeg",
