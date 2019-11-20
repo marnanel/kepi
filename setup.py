@@ -15,19 +15,19 @@ def get_version(package):
     init_py = open(os.path.join(package, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
-version = get_version('chapeau')
+version = get_version('kepi')
 
 setup(
-    name='chapeau',
+    name='kepi',
     version=version,
-    url='https://gitlab.com/marnanel/chapeau/',
+    url='https://gitlab.com/marnanel/kepi/',
     license='GPL-2',
     description='ActivityPub social media daemon',
     long_description=README,
     long_description_content_type='text/markdown',
     author='Marnanel Thurman',
     author_email='marnanel@thurman.org.uk',
-    packages=['chapeau'],
+    packages=['kepi'],
     include_package_data=True,
     install_requires=[],
     python_requires=">=3.0",
@@ -39,7 +39,7 @@ setup(
     ],
     entry_points = {
         'console_scripts': [
-            'chapeau=chapeau.kepi.command_line:main',
+            'kepi=kepi.kepi.command_line:main',
             ],
         },
 )
