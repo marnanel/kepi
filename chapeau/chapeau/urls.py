@@ -3,7 +3,7 @@ from django.urls import path, re_path, include
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 import oauth2_provider.views as oauth2_views
-import chapeau.kepi.urls
+import chapeau.bowler_pub.urls
 import chapeau.trilby_api.urls
 from chapeau.trilby_api.views import fix_oauth2_redirects
 from . import settings
@@ -31,7 +31,7 @@ urlpatterns = [
 
         # chapeau's own stuff
         # path('', chapeau.tophat_ui.views.FrontPageView.as_view()), # or something
-        path(r'', include(chapeau.kepi.urls)),
+        path(r'', include(chapeau.bowler_pub.urls)),
         path(r'', include(chapeau.trilby_api.urls)),
 ]
 

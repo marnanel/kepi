@@ -15,8 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 import logging
-import chapeau.kepi.models as kepi_models
-from chapeau.kepi.create import create as kepi_create
+import chapeau.bowler_pub.models as bowler_pub_models
+from chapeau.bowler_pub.create import create as bowler_pub_create
 import json
 import re
 
@@ -116,7 +116,7 @@ class Statuses(generics.ListCreateAPIView,
         generics.DestroyAPIView,
         ):
 
-    queryset = kepi_models.AcCreate.objects.all()
+    queryset = bowler_pub_models.AcCreate.objects.all()
     serializer_class = StatusSerializer
 
     def get(self, request, *args, **kwargs):
@@ -159,7 +159,7 @@ class Statuses(generics.ListCreateAPIView,
                     content = 'You must supply a status or some media IDs',
                     )
 
-        create_activity = kepi_create(value={
+        create_activity = bowler_pub_create(value={
             'type': 'Create',
             'actor': request.user.actor.url,
             'object': {
@@ -195,7 +195,7 @@ class Statuses(generics.ListCreateAPIView,
 
 class StatusContext(generics.ListCreateAPIView):
 
-    queryset = kepi_models.AcCreate.objects.all()
+    queryset = bowler_pub_models.AcCreate.objects.all()
 
     def get(self, request, *args, **kwargs):
 
@@ -243,7 +243,7 @@ class HomeTimeline(AbstractTimeline):
 
         result = []
 
-        inbox = kepi_models.Collection.get(
+        inbox = bowler_pub_models.Collection.get(
                 user = request.user.actor,
                 collection = 'inbox').members
 
@@ -263,11 +263,11 @@ class UserFeed(View):
 
     def get(self, request, username, *args, **kwargs):
 
-        user = get_object_or_404(kepi_models.AcActor,
+        user = get_object_or_404(bowler_pub_models.AcActor,
                 id = '@'+username,
                 )
 
-        statuses = [x.member for x in kepi_models.Collection.get(
+        statuses = [x.member for x in bowler_pub_models.Collection.get(
                 username+'/outbox',
                 ).contents]
 

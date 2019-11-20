@@ -90,7 +90,7 @@ INSTALLED_APPS = (
         'django_fields',
         'polymorphic',
 
-        'chapeau.kepi',
+        'chapeau.bowler_pub',
         'chapeau.trilby_api',
 
         )

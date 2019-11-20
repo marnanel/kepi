@@ -4,7 +4,7 @@ PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
 
 def create_local_trilbyuser(name='jemima'):
 
-    from chapeau.kepi.tests import create_local_person
+    from chapeau.bowler_pub.tests import create_local_person
     from chapeau.trilby_api.models import TrilbyUser
 
     person = create_local_person(name=name)
@@ -19,7 +19,7 @@ def create_local_trilbyuser(name='jemima'):
 def create_local_status(content,
         posted_by):
 
-    from chapeau.kepi.create import create
+    from chapeau.bowler_pub.create import create
 
     if isinstance(posted_by, TrilbyUser):
         posted_by = posted_by.actor

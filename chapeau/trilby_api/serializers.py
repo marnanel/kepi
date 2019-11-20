@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from chapeau.kepi.models import AcItem, AcActor
-from chapeau.kepi.create import create as kepi_create
+from chapeau.bowler_pub.models import AcItem, AcActor
+from chapeau.bowler_pub.create import create as bowler_pub_create
 from oauth2_provider.models import Application
 
 #########################################
@@ -135,7 +135,7 @@ class StatusSerializer(serializers.ModelSerializer):
         validated_data['posted_by'] = posted_by
         validated_data['type'] = 'Note'
 
-        result = kepi_create(
+        result = bowler_pub_create(
                 value = validated_data,
                 )
 

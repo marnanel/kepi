@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 import chapeau.trilby_api.forms as trilby_forms
 import chapeau.trilby_api.models as trilby_models
-from chapeau.kepi.create import create
+from chapeau.bowler_pub.create import create
 
 @admin.register(trilby_models.TrilbyUser)
 class TrilbyUserAdmin(UserAdmin):

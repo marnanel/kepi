@@ -1,0 +1,34 @@
+[
+{
+    "model": "bowler_pub.ActivityObject",
+    "pk": 1,
+    "fields": {
+        "a_type": "Object",
+        "verified": true
+    }
+},
+{
+    "model": "bowler_pub.ActivityObject",
+    "pk": 2,
+    "fields": {
+        "a_type": "Object",
+        "verified": false
+    }
+},
+{
+    "model": "bowler_pub.ActivityObject",
+    "pk": 3,
+    "fields": {
+        "a_type": "Person",
+        "verified": true
+    }
+},
+{
+    "model": "things_for_testing.ThingUser",
+    "pk": 1,
+    "fields": {
+        "name": "Alice Test",
+        "activity_object": 3
+    }
+}
+]

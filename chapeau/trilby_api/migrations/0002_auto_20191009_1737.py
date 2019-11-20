@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='trilbyuser',
             name='actor',
-            field=models.OneToOneField(default=None, on_delete=django.db.models.deletion.CASCADE, to='kepi.AcPerson'),
+            field=models.OneToOneField(default=None, on_delete=django.db.models.deletion.CASCADE, to='bowler_pub.AcPerson'),
         ),
     ]

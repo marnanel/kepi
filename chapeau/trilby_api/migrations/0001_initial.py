@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('kepi', '0001_initial'),
+        ('bowler_pub', '0001_initial'),
         ('auth', '0011_update_proxy_permissions'),
     ]
 
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
                 ('email', models.EmailField(blank=True, max_length=254, unique=True, verbose_name='email address')),
-                ('actor', models.OneToOneField(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='kepi.AcPerson')),
+                ('actor', models.OneToOneField(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='bowler_pub.AcPerson')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.Permission', verbose_name='user permissions')),
             ],
