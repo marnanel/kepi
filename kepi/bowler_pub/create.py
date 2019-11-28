@@ -8,10 +8,10 @@
 This module contains create(), which creates objects.
 """
 
-from kepi.bowler_pub.models import *
 import django.db.utils
 import logging
 import json
+from kepi.bowler_pub import signals
 
 logger = logging.getLogger(name='kepi')
 
@@ -32,6 +32,7 @@ def create(
         is_local_user=True,
         run_side_effects=True,
         run_delivery=True,
+        send_signal=True,
         incoming=False,
         **kwargs):
 
@@ -48,6 +49,8 @@ def create(
         object should have the side-effect of deleting something.
     run_delivery -- whether we should attempt to deliver the
         new object to whatever audiences it lists.
+    send_signal -- whether we should send signals.created
+        about the new object
 
     Any extra keyword arguments are taken to be fields of the
     new object, just as if they had appeared in "value".
@@ -61,6 +64,7 @@ def create(
 
     from kepi.bowler_pub.delivery import deliver
     from kepi.bowler_pub.models.activity import AcActivity
+    from kepi.bowler_pub.models.acobject import AcObject
 
     if value is None:
         value = {}
@@ -176,6 +180,13 @@ def create(
     if run_delivery and isinstance(result, AcActivity):
         deliver(result.id,
                 incoming = incoming)
+
+    if send_signal:
+        logger.debug('  -- sending signals')
+        signals.created.send(
+                sender = AcObject,
+                value = result,
+                )
 
     return result
 
