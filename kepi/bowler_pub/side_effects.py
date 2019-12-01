@@ -288,6 +288,18 @@ def update(activity, **kwargs):
     # all properties of "existing" which aren't in
     # "new_object"
 
+    if not activity.is_local:
+        for f, v in sorted(existing.items()):
+            if f in new_object:
+                continue
+            if f in UNSETTABLE_FIELDS:
+                continue
+
+            logger.debug('  -- removing %s because it wasn\'t specified',
+                    f)
+
+            del existing[f]
+
     existing.save()
 
     if kwargs.get('send_signal', True):
