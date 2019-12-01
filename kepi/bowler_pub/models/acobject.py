@@ -149,6 +149,9 @@ class AcObject(PolymorphicModel):
     def f_type(self):
         return self.__class__.__name__[2:]
 
+    def items(self):
+        return self.activity_form.items()
+
     @property
     def activity_form(self):
 
@@ -302,7 +305,7 @@ class AcObject(PolymorphicModel):
     def audiences(self):
         return Audience.get_audiences_for(self)
 
-    def run_side_effects(self):
+    def run_side_effects(self, **kwargs):
 
         from kepi.bowler_pub.find import find
         from kepi.bowler_pub.delivery import deliver
@@ -314,7 +317,10 @@ class AcObject(PolymorphicModel):
                     f_type)
             return True
 
-        result = getattr(side_effects, f_type)(self)
+        result = getattr(side_effects, f_type)(
+                self,
+                **kwargs,
+                )
 
         return result
 

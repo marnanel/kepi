@@ -42,8 +42,7 @@ def create(
     Keyword arguments:
     value -- the fields of the new object, as a dict.
         Must contain a key "type".
-    is_local_user -- True if the object is being created by a
-        local user, False if we received it across the network.
+    is_local_user -- ignored (FIXME)
     run_side_effects -- whether the new object should cause
         its usual side effects. For example, creating a Delete
         object should have the side-effect of deleting something.
@@ -77,8 +76,8 @@ def create(
         else:
             value[k] = v
 
-    logger.info("Create begins: source is %s; local? %s; run side effects? %s",
-        value, is_local_user, run_side_effects)
+    logger.info("Create begins: source is %s; run side effects? %s",
+        value, run_side_effects)
 
     if value is None:
         logger.warn("  -- it's ludicrous to create an Object with no value")
@@ -171,7 +170,9 @@ def create(
         result._after_create()
 
     if run_side_effects:
-        success = result.run_side_effects()
+        success = result.run_side_effects(
+                send_signal = send_signal,
+                )
         if not success:
             logger.debug('  -- side-effects failed; deleting original object')
             result.delete()
@@ -182,7 +183,7 @@ def create(
                 incoming = incoming)
 
     if send_signal:
-        logger.debug('  -- sending signals')
+        logger.debug('  -- sending "created" signal')
         signals.created.send(
                 sender = AcObject,
                 value = result,

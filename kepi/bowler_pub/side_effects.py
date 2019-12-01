@@ -15,10 +15,17 @@ import logging
 from django.conf import settings
 from kepi.bowler_pub.find import find, is_local
 from kepi.bowler_pub.delivery import deliver
+from kepi.bowler_pub import signals
+from kepi.bowler_pub.utils import short_id_to_url
 
 logger = logging.getLogger(name='kepi')
 
-def accept(activity):
+UNSETTABLE_FIELDS = [
+        'id',
+        'type',
+        ]
+
+def accept(activity, **kwargs):
 
     from kepi.bowler_pub.models.following import Following
 
@@ -38,7 +45,7 @@ def accept(activity):
 
     return True
 
-def follow(activity):
+def follow(activity, **kwargs):
 
     from kepi.bowler_pub.models.following import Following
     from kepi.bowler_pub.create import create
@@ -70,7 +77,7 @@ def follow(activity):
 
     return True
 
-def reject(activity):
+def reject(activity, **kwargs):
 
     from kepi.bowler_pub.models.following import Following
 
@@ -90,7 +97,7 @@ def reject(activity):
 
     return True
 
-def create(activity):
+def create(activity, **kwargs):
 
     import kepi.bowler_pub.models as bowler_pub_models
     from kepi.bowler_pub.create import create as bowler_pub_create
@@ -161,6 +168,10 @@ def create(activity):
 
             logger.debug('  -- checking %s, currently %s',
                     f, v)
+
+            if not v:
+                continue
+
             for a in v:
                 if isinstance(a, Audience):
                     a = a.recipient
@@ -233,7 +244,9 @@ def create(activity):
 
     return True
 
-def update(activity):
+def update(activity, **kwargs):
+
+    from kepi.bowler_pub.models.acobject import AcObject
 
     new_object = activity['object']
 
@@ -241,18 +254,18 @@ def update(activity):
         logger.warn('Update did not include an id.')
         return False
 
-    existing = find(new_object['id'],
-            local_only = True)
+    existing = find(new_object['id'])
 
     if existing is None:
         logger.warn('Update to non-existent object, %s.',
                 new_object['id'])
         return False
 
-    if existing['attributedTo']!=activity['actor']:
-        logger.warn('Update by %s to object owned by %s. '+\
+    if short_id_to_url(existing['attributedTo'])!=activity['actor']:
+        logger.warn('Update by %s to %s, which is owned by %s. '+\
                 'Deleting update.',
                 activity['actor'],
+                existing,
                 existing['attributedTo'],
                 )
         return False
@@ -261,8 +274,13 @@ def update(activity):
             new_object['id'])
 
     for f, v in sorted(new_object.items()):
-        if f=='id':
+        if f in UNSETTABLE_FIELDS:
+            logger.debug('  -- not setting %s = %s as it\'s unsettable',
+                    f, v)
             continue
+
+        logger.debug('  -- setting %s = %s',
+                f, v)
 
         existing[f] = v
 
@@ -271,11 +289,19 @@ def update(activity):
     # "new_object"
 
     existing.save()
+
+    if kwargs.get('send_signal', True):
+        logger.debug('  -- sending "updated" signal')
+        signals.updated.send(
+                sender = AcObject,
+                value = existing,
+                )
+
     logger.debug('  -- done')
 
     return True
 
-def delete(activity):
+def delete(activity, **kwargs):
 
     victim = find(activity['object'],
             local_only = True)
