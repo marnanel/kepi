@@ -303,14 +303,20 @@ def update(activity, **kwargs):
 
 def delete(activity, **kwargs):
 
-    victim = find(activity['object'],
+    from kepi.bowler_pub.models.acobject import AcObject
+
+    victim_id = activity['object']
+
+    victim = find(victim_id,
             local_only = True)
 
     if victim is None:
         logger.info('  -- attempt to Delete non-existent object.')
         return False
 
-    if settings.KEPI['TOMBSTONES']:
+    entomb = settings.KEPI['TOMBSTONES']
+
+    if entomb:
         # I have a lovely cask of amontillado to show you
         victim.entomb()
     else:
@@ -318,4 +324,11 @@ def delete(activity, **kwargs):
         logger.info('  -- %s deleted',
                 victim)
 
+    if kwargs.get('send_signal', True):
+        logger.debug('  -- sending "deleted" signal')
+        signals.deleted.send(
+                sender = AcObject,
+                url = victim_id,
+                entombed = entomb,
+                )
     return True

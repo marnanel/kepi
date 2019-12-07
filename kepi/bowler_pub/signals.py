@@ -12,5 +12,6 @@ updated = Signal(
 
 deleted = Signal(
         providing_args=[
-            'value',
+            'url',
+            'entombed',
             ])

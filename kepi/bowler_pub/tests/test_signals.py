@@ -31,11 +31,11 @@ class TestSignals(TestCase):
 
         created.connect(receiver)
 
-        alice = create_local_person(name='alice')
+        arthur = create_local_person(name='arthur')
 
         self.assertEqual(
                 self._signal_was_called_with,
-                alice,
+                arthur,
                 )
 
     def test_updated(self):
@@ -47,9 +47,9 @@ class TestSignals(TestCase):
 
         updated.connect(receiver)
 
-        alice = create_local_person(name='alice')
+        arthur = create_local_person(name='arthur')
         note = create_local_note(
-                attributedTo = alice,
+                attributedTo = arthur,
                 content = ORIGINAL_CONTENT,
                 )
 
@@ -65,7 +65,7 @@ class TestSignals(TestCase):
 
         activity = {
                 'type': 'Update',
-                'actor': alice.url,
+                'actor': arthur.url,
                 'object': changes,
                 }
 
@@ -85,3 +85,42 @@ class TestSignals(TestCase):
                 note['content'],
                 UPDATED_CONTENT,
                 )
+
+    def test_deleted(self):
+
+        self._signal_was_called_with = None
+
+        def receiver(sender, url, entombed, **kwargs):
+            self._signal_was_called_with = url
+
+        deleted.connect(receiver)
+
+        arthur = create_local_person(name='arthur')
+        note = create_local_note(
+                attributedTo = arthur,
+                content = 'Fatuous sort of thing to say, really.',
+                )
+
+        note_url = note.url
+
+        self.assertEqual(
+                self._signal_was_called_with,
+                None,
+                )
+
+        activity = {
+                'type': 'Delete',
+                'actor': arthur.url,
+                'object': note_url,
+                }
+
+        result = create(
+                value = activity,
+                run_delivery = False,
+                )
+
+        self.assertEqual(
+                self._signal_was_called_with,
+                note_url,
+                )
+
