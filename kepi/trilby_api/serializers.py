@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from kepi.bowler_pub.models import AcItem, AcActor
 from kepi.bowler_pub.create import create as bowler_pub_create
+from kepi.trilby_api.models import Notification
 from oauth2_provider.models import Application
 
 #########################################
@@ -220,3 +221,15 @@ class StatusContextSerializer(serializers.ModelSerializer):
         descendants = serializers.ListField(
                 child = serializers.CharField(),
                 read_only = True)
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Notification
+        fields = [
+                'id',
+                'type',
+                'created_at',
+                'account',
+                'status',
+                ]

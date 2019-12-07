@@ -1,11 +1,14 @@
 from django.db import models
-from django.db.models.signals import post_init
-from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
-from kepi.bowler_pub.models import AcPerson
-from kepi.bowler_pub.create import create
-from django.conf import settings
-import kepi.trilby_api.models
+from kepi.bowler_pub.models import AcPerson, AcItem
+from enum import Enum
+from django.utils.timezone import now
+
+class NotificationType(Enum):
+    F = 'follow'
+    M = 'mention'
+    R = 'reblog'
+    L = 'favourite'
 
 class TrilbyUser(AbstractUser):
 
@@ -14,4 +17,29 @@ class TrilbyUser(AbstractUser):
             on_delete=models.CASCADE,
             unique=True,
             default=None,
+            )
+
+class Notification(models.Model):
+
+    notification_type = models.CharField(
+            max_length = 256,
+            choices = [
+                (tag, tag.value) for tag in NotificationType
+                ],
+            )
+
+    created_at = models.DateTimeField(
+            default = now,
+            )
+
+    account = models.ForeignKey(
+            AcPerson,
+            on_delete = models.DO_NOTHING,
+            )
+
+    status = models.ForeignKey(
+            AcItem,
+            on_delete = models.DO_NOTHING,
+            blank = True,
+            null = True,
             )

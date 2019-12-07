@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
-from .models import TrilbyUser
+from .models import TrilbyUser, Notification
 from .serializers import *
 from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
@@ -317,11 +317,15 @@ class UserFeed(View):
 
 ########################################
 
-class Notifications(View):
-    # FIXME
-    def get(self, request, *args, **kwargs):
-        return JsonResponse([],
-                safe=False)
+class Notifications(generics.ListAPIView):
+
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class Emojis(View):
     # FIXME
