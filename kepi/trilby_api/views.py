@@ -319,12 +319,18 @@ class UserFeed(View):
 
 class Notifications(generics.ListAPIView):
 
-    queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
 
+    permission_classes = [
+            IsAuthenticated,
+            ]
+
     def list(self, request):
-        queryset = self.get_queryset()
-        serializer = UserSerializer(queryset, many=True)
+        queryset = Notification.objects.filter(
+                for_account = request.user,
+                )
+
+        serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
 class Emojis(View):

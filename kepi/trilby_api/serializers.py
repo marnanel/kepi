@@ -233,3 +233,8 @@ class NotificationSerializer(serializers.ModelSerializer):
                 'account',
                 'status',
                 ]
+
+    account = serializers.CharField(source='about_account')
+
+NotificationSerializer._declared_fields['type'] = \
+    serializers.CharField(source='get_notification_type_display')

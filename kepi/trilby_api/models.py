@@ -4,17 +4,10 @@ from django.dispatch import receiver
 import kepi.bowler_pub.models as kepi_models
 import kepi.bowler_pub.signals as kepi_signals
 import kepi.bowler_pub.find as kepi_find
-from enum import Enum
 from django.utils.timezone import now
 import logging
 
 logger = logging.Logger('kepi')
-
-class NotificationType(Enum):
-    F = 'follow'
-    M = 'mention'
-    R = 'reblog'
-    L = 'favourite'
 
 class TrilbyUser(AbstractUser):
 
@@ -27,20 +20,35 @@ class TrilbyUser(AbstractUser):
 
 class Notification(models.Model):
 
+    FOLLOW = 'F'
+    MENTION = 'M'
+    REBLOG = 'R'
+    FAVOURITE = 'L'
+
+    TYPE_CHOICES = [
+            (FOLLOW, 'follow'),
+            (MENTION, 'mention'),
+            (REBLOG, 'reblog'),
+            (FAVOURITE, 'favourite'),
+            ]
+
     notification_type = models.CharField(
             max_length = 256,
-            choices = [
-                (tag, tag.value) for tag in NotificationType
-                ],
+            choices = TYPE_CHOICES,
             )
 
     created_at = models.DateTimeField(
             default = now,
             )
 
-    account = models.ForeignKey(
-            kepi_models.AcPerson,
+    for_account = models.ForeignKey(
+            TrilbyUser,
             on_delete = models.DO_NOTHING,
+            )
+
+    about_account = models.CharField(
+            max_length = 256,
+            default='',
             )
 
     status = models.ForeignKey(
@@ -50,6 +58,24 @@ class Notification(models.Model):
             null = True,
             )
 
+    def __str__(self):
+
+        if self.notification_type == self.FOLLOW:
+            detail = '%s has followed you' % (self.about_account,)
+        elif self.notification_type == self.MENTION:
+            detail = '%s has mentioned you' % (self.about_account,)
+        elif self.notification_type == self.REBLOG:
+            detail = '%s has reblogged you' % (self.about_account,)
+        elif self.notification_type == self.FAVOURITE:
+            detail = '%s has favourited your status' % (self.about_account,)
+        else:
+            detail = '(%s?)' % (self.notification_type,)
+
+        return '[%s: %s]' % (
+                self.for_account.id,
+                detail,
+                )
+
 @receiver(kepi_signals.created)
 def on_follow(sender, **kwargs):
 
@@ -57,15 +83,34 @@ def on_follow(sender, **kwargs):
 
     if isinstance(value, kepi_models.AcFollow):
 
-        logger.info('Storing a notification about this follow.')
+        follower_acperson = kepi_find.find(
+                value['object'],
+                local_only = True,
+                )
 
-        follower = kepi_find.find(value['object'])
+        if follower_acperson is None:
+            logger.info('  -- not storing a notification, because '+\
+                    'nobody\'s being followed')
+            return
+
+        try:
+            follower = TrilbyUser.objects.get(actor=follower_acperson)
+        except TrilbyUser.DoesNotExist:
+            logger.info('  -- not storing a notification, because '+\
+                    'we don\'t know the person being followed')
+            return
+
+        logger.info('  -- storing a notification about this follow')
+
+        following = value['actor']
 
         notification = Notification(
-                notification_type = NotificationType.F,
-                account = follower,
+                notification_type = Notification.FOLLOW,
+                for_account = follower,
+                about_account = following,
                 )
 
         notification.save()
-        logger.info('  -- notification is: %s',
+
+        logger.info('      -- notification is: %s',
                 notification)
