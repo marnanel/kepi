@@ -162,15 +162,19 @@ def mock_remote_object(
 def create_remote_person(
         url,
         name,
-        publicKey,
         on_fetch = None,
+        load_default_keys_from='kepi/bowler_pub/tests/keys/keys-0002.json',
         **fields):
+
+    if 'publicKey' not in fields:
+        keys = json.load(open(load_default_keys_from, 'r'))
+
+        fields['publicKey'] = keys['public']
 
     body = as_json(
             remote_user(
                 url=url,
                 name=name,
-                publicKey = publicKey,
                 **fields,
                 ))
 
