@@ -280,7 +280,10 @@ class AcActor(acobject.AcObject):
 
     @property
     def display_name(self):
-        return self['display_name']
+        if self.is_local:
+            return self.f_name
+        else:
+            return self['display_name']
 
     @property
     def following_count(self):
