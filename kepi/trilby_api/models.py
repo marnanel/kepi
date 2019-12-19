@@ -80,6 +80,11 @@ class Notification(models.Model):
                 detail,
                 )
 
+##################################################
+# Notification handlers
+
+# FIXME these are really similar. Can we refactor?
+
 @receiver(kepi_signals.created)
 def on_follow(sender, **kwargs):
 
@@ -112,6 +117,52 @@ def on_follow(sender, **kwargs):
                 notification_type = Notification.FOLLOW,
                 for_account = follower,
                 about_account = following,
+                )
+
+        notification.save()
+
+        logger.info('      -- notification is: %s',
+                notification)
+
+@receiver(kepi_signals.created)
+def on_like(sender, **kwargs):
+
+    value = kwargs['value']
+
+    if isinstance(value, kepi_models.AcLike):
+
+        status = kepi_find.find(
+                value['object'],
+                local_only = True)
+
+        if status is None:
+            logger.info('  -- not storing a notification, because '+\
+                    "there's no local object")
+            return
+
+        owner_acperson = status['attributedTo__obj']
+
+        if owner_acperson is None:
+            logger.info('  -- not storing a notification, because '+\
+                    'there\'s no owner')
+            return
+
+        try:
+            owner = TrilbyUser.objects.get(actor=owner_acperson)
+        except TrilbyUser.DoesNotExist:
+            logger.info('  -- not storing a notification, because '+\
+                    'we don\'t know the owner')
+            return
+
+        logger.info('  -- storing a notification about this like')
+
+        sender = value['actor']
+
+        notification = Notification(
+                notification_type = Notification.FAVOURITE,
+                for_account = owner,
+                about_account = sender,
+                status = status,
                 )
 
         notification.save()
