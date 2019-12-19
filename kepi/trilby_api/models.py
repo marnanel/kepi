@@ -58,6 +58,10 @@ class Notification(models.Model):
             null = True,
             )
 
+    @property
+    def about_account_actor(self):
+        return kepi_models.AcActor.get_by_url(self.about_account)
+
     def __str__(self):
 
         if self.notification_type == self.FOLLOW:
