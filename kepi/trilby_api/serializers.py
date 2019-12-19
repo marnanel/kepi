@@ -26,15 +26,13 @@ class UserSerializer(serializers.ModelSerializer):
             )
 
     username = serializers.CharField(
-            source='number',
+            source='preferredUsername',
             )
 
     display_name = serializers.CharField(
-            source='f_name',
             )
 
     acct = serializers.CharField(
-            source='number', # TODO: is it?
             )
 
     created_at = serializers.DateTimeField(
@@ -234,7 +232,9 @@ class NotificationSerializer(serializers.ModelSerializer):
                 'status',
                 ]
 
-    account = serializers.CharField(source='about_account')
+    account = UserSerializer(source='about_account_actor')
+
+    status = StatusSerializer()
 
 NotificationSerializer._declared_fields['type'] = \
     serializers.CharField(source='get_notification_type_display')

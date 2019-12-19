@@ -63,8 +63,21 @@ class TestNotifications(TestCase):
         self.assertDictContainsSubset(
                 {
                     'type': 'follow',
-                    # XXX Should this be a string? I thought it was a dict
-                    'account': REMOTE_FRED,
                     },
                 content[0],
+                )
+
+        self.assertIn(
+                'account',
+                content[0],
+                )
+
+        self.assertDictContainsSubset(
+                {
+                    'id': 'https://remote.example.org/users/fred',
+                    'username': 'fred',
+                    'acct': '@fred@remote.example.org',
+                    'url': 'https://remote.example.org/users/fred',
+                    },
+                content[0]['account'],
                 )
