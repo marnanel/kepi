@@ -149,6 +149,22 @@ class AcActor(acobject.AcObject):
 
         return uri_to_url('/static/defaults/header.jpg')
 
+    @property
+    def acct(self):
+        return '@{}@{}'.format(
+                self.preferredUsername,
+                self.hostname,
+                )
+
+    @property
+    def hostname(self):
+        if self.is_local:
+            return settings.KEPI['LOCAL_OBJECT_HOSTNAME']
+        else:
+            from urllib.parse import urlparse
+            parsed_url = urlparse(self.url)
+            return parsed_url.hostname
+
     def __getitem__(self, name):
 
         if self.is_local:
@@ -257,6 +273,14 @@ class AcActor(acobject.AcObject):
     @property
     def language(self):
         return settings.KEPI['LANGUAGES'][0] # FIXME
+
+    @property
+    def preferredUsername(self):
+        return self['preferredUsername']
+
+    @property
+    def display_name(self):
+        return self['display_name']
 
     @property
     def following_count(self):
