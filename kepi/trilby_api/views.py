@@ -226,12 +226,27 @@ class AbstractTimeline(generics.ListAPIView):
                     })
         return Response(serializer.data)
 
+PUBLIC_TIMELINE_SLICE_LENGTH = 20
+
 class PublicTimeline(AbstractTimeline):
 
     permission_classes = ()
 
     def get_queryset(self, request):
-        return AcItem.objects.filter(visibility='public')
+
+        result = []
+
+        timeline = bowler_pub_models.AcItem.objects.all()
+
+        for item in timeline:
+
+            if item.visibility=='public':
+                result.append(item)
+
+            if len(result)>=PUBLIC_TIMELINE_SLICE_LENGTH:
+                break
+
+        return result
 
 class HomeTimeline(AbstractTimeline):
 

@@ -17,7 +17,9 @@ def create_local_trilbyuser(name='jemima'):
     return result
 
 def create_local_status(content,
-        posted_by):
+        posted_by,
+        to=[PUBLIC],
+        ):
 
     from kepi.bowler_pub.create import create
 
@@ -37,7 +39,7 @@ def create_local_status(content,
                     'attributedTo': posted_by.id,
                     'content': content,
                     },
-                'to': [PUBLIC],
+                'to': to,
             },
             )
 
