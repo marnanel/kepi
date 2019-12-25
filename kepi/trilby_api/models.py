@@ -4,6 +4,7 @@ from django.dispatch import receiver
 import kepi.bowler_pub.models as kepi_models
 import kepi.bowler_pub.signals as kepi_signals
 import kepi.bowler_pub.find as kepi_find
+from kepi.bowler_pub.create import create
 from django.utils.timezone import now
 import logging
 
@@ -17,6 +18,33 @@ class TrilbyUser(AbstractUser):
             unique=True,
             default=None,
             )
+
+    def save(self, *args, **kwargs):
+
+        if self.pk is None:
+
+            name = self.get_username()
+
+            logger.info('Creating AcPerson for new user "%s".',
+                    name)
+
+            spec = {
+                'name': name,
+                'id': '@'+name,
+                'type': 'Person',
+                }
+
+            new_person = create(
+                    value = spec,
+                    run_delivery = False,
+                    )
+
+            self.actor = new_person
+
+            logger.info('  -- new AcPerson is %s',
+                    new_person)
+
+        super().save(*args, **kwargs)
 
 class Notification(models.Model):
 
