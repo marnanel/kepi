@@ -348,6 +348,8 @@ class Notifications(generics.ListAPIView):
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
+########################################
+
 class Emojis(View):
     # FIXME
     def get(self, request, *args, **kwargs):
@@ -355,6 +357,18 @@ class Emojis(View):
                 safe=False)
 
 class Filters(View):
+    # FIXME
+    def get(self, request, *args, **kwargs):
+        return JsonResponse([],
+                safe=False)
+
+class Followers(View):
+    # FIXME
+    def get(self, request, *args, **kwargs):
+        return JsonResponse([],
+                safe=False)
+
+class Following(View):
     # FIXME
     def get(self, request, *args, **kwargs):
         return JsonResponse([],
