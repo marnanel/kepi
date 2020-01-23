@@ -76,7 +76,7 @@ class TestNotifications(TestCase):
                 {
                     'id': 'https://remote.example.org/users/fred',
                     'username': 'fred',
-                    'acct': '@fred@remote.example.org',
+                    'acct': 'fred@remote.example.org',
                     'url': 'https://remote.example.org/users/fred',
                     },
                 content[0]['account'],
@@ -147,7 +147,7 @@ class TestNotifications(TestCase):
                 {
                     'id': 'https://remote.example.org/users/fred',
                     'username': 'fred',
-                    'acct': '@fred@remote.example.org',
+                    'acct': 'fred@remote.example.org',
                     'url': 'https://remote.example.org/users/fred',
                     },
                 content[0]['account'],

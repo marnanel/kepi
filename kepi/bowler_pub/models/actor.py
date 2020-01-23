@@ -151,10 +151,15 @@ class AcActor(acobject.AcObject):
 
     @property
     def acct(self):
-        return '@{}@{}'.format(
-                self.preferredUsername,
-                self.hostname,
-                )
+        if self.is_local:
+            return self.id[1:]
+        else:
+            # XXX This is wrong, because self.id[] is not
+            # the preferredUsername
+            return '{}@{}'.format(
+                    self['preferredUsername'],
+                    self.hostname,
+                    )
 
     @property
     def hostname(self):
