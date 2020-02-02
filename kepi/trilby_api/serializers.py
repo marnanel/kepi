@@ -140,10 +140,7 @@ class StatusSerializer(serializers.ModelSerializer):
 
         return result
 
-    id = serializers.CharField(
-            source='number',
-            required = False,
-            read_only = True)
+    id = serializers.SerializerMethodField()
 
     uri = serializers.URLField(
             required = False,
@@ -203,6 +200,18 @@ class StatusSerializer(serializers.ModelSerializer):
     idempotency_key = serializers.CharField(
             write_only = True,
             required = False)
+
+    def get_id(self, status):
+        """
+        Returns the "id" field for a status.
+        We turn status.number, which is always
+        a hex representation of the number,
+        into a decimal representation.
+
+        This is to avoid confusing Tusky etc. See
+        https://socialhub.activitypub.rocks/t/verify-credentials-im-doing-something-wrong-here/440/3
+        """
+        return str(int(status.number, 16))
 
 class StatusContextSerializer(serializers.ModelSerializer):
     class Meta:

@@ -142,7 +142,6 @@ class TestRest(TestCase):
             self.assertEqual(content['source'][field], expected,
                     msg="field 'source.{}'".format(field))
 
-
 class TestStatuses(TestCase):
 
     def setUp(self):
@@ -195,6 +194,13 @@ class TestStatuses(TestCase):
             self.assertIn(field, account)
             self.assertEqual(account[field], expected,
                     msg="account field '{}'".format(field))
+
+        self.assertIn('id', content)
+        try:
+            dummy = int(content['id'])
+        except ValueError:
+            self.fail('Value of "id" is not a decimal: '+content['id'])
+
 
     def test_get_status_context(self):
 
