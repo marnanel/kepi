@@ -170,7 +170,7 @@ class TestStatuses(TestCase):
         view = Statuses.as_view()
 
         result = view(request,
-                id=self._status.number)
+                id=str(int(self._status.number,16)))
 
         self.assertEqual(
                 result.status_code,
@@ -215,7 +215,7 @@ class TestStatuses(TestCase):
         view = StatusContext.as_view()
 
         result = view(request,
-                id=self._status.number)
+                id=str(int(self._status.number,16)))
 
         self.assertEqual(
                 result.status_code,

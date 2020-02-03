@@ -24,6 +24,21 @@ logger = logging.Logger(name='kepi')
 
 ###########################
 
+# Decorator
+def id_field_int_to_hex(func):
+    def wrapper(*args, **kwargs):
+        if 'id' in kwargs:
+            as_hex = '%08x' % (int(kwargs['id']),)
+            logger.debug('Converting decimal id=%s into hex id=%s',
+                    kwargs['id'], as_hex)
+            kwargs['id'] = as_hex
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+###########################
+
 class Instance(View):
 
     def get(self, request, *args, **kwargs):
@@ -119,6 +134,7 @@ class Statuses(generics.ListCreateAPIView,
     queryset = bowler_pub_models.AcCreate.objects.all()
     serializer_class = StatusSerializer
 
+    @id_field_int_to_hex
     def get(self, request, *args, **kwargs):
 
         queryset = self.get_queryset()
@@ -197,6 +213,7 @@ class StatusContext(generics.ListCreateAPIView):
 
     queryset = bowler_pub_models.AcCreate.objects.all()
 
+    @id_field_int_to_hex
     def get(self, request, *args, **kwargs):
 
         queryset = self.get_queryset()
