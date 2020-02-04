@@ -7,7 +7,7 @@ PUBLIC_IDS = set([
         ])
 
 URL_REGEXP = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
-SERIAL_NUMBER_REGEXP = r'/[0-9A-Fa-f]{8}'
+LOCAL_NUMBER_REGEXP = r'/[0-9A-Fa-f]{8}'
 
 # Decorator
 def implements_activity_type(f_type):

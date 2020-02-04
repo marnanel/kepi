@@ -21,32 +21,6 @@ class AcItem(acobject.AcObject):
             blank=True,
             )
 
-    serial = models.IntegerField(
-            default = 0,
-            )
-
-    def _generate_id(self):
-        if not self.f_attributedTo:
-            logger.info('  -- new object has no f_attributedTo')
-            return super()._generate_id()
-
-        max_so_far = AcItem.objects.filter(
-                f_attributedTo = self.f_attributedTo,
-                ).aggregate(models.Max('serial'))['serial__max']
-
-        if max_so_far is None:
-            max_so_far = 0
-
-        self.serial = max_so_far + random.randint(0, 256)
-
-        logger.info('  -- max serial so far is %d; using serial %d',
-                max_so_far, self.serial)
-
-        # TODO: For now, we return the same IDs as the superclass.
-        # When I'm sure the serial numbers work and the tests pass,
-        # we'll have IDs in the form "/username/serial".
-        return super()._generate_id()
-
     @property
     def visibility(self):
 

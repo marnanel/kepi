@@ -7,7 +7,7 @@ from kepi.bowler_pub.models.audience import Audience, AUDIENCE_FIELD_NAMES
 from kepi.bowler_pub.models.thingfield import ThingField
 from kepi.bowler_pub.models.mention import Mention
 from kepi.bowler_pub.utils import configured_path, uri_to_url
-from .. import URL_REGEXP, SERIAL_NUMBER_REGEXP
+from .. import URL_REGEXP, LOCAL_NUMBER_REGEXP
 import kepi.bowler_pub.side_effects as side_effects
 import logging
 import random
@@ -62,6 +62,10 @@ class AcObject(PolymorphicModel):
 
     updated = models.DateTimeField(
             auto_now = True,
+            )
+
+    serial = models.IntegerField(
+            default = 0,
             )
 
     @property
@@ -368,11 +372,11 @@ class AcObject(PolymorphicModel):
         URL, because that means it's a remote object
         and our naming rules won't apply.
         """
-        if re.match(SERIAL_NUMBER_REGEXP, self.id,
+        if re.match(LOCAL_NUMBER_REGEXP, self.id,
                 re.IGNORECASE):
 
             self.id = self.id.lower()
-            logger.debug('id==%s which is a valid serial number',
+            logger.debug('id==%s which is a valid local number',
                     self.id)
             return
 
@@ -382,6 +386,18 @@ class AcObject(PolymorphicModel):
                 "You gave: "+self.id)
 
     def save(self, *args, **kwargs):
+
+        if self.serial==0:
+            max_so_far = AcObject.objects.filter(
+                    ).aggregate(models.Max('serial'))['serial__max']
+
+            if max_so_far is None:
+                max_so_far = 0
+
+            self.serial = max_so_far + random.randint(0, 256)
+
+            logger.info('  -- max serial so far is %d; using serial %d',
+                    max_so_far, self.serial)
 
         if self.id is None:
             self.id = self._generate_id()
