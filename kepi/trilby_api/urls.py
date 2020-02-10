@@ -6,6 +6,9 @@ urlpatterns = [
     path('api/v1/instance', Instance.as_view()),
     path('api/v1/apps', Apps.as_view()),
     path('api/v1/accounts/verify_credentials', Verify_Credentials.as_view()),
+
+    path('api/v1/accounts/search', AccountsSearch.as_view()),
+
     path('api/v1/accounts/<name>', User.as_view()),
     path('api/v1/accounts/<name>/statuses', Statuses.as_view()),
     path('api/v1/accounts/<name>/following', Following.as_view()),

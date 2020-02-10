@@ -289,6 +289,19 @@ class HomeTimeline(AbstractTimeline):
 
 ########################################
 
+# TODO stub
+class AccountsSearch(generics.ListAPIView):
+
+    queryset = AcActor.objects.all()
+    serializer_class = UserSerializer
+
+    permission_classes = [
+            IsAuthenticated,
+            ]
+
+########################################
+
+# TODO stub
 class Search(View):
 
     permission_classes = [
