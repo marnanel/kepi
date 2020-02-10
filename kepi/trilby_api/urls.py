@@ -20,5 +20,7 @@ urlpatterns = [
     path('api/v1/timelines/public', PublicTimeline.as_view()),
     path('api/v1/timelines/home', HomeTimeline.as_view()),
 
+    path('api/v1/search', Search.as_view()),
+
     path('users/<username>/feed', UserFeed.as_view()),
     ]

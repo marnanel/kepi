@@ -289,6 +289,24 @@ class HomeTimeline(AbstractTimeline):
 
 ########################################
 
+class Search(View):
+
+    permission_classes = [
+            IsAuthenticated,
+            ]
+
+    def get(self, request, *args, **kwargs):
+
+        result = {
+                'accounts': [],
+                'statuses': [],
+                'hashtags': [],
+            }
+
+        return JsonResponse(result)
+
+########################################
+
 class UserFeed(View):
 
     permission_classes = ()
