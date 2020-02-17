@@ -48,7 +48,7 @@ class Instance(View):
             'title': settings.KEPI['INSTANCE_NAME'],
             'description': settings.KEPI['INSTANCE_DESCRIPTION'],
             'email': settings.KEPI['CONTACT_EMAIL'],
-            'version': 'un_0.0.1',
+            'version': '1.0.0', # of the protocol
             'urls': {},
             'languages': settings.KEPI['LANGUAGES'],
             'contact_account': settings.KEPI['CONTACT_ACCOUNT'],
