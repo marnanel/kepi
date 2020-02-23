@@ -58,6 +58,68 @@ class Instance(View):
 
 ###########################
 
+def error_response(status, reason):
+    return JsonResponse(
+            {
+                "error": reason,
+                },
+            status = status,
+            reason = reason,
+            )
+
+###########################
+
+class Favourite(generics.GenericAPIView):
+
+    serializer_class = StatusSerializer
+    queryset = AcItem.objects.all()
+
+    def post(self, request, *args, **kwargs):
+
+        try:
+            the_status = get_object_or_404(
+                    self.get_queryset(),
+                    serial = int(kwargs['id']),
+                    )
+        except ValueError:
+            return error_response(404, 'Non-decimal ID')
+
+        logger.debug('Favouriting %s', kwargs['id'])
+
+        if request.user is None:
+            logger.debug('  -- user not logged in')
+            return error_response(401, 'Not logged in')
+
+        existing = bowler_pub_models.AcLike.objects.filter(
+                f_actor = request.user.actor.acct,
+                f_object = the_status.id,
+                ).exists()
+
+        if existing:
+            logger.info('  -- not creating a Like; it already exists')
+        else:
+            logger.info('  -- creating a Like')
+            bowler_pub_create(value={
+                'actor': request.user.actor.acct,
+                'object': the_status.id,
+                })
+
+        serializer = StatusSerializer(
+                the_status,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        return JsonResponse(
+                serializer.data,
+                status = 200,
+                reason = 'Favourited',
+                )
+
+
+###########################
+
 def fix_oauth2_redirects():
     """
     Called from kepi.kepi.urls to fix a silly oversight

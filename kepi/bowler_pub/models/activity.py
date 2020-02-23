@@ -17,6 +17,13 @@ class AcActivity(acobject.AcObject):
             blank=True,
             )
 
+    f_object = models.CharField(
+            max_length=255,
+            default=None,
+            null=True,
+            blank=True,
+            )
+
     class Meta:
         verbose_name = 'activity'
         verbose_name_plural = 'activities'
@@ -67,7 +74,7 @@ class AcCreate(AcActivity):
     def __str__(self):
         return '(%s) create of %s' % (
                 self.id,
-                self['object__obj'].__str__(),
+                self['object'],
                 )
 
 class AcUpdate(AcActivity):
