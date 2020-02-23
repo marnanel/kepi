@@ -21,7 +21,7 @@ class TrilbyUser(AbstractUser):
 
     def save(self, *args, **kwargs):
 
-        if self.pk is None:
+        if self.pk is None and self.actor is None:
 
             name = self.get_username()
 
