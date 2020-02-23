@@ -100,7 +100,8 @@ class Favourite(generics.GenericAPIView):
         else:
             logger.info('  -- creating a Like')
             bowler_pub_create(value={
-                'actor': request.user.actor.acct,
+                'type': 'Like',
+                'actor': request.user.actor.id,
                 'object': the_status.id,
                 })
 

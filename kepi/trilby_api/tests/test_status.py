@@ -33,8 +33,8 @@ class TestStatus(TestCase):
                 200)
 
         found = bowler_pub_models.AcLike.objects.filter(
-                f_actor = self._alice,
-                f_object = self._alice_status,
+                f_actor = self._alice.actor.id,
+                f_object = self._alice_status['object__obj'].id,
                 )
 
         self.assertEqual(len(found), 1,
