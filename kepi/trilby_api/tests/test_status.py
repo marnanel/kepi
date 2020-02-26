@@ -15,7 +15,8 @@ class TestStatus(TestCase):
                 content = 'Daisies are our silver.',
         )
 
-    def test_favourite(self):
+    def _test_doing_something(self,
+            verb):
 
         self._create_alice()
 
@@ -23,14 +24,19 @@ class TestStatus(TestCase):
         c.force_authenticate(self._alice)
 
         result = c.post(
-                '/api/v1/statuses/{}/favourite'.format(
+                '/api/v1/statuses/{}/{}'.format(
                     self._alice_status['object__obj'].serial,
+                    verb,
                     ),
                 format = 'json',
                 )
 
         self.assertEqual(result.status_code,
                 200)
+
+    def test_favourite(self):
+
+        self._test_doing_something('favourite')
 
         found = bowler_pub_models.AcLike.objects.filter(
                 f_actor = self._alice.actor.id,

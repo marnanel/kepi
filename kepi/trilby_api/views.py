@@ -69,10 +69,13 @@ def error_response(status, reason):
 
 ###########################
 
-class Favourite(generics.GenericAPIView):
+class DoSomethingWithStatus(generics.GenericAPIView):
 
     serializer_class = StatusSerializer
     queryset = AcItem.objects.all()
+
+    def _do_something_with(self, the_status, request):
+        raise NotImplementedError()
 
     def post(self, request, *args, **kwargs):
 
@@ -84,26 +87,11 @@ class Favourite(generics.GenericAPIView):
         except ValueError:
             return error_response(404, 'Non-decimal ID')
 
-        logger.debug('Favouriting %s', kwargs['id'])
-
         if request.user is None:
             logger.debug('  -- user not logged in')
             return error_response(401, 'Not logged in')
 
-        existing = bowler_pub_models.AcLike.objects.filter(
-                f_actor = request.user.actor.acct,
-                f_object = the_status.id,
-                ).exists()
-
-        if existing:
-            logger.info('  -- not creating a Like; it already exists')
-        else:
-            logger.info('  -- creating a Like')
-            bowler_pub_create(value={
-                'type': 'Like',
-                'actor': request.user.actor.id,
-                'object': the_status.id,
-                })
+        self._do_something_with(the_status, request)
 
         serializer = StatusSerializer(
                 the_status,
@@ -115,9 +103,26 @@ class Favourite(generics.GenericAPIView):
         return JsonResponse(
                 serializer.data,
                 status = 200,
-                reason = 'Favourited',
+                reason = 'Done',
                 )
 
+class Favourite(DoSomethingWithStatus):
+
+    def _do_something_with(self, the_status, request):
+        existing = bowler_pub_models.AcLike.objects.filter(
+            f_actor = request.user.actor.acct,
+            f_object = the_status.id,
+            ).exists()
+
+        if existing:
+            logger.info('  -- not creating a Like; it already exists')
+        else:
+            logger.info('  -- creating a Like')
+            bowler_pub_create(value={
+                'type': 'Like',
+                'actor': request.user.actor.id,
+                'object': the_status.id,
+                })
 
 ###########################
 
