@@ -354,7 +354,10 @@ class HomeTimeline(AbstractTimeline):
             if item.f_type in [
                     'Create',
                     ]:
-                result.append(item['object__obj'])
+                product = item['object__obj']
+
+                if product is not None:
+                    result.append(product)
 
         return result
 
