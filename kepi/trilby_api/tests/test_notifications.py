@@ -86,12 +86,10 @@ class TestNotifications(TestCase):
     def test_favourite(self):
         alice = create_local_trilbyuser(name='alice')
 
-        status_creation = create_local_status(
+        status = create_local_status(
                 content = 'Curiouser and curiouser!',
                 posted_by = alice,
                 )
-
-        status = status_creation['object__obj']
 
         fred_keys = json.load(open(DEFAULT_KEYS_FILENAME, 'r'))
 

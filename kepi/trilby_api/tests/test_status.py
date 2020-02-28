@@ -25,7 +25,7 @@ class TestStatus(TestCase):
 
         result = c.post(
                 '/api/v1/statuses/{}/{}'.format(
-                    self._alice_status['object__obj'].serial,
+                    self._alice_status.serial,
                     verb,
                     ),
                 format = 'json',
@@ -40,7 +40,7 @@ class TestStatus(TestCase):
 
         found = bowler_pub_models.AcLike.objects.filter(
                 f_actor = self._alice.actor.id,
-                f_object = self._alice_status['object__obj'].id,
+                f_object = self._alice_status.id,
                 )
 
         self.assertEqual(len(found), 1,

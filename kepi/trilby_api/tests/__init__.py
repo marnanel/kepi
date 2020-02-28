@@ -43,4 +43,4 @@ def create_local_status(content,
             },
             )
 
-    return result
+    return result['object__obj']

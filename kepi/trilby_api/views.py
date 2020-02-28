@@ -199,7 +199,7 @@ class Statuses(generics.ListCreateAPIView,
         generics.DestroyAPIView,
         ):
 
-    queryset = bowler_pub_models.AcCreate.objects.all()
+    queryset = bowler_pub_models.AcItem.objects.filter_local_only()
     serializer_class = StatusSerializer
 
     @id_field_int_to_hex
@@ -209,26 +209,27 @@ class Statuses(generics.ListCreateAPIView,
 
         if 'id' in kwargs:
             number = '/'+kwargs['id']
-            logger.info('Looking up status numbered %s for %s',
+            logger.info('Looking up status numbered %s, for %s',
                     number, request.user)
 
-            create_activity = queryset.get(id=number)
+            activity = queryset.get(id=number)
             serializer = StatusSerializer(
-                    create_activity['object__obj'],
+                    activity,
                     partial = True,
                     context = {
                         'request': request,
                         },
                     )
         else:
-            logger.info('Looking up all visible statuses for %s',
+            logger.info('Looking up all visible statuses, for %s',
                    request.user)
-            # ... FIXME
+
             serializer = StatusSerializer(
                     queryset,
                     context = {
                         'request': request,
                         },
+                    many = True,
                     )
 
         return JsonResponse(serializer.data)
@@ -279,7 +280,7 @@ class Statuses(generics.ListCreateAPIView,
 
 class StatusContext(generics.ListCreateAPIView):
 
-    queryset = bowler_pub_models.AcCreate.objects.all()
+    queryset = bowler_pub_models.AcItem.objects.all()
 
     @id_field_int_to_hex
     def get(self, request, *args, **kwargs):
@@ -287,7 +288,7 @@ class StatusContext(generics.ListCreateAPIView):
         queryset = self.get_queryset()
 
         number = '/'+kwargs['id']
-        status = queryset.get(id=number)['object__obj']
+        status = queryset.get(id=number)
         serializer = StatusContextSerializer(status)
 
         return JsonResponse(serializer.data)
