@@ -232,7 +232,9 @@ class Statuses(generics.ListCreateAPIView,
                     many = True,
                     )
 
-        return JsonResponse(serializer.data)
+        return JsonResponse(serializer.data,
+                safe = False, # it's a list
+                )
 
     def create(self, request, *args, **kwargs):
 

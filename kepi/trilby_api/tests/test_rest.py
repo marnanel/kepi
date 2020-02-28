@@ -202,6 +202,42 @@ class TestStatuses(TestCase):
             self.fail('Value of "id" is not a decimal: '+content['id'])
 
 
+    def test_get_all_statuses(self):
+
+        messages = [
+                'Why do I always dress myself in %s?' % (colour,) \
+                        for colour in ['red', 'green', 'blue', 'black']]
+
+        self._create_alice()
+
+        for message in messages:
+            create_local_status(
+                content = message,
+                posted_by = self._alice,
+                )
+
+        request = self.factory.get(
+                '/api/v1/statuses/',
+                )
+        force_authenticate(request, user=self._alice)
+
+        view = Statuses.as_view()
+
+        result = view(request)
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content)
+
+        self.assertEqual(
+                [x['content'] for x in content],
+                ['<p>%s</p>' % (x,) for x in messages],
+                )
+
     def test_get_status_context(self):
 
         self._create_alice()
