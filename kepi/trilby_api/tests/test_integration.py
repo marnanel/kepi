@@ -10,7 +10,7 @@ class TestIntegration(TestCase):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
 
     def _create_alice(self):
-        self._alice = create_local_trilbyuser(name='alice')
+        self._alice = create_local_person(name='alice')
 
     def test_post(self):
 

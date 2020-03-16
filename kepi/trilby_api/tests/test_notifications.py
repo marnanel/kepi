@@ -20,7 +20,7 @@ class TestNotifications(TestCase):
 
     @httpretty.activate
     def test_follow(self):
-        alice = create_local_trilbyuser(name='alice')
+        alice = create_local_person(name='alice')
 
         fred_keys = json.load(open(DEFAULT_KEYS_FILENAME, 'r'))
 
@@ -84,7 +84,7 @@ class TestNotifications(TestCase):
 
     @httpretty.activate
     def test_favourite(self):
-        alice = create_local_trilbyuser(name='alice')
+        alice = create_local_person(name='alice')
 
         status = create_local_status(
                 content = 'Curiouser and curiouser!',

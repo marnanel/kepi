@@ -109,7 +109,7 @@ class TestRest(TestCase):
                 )
 
     def _user_test(self, name):
-        alice = create_local_trilbyuser(name='alice')
+        alice = create_local_person(name='alice')
 
         request = self.factory.get(
                 '/api/v1/accounts/'+name,
@@ -149,7 +149,7 @@ class TestStatuses(TestCase):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
 
     def _create_alice(self):
-        self._alice = create_local_trilbyuser(name='alice')
+        self._alice = create_local_person(name='alice')
 
     def _create_status(self):
         self._status = create_local_status(

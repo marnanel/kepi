@@ -31,7 +31,7 @@ class PublicTimeline(TestCase):
         self.assertEqual(len(response), 0)
 
     def test_public_singleton(self):
-        self._alice = create_local_trilbyuser(name='alice')
+        self._alice = create_local_person(name='alice')
 
         self._status = create_local_status(
                 content = 'Hello world.',
@@ -47,7 +47,7 @@ class PublicTimeline(TestCase):
                 )
 
     def test_public_singleton_hidden(self):
-        self._alice = create_local_trilbyuser(name='alice')
+        self._alice = create_local_person(name='alice')
 
         self._status = create_local_status(
                 content = 'Hello world.',

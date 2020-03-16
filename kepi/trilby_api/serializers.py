@@ -40,7 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
             )
 
     note = serializers.CharField(
-            source='f_summary',
             )
 
     following_count = serializers.IntegerField()

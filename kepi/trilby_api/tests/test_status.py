@@ -8,7 +8,7 @@ from django.conf import settings
 class TestStatus(TestCase):
 
     def _create_alice(self):
-        self._alice = create_local_trilbyuser(name='alice')
+        self._alice = create_local_person(name='alice')
 
         self._alice_status = create_local_status(
                 posted_by = self._alice,

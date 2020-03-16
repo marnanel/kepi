@@ -1,18 +1,19 @@
-from kepi.trilby_api.models import TrilbyUser
+from kepi.trilby_api.models import *
 
 PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
 
-def create_local_trilbyuser(name='jemima'):
+def create_local_person(name='jemima'):
 
-    from kepi.bowler_pub.tests import create_local_person
     from kepi.trilby_api.models import TrilbyUser
 
-    person = create_local_person(name=name)
-
-    result = TrilbyUser(
+    user = TrilbyUser(
             username = name,
-            actor = person)
-    result.save()
+            )
+    user.save()
+
+    result = Person(
+            local_user = user,
+            )
 
     return result
 

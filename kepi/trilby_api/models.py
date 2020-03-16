@@ -5,46 +5,216 @@ import kepi.bowler_pub.models as kepi_models
 import kepi.bowler_pub.signals as kepi_signals
 import kepi.bowler_pub.find as kepi_find
 from kepi.bowler_pub.create import create
+import kepi.bowler_pub.crypto as crypto
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
 import logging
 
 logger = logging.Logger('kepi')
 
 class TrilbyUser(AbstractUser):
+    """
+    A Django user.
+    """
+    pass
 
-    actor = models.OneToOneField(
-            kepi_models.AcPerson,
-            on_delete=models.CASCADE,
-            unique=True,
-            default=None,
+class Person(models.Model):
+
+    remote_url = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            unique = True,
             )
 
+    remote_username = models.CharField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            )
+
+    local_user = models.OneToOneField(
+            to = TrilbyUser,
+            on_delete = models.CASCADE,
+            null = True,
+            blank = True,
+            )
+
+    icon_image = models.ImageField(
+            help_text="A small square image used to identify you.",
+            null=True,
+            verbose_name='icon',
+            )
+
+    header_image = models.ImageField(
+            help_text="A large image, wider than it's tall, which appears "+\
+                    "at the top of your profile page.",
+            null=True,
+            verbose_name='header image',
+            )
+
+    @property
+    def icon_or_default(self):
+        if self.icon_image:
+            return self.icon_image
+
+        which = ord(self.id[1]) % 10
+        return uri_to_url('/static/defaults/avatar_{}.jpg'.format(
+            which,
+            ))
+
+    @property
+    def header_or_default(self):
+        if self.header_image:
+            return self.header_image
+
+        return uri_to_url('/static/defaults/header.jpg')
+
+    display_name = models.TextField(
+            verbose_name='display name',
+            help_text = 'Your name, in human-friendly form. '+\
+                'Something like "Alice Liddell".',
+            )
+
+    created_at = models.DateTimeField(
+            default = now,
+            )
+
+    publicKey = models.TextField(
+            blank=True,
+            null=True,
+            verbose_name='public key',
+            )
+
+    privateKey = models.TextField(
+            blank=True,
+            null=True,
+            verbose_name='private key',
+            )
+
+    note = models.TextField(
+            max_length=255,
+            help_text="Your biography. Something like "+\
+                    '"I enjoy falling down rabbitholes."',
+            default='',
+            verbose_name='bio',
+            )
+
+    auto_follow = models.BooleanField(
+            default=True,
+            help_text="If True, follow requests will be accepted automatically.",
+            )
+
+    @property
+    def following_count(self):
+        return 0 # FIXME
+
+    @property
+    def followers_count(self):
+        return 0 # FIXME
+
+    @property
+    def statuses_count(self):
+        return 0 # FIXME
+
+    @property
+    def acct(self):
+        return 'FIXME' # FIXME
+
+    @property
+    def username(self):
+        if remote_url is not None:
+            return remote_username
+        else:
+            return local_user.username
+
+    def _generate_keys(self):
+
+        logger.info('%s: generating key pair.',
+                self.url)
+
+        key = crypto.Key()
+        self.privateKey = key.private_as_pem()
+        self.publicKey = key.public_as_pem()
+
     def save(self, *args, **kwargs):
+        
+        # Validate: either remote or local but not both or neither.
+        remote_set = \
+                self.remote_url is not None and \
+                self.remote_username is not None
 
-        if self.pk is None and self.actor is None:
+        local_set = \
+                self.local_user is not None
 
-            name = self.get_username()
-
-            logger.info('Creating AcPerson for new user "%s".',
-                    name)
-
-            spec = {
-                'name': name,
-                'id': '@'+name,
-                'type': 'Person',
-                }
-
-            new_person = create(
-                    value = spec,
-                    run_delivery = False,
+        if local_set == remote_set:
+            raise ValidationError(
+                    "Either local or remote fields must be set."
                     )
 
-            self.actor = new_person
+        # Create keys, if we're local and we don't have them.
 
-            logger.info('  -- new AcPerson is %s',
-                    new_person)
+        if local_set and self.privateKey is None and self.publicKey is None:
+            self._generate_keys()
+
+        # All good.
 
         super().save(*args, **kwargs)
+
+###################
+
+class Status(models.Model):
+
+    # TODO: The original design has the serial number
+    # monotonically but unpredictably increasing.
+
+    @property
+    def url(self):
+        return 'FIXME' # FIXME
+
+    @property
+    def uri(self):
+        return 'FIXME' # FIXME
+
+    account = models.ForeignKey(
+            'Person',
+            on_delete = models.DO_NOTHING,
+            )
+
+    in_reply_to_id = models.ForeignKey(
+            'self',
+            on_delete = models.DO_NOTHING,
+            )
+    
+    content = models.TextField(
+        )
+
+    created_at = models.DateTimeField(
+            default = now,
+            )
+
+   # TODO Media
+
+    sensitive = models.BooleanField(
+            )
+
+    spoiler_text = models.CharField(
+            max_length = 255,
+            )
+
+    visibility = models.CharField(
+            max_length = 255,
+            )
+
+    language = models.CharField(
+            max_length = 255,
+            )
+
+    idempotency_key = models.CharField(
+            max_length = 255,
+            )
+
+###################
 
 class Notification(models.Model):
 
