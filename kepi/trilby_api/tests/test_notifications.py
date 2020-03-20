@@ -41,7 +41,7 @@ class TestNotifications(TestCase):
         request = self.factory.get(
                 '/api/v1/notifications/',
                 )
-        force_authenticate(request, user=alice)
+        force_authenticate(request, user=alice.local_user)
 
         view = Notifications.as_view()
         result = view(request)
@@ -110,7 +110,7 @@ class TestNotifications(TestCase):
         request = self.factory.get(
                 '/api/v1/notifications/',
                 )
-        force_authenticate(request, user=alice)
+        force_authenticate(request, user=alice.local_user)
 
         view = Notifications.as_view()
         result = view(request)

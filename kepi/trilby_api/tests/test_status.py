@@ -21,7 +21,7 @@ class TestStatus(TestCase):
         self._create_alice()
 
         c = APIClient()
-        c.force_authenticate(self._alice)
+        c.force_authenticate(self._alice.local_user)
 
         result = c.post(
                 '/api/v1/statuses/{}/{}'.format(

@@ -26,7 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
             )
 
     username = serializers.CharField(
-            source='preferredUsername',
             )
 
     display_name = serializers.CharField(
@@ -36,7 +35,6 @@ class UserSerializer(serializers.ModelSerializer):
             )
 
     created_at = serializers.DateTimeField(
-            source='published',
             )
 
     note = serializers.CharField(
@@ -150,7 +148,6 @@ class StatusSerializer(serializers.ModelSerializer):
             read_only = True)
 
     account = UserSerializer(
-            source = 'actor',
             )
 
     in_reply_to_id = serializers.PrimaryKeyRelatedField(
@@ -201,7 +198,7 @@ class StatusSerializer(serializers.ModelSerializer):
             required = False)
 
     def get_id(self, status):
-        return str(status.serial)
+        return str(status.id)
 
 class StatusContextSerializer(serializers.ModelSerializer):
     class Meta:

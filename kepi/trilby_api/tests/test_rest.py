@@ -114,7 +114,7 @@ class TestRest(TestCase):
         request = self.factory.get(
                 '/api/v1/accounts/'+name,
                 )
-        force_authenticate(request, user=alice)
+        force_authenticate(request, user=alice.local_user)
 
         view = Verify_Credentials.as_view()
 
@@ -165,7 +165,7 @@ class TestStatuses(TestCase):
         request = self.factory.get(
                 '/api/v1/statuses/'+self._status.number,
                 )
-        force_authenticate(request, user=self._alice)
+        force_authenticate(request, user=self._alice.local_user)
 
         view = Statuses.as_view()
 
@@ -219,7 +219,7 @@ class TestStatuses(TestCase):
         request = self.factory.get(
                 '/api/v1/statuses/',
                 )
-        force_authenticate(request, user=self._alice)
+        force_authenticate(request, user=self._alice.local_user)
 
         view = Statuses.as_view()
 
@@ -246,7 +246,7 @@ class TestStatuses(TestCase):
         request = self.factory.get(
                 '/api/v1/statuses/'+self._status.number+'/context',
                 )
-        force_authenticate(request, user=self._alice)
+        force_authenticate(request, user=self._alice.local_user)
 
         view = StatusContext.as_view()
 
@@ -301,7 +301,7 @@ class TestStatuses(TestCase):
                     },
                 format='json',
                 )
-        force_authenticate(request, user=self._alice)
+        force_authenticate(request, user=self._alice.local_user)
 
         view = Statuses.as_view()
 
@@ -335,7 +335,7 @@ class TestStatuses(TestCase):
                         },
                     format='json',
                     )
-            force_authenticate(request, user=self._alice)
+            force_authenticate(request, user=self._alice.local_user)
 
             view = Statuses.as_view()
 

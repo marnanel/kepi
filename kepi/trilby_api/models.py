@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.dispatch import receiver
+from django.conf import settings
 import kepi.bowler_pub.models as kepi_models
 import kepi.bowler_pub.signals as kepi_signals
 import kepi.bowler_pub.find as kepi_find
@@ -58,7 +59,7 @@ class Person(models.Model):
         if self.icon_image:
             return self.icon_image
 
-        which = ord(self.id[1]) % 10
+        which = self.id % 10
         return uri_to_url('/static/defaults/avatar_{}.jpg'.format(
             which,
             ))
@@ -106,6 +107,15 @@ class Person(models.Model):
             )
 
     @property
+    def url(self):
+        if self.remote_url is not None:
+            return self.remote_url
+
+        return settings.KEPI['USER_LINK'] % {
+                'username': self.local_user.username,
+                }
+
+    @property
     def following_count(self):
         return 0 # FIXME
 
@@ -123,10 +133,10 @@ class Person(models.Model):
 
     @property
     def username(self):
-        if remote_url is not None:
-            return remote_username
+        if self.remote_url is not None:
+            return self.remote_username
         else:
-            return local_user.username
+            return self.local_user.username
 
     def _generate_keys(self):
 
@@ -161,6 +171,14 @@ class Person(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
+    def followers(self):
+        return None # FIXME
+
+    @property
+    def following(self):
+        return None # FIXME
+
 ###################
 
 class Status(models.Model):
@@ -184,6 +202,8 @@ class Status(models.Model):
     in_reply_to_id = models.ForeignKey(
             'self',
             on_delete = models.DO_NOTHING,
+            null = True,
+            blank = True,
             )
     
     content = models.TextField(

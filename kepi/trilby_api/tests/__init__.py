@@ -14,6 +14,7 @@ def create_local_person(name='jemima'):
     result = Person(
             local_user = user,
             )
+    result.save()
 
     return result
 

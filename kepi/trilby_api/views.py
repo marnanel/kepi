@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
-from .models import TrilbyUser, Notification
+from .models import TrilbyUser, Notification, Status
 from .serializers import *
 from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 import logging
 import kepi.bowler_pub.models as bowler_pub_models
-from kepi.bowler_pub.create import create as bowler_pub_create
 import json
 import re
 
@@ -110,7 +109,7 @@ class Favourite(DoSomethingWithStatus):
 
     def _do_something_with(self, the_status, request):
         existing = bowler_pub_models.AcLike.objects.filter(
-            f_actor = request.user.actor.acct,
+            f_actor = request.user.person.acct,
             f_object = the_status.id,
             ).exists()
 
@@ -120,7 +119,7 @@ class Favourite(DoSomethingWithStatus):
             logger.info('  -- creating a Like')
             bowler_pub_create(value={
                 'type': 'Like',
-                'actor': request.user.actor.id,
+                'actor': request.user.person.id,
                 'object': the_status.id,
                 })
 
@@ -178,7 +177,7 @@ class Verify_Credentials(generics.GenericAPIView):
     queryset = TrilbyUser.objects.all()
 
     def get(self, request, *args, **kwargs):
-        serializer = UserSerializerWithSource(request.user.actor)
+        serializer = UserSerializerWithSource(request.user.person)
         return JsonResponse(serializer.data)
 
 class User(generics.GenericAPIView):
@@ -246,28 +245,23 @@ class Statuses(generics.ListCreateAPIView,
                     content = 'You must supply a status or some media IDs',
                     )
 
-        create_activity = bowler_pub_create(value={
-            'type': 'Create',
-            'actor': request.user.actor.url,
-            'object': {
-                'type': 'Note',
-                'language': data.get('language', None),
-                'sensitive': data.get('sensitive', False),
-                'content': data.get('status'),
-                'visibility': data.get('visibility', 'public'),
-                'spoiler_text': data.get('spoiler_text', ''),
-                'media_ids': data.get('media_ids', []),
-                # FIXME go through the list and find all the defaults
-                # and which fields are required
-                },
+        status = Status(
+                account = request.user.person,
+                content = data.get('status'),
+                sensitive = data.get('sensitive', False),
+                spoiler_text = data.get('spoiler_text', ''),
+                visibility = data.get('visibility', 'public'),
+                language = data.get('language',
+                    settings.KEPI['LANGUAGES'][0]),
+                # FIXME: in_reply_to_id
+                # FIXME: media_ids
+                # FIXME: idempotency_key
+                )
 
-            # FIXME these should be set according to "visibility"
-            'to': [request.user.actor['followers']],
-            'cc': [],
-            })
+        status.save()
 
         serializer = StatusSerializer(
-                create_activity['object__obj'],
+                status,
                 partial = True,
                 context = {
                     'request': request,
@@ -347,7 +341,7 @@ class HomeTimeline(AbstractTimeline):
         result = []
 
         inbox = bowler_pub_models.Collection.get(
-                user = request.user.actor,
+                user = request.user.person,
                 collection = 'inbox').members
 
         for item in inbox:
