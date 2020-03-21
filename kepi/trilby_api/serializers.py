@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from kepi.bowler_pub.models import AcItem, AcActor
-from kepi.bowler_pub.create import create as bowler_pub_create
-from kepi.trilby_api.models import Notification
+from kepi.trilby_api.models import *
 from oauth2_provider.models import Application
 
 #########################################
@@ -45,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
     statuses_count = serializers.IntegerField()
 
     class Meta:
-        model = AcActor
+        model = Person
         fields = (
                 'id',
                 'username',
@@ -94,7 +92,7 @@ class UserSerializerWithSource(UserSerializer):
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AcItem
+        model = Status
         fields = (
                 'id',
                 'uri',
@@ -151,11 +149,11 @@ class StatusSerializer(serializers.ModelSerializer):
             )
 
     in_reply_to_id = serializers.PrimaryKeyRelatedField(
-            queryset=AcItem.objects.all,
+            queryset=Status.objects.all,
             required = False)
 
     in_reply_to_account_id = serializers.PrimaryKeyRelatedField(
-            queryset=AcItem.objects.all,
+            queryset=Status.objects.all,
             required = False)
 
     reblog = serializers.URLField(
@@ -202,7 +200,7 @@ class StatusSerializer(serializers.ModelSerializer):
 
 class StatusContextSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AcItem
+        model = Status
         fields = (
                 'ancestors',
                 'descendants',

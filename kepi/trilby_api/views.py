@@ -15,26 +15,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 import logging
-import kepi.bowler_pub.models as bowler_pub_models
 import json
 import re
 
 logger = logging.Logger(name='kepi')
-
-###########################
-
-# Decorator
-def id_field_int_to_hex(func):
-    def wrapper(*args, **kwargs):
-        if 'id' in kwargs:
-            as_hex = '%08x' % (int(kwargs['id']),)
-            logger.debug('Converting decimal id=%s into hex id=%s',
-                    kwargs['id'], as_hex)
-            kwargs['id'] = as_hex
-
-        return func(*args, **kwargs)
-
-    return wrapper
 
 ###########################
 
@@ -71,7 +55,7 @@ def error_response(status, reason):
 class DoSomethingWithStatus(generics.GenericAPIView):
 
     serializer_class = StatusSerializer
-    queryset = AcItem.objects.all()
+    queryset = Status.objects.all()
 
     def _do_something_with(self, the_status, request):
         raise NotImplementedError()
@@ -108,7 +92,7 @@ class DoSomethingWithStatus(generics.GenericAPIView):
 class Favourite(DoSomethingWithStatus):
 
     def _do_something_with(self, the_status, request):
-        existing = bowler_pub_models.AcLike.objects.filter(
+        existing = Like.objects.filter(
             f_actor = request.user.person.acct,
             f_object = the_status.id,
             ).exists()
@@ -182,7 +166,7 @@ class Verify_Credentials(generics.GenericAPIView):
 
 class User(generics.GenericAPIView):
 
-    queryset = AcActor.objects.all()
+    queryset = Person.objects.all()
 
     def get(self, request, *args, **kwargs):
         whoever = get_object_or_404(
@@ -198,10 +182,9 @@ class Statuses(generics.ListCreateAPIView,
         generics.DestroyAPIView,
         ):
 
-    queryset = bowler_pub_models.AcItem.objects.filter_local_only()
+    queryset = Status.objects.filter(remote_url=None)
     serializer_class = StatusSerializer
 
-    @id_field_int_to_hex
     def get(self, request, *args, **kwargs):
 
         queryset = self.get_queryset()
@@ -276,9 +259,8 @@ class Statuses(generics.ListCreateAPIView,
 
 class StatusContext(generics.ListCreateAPIView):
 
-    queryset = bowler_pub_models.AcItem.objects.all()
+    queryset = Status.objects.all()
 
-    @id_field_int_to_hex
     def get(self, request, *args, **kwargs):
 
         queryset = self.get_queryset()
@@ -318,7 +300,7 @@ class PublicTimeline(AbstractTimeline):
 
         result = []
 
-        timeline = bowler_pub_models.AcItem.objects.all()
+        timeline = Status.objects.all()
 
         for item in timeline:
 
@@ -340,7 +322,7 @@ class HomeTimeline(AbstractTimeline):
 
         result = []
 
-        inbox = bowler_pub_models.Collection.get(
+        inbox = Collection.get(
                 user = request.user.person,
                 collection = 'inbox').members
 
@@ -360,7 +342,7 @@ class HomeTimeline(AbstractTimeline):
 # TODO stub
 class AccountsSearch(generics.ListAPIView):
 
-    queryset = AcActor.objects.all()
+    queryset = Person.objects.all()
     serializer_class = UserSerializer
 
     permission_classes = [
@@ -394,11 +376,11 @@ class UserFeed(View):
 
     def get(self, request, username, *args, **kwargs):
 
-        user = get_object_or_404(bowler_pub_models.AcActor,
+        user = get_object_or_404(Person,
                 id = '@'+username,
                 )
 
-        statuses = [x.member for x in bowler_pub_models.Collection.get(
+        statuses = [x.member for x in Collection.get(
                 username+'/outbox',
                 ).contents]
 

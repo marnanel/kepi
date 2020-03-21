@@ -7,6 +7,7 @@ import kepi.bowler_pub.signals as kepi_signals
 import kepi.bowler_pub.find as kepi_find
 from kepi.bowler_pub.create import create
 import kepi.bowler_pub.crypto as crypto
+from kepi.bowler_pub.utils import uri_to_url
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 import logging
@@ -106,6 +107,25 @@ class Person(models.Model):
             help_text="If True, follow requests will be accepted automatically.",
             )
 
+    locked = models.BooleanField(
+            default=False,
+            help_text="If True, only followers can see this account's statuses.",
+            )
+
+    bot = models.BooleanField(
+            default=False,
+            help_text="If True, this account is a bot. If False, it's a human.",
+            )
+
+    moved_to = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = True,
+            help_text="If set, this account has moved away, and "+\
+                    "this is where it went."
+            )
+
     @property
     def url(self):
         if self.remote_url is not None:
@@ -179,12 +199,27 @@ class Person(models.Model):
     def following(self):
         return None # FIXME
 
+    @property
+    def fields(self):
+        return [] # FIXME
+
+    @property
+    def emojis(self):
+        return [] # FIXME
+
 ###################
 
 class Status(models.Model):
 
     # TODO: The original design has the serial number
     # monotonically but unpredictably increasing.
+
+    remote_url = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            unique = True,
+            )
 
     @property
     def url(self):
@@ -233,6 +268,58 @@ class Status(models.Model):
     idempotency_key = models.CharField(
             max_length = 255,
             )
+
+    @property
+    def emojis(self):
+        return [] # TODO
+
+    @property
+    def reblogs_count(self):
+        return 0 # FIXME
+
+    @property
+    def favourites_count(self):
+        return 0 # FIXME
+
+    @property
+    def reblogged(self):
+        return False # FIXME
+
+    @property
+    def favourited(self):
+        return False # FIXME
+
+    @property
+    def muted(self):
+        return False # FIXME
+
+    @property
+    def pinned(self):
+        return False # FIXME
+
+    @property
+    def media_attachments(self):
+        return [] # FIXME
+
+    @property
+    def mentions(self):
+        return [] # FIXME
+
+    @property
+    def tags(self):
+        return [] # FIXME
+
+    @property
+    def card(self):
+        return None # FIXME
+
+    @property
+    def poll(self):
+        return None # FIXME
+
+    @property
+    def application(self):
+        return None # FIXME
 
 ###################
 
