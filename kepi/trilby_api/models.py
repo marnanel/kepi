@@ -321,6 +321,10 @@ class Status(models.Model):
     def application(self):
         return None # FIXME
 
+    @property
+    def in_reply_to_account_id(self):
+        return None # FIXME
+
 ###################
 
 class Notification(models.Model):

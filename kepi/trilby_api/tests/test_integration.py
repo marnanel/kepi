@@ -40,9 +40,11 @@ class TestIntegration(TestCase):
         content = json.loads(result.content.decode())
 
         self.assertEqual(
-                [
+                sorted([
                 'id', 'uri', 'url',
-                'account', 'in_reply_to_account_id',
+                'account',
+                'in_reply_to_id',
+                'in_reply_to_account_id',
                 'content', 'created_at',
                 'emojis', 'reblogs_count',
                 'favourites_count', 'reblogged',
@@ -58,8 +60,8 @@ class TestIntegration(TestCase):
                 'application',
                 'language',
                 'pinned',
-                ],
-                list(content.keys()),
+                ]),
+                sorted(list(content.keys())),
                 )
 
     def test_post_to_own_timeline(self):

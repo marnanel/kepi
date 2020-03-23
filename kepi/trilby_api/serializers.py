@@ -153,7 +153,7 @@ class StatusSerializer(serializers.ModelSerializer):
             required = False)
 
     in_reply_to_account_id = serializers.PrimaryKeyRelatedField(
-            queryset=Status.objects.all,
+            queryset=Person.objects.all,
             required = False)
 
     reblog = serializers.URLField(
@@ -163,17 +163,13 @@ class StatusSerializer(serializers.ModelSerializer):
     # "content" is read-only for HTML;
     # "status" is write-only for text (or Markdown)
     content = serializers.CharField(
-            source='html',
-            required = False,
             read_only = True)
 
     status = serializers.CharField(
-            source='content',
-            required = False,
+            source='source_text',
             write_only = True)
 
     created_at = serializers.DateTimeField(
-            source='published',
             required = False,
             read_only = True)
 
