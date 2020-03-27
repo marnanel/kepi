@@ -20,29 +20,17 @@ def create_local_person(name='jemima'):
 
 def create_local_status(content,
         posted_by,
-        to=[PUBLIC],
         ):
 
-    from kepi.bowler_pub.create import create
-
     if isinstance(posted_by, TrilbyUser):
-        posted_by = posted_by.actor
+        posted_by = posted_by.person
 
-    result = create(
-            is_local_user=True,
-            run_side_effects=True,
-            run_delivery=False,
-            incoming=False,
-            value={
-                'type': 'Create',
-                'actor': posted_by.id,
-                'object': {
-                    'type': 'Note',
-                    'attributedTo': posted_by.id,
-                    'content': content,
-                    },
-                'to': to,
-            },
-            )
+    result = Status(
+        remote_url = None,
+        account = posted_by,
+        content = content,
+        )
 
-    return result['object__obj']
+    result.save()
+
+    return result

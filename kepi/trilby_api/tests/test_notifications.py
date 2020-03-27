@@ -2,7 +2,6 @@ from django.test import TestCase
 from rest_framework.test import force_authenticate, APIClient, APIRequestFactory
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
-from kepi.bowler_pub.tests import *
 from django.conf import settings
 import logging
 import httpretty
@@ -85,36 +84,34 @@ class TestNotifications(TestCase):
     @httpretty.activate
     def test_favourite(self):
         alice = create_local_person(name='alice')
+        bob   = create_local_person(name='bob')
 
         status = create_local_status(
                 content = 'Curiouser and curiouser!',
                 posted_by = alice,
                 )
 
-        fred_keys = json.load(open(DEFAULT_KEYS_FILENAME, 'r'))
+        c_bob = APIClient()
+        c_bob.force_authenticate(bob)
 
-        fred = create_remote_person(
-                name='fred',
-                publicKey = fred_keys['public'],
-                url=REMOTE_FRED,
+        result = c_bob.post(
+                '/api/v1/statuses/{}/favourite'.format(status.id),
+                {},
+                format = 'json',
                 )
 
-        post_test_message(
-                secret = fred_keys['private'],
-                host = TESTSERVER,
-                f_type = 'Like',
-                f_actor = REMOTE_FRED,
-                f_object = status.url,
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
                 )
 
-        request = self.factory.get(
-                '/api/v1/notifications/',
-                )
-        force_authenticate(request, user=alice.local_user)
+        c_alice = APIClient()
+        c_alice.force_authenticate(alice)
 
-        view = Notifications.as_view()
-        result = view(request)
-        result.render()
+        result = c_alice.get(
+                '/api/v1/notifications',
+                )
 
         self.assertEqual(
                 result.status_code,

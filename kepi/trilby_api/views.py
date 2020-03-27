@@ -65,7 +65,7 @@ class DoSomethingWithStatus(generics.GenericAPIView):
         try:
             the_status = get_object_or_404(
                     self.get_queryset(),
-                    serial = int(kwargs['id']),
+                    id = int(kwargs['id']),
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')

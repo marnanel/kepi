@@ -220,6 +220,10 @@ class Person(models.Model):
     def outbox(self):
         return [] # FIXME
 
+    @property
+    def is_authenticated(self):
+        return self.local_user.is_authenticated
+
 ###################
 
 class Status(models.Model):
@@ -264,10 +268,14 @@ class Status(models.Model):
    # TODO Media
 
     sensitive = models.BooleanField(
+            default = False,
             )
 
     spoiler_text = models.CharField(
             max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
             )
 
     visibility = models.CharField(
@@ -276,10 +284,14 @@ class Status(models.Model):
 
     language = models.CharField(
             max_length = 255,
+            null = True,
+            default = None,
             )
 
     idempotency_key = models.CharField(
             max_length = 255,
+            null = True,
+            default = None,
             )
 
     @property
@@ -364,7 +376,7 @@ class Notification(models.Model):
             )
 
     for_account = models.ForeignKey(
-            TrilbyUser,
+            Person,
             on_delete = models.DO_NOTHING,
             )
 
