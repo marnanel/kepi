@@ -205,7 +205,7 @@ class TestStatuses(TestCase):
     def test_get_all_statuses(self):
 
         messages = [
-                'Why do I always dress myself in %s?' % (colour,) \
+                '<p>Why do I always dress myself in %s?</p>' % (colour,) \
                         for colour in ['red', 'green', 'blue', 'black']]
 
         self._create_alice()
@@ -235,7 +235,7 @@ class TestStatuses(TestCase):
 
         self.assertEqual(
                 [x['content'] for x in content],
-                ['<p>%s</p>' % (x,) for x in messages],
+                messages,
                 )
 
     def test_get_status_context(self):
