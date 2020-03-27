@@ -207,6 +207,14 @@ class Person(models.Model):
     def emojis(self):
         return [] # FIXME
 
+    @property
+    def inbox(self):
+        return [] # FIXME
+
+    @property
+    def outbox(self):
+        return [] # FIXME
+
 ###################
 
 class Status(models.Model):

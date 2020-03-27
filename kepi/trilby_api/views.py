@@ -322,11 +322,8 @@ class HomeTimeline(AbstractTimeline):
 
         result = []
 
-        inbox = Collection.get(
-                user = request.user.person,
-                collection = 'inbox').members
 
-        for item in inbox:
+        for item in request.user.person.inbox:
             if item.f_type in [
                     'Create',
                     ]:
@@ -380,14 +377,10 @@ class UserFeed(View):
                 id = '@'+username,
                 )
 
-        statuses = [x.member for x in Collection.get(
-                username+'/outbox',
-                ).contents]
-
         context = {
                 'self': request.build_absolute_uri(),
                 'user': user,
-                'statuses': statuses,
+                'statuses': user.outbox,
                 'server_name': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
             }
 
