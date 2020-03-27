@@ -218,6 +218,10 @@ class Statuses(generics.ListCreateAPIView,
                 safe = False, # it's a list
                 )
 
+    def _string_to_html(self, s):
+        # FIXME this should be a bit more sophisticated :)
+        return '<p>{}</p>'.format(s)
+
     def create(self, request, *args, **kwargs):
 
         data = request.data
@@ -228,9 +232,11 @@ class Statuses(generics.ListCreateAPIView,
                     content = 'You must supply a status or some media IDs',
                     )
 
+        content = self._string_to_html(data.get('status'))
+
         status = Status(
                 account = request.user.person,
-                content = data.get('status'),
+                content = content,
                 sensitive = data.get('sensitive', False),
                 spoiler_text = data.get('spoiler_text', ''),
                 visibility = data.get('visibility', 'public'),
@@ -320,19 +326,7 @@ class HomeTimeline(AbstractTimeline):
 
     def get_queryset(self, request):
 
-        result = []
-
-
-        for item in request.user.person.inbox:
-            if item.f_type in [
-                    'Create',
-                    ]:
-                product = item['object__obj']
-
-                if product is not None:
-                    result.append(product)
-
-        return result
+        return request.user.person.inbox
 
 ########################################
 

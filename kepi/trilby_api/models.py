@@ -209,7 +209,12 @@ class Person(models.Model):
 
     @property
     def inbox(self):
-        return [] # FIXME
+
+        def inbox_generator():
+            for status in Status.objects.all():
+                yield status
+
+        return inbox_generator()
 
     @property
     def outbox(self):
