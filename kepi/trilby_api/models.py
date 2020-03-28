@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
 from django.dispatch import receiver
 from django.conf import settings
@@ -220,9 +221,11 @@ class Person(models.Model):
     def outbox(self):
         return [] # FIXME
 
-    @property
-    def is_authenticated(self):
-        return self.local_user.is_authenticated
+    def __str__(self):
+        if self.remote_url:
+            return self.remote_url
+        else:
+            return self.local_user
 
 ###################
 
@@ -413,6 +416,31 @@ class Notification(models.Model):
                 self.for_account.id,
                 detail,
                 )
+
+#####################################
+
+class Like(models.Model):
+
+    liker = models.ForeignKey(
+            'Person',
+            on_delete = models.DO_NOTHING,
+            )
+
+    liked = models.ForeignKey(
+            'Status',
+            on_delete = models.DO_NOTHING,
+            )
+
+    class Meta:
+        constraints = [
+                UniqueConstraint(
+                    fields = ['liker', 'liked'],
+                    name = 'i_cant_like_this_enough',
+                    ),
+                ]
+
+    def __str__(self):
+        return '[%s likes %s]' % (liker, liked)
 
 ##################################################
 # Notification handlers

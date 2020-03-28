@@ -92,7 +92,7 @@ class TestNotifications(TestCase):
                 )
 
         c_bob = APIClient()
-        c_bob.force_authenticate(bob)
+        c_bob.force_authenticate(bob.local_user)
 
         result = c_bob.post(
                 '/api/v1/statuses/{}/favourite'.format(status.id),
@@ -107,7 +107,7 @@ class TestNotifications(TestCase):
                 )
 
         c_alice = APIClient()
-        c_alice.force_authenticate(alice)
+        c_alice.force_authenticate(alice.local_user)
 
         result = c_alice.get(
                 '/api/v1/notifications',

@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.http import HttpResponse, JsonResponse
@@ -92,20 +93,18 @@ class DoSomethingWithStatus(generics.GenericAPIView):
 class Favourite(DoSomethingWithStatus):
 
     def _do_something_with(self, the_status, request):
-        existing = Like.objects.filter(
-            f_actor = request.user.person.acct,
-            f_object = the_status.id,
-            ).exists()
 
-        if existing:
+        try:
+            like = Like(
+                liker = request.user.person,
+                liked = the_status,
+                )
+
+            like.save()
+
+            logger.info('  -- created a Like')
+        except db.IntegrityError:
             logger.info('  -- not creating a Like; it already exists')
-        else:
-            logger.info('  -- creating a Like')
-            bowler_pub_create(value={
-                'type': 'Like',
-                'actor': request.user.person.id,
-                'object': the_status.id,
-                })
 
 ###########################
 
