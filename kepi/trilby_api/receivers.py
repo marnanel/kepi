@@ -13,7 +13,6 @@ logger = logging.Logger('kepi')
 @receiver(kepi_signals.followed)
 def on_follow(sender, **kwargs):
 
-    print(11);
     notification = kepi_models.Notification(
             notification_type = kepi_models.Notification.FOLLOW,
             for_account = sender.followed,
@@ -28,7 +27,6 @@ def on_follow(sender, **kwargs):
 @receiver(kepi_signals.liked)
 def on_like(sender, **kwargs):
 
-    print(11);
     notification = kepi_models.Notification(
             notification_type = kepi_models.Notification.FAVOURITE,
             for_account = sender.liked.account,

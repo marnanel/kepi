@@ -106,9 +106,7 @@ class Favourite(DoSomethingWithStatus):
 
             logger.info('  -- created a Like')
 
-            print(1);
             kepi_signals.liked.send(sender=like)
-            print(2);
 
         except IntegrityError:
             logger.info('  -- not creating a Like; it already exists')

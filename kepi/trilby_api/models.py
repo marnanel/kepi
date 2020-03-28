@@ -124,13 +124,21 @@ class Person(models.Model):
             )
 
     @property
-    def url(self):
+    def uri(self):
         if self.remote_url is not None:
             return self.remote_url
 
         return settings.KEPI['USER_LINK'] % {
                 'username': self.local_user.username,
                 }
+    @property
+    def url(self):
+        if self.remote_url is not None:
+            return self.remote_url
+
+        return uri_to_url(settings.KEPI['USER_LINK'] % {
+                'username': self.local_user.username,
+                })
 
     @property
     def following_count(self):
@@ -236,14 +244,6 @@ class Status(models.Model):
             blank = True,
             unique = True,
             )
-
-    @property
-    def url(self):
-        return 'FIXME' # FIXME
-
-    @property
-    def uri(self):
-        return 'FIXME' # FIXME
 
     account = models.ForeignKey(
             'Person',

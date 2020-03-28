@@ -140,10 +140,10 @@ class TestNotifications(TestCase):
 
         self.assertDictContainsSubset(
                 {
-                    'id': 'https://remote.example.org/users/fred',
-                    'username': 'fred',
-                    'acct': 'fred@remote.example.org',
-                    'url': 'https://remote.example.org/users/fred',
+                    'id': 'https://testserver/users/bob',
+                    'username': 'bob',
+                    'acct': 'bob@testserver',
+                    'url': 'https://testserver/users/bob',
                     },
                 content[0]['account'],
                 )

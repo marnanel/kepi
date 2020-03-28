@@ -7,6 +7,7 @@ from oauth2_provider.models import Application
 class UserSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(
+            source='url',
             read_only = True)
 
     avatar = serializers.URLField(
@@ -57,6 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
                 'following_count',
                 'statuses_count',
                 'note',
+                'uri',
                 'url',
                 'avatar',
                 'avatar_static',
