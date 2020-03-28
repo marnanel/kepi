@@ -11,7 +11,6 @@ This module contains create(), which creates objects.
 import django.db.utils
 import logging
 import json
-from kepi.bowler_pub import signals
 
 logger = logging.getLogger(name='kepi')
 
