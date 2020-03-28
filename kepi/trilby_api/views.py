@@ -426,7 +426,7 @@ class Notifications(generics.ListAPIView):
 
     def list(self, request):
         queryset = Notification.objects.filter(
-                for_account = request.user,
+                for_account = request.user.person,
                 )
 
         serializer = self.serializer_class(queryset, many=True)
