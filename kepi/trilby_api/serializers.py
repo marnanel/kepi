@@ -222,7 +222,7 @@ class NotificationSerializer(serializers.ModelSerializer):
                 'status',
                 ]
 
-    account = UserSerializer(source='about_account_actor')
+    account = UserSerializer(source='about_account')
 
     status = StatusSerializer()
 

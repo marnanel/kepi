@@ -15,7 +15,6 @@ import logging
 from django.conf import settings
 from kepi.bowler_pub.find import find, is_local
 from kepi.bowler_pub.delivery import deliver
-from kepi.bowler_pub import signals
 from kepi.bowler_pub.utils import short_id_to_url
 
 logger = logging.getLogger(name='kepi')

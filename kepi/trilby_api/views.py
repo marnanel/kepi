@@ -11,10 +11,12 @@ from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
 from .models import TrilbyUser, Notification, Status
 from .serializers import *
+import kepi.trilby_api.signals as kepi_signals
 from rest_framework import generics, response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+import kepi.trilby_api.receivers
 import logging
 import json
 import re
@@ -103,7 +105,12 @@ class Favourite(DoSomethingWithStatus):
             like.save()
 
             logger.info('  -- created a Like')
-        except db.IntegrityError:
+
+            print(1);
+            kepi_signals.liked.send(sender=like)
+            print(2);
+
+        except IntegrityError:
             logger.info('  -- not creating a Like; it already exists')
 
 ###########################

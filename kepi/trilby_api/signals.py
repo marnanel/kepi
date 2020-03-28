@@ -1,13 +1,15 @@
 from django.dispatch import Signal
 
-created = Signal(
+liked = Signal(
         providing_args=[
-            'value',
+            'liker',
+            'liked',
             ])
 
-updated = Signal(
+followed = Signal(
         providing_args=[
-            'value',
+            'follower',
+            'followed',
             ])
 
 deleted = Signal(

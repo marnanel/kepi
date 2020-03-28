@@ -1,11 +1,7 @@
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
-from django.dispatch import receiver
 from django.conf import settings
-import kepi.bowler_pub.models as kepi_models
-import kepi.bowler_pub.signals as kepi_signals
-import kepi.bowler_pub.find as kepi_find
 from kepi.bowler_pub.create import create
 import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url
@@ -370,7 +366,7 @@ class Notification(models.Model):
             ]
 
     notification_type = models.CharField(
-            max_length = 256,
+            max_length = 1,
             choices = TYPE_CHOICES,
             )
 
@@ -381,23 +377,23 @@ class Notification(models.Model):
     for_account = models.ForeignKey(
             Person,
             on_delete = models.DO_NOTHING,
+            related_name = 'notifications_for',
             )
 
-    about_account = models.CharField(
-            max_length = 256,
-            default='',
-            )
-
-    status = models.ForeignKey(
-            kepi_models.AcItem,
+    about_account = models.ForeignKey(
+            Person,
             on_delete = models.DO_NOTHING,
+            related_name = 'notifications_about',
             blank = True,
             null = True,
             )
 
-    @property
-    def about_account_actor(self):
-        return kepi_models.AcActor.get_by_url(self.about_account)
+    status = models.ForeignKey(
+            Status,
+            on_delete = models.DO_NOTHING,
+            blank = True,
+            null = True,
+            )
 
     def __str__(self):
 
@@ -441,93 +437,3 @@ class Like(models.Model):
 
     def __str__(self):
         return '[%s likes %s]' % (liker, liked)
-
-##################################################
-# Notification handlers
-
-# FIXME these are really similar. Can we refactor?
-
-@receiver(kepi_signals.created)
-def on_follow(sender, **kwargs):
-
-    value = kwargs['value']
-
-    if isinstance(value, kepi_models.AcFollow):
-
-        follower_acperson = kepi_find.find(
-                value['object'],
-                local_only = True,
-                )
-
-        if follower_acperson is None:
-            logger.info('  -- not storing a notification, because '+\
-                    'nobody\'s being followed')
-            return
-
-        try:
-            follower = TrilbyUser.objects.get(actor=follower_acperson)
-        except TrilbyUser.DoesNotExist:
-            logger.info('  -- not storing a notification, because '+\
-                    'we don\'t know the person being followed')
-            return
-
-        logger.info('  -- storing a notification about this follow')
-
-        following = value['actor']
-
-        notification = Notification(
-                notification_type = Notification.FOLLOW,
-                for_account = follower,
-                about_account = following,
-                )
-
-        notification.save()
-
-        logger.info('      -- notification is: %s',
-                notification)
-
-@receiver(kepi_signals.created)
-def on_like(sender, **kwargs):
-
-    value = kwargs['value']
-
-    if isinstance(value, kepi_models.AcLike):
-
-        status = kepi_find.find(
-                value['object'],
-                local_only = True)
-
-        if status is None:
-            logger.info('  -- not storing a notification, because '+\
-                    "there's no local object")
-            return
-
-        owner_acperson = status['attributedTo__obj']
-
-        if owner_acperson is None:
-            logger.info('  -- not storing a notification, because '+\
-                    'there\'s no owner')
-            return
-
-        try:
-            owner = TrilbyUser.objects.get(actor=owner_acperson)
-        except TrilbyUser.DoesNotExist:
-            logger.info('  -- not storing a notification, because '+\
-                    'we don\'t know the owner')
-            return
-
-        logger.info('  -- storing a notification about this like')
-
-        sender = value['actor']
-
-        notification = Notification(
-                notification_type = Notification.FAVOURITE,
-                for_account = owner,
-                about_account = sender,
-                status = status,
-                )
-
-        notification.save()
-
-        logger.info('      -- notification is: %s',
-                notification)
