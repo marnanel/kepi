@@ -19,32 +19,36 @@ class TestNotifications(TestCase):
 
     @httpretty.activate
     def test_follow(self):
+
+        # recall that we're testing notifications here;
+        # don't bother testing everything about follow
+
         alice = create_local_person(name='alice')
+        bob   = create_local_person(name='bob')
 
-        fred_keys = json.load(open(DEFAULT_KEYS_FILENAME, 'r'))
+        c_bob = APIClient()
+        c_bob.force_authenticate(bob.local_user)
 
-        fred = create_remote_person(
-                name='fred',
-                publicKey = fred_keys['public'],
-                url=REMOTE_FRED,
+        result = c_bob.post(
+                '/api/v1/accounts/{}/follow'.format(alice.id),
+                {
+                    'reblogs': True, # FIXME we don't yet support this
+                    },
+                format = 'json',
                 )
 
-        post_test_message(
-                secret = fred_keys['private'],
-                host = TESTSERVER,
-                f_type = 'Follow',
-                f_actor = REMOTE_FRED,
-                f_object = alice.actor.url,
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
                 )
 
-        request = self.factory.get(
-                '/api/v1/notifications/',
-                )
-        force_authenticate(request, user=alice.local_user)
+        c_alice = APIClient()
+        c_alice.force_authenticate(alice.local_user)
 
-        view = Notifications.as_view()
-        result = view(request)
-        result.render()
+        result = c_alice.get(
+                '/api/v1/notifications',
+                )
 
         self.assertEqual(
                 result.status_code,
@@ -73,10 +77,10 @@ class TestNotifications(TestCase):
 
         self.assertDictContainsSubset(
                 {
-                    'id': 'https://remote.example.org/users/fred',
-                    'username': 'fred',
-                    'acct': 'fred@remote.example.org',
-                    'url': 'https://remote.example.org/users/fred',
+                    'id': 'https://testserver/users/bob',
+                    'username': 'bob',
+                    'acct': 'bob@testserver',
+                    'url': 'https://testserver/users/bob',
                     },
                 content[0]['account'],
                 )
