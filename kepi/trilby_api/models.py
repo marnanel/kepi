@@ -154,6 +154,14 @@ class Person(models.Model):
 
     @property
     def acct(self):
+        if self.remote_url is not None:
+            return self.remote_username
+        else:
+            return '{}@{}'.format(
+                    self.local_user.username,
+                    settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
+                    )
+
         return 'FIXME' # FIXME
 
     @property

@@ -155,8 +155,8 @@ class TestNotifications(TestCase):
 
         self.assertDictContainsSubset(
                 {
-                    'id': str(status.serial),
-                    'content': '<p>Curiouser and curiouser!</p>',
+                    'id': str(status.id),
+                    'content': 'Curiouser and curiouser!',
                     },
                 content[0]['status'],
                 )
