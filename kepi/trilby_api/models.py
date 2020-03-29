@@ -349,6 +349,14 @@ class Status(models.Model):
     def in_reply_to_account_id(self):
         return None # FIXME
 
+    @property
+    def uri(self):
+        return 'FIXME' # FIXME
+
+    @property
+    def url(self):
+        return 'FIXME' # FIXME
+
 ###################
 
 class Notification(models.Model):

@@ -140,11 +140,9 @@ class StatusSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
 
     uri = serializers.URLField(
-            required = False,
             read_only = True)
 
     url = serializers.URLField(
-            required = False,
             read_only = True)
 
     account = UserSerializer(
