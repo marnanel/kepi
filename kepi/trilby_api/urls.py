@@ -14,11 +14,13 @@ urlpatterns = [
     path('api/v1/accounts/<name>/statuses', Statuses.as_view()),
     path('api/v1/accounts/<name>/following', Following.as_view()),
     path('api/v1/accounts/<name>/followers', Followers.as_view()),
+    path('api/v1/accounts/<name>/follow', Follow.as_view()),
 
     path('api/v1/statuses', Statuses.as_view()),
     path('api/v1/statuses/<id>', Statuses.as_view()),
     path('api/v1/statuses/<id>/context', StatusContext.as_view()),
     path('api/v1/statuses/<id>/favourite', Favourite.as_view()),
+
     path('api/v1/notifications', Notifications.as_view()),
     path('api/v1/filters', Filters.as_view()),
     path('api/v1/custom_emojis', Emojis.as_view()),

@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
-from .models import TrilbyUser, Notification, Status
+import kepi.trilby_api.models as trilby_models
 from .serializers import *
 import kepi.trilby_api.signals as kepi_signals
 from rest_framework import generics, response
@@ -58,12 +58,16 @@ def error_response(status, reason):
 class DoSomethingWithStatus(generics.GenericAPIView):
 
     serializer_class = StatusSerializer
-    queryset = Status.objects.all()
+    queryset = trilby_models.Status.objects.all()
 
     def _do_something_with(self, the_status, request):
         raise NotImplementedError()
 
     def post(self, request, *args, **kwargs):
+
+        if request.user is None:
+            logger.debug('  -- user not logged in')
+            return error_response(401, 'Not logged in')
 
         try:
             the_status = get_object_or_404(
@@ -72,10 +76,6 @@ class DoSomethingWithStatus(generics.GenericAPIView):
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')
-
-        if request.user is None:
-            logger.debug('  -- user not logged in')
-            return error_response(401, 'Not logged in')
 
         self._do_something_with(the_status, request)
 
@@ -97,7 +97,7 @@ class Favourite(DoSomethingWithStatus):
     def _do_something_with(self, the_status, request):
 
         try:
-            like = Like(
+            like = trilby_models.Like(
                 liker = request.user.person,
                 liked = the_status,
                 )
@@ -110,6 +110,61 @@ class Favourite(DoSomethingWithStatus):
 
         except IntegrityError:
             logger.info('  -- not creating a Like; it already exists')
+
+###########################
+
+class DoSomethingWithPerson(generics.GenericAPIView):
+
+    serializer_class = UserSerializer
+    queryset = trilby_models.Person.objects.all()
+
+    def _do_something_with(self, the_person, request):
+        raise NotImplementedError()
+
+    def post(self, request, *args, **kwargs):
+
+        if request.user is None:
+            logger.debug('  -- user not logged in')
+            return error_response(401, 'Not logged in')
+
+        the_person = get_object_or_404(
+                self.get_queryset(),
+                id = kwargs['name'],
+                )
+
+        self._do_something_with(the_person, request)
+
+        serializer = UserSerializer(
+                the_person,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        return JsonResponse(
+                serializer.data,
+                status = 200,
+                reason = 'Done',
+                )
+
+class Follow(DoSomethingWithPerson):
+
+    def _do_something_with(self, the_person, request):
+
+        try:
+            follow = trilby_models.Follow(
+                follower = request.user.person,
+                following = the_person,
+                )
+
+            follow.save()
+
+            logger.info('  -- follow: %s', follow)
+
+            kepi_signals.followed.send(sender=follow)
+
+        except IntegrityError:
+            logger.info('  -- not creating a follow; it already exists')
 
 ###########################
 
@@ -170,7 +225,7 @@ class Verify_Credentials(generics.GenericAPIView):
 
 class User(generics.GenericAPIView):
 
-    queryset = Person.objects.all()
+    queryset = trilby_models.Person.objects.all()
 
     def get(self, request, *args, **kwargs):
         whoever = get_object_or_404(
@@ -186,7 +241,7 @@ class Statuses(generics.ListCreateAPIView,
         generics.DestroyAPIView,
         ):
 
-    queryset = Status.objects.filter(remote_url=None)
+    queryset = trilby_models.Status.objects.filter(remote_url=None)
     serializer_class = StatusSerializer
 
     def get(self, request, *args, **kwargs):
@@ -238,7 +293,7 @@ class Statuses(generics.ListCreateAPIView,
 
         content = self._string_to_html(data.get('status'))
 
-        status = Status(
+        status = trilby_models.Status(
                 account = request.user.person,
                 content = content,
                 sensitive = data.get('sensitive', False),
@@ -269,7 +324,7 @@ class Statuses(generics.ListCreateAPIView,
 
 class StatusContext(generics.ListCreateAPIView):
 
-    queryset = Status.objects.all()
+    queryset = trilby_models.Status.objects.all()
 
     def get(self, request, *args, **kwargs):
 
@@ -310,7 +365,7 @@ class PublicTimeline(AbstractTimeline):
 
         result = []
 
-        timeline = Status.objects.all()
+        timeline = trilby_models.Status.objects.all()
 
         for item in timeline:
 
@@ -337,7 +392,7 @@ class HomeTimeline(AbstractTimeline):
 # TODO stub
 class AccountsSearch(generics.ListAPIView):
 
-    queryset = Person.objects.all()
+    queryset = trilby_models.Person.objects.all()
     serializer_class = UserSerializer
 
     permission_classes = [
@@ -371,7 +426,7 @@ class UserFeed(View):
 
     def get(self, request, username, *args, **kwargs):
 
-        user = get_object_or_404(Person,
+        user = get_object_or_404(trilby_models.Person,
                 id = '@'+username,
                 )
 

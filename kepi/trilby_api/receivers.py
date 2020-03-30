@@ -15,7 +15,7 @@ def on_follow(sender, **kwargs):
 
     notification = kepi_models.Notification(
             notification_type = kepi_models.Notification.FOLLOW,
-            for_account = sender.followed,
+            for_account = sender.following,
             about_account = sender.follower,
             )
 

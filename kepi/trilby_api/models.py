@@ -123,6 +123,15 @@ class Person(models.Model):
                     "this is where it went."
             )
 
+    default_visibility = models.CharField(
+            max_length = 255,
+            default = 'public',
+            )
+
+    default_sensitive = models.BooleanField(
+            default = False,
+            )
+
     @property
     def uri(self):
         if self.remote_url is not None:
@@ -453,3 +462,47 @@ class Like(models.Model):
 
     def __str__(self):
         return '[%s likes %s]' % (liker, liked)
+
+#####################################
+
+class Follow(models.Model):
+
+    follower = models.ForeignKey(
+            'Person',
+            on_delete = models.DO_NOTHING,
+            related_name = 'following',
+            )
+
+    following = models.ForeignKey(
+            'Person',
+            on_delete = models.DO_NOTHING,
+            related_name = 'followers',
+            )
+
+    requested = models.BooleanField(
+            default=True,
+            )
+
+    show_reblogs = models.BooleanField(
+            default=True,
+            )
+
+    class Meta:
+        constraints = [
+                UniqueConstraint(
+                    fields = ['follower', 'following'],
+                    name = 'follow_only_once',
+                    ),
+                ]
+
+    def __str__(self):
+        if self.requested:
+            return '[%s requests to follow %s]' % (
+                    follower,
+                    following,
+                    )
+        else:
+            return '[%s follows %s]' % (
+                    follower,
+                    following,
+                    )
