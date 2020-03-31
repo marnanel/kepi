@@ -77,7 +77,7 @@ class TestNotifications(TestCase):
 
         self.assertDictContainsSubset(
                 {
-                    'id': 'https://testserver/users/bob',
+                    'id': '@bob',
                     'username': 'bob',
                     'acct': 'bob@testserver',
                     'url': 'https://testserver/users/bob',
@@ -144,7 +144,7 @@ class TestNotifications(TestCase):
 
         self.assertDictContainsSubset(
                 {
-                    'id': 'https://testserver/users/bob',
+                    'id': '@bob',
                     'username': 'bob',
                     'acct': 'bob@testserver',
                     'url': 'https://testserver/users/bob',

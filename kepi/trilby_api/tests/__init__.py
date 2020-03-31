@@ -13,6 +13,7 @@ def create_local_person(name='jemima'):
 
     result = Person(
             local_user = user,
+            display_name = name,
             )
     result.save()
 

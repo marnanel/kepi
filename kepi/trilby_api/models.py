@@ -132,6 +132,12 @@ class Person(models.Model):
             default = False,
             )
 
+    language = models.CharField(
+            max_length = 255,
+            null = True,
+            default = settings.KEPI['LANGUAGES'][0],
+            )
+
     @property
     def uri(self):
         if self.remote_url is not None:
@@ -171,14 +177,19 @@ class Person(models.Model):
                     settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
                     )
 
-        return 'FIXME' # FIXME
-
     @property
     def username(self):
         if self.remote_url is not None:
             return self.remote_username
         else:
             return self.local_user.username
+
+    @property
+    def api_id(self):
+        if self.remote_url is not None:
+            return self.remote_url
+        else:
+            return '@' + self.local_user.username
 
     def _generate_keys(self):
 
@@ -301,7 +312,7 @@ class Status(models.Model):
     language = models.CharField(
             max_length = 255,
             null = True,
-            default = None,
+            default = settings.KEPI['LANGUAGES'][0],
             )
 
     idempotency_key = models.CharField(

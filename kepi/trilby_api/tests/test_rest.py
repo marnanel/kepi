@@ -9,7 +9,7 @@ import json
 ACCOUNT_EXPECTED = [
         ('id', '@alice'),
         ('username', 'alice'),
-        ('acct', 'alice'),
+        ('acct', 'alice@testserver'),
         ('display_name', 'alice'),
         ('locked', False),
 
@@ -21,9 +21,9 @@ ACCOUNT_EXPECTED = [
         ('fields', []),
         ('emojis', []),
 
-        ('avatar', 'https://testserver/static/defaults/avatar_7.jpg'),
+        ('avatar', 'https://testserver/static/defaults/avatar_1.jpg'),
         ('header', 'https://testserver/static/defaults/header.jpg'),
-        ('avatar_static', 'https://testserver/static/defaults/avatar_7.jpg'),
+        ('avatar_static', 'https://testserver/static/defaults/avatar_1.jpg'),
         ('header_static', 'https://testserver/static/defaults/header.jpg'),
 
         ('bot', False),
