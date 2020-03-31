@@ -163,14 +163,14 @@ class TestStatuses(TestCase):
         self._create_status()
 
         request = self.factory.get(
-                '/api/v1/statuses/'+self._status.number,
+                '/api/v1/statuses/'+self._status.id,
                 )
         force_authenticate(request, user=self._alice.local_user)
 
         view = Statuses.as_view()
 
         result = view(request,
-                id=str(int(self._status.number,16)))
+                id=str(self._status.id))
 
         self.assertEqual(
                 result.status_code,
