@@ -302,11 +302,12 @@ class Status(models.Model):
             max_length = 255,
             null = True,
             blank = True,
-            default = None,
+            default = '',
             )
 
     visibility = models.CharField(
             max_length = 255,
+            default = 'public',
             )
 
     language = models.CharField(
@@ -384,6 +385,14 @@ class Status(models.Model):
     @property
     def url(self):
         return 'FIXME' # FIXME
+
+    @property
+    def ancestors(self):
+        return [] # FIXME
+
+    @property
+    def descendants(self):
+        return [] # FIXME
 
 ###################
 

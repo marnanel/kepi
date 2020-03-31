@@ -249,7 +249,7 @@ class Statuses(generics.ListCreateAPIView,
         queryset = self.get_queryset()
 
         if 'id' in kwargs:
-            number = '/'+kwargs['id']
+            number = kwargs['id']
             logger.info('Looking up status numbered %s, for %s',
                     number, request.user)
 
@@ -330,8 +330,7 @@ class StatusContext(generics.ListCreateAPIView):
 
         queryset = self.get_queryset()
 
-        number = '/'+kwargs['id']
-        status = queryset.get(id=number)
+        status = queryset.get(id=int(kwargs['id']))
         serializer = StatusContextSerializer(status)
 
         return JsonResponse(serializer.data)

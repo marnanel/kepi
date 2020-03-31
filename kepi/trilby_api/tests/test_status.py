@@ -2,7 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
-import kepi.bowler_pub.models as bowler_pub_models
+from kepi.trilby_api.models import *
 from django.conf import settings
 
 class TestStatus(TestCase):
@@ -25,7 +25,7 @@ class TestStatus(TestCase):
 
         result = c.post(
                 '/api/v1/statuses/{}/{}'.format(
-                    self._alice_status.serial,
+                    self._alice_status.id,
                     verb,
                     ),
                 format = 'json',
@@ -38,9 +38,9 @@ class TestStatus(TestCase):
 
         self._test_doing_something('favourite')
 
-        found = bowler_pub_models.AcLike.objects.filter(
-                f_actor = self._alice.actor.id,
-                f_object = self._alice_status.id,
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
                 )
 
         self.assertEqual(len(found), 1,

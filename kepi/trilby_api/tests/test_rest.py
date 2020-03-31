@@ -37,7 +37,7 @@ ACCOUNT_SOURCE_EXPECTED = [
 
 STATUS_EXPECTED = [
         ('in_reply_to_account_id', None),
-        ('content', '<p>Hello world.</p>'),
+        ('content', 'Hello world.'),
         ('emojis', []),
         ('reblogs_count', 0),
         ('favourites_count', 0),
@@ -163,7 +163,7 @@ class TestStatuses(TestCase):
         self._create_status()
 
         request = self.factory.get(
-                '/api/v1/statuses/'+self._status.id,
+                '/api/v1/statuses/'+str(self._status.id),
                 )
         force_authenticate(request, user=self._alice.local_user)
 
@@ -244,14 +244,14 @@ class TestStatuses(TestCase):
         self._create_status()
 
         request = self.factory.get(
-                '/api/v1/statuses/'+self._status.number+'/context',
+                '/api/v1/statuses/'+str(self._status.id)+'/context',
                 )
         force_authenticate(request, user=self._alice.local_user)
 
         view = StatusContext.as_view()
 
         result = view(request,
-                id=str(int(self._status.number,16)))
+                id=str(self._status.id))
 
         self.assertEqual(
                 result.status_code,
