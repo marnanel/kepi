@@ -26,15 +26,11 @@ class TestNotifications(TestCase):
         alice = create_local_person(name='alice')
         bob   = create_local_person(name='bob')
 
-        c_bob = APIClient()
-        c_bob.force_authenticate(bob.local_user)
-
-        result = c_bob.post(
-                '/api/v1/accounts/{}/follow'.format(alice.id),
+        result = post('/api/v1/accounts/{}/follow'.format(alice.id),
                 {
                     'reblogs': True, # FIXME we don't yet support this
                     },
-                format = 'json',
+                as_user = bob,
                 )
 
         self.assertEqual(
@@ -43,11 +39,8 @@ class TestNotifications(TestCase):
                 msg = result.content,
                 )
 
-        c_alice = APIClient()
-        c_alice.force_authenticate(alice.local_user)
-
-        result = c_alice.get(
-                '/api/v1/notifications',
+        result = get('/api/v1/notifications',
+                as_user = alice,
                 )
 
         self.assertEqual(
@@ -95,13 +88,10 @@ class TestNotifications(TestCase):
                 posted_by = alice,
                 )
 
-        c_bob = APIClient()
-        c_bob.force_authenticate(bob.local_user)
-
-        result = c_bob.post(
+        result = post(
                 '/api/v1/statuses/{}/favourite'.format(status.id),
                 {},
-                format = 'json',
+                as_user = bob,
                 )
 
         self.assertEqual(
@@ -110,11 +100,9 @@ class TestNotifications(TestCase):
                 msg = result.content,
                 )
 
-        c_alice = APIClient()
-        c_alice.force_authenticate(alice.local_user)
-
-        result = c_alice.get(
+        result = get(
                 '/api/v1/notifications',
+                as_user = alice,
                 )
 
         self.assertEqual(

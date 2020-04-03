@@ -6,6 +6,7 @@ MIME_TYPE = 'application/json'
 
 class PublicTimeline(TestCase):
 
+    # FIXME put this in a parent class in __init__
     def _get(self,
             url,
             client=None):
