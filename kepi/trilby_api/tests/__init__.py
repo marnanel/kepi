@@ -21,6 +21,7 @@ def create_local_person(name='jemima'):
 
 def create_local_status(content,
         posted_by,
+        **kwargs,
         ):
 
     if isinstance(posted_by, TrilbyUser):
@@ -30,6 +31,7 @@ def create_local_status(content,
         remote_url = None,
         account = posted_by,
         content = content,
+        **kwargs,
         )
 
     result.save()

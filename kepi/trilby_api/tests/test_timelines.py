@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from kepi.trilby_api.tests import *
+from kepi.trilby_api.models import Status
 import json
 
 MIME_TYPE = 'application/json'
@@ -37,7 +38,7 @@ class PublicTimeline(TestCase):
         self._status = create_local_status(
                 content = 'Hello world.',
                 posted_by = self._alice,
-                to = [PUBLIC],
+                visibility = Status.PUBLIC,
                 )
 
         response = self._get('/api/v1/timelines/public')
@@ -47,13 +48,13 @@ class PublicTimeline(TestCase):
                 '<p>Hello world.</p>',
                 )
 
-    def test_public_singleton_hidden(self):
+    def test_public_singleton_direct(self):
         self._alice = create_local_person(name='alice')
 
         self._status = create_local_status(
                 content = 'Hello world.',
                 posted_by = self._alice,
-                to = [],
+                visibility = Status.DIRECT,
                 )
 
         response = self._get('/api/v1/timelines/public')
