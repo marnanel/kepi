@@ -362,17 +362,9 @@ class PublicTimeline(AbstractTimeline):
 
     def get_queryset(self, request):
 
-        result = []
-
-        timeline = trilby_models.Status.objects.all()
-
-        for item in timeline:
-
-            if item.visibility=='public':
-                result.append(item)
-
-            if len(result)>=PUBLIC_TIMELINE_SLICE_LENGTH:
-                break
+        result = trilby_models.Status.objects.filter(
+                visibility = Status.PUBLIC,
+                )[:PUBLIC_TIMELINE_SLICE_LENGTH]
 
         return result
 

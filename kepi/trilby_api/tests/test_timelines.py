@@ -45,7 +45,7 @@ class PublicTimeline(TestCase):
 
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['content'],
-                '<p>Hello world.</p>',
+                'Hello world.',
                 )
 
     def test_public_singleton_direct(self):
