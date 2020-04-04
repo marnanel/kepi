@@ -13,7 +13,6 @@ for the full details.
 import django.views
 from django.conf import settings
 from django.shortcuts import render
-from kepi.bowler_pub.models.actor import AcActor
 from django.http import HttpResponse
 import logging
 import re
