@@ -30,7 +30,7 @@ ACCOUNT_EXPECTED = [
         ]
 
 ACCOUNT_SOURCE_EXPECTED = [
-        ('privacy', 'public'),
+        ('privacy', 'A'),
         ('sensitive', False),
         ('language', settings.KEPI['LANGUAGES'][0]), # FIXME
         ]
@@ -46,7 +46,7 @@ STATUS_EXPECTED = [
         ('muted', False),
         ('sensitive', False),
         ('spoiler_text', ''),
-        ('visibility', 'public'),
+        ('visibility', 'A'),
         ('media_attachments', []),
         ('mentions', []),
         ('tags', []),

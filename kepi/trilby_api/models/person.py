@@ -124,8 +124,8 @@ class Person(models.Model):
             )
 
     default_visibility = models.CharField(
-            max_length = 255,
-            default = 'public',
+            max_length = 1,
+            default = 'A', # public
             )
 
     default_sensitive = models.BooleanField(

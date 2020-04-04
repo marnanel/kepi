@@ -55,9 +55,32 @@ class Status(models.Model):
             default = '',
             )
 
+    PUBLIC = 'A'
+    UNLISTED = 'U'
+    PRIVATE = 'X'
+    DIRECT = 'D'
+
+    TYPE_CHOICES = [
+            (PUBLIC, 'public'),
+            (UNLISTED, 'unlisted'),
+            (PRIVATE, 'private'),
+            (DIRECT, 'direct'),
+            ]
+
+
     visibility = models.CharField(
-            max_length = 255,
-            default = 'public',
+            max_length = 1,
+            default = PUBLIC,
+            help_text = """Visiblity of this status.
+
+            Public (A): visible to anyone.
+            Unlisted (U): visible to anyone, but
+                doesn't appear in timelines.
+            Private (X): only visible to followers.
+            Direct (D): visible to nobody except tagged people.
+
+            Additionally, a person tagged in a status can
+            always view that status.""",
             )
 
     language = models.CharField(
