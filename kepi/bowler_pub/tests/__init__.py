@@ -1,6 +1,6 @@
 from kepi.bowler_pub.create import create
-from kepi.bowler_pub.validation import IncomingMessage, validate
-from kepi.bowler_pub.models import AcObject, AcActor
+from kepi.bowler_pub.validation import validate
+from kepi.bowler_pub.models import Incoming
 from kepi.bowler_pub.utils import as_json, uri_to_url, configured_url
 from django.conf import settings
 import django.test
