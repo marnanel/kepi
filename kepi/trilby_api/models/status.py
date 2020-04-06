@@ -13,6 +13,9 @@ logger = logging.Logger('kepi')
 
 class Status(models.Model):
 
+    class Meta:
+        verbose_name_plural = 'Statuses'
+
     # TODO: The original design has the serial number
     # monotonically but unpredictably increasing.
 

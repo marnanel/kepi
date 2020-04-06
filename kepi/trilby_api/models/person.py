@@ -69,7 +69,8 @@ class Person(models.Model):
 
         return uri_to_url('/static/defaults/header.jpg')
 
-    display_name = models.TextField(
+    display_name = models.CharField(
+            max_length = 255,
             verbose_name='display name',
             help_text = 'Your name, in human-friendly form. '+\
                 'Something like "Alice Liddell".',

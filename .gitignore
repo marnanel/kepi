@@ -10,3 +10,4 @@ dist/
 static
 examples/
 kepi/kepi/local_config.py
+kepi/media
