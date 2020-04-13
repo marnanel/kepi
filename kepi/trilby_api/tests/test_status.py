@@ -1,4 +1,5 @@
 from django.test import TestCase
+from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
@@ -34,6 +35,24 @@ class TestStatus(TestCase):
         self.assertEqual(result.status_code,
                 200)
 
+    def test_publish_new(self):
+        self.fail("Test not yet implemented")
+
+    def test_view_specific_status(self):
+        self.fail("Test not yet implemented")
+
+    def test_delete_status(self):
+        self.fail("Test not yet implemented")
+
+    def test_get_context(self):
+        self.fail("Test not yet implemented")
+
+    def test_get_reblogged_by(self):
+        self.fail("Test not yet implemented")
+
+    def test_get_favourited_by(self):
+        self.fail("Test not yet implemented")
+
     def test_favourite(self):
 
         self._test_doing_something('favourite')
@@ -46,3 +65,33 @@ class TestStatus(TestCase):
         self.assertEqual(len(found), 1,
                 "There was a Like object")
 
+    def test_unfavourite(self):
+        self.fail("Test not yet implemented")
+
+    def test_reblog(self):
+        self.fail("Test not yet implemented")
+
+    def test_unreblog(self):
+        self.fail("Test not yet implemented")
+
+    @skip("Not yet implemented")
+    def test_bookmark(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_unbookmark(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_mute(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_unmute(self):
+        pass
+
+    def test_pin(self):
+        self.fail("Test not yet implemented")
+
+    def test_unpin(self):
+        self.fail("Test not yet implemented")
