@@ -111,6 +111,24 @@ class Favourite(DoSomethingWithStatus):
         except IntegrityError:
             logger.info('  -- not creating a Like; it already exists')
 
+class Unfavourite(DoSomethingWithStatus):
+
+    def _do_something_with(self, the_status, request):
+
+        try:
+            like = trilby_models.Like.objects.get(
+                liker = request.user.person,
+                liked = the_status,
+                )
+
+            logger.info('  -- deleting the Like: %s',
+                    like)
+            
+            like.delete()
+
+        except trilby_models.Like.DoesNotExist:
+            logger.info('  -- not unliking; the Like doesn\'t exists')
+
 ###########################
 
 class DoSomethingWithPerson(generics.GenericAPIView):

@@ -8,25 +8,15 @@ from django.conf import settings
 
 class TestStatus(TestCase):
 
-    def _create_alice(self):
-        self._alice = create_local_person(name='alice')
-
-        self._alice_status = create_local_status(
-                posted_by = self._alice,
-                content = 'Daisies are our silver.',
-        )
-
     def _test_doing_something(self,
-            verb):
-
-        self._create_alice()
+            verb, status):
 
         c = APIClient()
         c.force_authenticate(self._alice.local_user)
 
         result = c.post(
                 '/api/v1/statuses/{}/{}'.format(
-                    self._alice_status.id,
+                    status.id,
                     verb,
                     ),
                 format = 'json',
@@ -55,7 +45,15 @@ class TestStatus(TestCase):
 
     def test_favourite(self):
 
-        self._test_doing_something('favourite')
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        self._test_doing_something('favourite',
+                self._alice_status)
 
         found = Like.objects.filter(
                 liker = self._alice,
@@ -66,7 +64,35 @@ class TestStatus(TestCase):
                 "There was a Like object")
 
     def test_unfavourite(self):
-        self.fail("Test not yet implemented")
+
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        self._test_doing_something('favourite',
+                self._alice_status)
+
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 1,
+                "There was a Like object")
+
+        self._test_doing_something('unfavourite',
+                self._alice_status)
+
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 0,
+                "There was no longer a Like object")
 
     def test_reblog(self):
         self.fail("Test not yet implemented")
