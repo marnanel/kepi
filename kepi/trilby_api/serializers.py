@@ -202,13 +202,11 @@ class StatusContextSerializer(serializers.ModelSerializer):
                 'descendants',
                 )
 
-        ancestors = serializers.ListField(
-                child = serializers.CharField(),
-                read_only = True)
+    ancestors = StatusSerializer(
+            many = True)
 
-        descendants = serializers.ListField(
-                child = serializers.CharField(),
-                read_only = True)
+    descendants = StatusSerializer(
+            many = True)
 
 class NotificationSerializer(serializers.ModelSerializer):
 

@@ -164,8 +164,31 @@ class Status(models.Model):
 
     @property
     def ancestors(self):
-        return [] # FIXME
+
+        result = []
+        parent = self.in_reply_to
+
+        while parent is not None:
+            result.insert(0, parent)
+            parent = parent.in_reply_to
+
+        return result
 
     @property
     def descendants(self):
-        return [] # FIXME
+
+        result = []
+        current = self
+
+        while True:
+            try:
+                child = Status.objects.get(
+                        in_reply_to = current,
+                        )
+            except Status.DoesNotExist:
+                break
+
+            result.append(child)
+            current = child
+
+        return result

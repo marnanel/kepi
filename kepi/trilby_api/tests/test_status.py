@@ -120,6 +120,8 @@ class TestStatus(TestCase):
                 'Buttercups our gold.',
                 'This is all the treasure',
                 'We can have or hold.',
+                'Raindrops are our diamonds.',
+                'And the morning dew.',
                 ]:  
             statuses.append(create_local_status(
                 posted_by = self._alice,
@@ -145,21 +147,25 @@ class TestStatus(TestCase):
             details = json.loads(result.content.decode('UTF-8'))
         except JSON.decoder.JSONDecodeError:
             self.fail("Response was not JSON")
-        print(details)
 
         self.assertEqual(
             sorted(details.keys()),
             ['ancestors', 'descendants'])
 
         self.assertEqual(len(details['ancestors']), 2)
-        self.assertEqual(len(details['descendants']), 1)
+        self.assertEqual(len(details['descendants']), 3)
 
         self.assertEqual(details['ancestors'][0]['id'],
-            statuses[0].id)
-        self.assertEqual(details['ancestors'][0]['id'],
-            statuses[1].id)
+            str(statuses[0].id))
+        self.assertEqual(details['ancestors'][1]['id'],
+            str(statuses[1].id))
         self.assertEqual(details['descendants'][0]['id'],
-            statuses[3].id)
+            str(statuses[3].id))
+        self.assertEqual(details['descendants'][1]['id'],
+            str(statuses[4].id))
+        self.assertEqual(details['descendants'][2]['id'],
+            str(statuses[5].id))
+
 
 
 
