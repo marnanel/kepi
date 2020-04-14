@@ -29,9 +29,6 @@ class TestStatus(TestCase):
         self.assertEqual(result.status_code,
                 expect_result)
 
-    def test_publish_new(self):
-        self.fail("Test not yet implemented")
-
     def test_view_specific_status(self):
         self.fail("Test not yet implemented")
 
@@ -218,3 +215,32 @@ class TestStatus(TestCase):
 
     def test_unpin(self):
         self.fail("Test not yet implemented")
+
+
+class TestPublish(TestCase):
+    def test_publish_simple(self):
+
+        self._alice = create_local_person(name='alice')
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.post(
+                '/api/v1/statuses',
+                {
+                    'status': 'Hello world',
+                    },
+                format = 'json',
+                )
+
+        self.assertEqual(result.status_code,
+                200)
+
+        found = Status.objects.filter(
+            account = self._alice,
+                )
+
+        self.assertEqual(len(found), 1,
+                "The status was created")
+
+

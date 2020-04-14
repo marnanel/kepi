@@ -338,7 +338,7 @@ class Statuses(generics.ListCreateAPIView,
 
         return JsonResponse(
                 serializer.data,
-                status = 201, # Created
+                status = 200, # should really be 201 but the spec says 200
                 reason = 'Hot off the press',
                 )
 
