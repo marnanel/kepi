@@ -29,9 +29,6 @@ class TestStatus(TestCase):
         self.assertEqual(result.status_code,
                 expect_result)
 
-    def test_view_specific_status(self):
-        self.fail("Test not yet implemented")
-
     def test_delete_status(self):
         self.fail("Test not yet implemented")
 
@@ -243,4 +240,75 @@ class TestPublish(TestCase):
         self.assertEqual(len(found), 1,
                 "The status was created")
 
+class TestGetStatus(TestCase):
+
+    def test_view_specific_status(self):
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.get(
+                '/api/v1/statuses/{}'.format(
+                    self._alice_status.id,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                200)
+
+        try:
+            details = json.loads(result.content.decode('UTF-8'))
+        except JSON.decoder.JSONDecodeError:
+            self.fail("Response was not JSON")
+
+        self.assertEqual(
+                details['id'],
+                str(self._alice_status.id),
+                )
+
+        self.assertEqual(
+                details['account']['username'],
+                'alice',
+                )
+
+        self.assertEqual(
+                details['content'],
+                'Daisies are our silver.',
+                )
+
+    def test_view_specific_status_404(self):
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.get(
+                '/api/v1/statuses/{}'.format(
+                    self._alice_status.id+1234,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                404)
+
+        try:
+            details = json.loads(result.content.decode('UTF-8'))
+        except JSON.decoder.JSONDecodeError:
+            self.fail("Response was not JSON")
+
+        self.assertEqual(
+                details['error'],
+                'Record not found',
+                )
 
