@@ -31,7 +31,7 @@ class Status(models.Model):
             on_delete = models.DO_NOTHING,
             )
 
-    in_reply_to_id = models.ForeignKey(
+    in_reply_to = models.ForeignKey(
             'self',
             on_delete = models.DO_NOTHING,
             null = True,

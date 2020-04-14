@@ -330,7 +330,7 @@ class Statuses(generics.ListCreateAPIView,
                 visibility = data.get('visibility', 'public'),
                 language = data.get('language',
                     settings.KEPI['LANGUAGES'][0]),
-                # FIXME: in_reply_to_id
+                # FIXME: in_reply_to
                 # FIXME: media_ids
                 # FIXME: idempotency_key
                 )

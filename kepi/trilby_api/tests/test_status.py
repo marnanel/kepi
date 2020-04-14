@@ -109,7 +109,59 @@ class TestStatus(TestCase):
                 404)
 
     def test_get_context(self):
-        self.fail("Test not yet implemented")
+
+        self._alice = create_local_person(name='alice')
+        statuses = []
+
+        previous = None
+
+        for line in [
+                'Daisies are our silver.',
+                'Buttercups our gold.',
+                'This is all the treasure',
+                'We can have or hold.',
+                ]:  
+            statuses.append(create_local_status(
+                posted_by = self._alice,
+                content = line,
+                in_reply_to = previous,
+                ))
+
+            previous = statuses[-1]
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.get(
+                '/api/v1/statuses/{}/context'.format(
+                    statuses[2].id,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                200)
+
+        try:
+            details = json.loads(result.content.decode('UTF-8'))
+        except JSON.decoder.JSONDecodeError:
+            self.fail("Response was not JSON")
+        print(details)
+
+        self.assertEqual(
+            sorted(details.keys()),
+            ['ancestors', 'descendants'])
+
+        self.assertEqual(len(details['ancestors']), 2)
+        self.assertEqual(len(details['descendants']), 1)
+
+        self.assertEqual(details['ancestors'][0]['id'],
+            statuses[0].id)
+        self.assertEqual(details['ancestors'][0]['id'],
+            statuses[1].id)
+        self.assertEqual(details['descendants'][0]['id'],
+            statuses[3].id)
+
+
 
     def test_get_reblogged_by(self):
         self.fail("Test not yet implemented")
