@@ -6,10 +6,14 @@ from kepi.trilby_api.tests import *
 from kepi.trilby_api.models import *
 from django.conf import settings
 
+# Tests for statuses. API docs are here:
+# https://docs.joinmastodon.org/methods/statuses/
+
 class TestStatus(TestCase):
 
     def _test_doing_something(self,
-            verb, person, status):
+            verb, person, status,
+            expect_result = 200):
 
         c = APIClient()
         c.force_authenticate(person.local_user)
@@ -23,7 +27,7 @@ class TestStatus(TestCase):
                 )
 
         self.assertEqual(result.status_code,
-                200)
+                expect_result)
 
     def test_publish_new(self):
         self.fail("Test not yet implemented")
@@ -96,6 +100,19 @@ class TestStatus(TestCase):
         self.assertEqual(len(found), 1,
                 "Likes are idempotent")
 
+    def test_favourite_404(self):
+
+        self._alice = create_local_person(name='alice')
+
+        class Mock(object):
+            def id():
+                return 1234
+        
+        self._test_doing_something('favourite',
+                self._alice,
+                Mock(),
+                expect_result = 404)
+
     def test_unfavourite(self):
 
         self._alice = create_local_person(name='alice')
@@ -128,6 +145,51 @@ class TestStatus(TestCase):
 
         self.assertEqual(len(found), 0,
                 "There was no longer a Like object")
+
+    def test_unfavourite_twice(self):
+
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        self._test_doing_something('favourite',
+                self._alice,
+                self._alice_status)
+
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 1,
+                "There was a Like object")
+
+        self._test_doing_something('unfavourite',
+                self._alice,
+                self._alice_status)
+
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 0,
+                "There was no longer a Like object")
+
+        self._test_doing_something('unfavourite',
+                self._alice,
+                self._alice_status)
+
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 0,
+                "There was still no longer a Like object")
 
     def test_reblog(self):
         self.fail("Test not yet implemented")
