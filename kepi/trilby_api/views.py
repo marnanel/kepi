@@ -273,14 +273,25 @@ class Statuses(generics.ListCreateAPIView,
             logger.info('Looking up status numbered %s, for %s',
                     number, request.user)
 
-            activity = queryset.get(id=number)
-            serializer = StatusSerializer(
-                    activity,
-                    partial = True,
-                    context = {
-                        'request': request,
-                        },
-                    )
+            try:
+                activity = queryset.get(id=number)
+
+                serializer = StatusSerializer(
+                        activity,
+                        partial = True,
+                        context = {
+                            'request': request,
+                            },
+                        )
+            except Status.DoesNotExist:
+
+                return JsonResponse(
+                        {
+                            'error': 'Record not found',
+                            },
+                        status = 404,
+                        )
+
         else:
             logger.info('Looking up all visible statuses, for %s',
                    request.user)
