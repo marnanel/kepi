@@ -127,6 +127,7 @@ class TestStatus(TestCase):
         )
 
         self._test_doing_something('favourite',
+                self._alice,
                 self._alice_status)
 
         found = Like.objects.filter(
