@@ -30,7 +30,83 @@ class TestStatus(TestCase):
                 expect_result)
 
     def test_delete_status(self):
-        self.fail("Test not yet implemented")
+
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        found = Status.objects.filter(
+                account = self._alice,
+                )
+
+        self.assertEqual(
+                len(found),
+                1,
+                "There is a status.")
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.delete(
+                '/api/v1/statuses/{}'.format(
+                    self._alice_status.id,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                200)
+
+        # TODO: result body is meaningful and we should check it
+
+        found = Status.objects.filter(
+                account = self._alice,
+                )
+
+        self.assertEqual(
+                len(found),
+                0,
+                "There is no longer a status.")
+
+    def test_delete_status_not_yours(self):
+
+        self._alice = create_local_person(name='alice')
+        self._eve = create_local_person(name='eve')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        c = APIClient()
+        c.force_authenticate(self._eve.local_user)
+
+        result = c.delete(
+                '/api/v1/statuses/{}'.format(
+                    self._alice_status.id,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                404)
+
+    def test_delete_status_404(self):
+
+        self._alice = create_local_person(name='alice')
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.delete(
+                '/api/v1/statuses/{}'.format(
+                    1234,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                404)
 
     def test_get_context(self):
         self.fail("Test not yet implemented")

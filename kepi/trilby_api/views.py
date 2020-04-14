@@ -285,11 +285,9 @@ class Statuses(generics.ListCreateAPIView,
                         )
             except Status.DoesNotExist:
 
-                return JsonResponse(
-                        {
-                            'error': 'Record not found',
-                            },
+                return error_response(
                         status = 404,
+                        reason = 'Record not found',
                         )
 
         else:
@@ -352,6 +350,33 @@ class Statuses(generics.ListCreateAPIView,
                 status = 200, # should really be 201 but the spec says 200
                 reason = 'Hot off the press',
                 )
+
+    def delete(self, request, *args, **kwargs):
+
+        if 'id' not in kwargs:
+            return error_response(404, 'Can\'t delete all statuses at once')
+
+        the_status = get_object_or_404(
+                self.get_queryset(),
+                id = int(kwargs['id']),
+                )
+
+        if the_status.account != request.user.person:
+            return error_response(404, # sic
+                    'That isn\'t yours to delete')
+
+        serializer = StatusSerializer(
+                the_status,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        response = JsonResponse(serializer.data)
+
+        the_status.delete()
+
+        return response
 
 class StatusContext(generics.ListCreateAPIView):
 
