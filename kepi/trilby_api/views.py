@@ -1,4 +1,4 @@
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.http import HttpResponse, JsonResponse
@@ -102,7 +102,8 @@ class Favourite(DoSomethingWithStatus):
                 liked = the_status,
                 )
 
-            like.save()
+            with transaction.atomic():
+                like.save()
 
             logger.info('  -- created a Like')
 
@@ -175,7 +176,8 @@ class Follow(DoSomethingWithPerson):
                 following = the_person,
                 )
 
-            follow.save()
+            with transaction.atomic():
+                follow.save()
 
             logger.info('  -- follow: %s', follow)
 

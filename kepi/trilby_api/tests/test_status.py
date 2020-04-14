@@ -9,10 +9,10 @@ from django.conf import settings
 class TestStatus(TestCase):
 
     def _test_doing_something(self,
-            verb, status):
+            verb, person, status):
 
         c = APIClient()
-        c.force_authenticate(self._alice.local_user)
+        c.force_authenticate(person.local_user)
 
         result = c.post(
                 '/api/v1/statuses/{}/{}'.format(
@@ -63,6 +63,39 @@ class TestStatus(TestCase):
         self.assertEqual(len(found), 1,
                 "There was a Like object")
 
+    def test_favourite_twice(self):
+
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        self._test_doing_something('favourite',
+                self._alice,
+                self._alice_status)
+
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 1,
+                "There was a Like object")
+
+        self._test_doing_something('favourite',
+                self._alice,
+                self._alice_status)
+
+        found = Like.objects.filter(
+                liker = self._alice,
+                liked = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 1,
+                "Likes are idempotent")
+
     def test_unfavourite(self):
 
         self._alice = create_local_person(name='alice')
@@ -73,6 +106,7 @@ class TestStatus(TestCase):
         )
 
         self._test_doing_something('favourite',
+                self._alice,
                 self._alice_status)
 
         found = Like.objects.filter(
@@ -84,6 +118,7 @@ class TestStatus(TestCase):
                 "There was a Like object")
 
         self._test_doing_something('unfavourite',
+                self._alice,
                 self._alice_status)
 
         found = Like.objects.filter(
