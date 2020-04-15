@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from kepi.trilby_api.models import *
+from rest_framework_recursive.fields import RecursiveField
 from oauth2_provider.models import Application
 
 #########################################
@@ -156,9 +157,10 @@ class StatusSerializer(serializers.ModelSerializer):
             queryset=Person.objects.all,
             required = False)
 
-    reblog = serializers.URLField(
+    reblog = RecursiveField(
+            source = 'reblog_of',
             required = False,
-            read_only = True)
+            )
 
     # "content" is read-only for HTML;
     # "status" is write-only for text (or Markdown)
