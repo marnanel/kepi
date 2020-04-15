@@ -29,6 +29,8 @@ class TestStatus(TestCase):
         self.assertEqual(result.status_code,
                 expect_result)
 
+        return result
+
     def test_delete_status(self):
 
         self._alice = create_local_person(name='alice')
@@ -166,14 +168,47 @@ class TestStatus(TestCase):
         self.assertEqual(details['descendants'][2]['id'],
             str(statuses[5].id))
 
-
-
-
     def test_get_reblogged_by(self):
         self.fail("Test not yet implemented")
 
     def test_get_favourited_by(self):
-        self.fail("Test not yet implemented")
+        self._alice = create_local_person(name='alice')
+        self._bob = create_local_person(name='bob')
+        self._carol = create_local_person(name='carol')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Turkey trots to water.',
+        )
+
+        for fan in [self._bob, self._carol]:
+            like = Like(
+                    liker = fan,
+                    liked = self._alice_status,
+                    )
+            like.save()
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.get(
+                '/api/v1/statuses/{}/favourited_by'.format(
+                    self._alice_status.id,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                200)
+
+        try:
+            details = json.loads(result.content.decode('UTF-8'))
+        except JSON.decoder.JSONDecodeError:
+            self.fail("Response was not JSON")
+
+        self.assertEqual(
+                sorted([who['username'] for who in details]),
+                ['bob', 'carol'],
+                )
 
     def test_favourite(self):
 

@@ -391,6 +391,27 @@ class StatusContext(generics.ListCreateAPIView):
 
         return JsonResponse(serializer.data)
 
+class StatusFavouritedBy(generics.ListCreateAPIView):
+
+    queryset = trilby_models.Person.objects.all()
+
+    def get(self, request, *args, **kwargs):
+
+        queryset = self.get_queryset()
+
+        status = trilby_models.Status.objects.get(id=int(kwargs['id']))
+
+        people = queryset.filter(
+                like__liked = status,
+                )
+
+        serializer = UserSerializer(people,
+                many=True)
+
+        return JsonResponse(serializer.data,
+                safe=False, # it's a list
+                )
+
 class AbstractTimeline(generics.ListAPIView):
 
     serializer_class = StatusSerializer
