@@ -149,6 +149,7 @@ class TestStatus(TestCase):
             details = json.loads(result.content.decode('UTF-8'))
         except JSON.decoder.JSONDecodeError:
             self.fail("Response was not JSON")
+            return
 
         self.assertEqual(
             sorted(details.keys()),
@@ -169,7 +170,44 @@ class TestStatus(TestCase):
             str(statuses[5].id))
 
     def test_get_reblogged_by(self):
-        self.fail("Test not yet implemented")
+        self._alice = create_local_person(name='alice')
+        self._bob = create_local_person(name='bob')
+        self._carol = create_local_person(name='carol')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Look on my works, ye mighty, and despair.',
+        )
+
+        for fan in [self._bob, self._carol]:
+            create_local_status(
+                    posted_by = fan,
+                    content = '',
+                    reblog_of = self._alice_status,
+                    )
+
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.get(
+                '/api/v1/statuses/{}/reblogged_by'.format(
+                    self._alice_status.id,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                200)
+
+        try:
+            details = json.loads(result.content.decode('UTF-8'))
+        except JSON.decoder.JSONDecodeError:
+            self.fail("Response was not JSON")
+            return
+
+        self.assertEqual(
+                sorted([who['username'] for who in details]),
+                ['bob', 'carol'],
+                )
 
     def test_get_favourited_by(self):
         self._alice = create_local_person(name='alice')
@@ -204,6 +242,7 @@ class TestStatus(TestCase):
             details = json.loads(result.content.decode('UTF-8'))
         except JSON.decoder.JSONDecodeError:
             self.fail("Response was not JSON")
+            return
 
         self.assertEqual(
                 sorted([who['username'] for who in details]),
@@ -355,11 +394,123 @@ class TestStatus(TestCase):
         self.assertEqual(len(found), 0,
                 "There was still no longer a Like object")
 
-    def test_reblog(self):
-        self.fail("Test not yet implemented")
+    def test_reblog_status(self):
 
-    def test_unreblog(self):
-        self.fail("Test not yet implemented")
+        self._alice = create_local_person(name='alice')
+        self._bob = create_local_person(name='bob')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Casting down their golden crowns.',
+        )
+
+        result = self._test_doing_something('reblog',
+                self._bob,
+                self._alice_status)
+
+        try:
+            details = json.loads(result.content.decode('UTF-8'))
+        except JSON.decoder.JSONDecodeError:
+            self.fail("Response was not JSON")
+            return
+
+        self.assertEqual(
+                details['account']['username'],
+                'bob',
+                )
+
+        self.assertEqual(
+                details['reblog']['id'],
+                str(self._alice_status.id),
+                )
+
+    def test_reblog_status_404(self):
+        self._alice = create_local_person(name='alice')
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.post(
+                '/api/v1/statuses/{}/reblog'.format(
+                    1234,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                404)
+
+    def test_unreblog_status(self):
+        self._alice = create_local_person(name='alice')
+        self._bob = create_local_person(name='bob')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Among the leaves so green, oh.',
+        )
+
+        self._bob_reblog = create_local_status(
+                posted_by = self._bob,
+                content = '',
+                reblog_of = self._alice_status,
+        )
+
+        found = Status.objects.filter(
+                reblog_of = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 1,
+                "There was a reblog")
+
+        self._test_doing_something('unreblog',
+                self._bob,
+                self._alice_status)
+
+        found = Status.objects.filter(
+                reblog_of = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 0,
+                "There was no longer a reblog")
+
+    def test_unreblog_status_404(self):
+        self._alice = create_local_person(name='alice')
+        c = APIClient()
+        c.force_authenticate(self._alice.local_user)
+
+        result = c.post(
+                '/api/v1/statuses/{}/unreblog'.format(
+                    1234,
+                    ),
+                )
+
+        self.assertEqual(result.status_code,
+                404)
+
+    def test_unreblog_status_not_yours(self):
+        self._alice = create_local_person(name='alice')
+        self._bob = create_local_person(name='bob')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Among the leaves so green, oh.',
+        )
+
+        self._bob_reblog = create_local_status(
+                posted_by = self._bob,
+                content = '',
+                reblog_of = self._alice_status,
+        )
+
+        found = Status.objects.filter(
+                reblog_of = self._alice_status,
+                )
+
+        self.assertEqual(len(found), 1,
+                "There was a reblog")
+
+        response = self._test_doing_something('unreblog',
+                self._alice,
+                self._alice_status,
+                expect_result = 404)
 
     @skip("Not yet implemented")
     def test_bookmark(self):
@@ -377,12 +528,13 @@ class TestStatus(TestCase):
     def test_unmute(self):
         pass
 
+    @skip("Not yet implemented")
     def test_pin(self):
         self.fail("Test not yet implemented")
 
+    @skip("Not yet implemented")
     def test_unpin(self):
         self.fail("Test not yet implemented")
-
 
 class TestPublish(TestCase):
     def test_publish_simple(self):
@@ -436,6 +588,7 @@ class TestGetStatus(TestCase):
             details = json.loads(result.content.decode('UTF-8'))
         except JSON.decoder.JSONDecodeError:
             self.fail("Response was not JSON")
+            return
 
         self.assertEqual(
                 details['id'],
@@ -476,6 +629,7 @@ class TestGetStatus(TestCase):
             details = json.loads(result.content.decode('UTF-8'))
         except JSON.decoder.JSONDecodeError:
             self.fail("Response was not JSON")
+            return
 
         self.assertEqual(
                 details['error'],
