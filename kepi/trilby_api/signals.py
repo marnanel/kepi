@@ -17,3 +17,6 @@ deleted = Signal(
             'url',
             'entombed',
             ])
+
+reblogged = Signal(
+    )
