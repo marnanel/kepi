@@ -28,6 +28,7 @@ class Status(models.Model):
 
     account = models.ForeignKey(
             'Person',
+            related_name = 'poster',
             on_delete = models.DO_NOTHING,
             )
 
@@ -201,3 +202,13 @@ class Status(models.Model):
             current = child
 
         return result
+
+    def save(self, *args, **kwargs):
+
+        if self.reblog_of == self:
+            raise ValueError("Status can't be a reblog of itself")
+
+        if self.in_reply_to == self:
+            raise ValueError("Status can't be a reply to itself")
+
+        super().save(*args, **kwargs)
