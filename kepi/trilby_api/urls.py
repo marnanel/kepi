@@ -19,9 +19,16 @@ urlpatterns = [
     path('api/v1/statuses', Statuses.as_view()),
     path('api/v1/statuses/<id>', Statuses.as_view()),
     path('api/v1/statuses/<id>/context', StatusContext.as_view()),
+
+    # Favourite, aka like
     path('api/v1/statuses/<id>/favourite', Favourite.as_view()),
     path('api/v1/statuses/<id>/unfavourite', Unfavourite.as_view()),
     path('api/v1/statuses/<id>/favourited_by', StatusFavouritedBy.as_view()),
+
+    # Reblog, aka boost
+    path('api/v1/statuses/<id>/reblog', Reblog.as_view()),
+    path('api/v1/statuses/<id>/unreblog', Unreblog.as_view()),
+    path('api/v1/statuses/<id>/reblogged_by', StatusRebloggedBy.as_view()),
 
     path('api/v1/notifications', Notifications.as_view()),
     path('api/v1/filters', Filters.as_view()),

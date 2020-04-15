@@ -1,7 +1,7 @@
 from django.db import IntegrityError, transaction
 from django.shortcuts import render, get_object_or_404
 from django.views import View
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from oauth2_provider.models import Application
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AnonymousUser
@@ -77,10 +77,13 @@ class DoSomethingWithStatus(generics.GenericAPIView):
         except ValueError:
             return error_response(404, 'Non-decimal ID')
 
-        self._do_something_with(the_status, request)
+        result = self._do_something_with(the_status, request)
+
+        if result is None:
+            result = the_status
 
         serializer = StatusSerializer(
-                the_status,
+                result,
                 context = {
                     'request': request,
                     },
@@ -130,6 +133,64 @@ class Unfavourite(DoSomethingWithStatus):
         except trilby_models.Like.DoesNotExist:
             logger.info('  -- not unliking; the Like doesn\'t exists')
 
+class Reblog(DoSomethingWithStatus):
+
+    def _do_something_with(self, the_status, request):
+
+        # Mastodon allows a "visibility" param here
+        # but currently doesn't use it in the UI
+
+        # Mastodon doesn't say whether a user can
+        # reblog the same status more than once:
+        # https://github.com/tootsuite/mastodon/issues/13479
+        # For now, I'm assuming that you can.
+
+        content = 'RT {}'.format(the_status.content)
+
+        new_status = trilby_models.Status(
+
+                # Fields which are different in a reblog:
+                account = request.user.person,
+                content = content,
+                reblog_of = the_status,
+
+                # Fields which are just copied in:
+                sensitive = the_status.sensitive,
+                spoiler_text = the_status.spoiler_text,
+                visibility = the_status.visibility,
+                language = the_status.language,
+                in_reply_to = the_status.in_reply_to,
+                )
+
+        with transaction.atomic():
+            new_status.save()
+
+        logger.info('  -- created a reblog')
+
+        kepi_signals.reblogged.send(sender=new_status)
+
+        return new_status
+
+class Unreblog(DoSomethingWithStatus):
+
+    def _do_something_with(self, the_status, request):
+
+        # See the note in "Reblog" about whether
+        # multiple reblogs of the same status
+        # are allowed.
+
+        reblogs = trilby_models.Status.objects.filter(
+                reblog_of = the_status,
+                account = request.user.person,
+                )
+
+        if not reblogs.exists():
+            raise Http404("No such reblog")
+
+        reblogs.delete()
+
+        logger.info('  -- deleting reblogs')
+
 ###########################
 
 class DoSomethingWithPerson(generics.GenericAPIView):
@@ -151,10 +212,13 @@ class DoSomethingWithPerson(generics.GenericAPIView):
                 id = kwargs['name'],
                 )
 
-        self._do_something_with(the_person, request)
+        result = self._do_something_with(the_person, request)
+
+        if result is None:
+            result = the_person
 
         serializer = UserSerializer(
-                the_person,
+                result,
                 context = {
                     'request': request,
                     },
@@ -182,6 +246,8 @@ class Follow(DoSomethingWithPerson):
             logger.info('  -- follow: %s', follow)
 
             kepi_signals.followed.send(sender=follow)
+
+            return the_person
 
         except IntegrityError:
             logger.info('  -- not creating a follow; it already exists')
@@ -401,8 +467,31 @@ class StatusFavouritedBy(generics.ListCreateAPIView):
 
         status = trilby_models.Status.objects.get(id=int(kwargs['id']))
 
+        status.save()
+
         people = queryset.filter(
                 like__liked = status,
+                )
+
+        serializer = UserSerializer(people,
+                many=True)
+
+        return JsonResponse(serializer.data,
+                safe=False, # it's a list
+                )
+
+class StatusRebloggedBy(generics.ListCreateAPIView):
+
+    queryset = trilby_models.Person.objects.all()
+
+    def get(self, request, *args, **kwargs):
+
+        queryset = self.get_queryset()
+
+        status = trilby_models.Status.objects.get(id=int(kwargs['id']))
+
+        people = queryset.filter(
+                poster__reblog_of = status,
                 )
 
         serializer = UserSerializer(people,
