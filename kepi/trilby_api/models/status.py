@@ -33,6 +33,7 @@ class Status(models.Model):
 
     in_reply_to = models.ForeignKey(
             'self',
+            related_name = 'replies',
             on_delete = models.DO_NOTHING,
             null = True,
             blank = True,
@@ -91,6 +92,14 @@ class Status(models.Model):
             null = True,
             default = settings.KEPI['LANGUAGES'][0],
             )
+
+    reblog_of = models.ForeignKey(
+        'self',
+        related_name = 'reblogs',
+        on_delete = models.CASCADE,
+        null = True,
+        blank = True,
+        )
 
     idempotency_key = models.CharField(
             max_length = 255,
