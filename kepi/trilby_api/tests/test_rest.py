@@ -309,7 +309,7 @@ class TestStatuses(TestCase):
 
         self.assertEqual(
                 result.status_code,
-                201,
+                200,
                 'Result code',
                 )
 
@@ -343,7 +343,7 @@ class TestStatuses(TestCase):
 
             self.assertEqual(
                     result.status_code,
-                    201,
+                    200,
                     'Result code',
                     )
 

@@ -1,9 +1,43 @@
-from django.test import TestCase, Client
+from django.test import TestCase
+from unittest import skip
+from rest_framework.test import APIClient, force_authenticate
+from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
-from kepi.trilby_api.models import Status
-import json
+from kepi.trilby_api.models import *
+from django.conf import settings
 
 MIME_TYPE = 'application/json'
+
+# Tests for timelines. API docs are here:
+# https://docs.joinmastodon.org/methods/statuses/
+
+class TestTimelines(TestCase):
+
+    @skip("Not yet implemented")
+    def test_public(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_hashtag(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_home(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_account_statuses(self):
+        # Special case: this isn't considered a timeline method
+        # in the API, but it's similar enough that we test it here
+        pass
+
+    @skip("Not yet implemented")
+    def test_list(self):
+        pass
+
+######################################
+
+# TODO: Pre-existing code, to merge
 
 class PublicTimeline(TestCase):
 

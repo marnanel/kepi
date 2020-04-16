@@ -1,10 +1,19 @@
 from django.test import TestCase
+from unittest import skip
 from rest_framework.test import force_authenticate, APIClient, APIRequestFactory
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
+from kepi.trilby_api.models import *
 from django.conf import settings
 import logging
 import httpretty
+
+# Tests for notifications. API docs are here:
+# https://docs.joinmastodon.org/methods/notifications/
+#
+# In this module we test both the notification API methods
+# and also the results of performing actions which cause
+# notifications.
 
 logger = logging.getLogger(name='kepi')
 
@@ -152,3 +161,17 @@ class TestNotifications(TestCase):
                     },
                 content[0]['status'],
                 )
+
+    @skip("Not yet implemented")
+    def test_get_single(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_clear(self):
+        pass
+
+    @skip("Not yet implemented")
+    def test_clear_single(self):
+        pass
+
+

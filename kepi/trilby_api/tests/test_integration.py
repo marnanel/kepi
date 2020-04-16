@@ -34,7 +34,7 @@ class TestIntegration(TestCase):
 
         self.assertEqual(
                 result.status_code,
-                201, # Created
+                200, # Created
                 )
         
         content = json.loads(result.content.decode())
@@ -60,6 +60,7 @@ class TestIntegration(TestCase):
                 'application',
                 'language',
                 'pinned',
+                'reblog',
                 ]),
                 sorted(list(content.keys())),
                 )
@@ -85,7 +86,7 @@ class TestIntegration(TestCase):
 
         self.assertEqual(
                 result.status_code,
-                201, # Created
+                200, # Created
                 )
 
         result = c.get(
