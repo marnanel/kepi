@@ -1,4 +1,3 @@
-from django.test import TestCase
 from unittest import skip
 from rest_framework.test import force_authenticate, APIClient, APIRequestFactory
 from kepi.trilby_api.views import *
@@ -18,13 +17,8 @@ import httpretty
 logger = logging.getLogger(name='kepi')
 
 DEFAULT_KEYS_FILENAME = 'kepi/bowler_pub/tests/keys/keys-0002.json'
-TESTSERVER = 'testserver'
 
-class TestNotifications(TestCase):
-
-    def setUp(self):
-        self.factory = APIRequestFactory()
-        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = TESTSERVER
+class TestNotifications(TrilbyTestCase):
 
     @httpretty.activate
     def test_follow(self):

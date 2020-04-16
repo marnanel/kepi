@@ -1,4 +1,3 @@
-from django.test import TestCase
 from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
@@ -9,11 +8,29 @@ from django.conf import settings
 # Tests for methods for the instance as a whole. API docs are here:
 # https://docs.joinmastodon.org/methods/instance/
 
-class TestInstance(TestCase):
+class TestInstance(TrilbyTestCase):
 
-    @skip("Not yet implemented")
     def test_instance_query(self):
-        pass
+        request = self.factory.get(
+                '/api/v1/instance',
+                )
+        view = Instance.as_view()
+
+        result = view(request)
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                )
+
+        content = json.loads(result.content)
+
+        for k in [
+                "uri", "title", "description",
+                "email", "version",
+                "urls", "languages", "contact_account",
+                ]:
+            self.assertIn(k, content)
 
     @skip("Not yet implemented")
     def test_list_peers(self):

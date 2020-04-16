@@ -1,4 +1,3 @@
-from django.test import TestCase
 from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
@@ -9,7 +8,113 @@ from django.conf import settings
 # Tests for statuses. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
 
-class TestStatus(TestCase):
+STATUS_EXPECTED = [
+        ('in_reply_to_account_id', None),
+        ('content', 'Hello world.'),
+        ('emojis', []),
+        ('reblogs_count', 0),
+        ('favourites_count', 0),
+        ('reblogged', False),
+        ('favourited', False),
+        ('muted', False),
+        ('sensitive', False),
+        ('spoiler_text', ''),
+        ('visibility', 'A'),
+        ('media_attachments', []),
+        ('mentions', []),
+        ('tags', []),
+        ('card', None),
+        ('poll', None),
+        ('application', None),
+        ('language', 'en'),
+        ('pinned', False),
+        ]
+
+class TestStatus(TrilbyTestCase):
+
+    def test_get_single_status(self):
+        self._alice = create_local_person(name='alice')
+
+        self._status = create_local_status(
+                content = 'Hello world.',
+                posted_by = self._alice,
+                )
+
+        request = self.factory.get(
+                '/api/v1/statuses/'+str(self._status.id),
+                )
+        force_authenticate(request, user=self._alice.local_user)
+
+        view = Statuses.as_view()
+
+        result = view(request,
+                id=str(self._status.id))
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content)
+
+        # FIXME: Need to check that "id" corresponds to "url", etc
+
+        for field, expected in STATUS_EXPECTED:
+            self.assertIn(field, content)
+            self.assertEqual(content[field], expected,
+                    msg="field '{}'".format(field))
+
+        self.assertIn('account', content)
+        account = content['account']
+
+        for field, expected in ACCOUNT_EXPECTED:
+            self.assertIn(field, account)
+            self.assertEqual(account[field], expected,
+                    msg="account field '{}'".format(field))
+
+        self.assertIn('id', content)
+        try:
+            dummy = int(content['id'])
+        except ValueError:
+            self.fail('Value of "id" is not a decimal: '+content['id'])
+
+
+    def test_get_all_statuses(self):
+
+        messages = [
+                '<p>Why do I always dress myself in %s?</p>' % (colour,) \
+                        for colour in ['red', 'green', 'blue', 'black']]
+
+        self._create_alice()
+
+        for message in messages:
+            create_local_status(
+                content = message,
+                posted_by = self._alice,
+                )
+
+        request = self.factory.get(
+                '/api/v1/statuses/',
+                )
+        force_authenticate(request, user=self._alice.local_user)
+
+        view = Statuses.as_view()
+
+        result = view(request)
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content)
+
+        self.assertEqual(
+                [x['content'] for x in content],
+                messages,
+                )
 
     def _test_doing_something(self,
             verb, person, status,
@@ -536,7 +641,125 @@ class TestStatus(TestCase):
     def test_unpin(self):
         self.fail("Test not yet implemented")
 
-class TestPublish(TestCase):
+    def test_get_status_context(self):
+
+        self._create_alice()
+        self._create_status()
+
+        request = self.factory.get(
+                '/api/v1/statuses/'+str(self._status.id)+'/context',
+                )
+        force_authenticate(request, user=self._alice.local_user)
+
+        view = StatusContext.as_view()
+
+        result = view(request,
+                id=str(self._status.id))
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content)
+
+        self.assertEqual(
+                content,
+                {
+                    'ancestors': [],
+                    'descendants': [],
+                    })
+
+    def test_get_emojis(self):
+        request = self.factory.get(
+                '/api/v1/emojis/',
+                )
+
+        view = Emojis.as_view()
+
+        result = view(request)
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content.decode())
+
+        self.assertEqual(
+                content,
+                [],
+                )
+
+    def test_post_status(self):
+
+        self._create_alice()
+
+        request = self.factory.post(
+                '/api/v1/statuses/',
+                {
+                    'status': 'Hello world',
+                    },
+                format='json',
+                )
+        force_authenticate(request, user=self._alice.local_user)
+
+        view = Statuses.as_view()
+
+        result = view(request)
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                'Result code',
+                )
+
+        content = json.loads(result.content.decode())
+
+        self.assertEqual(
+                content['content'],
+                '<p>Hello world</p>',
+                )
+
+    @skip("serial numbers are not yet exposed")
+    def test_post_multiple_statuses(self):
+
+        self._create_alice()
+
+        previous_serial = 0
+
+        for i in range(0, 9):
+            request = self.factory.post(
+                    '/api/v1/statuses/',
+                    {
+                        'status': 'Hello world %d' % (i,),
+                        },
+                    format='json',
+                    )
+            force_authenticate(request, user=self._alice.local_user)
+
+            view = Statuses.as_view()
+
+            result = view(request)
+
+            self.assertEqual(
+                    result.status_code,
+                    200,
+                    'Result code',
+                    )
+
+            content = json.loads(result.content.decode())
+
+            self.assertLess(
+                    previous_serial,
+                    content['serial'])
+
+            previous_serial = content['serial']
+
+
+class TestPublish(TrilbyTestCase):
     def test_publish_simple(self):
 
         self._alice = create_local_person(name='alice')
@@ -562,7 +785,7 @@ class TestPublish(TestCase):
         self.assertEqual(len(found), 1,
                 "The status was created")
 
-class TestGetStatus(TestCase):
+class TestGetStatus(TrilbyTestCase):
 
     def test_view_specific_status(self):
         self._alice = create_local_person(name='alice')

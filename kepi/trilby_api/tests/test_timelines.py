@@ -1,4 +1,3 @@
-from django.test import TestCase
 from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
@@ -11,7 +10,7 @@ MIME_TYPE = 'application/json'
 # Tests for timelines. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
 
-class TestTimelines(TestCase):
+class TestTimelines(TrilbyTestCase):
 
     @skip("Not yet implemented")
     def test_public(self):
@@ -39,7 +38,7 @@ class TestTimelines(TestCase):
 
 # TODO: Pre-existing code, to merge
 
-class PublicTimeline(TestCase):
+class PublicTimeline(TrilbyTestCase):
 
     # FIXME put this in a parent class in __init__
     def _get(self,

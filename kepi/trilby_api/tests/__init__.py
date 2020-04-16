@@ -1,6 +1,15 @@
 from django.test import TestCase, Client
 from rest_framework.test import force_authenticate, APIClient
 from kepi.trilby_api.models import *
+from django.conf import settings
+
+class TrilbyTestCase(TestCase):
+
+    def setUp(self):
+
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+
+        super().setUp()
 
 def create_local_person(name='jemima'):
 
