@@ -11,12 +11,9 @@ from django.conf import settings
 class TestInstance(TrilbyTestCase):
 
     def test_instance_query(self):
-        request = self.factory.get(
+        result = self.get(
                 '/api/v1/instance',
                 )
-        view = Instance.as_view()
-
-        result = view(request)
 
         self.assertEqual(
                 result.status_code,
@@ -39,3 +36,21 @@ class TestInstance(TrilbyTestCase):
     @skip("Not yet implemented")
     def test_list_weekly_activity(self):
         pass
+
+    def test_get_emojis(self):
+        result = self.get(
+                '/api/v1/custom_emojis',
+                )
+
+        self.assertEqual(
+                result.status_code,
+                200,
+                msg = result.content,
+                )
+
+        content = json.loads(result.content.decode())
+
+        self.assertEqual(
+                content,
+                [],
+                )
