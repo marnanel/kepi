@@ -43,7 +43,11 @@ class TestAccountCredentials(TrilbyTestCase):
         for field, expected in ACCOUNT_EXPECTED:
             self.assertIn(field, content)
             self.assertEqual(content[field], expected,
-                    msg="field '{}'".format(field))
+                    msg="field '{}': got {}, expected {}".format(
+                        field,
+                        content[field],
+                        expected,
+                        ))
 
     @skip("Not yet implemented")
     def test_register(self):
