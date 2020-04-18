@@ -8,28 +8,6 @@ from django.conf import settings
 # Tests for statuses. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
 
-STATUS_EXPECTED = [
-        ('in_reply_to_account_id', None),
-        ('content', 'Hello world.'),
-        ('emojis', []),
-        ('reblogs_count', 0),
-        ('favourites_count', 0),
-        ('reblogged', False),
-        ('favourited', False),
-        ('muted', False),
-        ('sensitive', False),
-        ('spoiler_text', ''),
-        ('visibility', 'A'),
-        ('media_attachments', []),
-        ('mentions', []),
-        ('tags', []),
-        ('card', None),
-        ('poll', None),
-        ('application', None),
-        ('language', 'en'),
-        ('pinned', False),
-        ]
-
 class TestStatus(TrilbyTestCase):
 
     def test_get_single_status(self):
@@ -75,37 +53,6 @@ class TestStatus(TrilbyTestCase):
             self.fail('Value of "id" is not a decimal: '+content['id'])
 
 
-    def test_get_all_statuses(self):
-
-        messages = [
-                '<p>Why do I always dress myself in %s?</p>' % (colour,) \
-                        for colour in ['red', 'green', 'blue', 'black']]
-
-        self._create_alice()
-
-        for message in messages:
-            create_local_status(
-                content = message,
-                posted_by = self._alice,
-                )
-
-        result = self.get(
-                '/api/v1/statuses/',
-                as_user = self._alice,
-                )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                msg = result.content,
-                )
-
-        content = json.loads(result.content)
-
-        self.assertEqual(
-                [x['content'] for x in content],
-                messages,
-                )
 
     def _test_doing_something(self,
             verb, person, status,
@@ -637,7 +584,7 @@ class TestStatus(TrilbyTestCase):
         self._create_alice()
 
         result = self.post(
-                '/api/v1/statuses/',
+                '/api/v1/statuses',
                 {
                     'status': 'Hello world',
                     },
