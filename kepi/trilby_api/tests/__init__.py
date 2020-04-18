@@ -108,16 +108,8 @@ class TrilbyTestCase(TestCase):
 
 def create_local_person(name='jemima'):
 
-    from kepi.trilby_api.models import TrilbyUser
-
-    user = TrilbyUser(
-            username = name,
-            )
-    user.save()
-
     result = Person(
-            local_user = user,
-            display_name = name,
+            username = name,
             )
     result.save()
 

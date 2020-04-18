@@ -140,6 +140,18 @@ class Person(models.Model):
             )
 
     @property
+    def username(self):
+        if self.is_local:
+            return self.local_user.username
+        else:
+            return self.remote_username
+
+    @username.setter
+    def username(self, newname):
+        self.local_user.username = newname
+        self.local_user.save()
+
+    @property
     def uri(self):
         if self.remote_url is not None:
             return self.remote_url
@@ -201,6 +213,19 @@ class Person(models.Model):
         self.privateKey = key.private_as_pem()
         self.publicKey = key.public_as_pem()
 
+    def __init__(self, *args, **kwargs):
+
+        if 'username' in kwargs and 'local_user' not in kwargs:
+            new_user = TrilbyUser(username=kwargs['username'])
+            new_user.save()
+            kwargs['local_user'] = new_user
+            del kwargs['username']
+
+            logger.info('created new TrilbyUser: %s',
+                new_user)
+
+        super().__init__(*args, **kwargs)
+
     def save(self, *args, **kwargs):
         
         # Validate: either remote or local but not both or neither.
@@ -216,10 +241,17 @@ class Person(models.Model):
                     "Either local or remote fields must be set."
                     )
 
-        # Create keys, if we're local and we don't have them.
+        if local_set:
 
-        if local_set and self.privateKey is None and self.publicKey is None:
-            self._generate_keys()
+            # Various defaults.
+
+            if self.display_name=='':
+                self.display_name = self.username
+
+            # Create keys, if we're local and we don't have them.
+
+            if local_set and self.privateKey is None and self.publicKey is None:
+                self._generate_keys()
 
         # All good.
 
