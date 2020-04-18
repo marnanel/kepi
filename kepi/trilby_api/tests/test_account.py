@@ -22,21 +22,11 @@ class TestAccountCredentials(TrilbyTestCase):
                 401,
                 )
 
-    def test_verify_credentials(self):
-        self._user_test(
-                name='verify_credentials',
-                )
-
-    def test_verify_user(self):
-        self._user_test(
-                name='alice',
-                )
-
-    def _user_test(self, name):
+    def test_get_user(self):
         alice = create_local_person(name='alice')
 
         result = self.get(
-                '/api/v1/accounts/'+name,
+                '/api/v1/accounts/alice',
                 as_user = alice,
                 )
 
@@ -54,13 +44,6 @@ class TestAccountCredentials(TrilbyTestCase):
             self.assertIn(field, content)
             self.assertEqual(content[field], expected,
                     msg="field '{}'".format(field))
-
-        self.assertIn('source', content)
-
-        for field, expected in ACCOUNT_SOURCE_EXPECTED:
-            self.assertIn(field, content['source'])
-            self.assertEqual(content['source'][field], expected,
-                    msg="field 'source.{}'".format(field))
 
     @skip("Not yet implemented")
     def test_register(self):
