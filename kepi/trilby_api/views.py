@@ -316,7 +316,7 @@ class User(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         whoever = get_object_or_404(
                 self.get_queryset(),
-                id='@'+kwargs['name'],
+                local_user__username = kwargs['name'],
                 )
 
         serializer = UserSerializer(whoever)
