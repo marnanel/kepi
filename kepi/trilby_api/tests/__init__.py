@@ -85,9 +85,10 @@ class TrilbyTestCase(TestCase):
         command = getattr(c, verb)
 
         result = command(
-                path,
+                path=path,
+                data=data,
+                format='json',
                 *args,
-                format = 'json',
                 **kwargs,
                 )
 
