@@ -11,17 +11,10 @@ from django.conf import settings
 class TestInstance(TrilbyTestCase):
 
     def test_instance_query(self):
-        result = self.get(
+
+        content = self.get(
                 '/api/v1/instance',
                 )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                )
-
-        content = json.loads(result.content)
-
         for k in [
                 "uri", "title", "description",
                 "email", "version",
@@ -38,17 +31,10 @@ class TestInstance(TrilbyTestCase):
         pass
 
     def test_get_emojis(self):
-        result = self.get(
+
+        content = self.get(
                 '/api/v1/custom_emojis',
                 )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                msg = result.content,
-                )
-
-        content = json.loads(result.content.decode())
 
         self.assertEqual(
                 content,

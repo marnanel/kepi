@@ -15,27 +15,16 @@ class TestAccountCredentials(TrilbyTestCase):
     def test_verify_credentials_anonymous(self):
         result = self.get(
                 '/api/v1/accounts/verify_credentials',
-                )
-
-        self.assertEqual(
-                result.status_code,
-                401,
+                expect_result = 401,
                 )
 
     def test_get_user(self):
         alice = create_local_person(name='alice')
 
-        result = self.get(
+        content = self.get(
                 '/api/v1/accounts/alice',
                 as_user = alice,
                 )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                )
-
-        content = json.loads(result.content)
 
         self.assertIn('created_at', content)
         self.assertNotIn('email', content)

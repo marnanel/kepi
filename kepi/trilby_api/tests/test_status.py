@@ -18,18 +18,10 @@ class TestStatus(TrilbyTestCase):
                 posted_by = self._alice,
                 )
 
-        result = self.get(
+        content = self.get(
                 path = '/api/v1/statuses/'+str(self._status.id),
                 as_user = self._alice,
                 )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                msg = result.content,
-                )
-
-        content = json.loads(result.content)
 
         # FIXME: Need to check that "id" corresponds to "url", etc
 
@@ -52,25 +44,22 @@ class TestStatus(TrilbyTestCase):
         except ValueError:
             self.fail('Value of "id" is not a decimal: '+content['id'])
 
-
-
     def _test_doing_something(self,
             verb, person, status,
             expect_result = 200):
 
-        c = APIClient()
-        c.force_authenticate(person.local_user)
+        # This used to do a lot of the same work that self.post()
+        # now does in the superclass. Now it just wraps self.post(),
+        # because it gets called so often that it's not worth changing it.
 
-        result = c.post(
-                '/api/v1/statuses/{}/{}'.format(
+        result = self.post(
+                path='/api/v1/statuses/{}/{}'.format(
                     status.id,
                     verb,
                     ),
-                format = 'json',
+                as_user = person,
+                expect_result = expect_result,
                 )
-
-        self.assertEqual(result.status_code,
-                expect_result)
 
         return result
 
@@ -447,15 +436,9 @@ class TestStatus(TrilbyTestCase):
                 content = 'Casting down their golden crowns.',
         )
 
-        result = self._test_doing_something('reblog',
-                self._bob,
-                self._alice_status)
-
-        try:
-            details = json.loads(result.content.decode('UTF-8'))
-        except JSON.decoder.JSONDecodeError:
-            self.fail("Response was not JSON")
-            return
+        details = self._test_doing_something('reblog',
+                person = self._bob,
+                status = self._alice_status)
 
         self.assertEqual(
                 details['account']['username'],
@@ -469,17 +452,14 @@ class TestStatus(TrilbyTestCase):
 
     def test_reblog_status_404(self):
         self._alice = create_local_person(name='alice')
-        c = APIClient()
-        c.force_authenticate(self._alice.local_user)
 
-        result = c.post(
+        result = self.post(
                 '/api/v1/statuses/{}/reblog'.format(
                     1234,
                     ),
+                as_user = self._alice,
+                expect_result = 404,
                 )
-
-        self.assertEqual(result.status_code,
-                404)
 
     def test_unreblog_status(self):
         self._alice = create_local_person(name='alice')
@@ -583,21 +563,13 @@ class TestStatus(TrilbyTestCase):
 
         self._create_alice()
 
-        result = self.post(
-                '/api/v1/statuses',
-                {
+        content = self.post(
+                path = '/api/v1/statuses',
+                data = {
                     'status': 'Hello world',
                     },
                 as_user = self._alice,
                 )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                'Result code',
-                )
-
-        content = json.loads(result.content.decode())
 
         self.assertEqual(
                 content['content'],
@@ -609,19 +581,13 @@ class TestPublish(TrilbyTestCase):
 
         self._alice = create_local_person(name='alice')
 
-        c = APIClient()
-        c.force_authenticate(self._alice.local_user)
-
-        result = c.post(
+        self.post(
                 '/api/v1/statuses',
                 {
                     'status': 'Hello world',
                     },
-                format = 'json',
+                as_user = self._alice,
                 )
-
-        self.assertEqual(result.status_code,
-                200)
 
         found = Status.objects.filter(
             account = self._alice,
@@ -681,23 +647,12 @@ class TestGetStatus(TrilbyTestCase):
                 content = 'Daisies are our silver.',
         )
 
-        c = APIClient()
-        c.force_authenticate(self._alice.local_user)
-
-        result = c.get(
-                '/api/v1/statuses/{}'.format(
+        details = self.get(
+                path='/api/v1/statuses/{}'.format(
                     self._alice_status.id+1234,
                     ),
+                expect_result = 404,
                 )
-
-        self.assertEqual(result.status_code,
-                404)
-
-        try:
-            details = json.loads(result.content.decode('UTF-8'))
-        except JSON.decoder.JSONDecodeError:
-            self.fail("Response was not JSON")
-            return
 
         self.assertEqual(
                 details['error'],
