@@ -4,56 +4,56 @@ from kepi.trilby_api.models import *
 from django.conf import settings
 import json
 
-ACCOUNT_EXPECTED = [
-        ('id', '@alice'),
-        ('username', 'alice'),
-        ('acct', 'alice@testserver'),
-        ('display_name', 'alice'),
-        ('locked', False),
+ACCOUNT_EXPECTED = {
+        'id': '@alice',
+        'username': 'alice',
+        'acct': 'alice@testserver',
+        'display_name': 'alice',
+        'locked': False,
 
-        ('followers_count', 0),
-        ('following_count', 0),
-        ('statuses_count', 0),
-        ('note', ''),
-        ('url', 'https://testserver/users/alice'),
-        ('fields', []),
-        ('emojis', []),
+        'followers_count': 0,
+        'following_count': 0,
+        'statuses_count': 0,
+        'note': '',
+        'url': 'https://testserver/users/alice',
+        'fields': [],
+        'emojis': [],
 
-        ('avatar', 'https://testserver/static/defaults/avatar_1.jpg'),
-        ('header', 'https://testserver/static/defaults/header.jpg'),
-        ('avatar_static', 'https://testserver/static/defaults/avatar_1.jpg'),
-        ('header_static', 'https://testserver/static/defaults/header.jpg'),
+        'avatar': 'https://testserver/static/defaults/avatar_1.jpg',
+        'header': 'https://testserver/static/defaults/header.jpg',
+        'avatar_static': 'https://testserver/static/defaults/avatar_1.jpg',
+        'header_static': 'https://testserver/static/defaults/header.jpg',
 
-        ('bot', False),
-        ]
+        'bot': False,
+        }
 
-ACCOUNT_SOURCE_EXPECTED = [
-        ('privacy', 'A'),
-        ('sensitive', False),
-        ('language', settings.KEPI['LANGUAGES'][0]), # FIXME
-        ]
+ACCOUNT_SOURCE_EXPECTED = {
+        'privacy': 'A',
+        'sensitive': False,
+        'language': settings.KEPI['LANGUAGES'][0], # FIXME
+        }
 
-STATUS_EXPECTED = [
-        ('in_reply_to_account_id', None),
-        ('content', 'Hello world.'),
-        ('emojis', []),
-        ('reblogs_count', 0),
-        ('favourites_count', 0),
-        ('reblogged', False),
-        ('favourited', False),
-        ('muted', False),
-        ('sensitive', False),
-        ('spoiler_text', ''),
-        ('visibility', 'A'),
-        ('media_attachments', []),
-        ('mentions', []),
-        ('tags', []),
-        ('card', None),
-        ('poll', None),
-        ('application', None),
-        ('language', 'en'),
-        ('pinned', False),
-        ]
+STATUS_EXPECTED = {
+        'in_reply_to_account_id': None,
+        'content': 'Hello world.',
+        'emojis': [],
+        'reblogs_count': 0,
+        'favourites_count': 0,
+        'reblogged': False,
+        'favourited': False,
+        'muted': False,
+        'sensitive': False,
+        'spoiler_text': '',
+        'visibility': 'A',
+        'media_attachments': [],
+        'mentions': [],
+        'tags': [],
+        'card': None,
+        'poll': None,
+        'application': None,
+        'language': 'en',
+        'pinned': False,
+        }
 
 class TrilbyTestCase(TestCase):
 

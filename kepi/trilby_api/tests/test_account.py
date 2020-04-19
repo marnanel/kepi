@@ -29,7 +29,7 @@ class TestAccountCredentials(TrilbyTestCase):
         self.assertIn('created_at', content)
         self.assertNotIn('email', content)
 
-        for field, expected in ACCOUNT_EXPECTED:
+        for field, expected in ACCOUNT_EXPECTED.items():
             self.assertIn(field, content)
             self.assertEqual(content[field], expected,
                     msg="field '{}': got {}, expected {}".format(
@@ -106,21 +106,21 @@ class TestAccountCredentials(TrilbyTestCase):
                     )
 
             for f,v in delta.items():
+                expected_fields[f] = v
 
-                # FIXME this is daft; ACCOUNT_EXPECTED should be a dict
-                for i in range(len(expected_fields)):
-                    if expected_fields[i][0]==f:
-                        expected_fields[i] = (f, v)
-                        break
+            for field, expected in expected_fields.items():
 
-            print(content)
+                if field.startswith('source['):
+                    field = field[7:-1]
+                    where = content['source']
+                else:
+                    where = content
 
-            for field, expected in expected_fields:
-                self.assertIn(field, content)
-                self.assertEqual(content[field], expected,
+                self.assertIn(field, where)
+                self.assertEqual(where[field], expected,
                         msg="field '{}': got {}, expected {}".format(
                             field,
-                            content[field],
+                            where[field],
                             expected,
                             ))
 

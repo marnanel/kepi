@@ -25,7 +25,7 @@ class TestStatus(TrilbyTestCase):
 
         # FIXME: Need to check that "id" corresponds to "url", etc
 
-        for field, expected in STATUS_EXPECTED:
+        for field, expected in STATUS_EXPECTED.items():
             self.assertIn(field, content)
             self.assertEqual(content[field], expected,
                     msg="field '{}'".format(field))
@@ -33,7 +33,7 @@ class TestStatus(TrilbyTestCase):
         self.assertIn('account', content)
         account = content['account']
 
-        for field, expected in ACCOUNT_EXPECTED:
+        for field, expected in ACCOUNT_EXPECTED.items():
             self.assertIn(field, account)
             self.assertEqual(account[field], expected,
                     msg="account field '{}'".format(field))
