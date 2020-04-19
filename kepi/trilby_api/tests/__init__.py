@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from rest_framework.test import force_authenticate, APIClient
 from kepi.trilby_api.models import *
 from django.conf import settings
+import json
 
 ACCOUNT_EXPECTED = [
         ('id', '@alice'),
@@ -74,6 +75,8 @@ class TrilbyTestCase(TestCase):
     def request(self, verb, path,
             data={},
             as_user=None,
+            expect_result=200,
+            parse_result=True,
             *args, **kwargs,
             ):
 
@@ -91,6 +94,16 @@ class TrilbyTestCase(TestCase):
                 *args,
                 **kwargs,
                 )
+
+        if expect_result is not None:
+            self.assertEqual(
+                    result.status_code,
+                    expect_result,
+                    msg = f"Status code from {path} was unexpected.",
+                    )
+
+        if parse_result:
+            result = json.loads(result.content)
 
         return result
 
