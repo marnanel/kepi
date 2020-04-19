@@ -38,13 +38,45 @@ class TestAccountCredentials(TrilbyTestCase):
                         expected,
                         ))
 
-    @skip("Not yet implemented")
+    @skip("I'll write this test later")
     def test_register(self):
+        # FIXME not sure how to implement this test!
         pass
    
-    @skip("Not yet implemented")
     def test_update_credentials(self):
-        pass
+
+        expected_fields = ACCOUNT_EXPECTED
+
+        alice = create_local_person(name='alice')
+
+        for delta in [
+
+                {
+                    'display_name': 'Thomas the Rhymer',
+                },
+
+                {},
+
+                ]:
+
+
+            content = self.patch(
+                    '/api/v1/accounts/update_credentials',
+                    data = delta,
+                    as_user = alice,
+                    )
+
+            for f,v in delta:
+                expected[f] = v
+
+            for field, expected in expected_fields:
+                self.assertIn(field, content)
+                self.assertEqual(content[field], expected,
+                        msg="field '{}': got {}, expected {}".format(
+                            field,
+                            content[field],
+                            expected,
+                            ))
 
     @skip("Not yet implemented")
     def test_get_account(self):
