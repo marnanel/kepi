@@ -125,10 +125,6 @@ class TestAccountCredentials(TrilbyTestCase):
                             ))
 
     @skip("Not yet implemented")
-    def test_get_account(self):
-        pass
-
-    @skip("Not yet implemented")
     def test_account_followers(self):
         pass
 
