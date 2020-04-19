@@ -34,6 +34,11 @@ class TestStatus(TrilbyTestCase):
         account = content['account']
 
         for field, expected in ACCOUNT_EXPECTED.items():
+
+            if field.startswith('status['):
+                # this doesn't give us the status dict
+                continue
+
             self.assertIn(field, account)
             self.assertEqual(account[field], expected,
                     msg="account field '{}'".format(field))
