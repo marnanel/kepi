@@ -13,7 +13,8 @@ import kepi.trilby_api.models as trilby_models
 from .serializers import *
 import kepi.trilby_api.signals as kepi_signals
 from rest_framework import generics, response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, \
+        IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 import kepi.trilby_api.receivers
@@ -329,6 +330,8 @@ class Statuses(generics.ListCreateAPIView,
 
     queryset = trilby_models.Status.objects.filter(remote_url=None)
     serializer_class = StatusSerializer
+
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
 
