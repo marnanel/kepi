@@ -55,7 +55,46 @@ class TestAccountCredentials(TrilbyTestCase):
                     'display_name': 'Thomas the Rhymer',
                 },
 
+                {
+                    'display_name': 'Catherine of Aragon',
+                },
+
                 {},
+
+                {
+                    'note': 'I\'m a paragon of royalty',
+                },
+
+                {
+                    'bot': True,
+                },
+
+                {
+                    # try multiple fields
+                    'note': 'So if you try to dump me...',
+                    'bot': False,
+                },
+
+                {
+                    'locked': True,
+                    'bot': False, # so no change
+                },
+
+                {
+                    'source[privacy]': 'public',
+                },
+
+                {
+                    'source[privacy]': 'private',
+                },
+
+                {
+                    'source[sensitive]': True,
+                },
+
+                {
+                    'source[language]': 'cy',
+                },
 
                 ]:
 
@@ -66,8 +105,15 @@ class TestAccountCredentials(TrilbyTestCase):
                     as_user = alice,
                     )
 
-            for f,v in delta:
-                expected[f] = v
+            for f,v in delta.items():
+
+                # FIXME this is daft; ACCOUNT_EXPECTED should be a dict
+                for i in range(len(expected_fields)):
+                    if expected_fields[i][0]==f:
+                        expected_fields[i] = (f, v)
+                        break
+
+            print(content)
 
             for field, expected in expected_fields:
                 self.assertIn(field, content)

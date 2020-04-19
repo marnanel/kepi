@@ -253,6 +253,76 @@ class Follow(DoSomethingWithPerson):
         except IntegrityError:
             logger.info('  -- not creating a follow; it already exists')
 
+class UpdateCredentials(generics.GenericAPIView):
+
+    def patch(self, request, *args, **kwargs):
+
+        if request.user is None:
+            logger.debug('  -- user not logged in')
+            return error_response(401, 'Not logged in')
+
+        who = request.user.person
+
+        # The Mastodon spec doesn't say what to do
+        # if the user submits field names which don't
+        # exist!
+
+        unknown_fields = []
+
+        # FIXME: the data in "v" needs cleaning.
+
+        logger.info('-- updating user: %s', who)
+
+        for f,v in request.data.items():
+
+            logger.info('  -- setting %s = %s', f, v)
+
+            if f=='discoverable':
+                raise Http404("discoverable is not yet supported")
+            elif f=='bot':
+                who.bot = v
+            elif f=='display_name':
+                who.display_name = v
+            elif f=='note':
+                who.note = v
+            elif f=='avatar':
+                raise Http404("images are not yet supported")
+            elif f=='header':
+                raise Http404("images are not yet supported")
+            elif f=='locked':
+                who.locked = v
+            elif f=='source[privacy]':
+                who.default_visibility = v
+            elif f=='source[sensitive]':
+                who.default_sensitive = v
+            elif f=='source[language]':
+                who.language = v
+            elif f=='fields_attributes':
+                raise Http404("fields are not yet supported")
+            else:
+                logger.info('    -- field does not exist')
+                unknown_fields.append(f)
+
+        if unknown_fields:
+            logger.info('  -- aborting because of unknown fields')
+            raise Http404(f"some fields do not exist: {unknown_fields}")
+
+        who.save()
+        logger.info('  -- done.')
+
+        serializer = UserSerializerWithSource(
+                who,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        return JsonResponse(
+                serializer.data,
+                status = 200,
+                reason = 'Done',
+                )
+
 ###########################
 
 def fix_oauth2_redirects():
