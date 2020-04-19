@@ -45,7 +45,7 @@ class TestAccountCredentials(TrilbyTestCase):
    
     def test_update_credentials(self):
 
-        expected_fields = ACCOUNT_EXPECTED
+        expected_fields = ACCOUNT_EXPECTED.copy()
 
         alice = create_local_person(name='alice')
 
