@@ -738,8 +738,7 @@ class Filters(View):
 
 ########################################
 
-class Followers(generics.GenericAPIView):
-
+class Followers_or_Following(generics.GenericAPIView):
     serializer_class = UserSerializer
     queryset = trilby_models.Person.objects.all()
 
@@ -756,7 +755,7 @@ class Followers(generics.GenericAPIView):
                 local_user__username = name,
                 )
 
-        queryset = the_person.followers
+        queryset = self._get_list_for(the_person)
 
         if 'max_id' in params:
             queryset = queryset.filter(
@@ -786,8 +785,11 @@ class Followers(generics.GenericAPIView):
                 reason = 'Done',
                 )
 
-class Following(View):
-    # FIXME
-    def get(self, request, *args, **kwargs):
-        return JsonResponse([],
-                safe=False)
+class Followers(Followers_or_Following):
+    def _get_list_for(self, the_person):
+        return the_person.followers
+
+class Following(Followers_or_Following):
+    def _get_list_for(self, the_person):
+        return the_person.following
+

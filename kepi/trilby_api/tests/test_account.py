@@ -147,6 +147,27 @@ class TestAccountDetails(TrilbyTestCase):
                 make_follow_for = _make_follow_for,
                 )
 
+    def test_account_following(self):
+
+        """
+        Tests the "username/followers" API;
+        also tests the "followers_count" in the user API.
+        """
+
+        def _make_follow_for(whom, alice):
+            follow = Follow(
+                    follower = alice,
+                    following = whom,
+                    requested = False,
+            )
+            follow.save()
+
+        self._test_relationship(
+                path = '/api/v1/accounts/alice/following',
+                count_param = 'following_count',
+                make_follow_for = _make_follow_for,
+                )
+
     def _test_relationship(
             self,
             path,
@@ -184,10 +205,6 @@ class TestAccountDetails(TrilbyTestCase):
                         c['username'],
                         o.username,
                         )
-
-    @skip("Not yet implemented")
-    def test_account_following(self):
-        pass
 
     @skip("Not yet implemented")
     def test_account_in_lists(self):
