@@ -736,11 +736,55 @@ class Filters(View):
         return JsonResponse([],
                 safe=False)
 
-class Followers(View):
-    # FIXME
-    def get(self, request, *args, **kwargs):
-        return JsonResponse([],
-                safe=False)
+########################################
+
+class Followers(generics.GenericAPIView):
+
+    serializer_class = UserSerializer
+    queryset = trilby_models.Person.objects.all()
+
+    def get(self, request, name, *args, **kwargs):
+
+        params = request.data
+
+        if request.user is None:
+            logger.debug('  -- user not logged in')
+            return error_response(401, 'Not logged in')
+
+        the_person = get_object_or_404(
+                self.get_queryset(),
+                local_user__username = name,
+                )
+
+        queryset = the_person.followers
+
+        if 'max_id' in params:
+            queryset = queryset.filter(
+                    id__le = params['max_id'],
+                    )
+
+        if 'since_id' in params:
+            queryset = queryset.filter(
+                    id__gt = params['since_id'],
+                    )
+
+        if 'limit' in params:
+            queryset = queryset[:params['limit']]
+
+        serializer = UserSerializer(
+                queryset,
+                many = True,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        return JsonResponse(
+                serializer.data,
+                safe = False, # it's a list
+                status = 200,
+                reason = 'Done',
+                )
 
 class Following(View):
     # FIXME

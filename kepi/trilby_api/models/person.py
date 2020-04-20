@@ -170,15 +170,33 @@ class Person(models.Model):
 
     @property
     def following_count(self):
-        return 0 # FIXME
+
+        import kepi.trilby_api.models as trilby_models
+
+        return trilby_models.Follow.objects.filter(
+                follower = self,
+                requested = False,
+                ).count()
 
     @property
     def followers_count(self):
-        return 0 # FIXME
+
+        import kepi.trilby_api.models as trilby_models
+
+        return trilby_models.Follow.objects.filter(
+                following = self,
+                requested = False,
+                ).count()
 
     @property
     def statuses_count(self):
-        return 0 # FIXME
+
+        import kepi.trilby_api.models as trilby_models
+
+        # TODO: not yet tested
+        return trilby_models.Status.objects.filter(
+                account = self,
+                ).count()
 
     @property
     def acct(self):
@@ -259,11 +277,15 @@ class Person(models.Model):
 
     @property
     def followers(self):
-        return None # FIXME
+        return Person.objects.filter(
+            rel_following__following = self,
+            )
 
     @property
     def following(self):
-        return None # FIXME
+        return Person.objects.filter(
+            rel_followers__follower = self,
+            )
 
     @property
     def fields(self):
@@ -292,4 +314,4 @@ class Person(models.Model):
         if self.remote_url:
             return self.remote_url
         else:
-            return self.local_user
+            return self.username

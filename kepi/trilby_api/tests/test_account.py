@@ -124,9 +124,66 @@ class TestAccountCredentials(TrilbyTestCase):
                             expected,
                             ))
 
-    @skip("Not yet implemented")
+class TestAccountDetails(TrilbyTestCase):
+
     def test_account_followers(self):
-        pass
+
+        """
+        Tests the "username/followers" API;
+        also tests the "followers_count" in the user API.
+        """
+
+        def _make_follow_for(whom, alice):
+            follow = Follow(
+                    follower = whom,
+                    following = alice,
+                    requested = False,
+            )
+            follow.save()
+
+        self._test_relationship(
+                path = '/api/v1/accounts/alice/followers',
+                count_param = 'followers_count',
+                make_follow_for = _make_follow_for,
+                )
+
+    def _test_relationship(
+            self,
+            path,
+            count_param,
+            make_follow_for,
+            ):
+        alice = create_local_person(name='alice')
+
+        others = []
+        for i in range(5):
+
+            others.append(create_local_person(name=f"other{i}"))
+            make_follow_for(others[-1], alice)
+
+            content = self.get(
+                    '/api/v1/accounts/alice',
+                    as_user = alice,
+                    )
+
+            self.assertEqual(content[count_param],
+                    i+1)
+
+            content = self.get(
+                    path,
+                    as_user = alice,
+                    )
+
+            self.assertEqual(
+                    len(content),
+                    len(others),
+                    )
+
+            for c, o in zip(content, others):
+                self.assertEqual(
+                        c['username'],
+                        o.username,
+                        )
 
     @skip("Not yet implemented")
     def test_account_following(self):
