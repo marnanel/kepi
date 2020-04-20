@@ -33,7 +33,10 @@ class TestStatus(TrilbyTestCase):
         self.assertIn('account', content)
         account = content['account']
 
-        for field, expected in ACCOUNT_EXPECTED.items():
+        account_expected = ACCOUNT_EXPECTED.copy()
+        account_expected['statuses_count'] = 1
+
+        for field, expected in account_expected.items():
 
             if field.startswith('status['):
                 # this doesn't give us the status dict
