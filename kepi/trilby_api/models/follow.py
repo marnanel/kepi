@@ -16,13 +16,13 @@ class Follow(models.Model):
     follower = models.ForeignKey(
             'Person',
             on_delete = models.DO_NOTHING,
-            related_name = 'following',
+            related_name = 'rel_following',
             )
 
     following = models.ForeignKey(
             'Person',
             on_delete = models.DO_NOTHING,
-            related_name = 'followers',
+            related_name = 'rel_followers',
             )
 
     requested = models.BooleanField(
@@ -44,11 +44,11 @@ class Follow(models.Model):
     def __str__(self):
         if self.requested:
             return '[%s requests to follow %s]' % (
-                    follower,
-                    following,
+                    self.follower,
+                    self.following,
                     )
         else:
             return '[%s follows %s]' % (
-                    follower,
-                    following,
+                    self.follower,
+                    self.following,
                     )
