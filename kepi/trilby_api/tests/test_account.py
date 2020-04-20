@@ -220,13 +220,53 @@ class TestAccountDetails(TrilbyTestCase):
 
 class TestAccountActions(TrilbyTestCase):
 
-    @skip("Not yet implemented")
-    def test_follow(self):
-        pass
+    # TODO: these "follow" tests will need to be a bit more complex,
+    # to account for accept/reject and auto_follow
 
-    @skip("Not yet implemented")
+    def test_follow(self):
+        alice = create_local_person(name='alice')
+        bob = create_local_person(name='bob')
+
+        content = self.post(
+                '/api/v1/accounts/bob/follow',
+                as_user = alice,
+                )
+
+        self.assertEqual(
+                Follow.objects.filter(
+                    following = bob,
+                    follower = alice,
+                    ).count(),
+                1)
+
     def test_unfollow(self):
-        pass
+        alice = create_local_person(name='alice')
+        bob = create_local_person(name='bob')
+
+        follow = Follow(
+                following = bob,
+                follower = alice,
+                )
+        follow.save()
+
+        self.assertEqual(
+                Follow.objects.filter(
+                    following = bob,
+                    follower = alice,
+                    ).count(),
+                1)
+
+        content = self.post(
+                '/api/v1/accounts/bob/unfollow',
+                as_user = alice,
+                )
+
+        self.assertEqual(
+                Follow.objects.filter(
+                    following = bob,
+                    follower = alice,
+                    ).count(),
+                0)
 
     @skip("Not yet implemented")
     def test_block(self):

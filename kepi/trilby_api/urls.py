@@ -18,6 +18,8 @@ urlpatterns = [
     path('api/v1/accounts/<name>/following', Following.as_view()),
     path('api/v1/accounts/<name>/followers', Followers.as_view()),
     path('api/v1/accounts/<name>/follow', Follow.as_view()),
+    path('api/v1/accounts/<name>/unfollow', Unfollow.as_view()),
+
     path('api/v1/statuses', Statuses.as_view()),
     path('api/v1/statuses/<id>', Statuses.as_view()),
     path('api/v1/statuses/<id>/context', StatusContext.as_view()),

@@ -202,7 +202,7 @@ class DoSomethingWithPerson(generics.GenericAPIView):
     def _do_something_with(self, the_person, request):
         raise NotImplementedError()
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, name, *args, **kwargs):
 
         if request.user is None:
             logger.debug('  -- user not logged in')
@@ -210,7 +210,7 @@ class DoSomethingWithPerson(generics.GenericAPIView):
 
         the_person = get_object_or_404(
                 self.get_queryset(),
-                id = kwargs['name'],
+                local_user__username = name,
                 )
 
         result = self._do_something_with(the_person, request)
@@ -252,6 +252,28 @@ class Follow(DoSomethingWithPerson):
 
         except IntegrityError:
             logger.info('  -- not creating a follow; it already exists')
+
+class Unfollow(DoSomethingWithPerson):
+
+    def _do_something_with(self, the_person, request):
+
+        try:
+            follow = trilby_models.Follow.objects.get(
+                follower = request.user.person,
+                following = the_person,
+                )
+
+            logger.info('  -- unfollowing: %s', follow)
+            kepi_signals.unfollowed.send(sender=follow)
+
+            with transaction.atomic():
+                follow.delete()
+
+            return the_person
+
+        except trilby_models.Follow.DoesNotExist:
+            logger.info('  -- not unfollowing; they weren\'t following '+\
+                    'in the first place')
 
 class UpdateCredentials(generics.GenericAPIView):
 

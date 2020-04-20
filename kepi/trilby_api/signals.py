@@ -12,6 +12,12 @@ followed = Signal(
             'followed',
             ])
 
+unfollowed = Signal(
+        providing_args=[
+            'follower',
+            'followed',
+            ])
+
 deleted = Signal(
         providing_args=[
             'url',
