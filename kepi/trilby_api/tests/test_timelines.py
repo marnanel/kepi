@@ -5,8 +5,6 @@ from kepi.trilby_api.tests import *
 from kepi.trilby_api.models import *
 from django.conf import settings
 
-MIME_TYPE = 'application/json'
-
 # Tests for timelines. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
 
@@ -81,7 +79,7 @@ class TestTimelines(TrilbyTestCase):
 
         self._check_timelines(
             situation = 'public',
-            path = '/api/v1/statuses',
+            path = '/api/v1/timelines/public',
             as_user = None,
             )
 
