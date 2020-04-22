@@ -5,7 +5,6 @@ from kepi.trilby_api.tests import *
 from kepi.trilby_api.models import *
 from django.conf import settings
 import logging
-import httpretty
 
 # Tests for notifications. API docs are here:
 # https://docs.joinmastodon.org/methods/notifications/
@@ -20,7 +19,6 @@ DEFAULT_KEYS_FILENAME = 'kepi/bowler_pub/tests/keys/keys-0002.json'
 
 class TestNotifications(TrilbyTestCase):
 
-    @httpretty.activate
     def test_follow(self):
 
         # recall that we're testing notifications here;
@@ -29,30 +27,16 @@ class TestNotifications(TrilbyTestCase):
         alice = create_local_person(name='alice')
         bob   = create_local_person(name='bob')
 
-        result = post('/api/v1/accounts/{}/follow'.format(alice.id),
+        self.post('/api/v1/accounts/alice/follow',
                 {
                     'reblogs': True, # FIXME we don't yet support this
                     },
                 as_user = bob,
                 )
 
-        self.assertEqual(
-                result.status_code,
-                200,
-                msg = result.content,
-                )
-
-        result = get('/api/v1/notifications',
+        content = self.get('/api/v1/notifications',
                 as_user = alice,
                 )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                msg = result.content,
-                )
-
-        content = json.loads(result.content.decode())
 
         self.assertEqual(
                 len(content),
@@ -81,7 +65,6 @@ class TestNotifications(TrilbyTestCase):
                 content[0]['account'],
                 )
 
-    @httpretty.activate
     def test_favourite(self):
         alice = create_local_person(name='alice')
         bob   = create_local_person(name='bob')
@@ -91,30 +74,16 @@ class TestNotifications(TrilbyTestCase):
                 posted_by = alice,
                 )
 
-        result = post(
+        self.post(
                 '/api/v1/statuses/{}/favourite'.format(status.id),
                 {},
                 as_user = bob,
                 )
 
-        self.assertEqual(
-                result.status_code,
-                200,
-                msg = result.content,
-                )
-
-        result = get(
+        content = self.get(
                 '/api/v1/notifications',
                 as_user = alice,
                 )
-
-        self.assertEqual(
-                result.status_code,
-                200,
-                msg = result.content,
-                )
-
-        content = json.loads(result.content.decode())
 
         self.assertEqual(
                 len(content),
