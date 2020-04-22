@@ -15,8 +15,6 @@ import logging
 
 logger = logging.getLogger(name='kepi')
 
-DEFAULT_KEYS_FILENAME = 'kepi/bowler_pub/tests/keys/keys-0002.json'
-
 class TestNotifications(TrilbyTestCase):
 
     def test_follow(self):
