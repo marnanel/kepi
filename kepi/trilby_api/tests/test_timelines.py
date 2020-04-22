@@ -10,19 +10,93 @@ MIME_TYPE = 'application/json'
 # Tests for timelines. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
 
+TIMELINE_DATA = [
+        # Visibility is:
+        #   A=public: visible to anyone, and in public timelines
+        #   U=unlisted: visible to anyone, but not in public timelines
+        #   X=private: visible to followers and anyone tagged
+        #   D=direct: visible only to those who are tagged
+
+        # We haven't yet implemented:
+        #   - (user) tags
+        #   - hashtags
+        #   - user lists
+        #   - following users but hiding reblogs
+        # and when we do, these tests will need updating.
+        #
+        # All statuses are posted by alice.
+        #
+        # id   visibility  visible in
+        ( 'A', 'A',
+            ['public', 'follower', 'stranger', 'home', ], ),
+        ( 'B', 'U',
+            ['follower', 'stranger', 'home', ], ),
+        ( 'C', 'X',
+            ['follower', 'home',], ),
+        ( 'D', 'D',
+            ['home', ], ),
+
+        ]
+
 class TestTimelines(TrilbyTestCase):
 
-    @skip("Not yet implemented")
-    def test_public(self):
-        pass
+    def _set_up(self):
 
-    @skip("Not yet implemented")
+        self._alice = create_local_person("alice")
+
+        for (id, visibility, visible_in) in TIMELINE_DATA:
+            status = Status(
+                    account = self._alice,
+                    content = id,
+                    visibility = visibility,
+                    )
+            status.save()
+
+    def _check_timelines(self,
+            situation,
+            path,
+            as_user):
+
+        expected = []
+        for (id, visibility, visible_in) in TIMELINE_DATA:
+            if situation in visible_in:
+                expected.append(id)
+        expected = sorted(expected)
+
+        details = sorted([x['content'] \
+                for x in self.get(
+                path = path,
+                as_user = as_user,
+                )])
+
+        self.assertListEqual(
+                expected,
+                details,
+                msg = f"Visibility in '{situation}' mismatch: "+\
+                        f"expected {expected}, but got {details}.",
+                        )
+
+    def test_public(self):
+        self._set_up()
+
+        self._check_timelines(
+            situation = 'public',
+            path = '/api/v1/statuses',
+            as_user = None,
+            )
+
+    @skip("Hashtags not yet implemented")
     def test_hashtag(self):
         pass
 
-    @skip("Not yet implemented")
     def test_home(self):
-        pass
+        self._set_up()
+
+        self._check_timelines(
+            situation = 'home',
+            path = '/api/v1/timelines/home',
+            as_user = self._alice,
+            )
 
     @skip("Not yet implemented")
     def test_account_statuses(self):
@@ -33,63 +107,3 @@ class TestTimelines(TrilbyTestCase):
     @skip("Not yet implemented")
     def test_list(self):
         pass
-
-######################################
-
-# TODO: Pre-existing code, to merge
-
-class PublicTimeline(TrilbyTestCase):
-
-    # FIXME put this in a parent class in __init__
-    def _get(self,
-            url,
-            client=None):
-
-        if client is None:
-            client = Client()
-
-        response = client.get(url,
-                HTTP_ACCEPT = MIME_TYPE,
-                )
-
-        self.assertEqual(
-                response.status_code,
-                200)
-
-        return json.loads(
-                str(response.content, encoding='UTF-8'))
-
-    def test_public_empty(self):
-
-        response = self._get('/api/v1/timelines/public')
-
-        self.assertEqual(len(response), 0)
-
-    def test_public_singleton(self):
-        self._alice = create_local_person(name='alice')
-
-        self._status = create_local_status(
-                content = 'Hello world.',
-                posted_by = self._alice,
-                visibility = Status.PUBLIC,
-                )
-
-        response = self._get('/api/v1/timelines/public')
-
-        self.assertEqual(len(response), 1)
-        self.assertEqual(response[0]['content'],
-                'Hello world.',
-                )
-
-    def test_public_singleton_direct(self):
-        self._alice = create_local_person(name='alice')
-
-        self._status = create_local_status(
-                content = 'Hello world.',
-                posted_by = self._alice,
-                visibility = Status.DIRECT,
-                )
-
-        response = self._get('/api/v1/timelines/public')
-
-        self.assertEqual(len(response), 0)
