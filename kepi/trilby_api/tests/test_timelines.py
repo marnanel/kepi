@@ -83,9 +83,32 @@ class TestTimelines(TrilbyTestCase):
             as_user = None,
             )
 
-    @skip("Hashtags not yet implemented")
-    def test_hashtag(self):
-        pass
+    def test_follower(self):
+        self._set_up()
+        self._george = create_local_person("george")
+
+        follow = Follow(
+                follower = self._george,
+                following = self._alice,
+                requested = False,
+                )
+        follow.save()
+
+        self._check_timelines(
+            situation = 'public',
+            path = '/api/v1/timelines/public',
+            as_user = self._george,
+            )
+
+    def test_stranger(self):
+        self._set_up()
+        self._henry = create_local_person("henry")
+
+        self._check_timelines(
+            situation = 'public',
+            path = '/api/v1/timelines/public',
+            as_user = self._henry,
+            )
 
     def test_home(self):
         self._set_up()
@@ -96,12 +119,16 @@ class TestTimelines(TrilbyTestCase):
             as_user = self._alice,
             )
 
+    @skip("Hashtags not yet implemented")
+    def test_hashtag(self):
+        pass
+
     @skip("Not yet implemented")
     def test_account_statuses(self):
         # Special case: this isn't considered a timeline method
         # in the API, but it's similar enough that we test it here
         pass
 
-    @skip("Not yet implemented")
+    @skip("Lists not yet implemented")
     def test_list(self):
         pass
