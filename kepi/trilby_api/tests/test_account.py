@@ -225,7 +225,8 @@ class TestAccountActions(TrilbyTestCase):
 
     def test_follow(self):
         alice = create_local_person(name='alice')
-        bob = create_local_person(name='bob')
+        bob = create_local_person(name='bob',
+                auto_follow = False)
 
         content = self.post(
                 '/api/v1/accounts/bob/follow',
@@ -238,6 +239,46 @@ class TestAccountActions(TrilbyTestCase):
                     follower = alice,
                     ).count(),
                 1)
+
+        self.assertEqual(
+                Follow.objects.filter(
+                    following = alice,
+                    follower = bob,
+                    ).count(),
+                0)
+
+    def test_follow_autofollow(self):
+        alice = create_local_person(name='alice')
+        bob = create_local_person(name='bob',
+                auto_follow = True)
+
+        content = self.post(
+                '/api/v1/accounts/bob/follow',
+                as_user = alice,
+                )
+
+        self.assertEqual(
+                Follow.objects.filter(
+                    following = bob,
+                    follower = alice,
+                    ).count(),
+                1)
+
+        self.assertEqual(
+                Follow.objects.filter(
+                    following = alice,
+                    follower = bob,
+                    ).count(),
+                1)
+
+    def test_follow_404(self):
+        alice = create_local_person(name='alice')
+
+        content = self.post(
+                '/api/v1/accounts/bananaman/follow',
+                as_user = alice,
+                expect_result = 404,
+                )
 
     def test_unfollow(self):
         alice = create_local_person(name='alice')

@@ -99,7 +99,8 @@ class TrilbyTestCase(TestCase):
             self.assertEqual(
                     result.status_code,
                     expect_result,
-                    msg = f"Status code from {path} was unexpected.",
+                    msg = f"Got {result.status_code} from "+\
+                            f"{path}; expected {expect_result}.",
                     )
 
         if parse_result:
@@ -119,10 +120,12 @@ class TrilbyTestCase(TestCase):
     def delete(self, *args, **kwargs):
         return self.request('delete', *args, **kwargs)
 
-def create_local_person(name='jemima'):
+def create_local_person(name='jemima',
+        **kwargs):
 
     result = Person(
             username = name,
+            **kwargs,
             )
     result.save()
 
