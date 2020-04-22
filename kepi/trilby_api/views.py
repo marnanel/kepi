@@ -239,14 +239,27 @@ class Follow(DoSomethingWithPerson):
             follow = trilby_models.Follow(
                 follower = request.user.person,
                 following = the_person,
+                requested = not the_person.auto_follow,
                 )
 
             with transaction.atomic():
                 follow.save()
 
             logger.info('  -- follow: %s', follow)
-
             kepi_signals.followed.send(sender=follow)
+
+            if the_person.auto_follow:
+                follow_back = trilby_models.Follow(
+                    follower = the_person,
+                    following = request.user.person,
+                    requested = False,
+                    )
+
+                with transaction.atomic():
+                    follow_back.save()
+
+                logger.info('  -- follow back: %s', follow_back)
+                kepi_signals.followed.send(sender=follow_back)
 
             return the_person
 

@@ -237,6 +237,7 @@ class TestAccountActions(TrilbyTestCase):
                 Follow.objects.filter(
                     following = bob,
                     follower = alice,
+                    requested = True,
                     ).count(),
                 1)
 
@@ -261,6 +262,7 @@ class TestAccountActions(TrilbyTestCase):
                 Follow.objects.filter(
                     following = bob,
                     follower = alice,
+                    requested = False,
                     ).count(),
                 1)
 
@@ -268,6 +270,7 @@ class TestAccountActions(TrilbyTestCase):
                 Follow.objects.filter(
                     following = alice,
                     follower = bob,
+                    requested = False,
                     ).count(),
                 1)
 
