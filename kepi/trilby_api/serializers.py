@@ -8,7 +8,6 @@ from oauth2_provider.models import Application
 class UserSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(
-            source='api_id',
             read_only = True)
 
     avatar = serializers.URLField(

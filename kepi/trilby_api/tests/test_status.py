@@ -46,12 +46,6 @@ class TestStatus(TrilbyTestCase):
             self.assertEqual(account[field], expected,
                     msg="account field '{}'".format(field))
 
-        self.assertIn('id', content)
-        try:
-            dummy = int(content['id'])
-        except ValueError:
-            self.fail('Value of "id" is not a decimal: '+content['id'])
-
     def _test_doing_something(self,
             verb, person, status,
             expect_result = 200):

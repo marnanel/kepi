@@ -5,7 +5,6 @@ from django.conf import settings
 import json
 
 ACCOUNT_EXPECTED = {
-        'id': '@alice',
         'username': 'alice',
         'acct': 'alice@testserver',
         'display_name': 'alice',

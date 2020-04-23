@@ -55,7 +55,6 @@ class TestNotifications(TrilbyTestCase):
 
         self.assertDictContainsSubset(
                 {
-                    'id': '@bob',
                     'username': 'bob',
                     'acct': 'bob@testserver',
                     'url': 'https://testserver/users/bob',
@@ -102,7 +101,6 @@ class TestNotifications(TrilbyTestCase):
 
         self.assertDictContainsSubset(
                 {
-                    'id': '@bob',
                     'username': 'bob',
                     'acct': 'bob@testserver',
                     'url': 'https://testserver/users/bob',

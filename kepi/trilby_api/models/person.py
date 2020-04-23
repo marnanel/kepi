@@ -215,13 +215,6 @@ class Person(models.Model):
         else:
             return self.local_user.username
 
-    @property
-    def api_id(self):
-        if self.remote_url is not None:
-            return self.remote_url
-        else:
-            return '@' + self.local_user.username
-
     def _generate_keys(self):
 
         logger.info('%s: generating key pair.',
@@ -325,6 +318,8 @@ class Person(models.Model):
         """
         Return the Person who has the given name.
         If local_only==False, name can also be a remote URL.
+
+        The name can begin with an @, which will force local_only=True.
         """
 
         logger.info('looking up Person by name=%s; local_only=%s',
