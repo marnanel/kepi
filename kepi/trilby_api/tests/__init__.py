@@ -6,7 +6,7 @@ import json
 
 ACCOUNT_EXPECTED = {
         'username': 'alice',
-        'acct': 'alice@testserver',
+        'acct': 'alice',
         'display_name': 'alice',
         'locked': False,
 

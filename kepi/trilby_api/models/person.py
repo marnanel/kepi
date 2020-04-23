@@ -203,10 +203,7 @@ class Person(models.Model):
         if self.remote_url is not None:
             return self.remote_username
         else:
-            return '{}@{}'.format(
-                    self.local_user.username,
-                    settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                    )
+            return self.local_user.username
 
     @property
     def username(self):
