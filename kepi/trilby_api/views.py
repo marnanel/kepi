@@ -26,6 +26,19 @@ logger = logging.Logger(name='kepi')
 
 ###########################
 
+def get_person_or_404(name):
+    result = trilby_models.Person.by_name(
+            name = name,
+            local_only = True,
+            )
+
+    if result is None:
+        raise Http404("No such user.")
+
+    return result
+
+###########################
+
 class Instance(View):
 
     def get(self, request, *args, **kwargs):
@@ -208,10 +221,7 @@ class DoSomethingWithPerson(generics.GenericAPIView):
             logger.debug('  -- user not logged in')
             return error_response(401, 'Not logged in')
 
-        the_person = get_object_or_404(
-                self.get_queryset(),
-                local_user__username = name,
-                )
+        the_person = get_person_or_404(name)
 
         result = self._do_something_with(the_person, request)
 
@@ -691,9 +701,7 @@ class UserFeed(View):
 
     def get(self, request, username, *args, **kwargs):
 
-        user = get_object_or_404(trilby_models.Person,
-                id = '@'+username,
-                )
+        user = get_person_or_404(username)
 
         context = {
                 'self': request.build_absolute_uri(),
@@ -785,10 +793,7 @@ class Followers_or_Following(generics.GenericAPIView):
             logger.debug('  -- user not logged in')
             return error_response(401, 'Not logged in')
 
-        the_person = get_object_or_404(
-                self.get_queryset(),
-                local_user__username = name,
-                )
+        the_person = get_person_or_404(name)
 
         queryset = self._get_list_for(the_person)
 

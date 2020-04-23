@@ -234,8 +234,10 @@ class Person(models.Model):
     def __init__(self, *args, **kwargs):
 
         if 'username' in kwargs and 'local_user' not in kwargs:
-            new_user = TrilbyUser(username=kwargs['username'])
+            new_user = TrilbyUser(
+                    username=kwargs['username'])
             new_user.save()
+
             kwargs['local_user'] = new_user
             del kwargs['username']
 
@@ -315,3 +317,38 @@ class Person(models.Model):
             return self.remote_url
         else:
             return self.username
+
+    @classmethod
+    def by_name(cls, name,
+            local_only = False):
+
+        """
+        Return the Person who has the given name.
+        If local_only==False, name can also be a remote URL.
+        """
+
+        logger.info('looking up Person by name=%s; local_only=%s',
+                name, local_only)
+
+        if name.startswith('@'):
+            name = name[1:]
+            local_only = True
+
+        try:
+            return cls.objects.get(
+                    local_user__username = name,
+                    )
+        except cls.DoesNotExist:
+            pass
+
+        if local_only:
+            return None
+
+        try:
+            return cls.objects.get(
+                    remote_url = name,
+                    )
+        except cls.DoesNotExist:
+            pass
+
+        return None
