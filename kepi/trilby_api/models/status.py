@@ -65,17 +65,17 @@ class Status(models.Model):
     PRIVATE = 'X'
     DIRECT = 'D'
 
-    TYPE_CHOICES = [
+    VISIBILITY_CHOICES = [
             (PUBLIC, 'public'),
             (UNLISTED, 'unlisted'),
             (PRIVATE, 'private'),
             (DIRECT, 'direct'),
             ]
 
-
     visibility = models.CharField(
             max_length = 1,
             default = PUBLIC,
+            choices = VISIBILITY_CHOICES,
             help_text = """Visiblity of this status.
 
             Public (A): visible to anyone.
