@@ -155,11 +155,19 @@ class Status(models.Model):
 
     @property
     def uri(self):
-        return 'FIXME' # FIXME
+        # I know this property is called "uri", but
+        # this matches the behaviour of Mastodon
+        return self.url
 
     @property
     def url(self):
-        return 'FIXME' # FIXME
+        if self.remote_url is not None:
+            return self.remote_url
+
+        return uri_to_url(settings.KEPI['STATUS_LINK'] % {
+                'username': self.account.username,
+                'id': self.id,
+                })
 
     @property
     def ancestors(self):

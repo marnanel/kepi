@@ -3,6 +3,7 @@ from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
 from kepi.trilby_api.models import *
+from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
 
 # Tests for statuses. API docs are here:
@@ -22,8 +23,6 @@ class TestStatus(TrilbyTestCase):
                 path = '/api/v1/statuses/'+str(self._status.id),
                 as_user = self._alice,
                 )
-
-        # FIXME: Need to check that "id" corresponds to "url", etc
 
         for field, expected in STATUS_EXPECTED.items():
             self.assertIn(field, content)
@@ -47,6 +46,13 @@ class TestStatus(TrilbyTestCase):
                     msg="account field '{}'".format(field))
 
         self.assertIn('id', content)
+
+        self.assertIn('url', content)
+        self.assertEqual(content['url'],
+            uri_to_url(settings.KEPI['STATUS_LINK'] % {
+                'username': 'alice',
+                'id': content['id'],
+                }))
 
     def _test_doing_something(self,
             verb, person, status,
