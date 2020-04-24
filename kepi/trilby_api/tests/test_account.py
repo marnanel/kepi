@@ -47,6 +47,18 @@ class TestAccountCredentials(TrilbyTestCase):
 
         expected_fields = ACCOUNT_EXPECTED.copy()
 
+        # ACCOUNT_EXPECTED doesn't contain entries
+        # for the source[] fields, because these aren't
+        # generally accessible through subscripting
+        # the account details: they're in a dict which
+        # is the value of the "source" field.
+        #
+        # We do accept details['source[foo]'] here,
+        # though, so let's put them in.
+        expected_fields['source[privacy]'] = 'public'
+        expected_fields['source[sensitive]'] = False
+        expected_fields['source[language]'] = settings.KEPI['LANGUAGES'][0]
+
         alice = create_local_person(name='alice')
 
         for delta in [

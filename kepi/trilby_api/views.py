@@ -10,6 +10,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
 import kepi.trilby_api.models as trilby_models
+import kepi.trilby_api.utils as trilby_utils
 from .serializers import *
 import kepi.trilby_api.signals as kepi_signals
 from rest_framework import generics, response
@@ -647,7 +648,7 @@ class PublicTimeline(AbstractTimeline):
     def get_queryset(self, request):
 
         result = trilby_models.Status.objects.filter(
-                visibility = Status.PUBLIC,
+                visibility = trilby_utils.VISIBILITY_PUBLIC,
                 )[:PUBLIC_TIMELINE_SLICE_LENGTH]
 
         return result

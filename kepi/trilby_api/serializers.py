@@ -2,6 +2,7 @@ from rest_framework import serializers
 from kepi.trilby_api.models import *
 from rest_framework_recursive.fields import RecursiveField
 from oauth2_provider.models import Application
+import kepi.trilby_api.utils as trilby_utils
 
 #########################################
 
@@ -72,6 +73,28 @@ class UserSerializer(serializers.ModelSerializer):
 
 #########################################
 
+class NestedSourceSerializer(UserSerializer):
+
+    class Meta:
+        model = UserSerializer.Meta.model
+        fields = (
+                'privacy',
+                'sensitive',
+                'note',
+                'language',
+                )
+
+    privacy = serializers.ChoiceField(
+            choices = trilby_utils.VISIBILITY_CHOICES,
+            source = 'get_default_visibility_display',
+            )
+
+    sensitive = serializers.BooleanField(
+            source = 'default_sensitive',
+            )
+
+#########################################
+
 class UserSerializerWithSource(UserSerializer):
 
     class Meta:
@@ -80,15 +103,7 @@ class UserSerializerWithSource(UserSerializer):
             'source',
             )
 
-    source = serializers.SerializerMethodField()
-
-    def get_source(self, user):
-        return {
-                'privacy': user.default_visibility,
-                'sensitive': user.default_sensitive,
-                'note': user.note,
-                'language': user.language,
-                }
+    source = NestedSourceSerializer(source='*')
 
 #########################################
 

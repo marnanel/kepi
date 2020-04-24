@@ -5,6 +5,7 @@ from django.conf import settings
 from kepi.bowler_pub.create import create
 import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url
+import kepi.trilby_api.utils as trilby_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 import logging
@@ -60,22 +61,10 @@ class Status(models.Model):
             default = '',
             )
 
-    PUBLIC = 'A'
-    UNLISTED = 'U'
-    PRIVATE = 'X'
-    DIRECT = 'D'
-
-    VISIBILITY_CHOICES = [
-            (PUBLIC, 'public'),
-            (UNLISTED, 'unlisted'),
-            (PRIVATE, 'private'),
-            (DIRECT, 'direct'),
-            ]
-
     visibility = models.CharField(
             max_length = 1,
-            default = PUBLIC,
-            choices = VISIBILITY_CHOICES,
+            default = trilby_utils.VISIBILITY_PUBLIC,
+            choices = trilby_utils.VISIBILITY_CHOICES,
             help_text = """Visiblity of this status.
 
             Public (A): visible to anyone.

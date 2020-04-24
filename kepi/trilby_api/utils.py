@@ -1,0 +1,13 @@
+VISIBILITY_PUBLIC = 'A'
+VISIBILITY_UNLISTED = 'U'
+VISIBILITY_PRIVATE = 'X'
+VISIBILITY_DIRECT = 'D'
+
+VISIBILITY_CHOICES = [
+        (VISIBILITY_PUBLIC, 'public'),
+        (VISIBILITY_UNLISTED, 'unlisted'),
+        (VISIBILITY_PRIVATE, 'private'),
+        (VISIBILITY_DIRECT, 'direct'),
+        ]
+
+

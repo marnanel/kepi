@@ -46,6 +46,8 @@ class TestStatus(TrilbyTestCase):
             self.assertEqual(account[field], expected,
                     msg="account field '{}'".format(field))
 
+        self.assertIn('id', content)
+
     def _test_doing_something(self,
             verb, person, status,
             expect_result = 200):

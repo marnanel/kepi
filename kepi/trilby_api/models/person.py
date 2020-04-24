@@ -5,6 +5,7 @@ from django.conf import settings
 from kepi.bowler_pub.create import create
 import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url
+import kepi.trilby_api.utils as trilby_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 import logging
@@ -43,6 +44,7 @@ class Person(models.Model):
             help_text="A small square image used to identify you.",
             null=True,
             verbose_name='icon',
+            blank = True,
             )
 
     header_image = models.ImageField(
@@ -50,12 +52,13 @@ class Person(models.Model):
                     "at the top of your profile page.",
             null=True,
             verbose_name='header image',
+            blank = True,
             )
 
     @property
     def icon_or_default(self):
         if self.icon_image:
-            return self.icon_image
+            return uri_to_url(self.icon_image)
 
         which = self.id % 10
         return uri_to_url('/static/defaults/avatar_{}.jpg'.format(
@@ -65,7 +68,7 @@ class Person(models.Model):
     @property
     def header_or_default(self):
         if self.header_image:
-            return self.header_image
+            return uri_to_url(self.header_image)
 
         return uri_to_url('/static/defaults/header.jpg')
 
@@ -120,13 +123,14 @@ class Person(models.Model):
             null = True,
             blank = True,
             default = True,
-            help_text="If set, this account has moved away, and "+\
+            help_text="If set, the account has moved away, and "+\
                     "this is where it went."
             )
 
     default_visibility = models.CharField(
             max_length = 1,
-            default = 'A', # public
+            choices = trilby_utils.VISIBILITY_CHOICES,
+            default = trilby_utils.VISIBILITY_PUBLIC,
             )
 
     default_sensitive = models.BooleanField(
