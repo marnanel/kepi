@@ -15,6 +15,7 @@ ACCOUNT_EXPECTED = {
         'statuses_count': 0,
         'note': '',
         'url': 'https://testserver/users/alice',
+        'uri': 'https://testserver/users/alice',
         'fields': [],
         'emojis': [],
 

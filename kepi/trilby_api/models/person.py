@@ -156,9 +156,11 @@ class Person(models.Model):
         if self.remote_url is not None:
             return self.remote_url
 
-        return settings.KEPI['USER_LINK'] % {
+        # I know this property is called "uri", but
+        # this matches the behaviour of Mastodon
+        return uri_to_url(settings.KEPI['USER_LINK'] % {
                 'username': self.local_user.username,
-                }
+                })
     @property
     def url(self):
         if self.remote_url is not None:
