@@ -804,7 +804,6 @@ class Followers_or_Following(generics.GenericAPIView):
         except ValueError:
             return error_response(404, 'Non-decimal ID')
 
-
         queryset = self._get_list_for(the_person)
 
         if 'max_id' in params:
