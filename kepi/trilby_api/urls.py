@@ -13,12 +13,12 @@ urlpatterns = [
 
     path('api/v1/accounts/search', AccountsSearch.as_view()),
 
-    path('api/v1/accounts/<name>', User.as_view()),
-    path('api/v1/accounts/<name>/statuses', Statuses.as_view()),
-    path('api/v1/accounts/<name>/following', Following.as_view()),
-    path('api/v1/accounts/<name>/followers', Followers.as_view()),
-    path('api/v1/accounts/<name>/follow', Follow.as_view()),
-    path('api/v1/accounts/<name>/unfollow', Unfollow.as_view()),
+    path('api/v1/accounts/<id>', User.as_view()),
+    path('api/v1/accounts/<id>/statuses', Statuses.as_view()),
+    path('api/v1/accounts/<id>/following', Following.as_view()),
+    path('api/v1/accounts/<id>/followers', Followers.as_view()),
+    path('api/v1/accounts/<id>/follow', Follow.as_view()),
+    path('api/v1/accounts/<id>/unfollow', Unfollow.as_view()),
 
     path('api/v1/statuses', Statuses.as_view()),
     path('api/v1/statuses/<id>', Statuses.as_view()),

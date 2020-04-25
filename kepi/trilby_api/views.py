@@ -27,19 +27,6 @@ logger = logging.Logger(name='kepi')
 
 ###########################
 
-def get_person_or_404(name):
-    result = trilby_models.Person.by_name(
-            name = name,
-            local_only = True,
-            )
-
-    if result is None:
-        raise Http404("No such user.")
-
-    return result
-
-###########################
-
 class Instance(View):
 
     def get(self, request, *args, **kwargs):
@@ -216,13 +203,19 @@ class DoSomethingWithPerson(generics.GenericAPIView):
     def _do_something_with(self, the_person, request):
         raise NotImplementedError()
 
-    def post(self, request, name, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
 
         if request.user is None:
             logger.debug('  -- user not logged in')
             return error_response(401, 'Not logged in')
 
-        the_person = get_person_or_404(name)
+        try:
+            the_person = get_object_or_404(
+                    self.get_queryset(),
+                    id = int(kwargs['id']),
+                    )
+        except ValueError:
+            return error_response(404, 'Non-decimal ID')
 
         result = self._do_something_with(the_person, request)
 
@@ -431,10 +424,13 @@ class User(generics.GenericAPIView):
     queryset = trilby_models.Person.objects.all()
 
     def get(self, request, *args, **kwargs):
-        whoever = get_object_or_404(
-                self.get_queryset(),
-                local_user__username = kwargs['name'],
-                )
+        try:
+            whoever = get_object_or_404(
+                    self.get_queryset(),
+                    id = int(kwargs['id']),
+                    )
+        except ValueError:
+            return error_response(404, 'Non-decimal ID')
 
         serializer = UserSerializer(whoever)
         return JsonResponse(serializer.data)
@@ -702,12 +698,18 @@ class UserFeed(View):
 
     def get(self, request, username, *args, **kwargs):
 
-        user = get_person_or_404(username)
+        try:
+            the_person = get_object_or_404(
+                    self.get_queryset(),
+                    id = int(kwargs['id']),
+                    )
+        except ValueError:
+            return error_response(404, 'Non-decimal ID')
 
         context = {
                 'self': request.build_absolute_uri(),
-                'user': user,
-                'statuses': user.outbox,
+                'user': the_person,
+                'statuses': the_person.outbox,
                 'server_name': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
             }
 
@@ -722,7 +724,7 @@ class UserFeed(View):
                 [ '<{}>; rel="{}"; type="{}"'.format(
                     settings.KEPI[uri].format(
                         hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                        username = user.id[1:],
+                        username = the_person.id[1:],
                         ),
                     rel, mimetype)
                     for uri, rel, mimetype in
@@ -786,7 +788,7 @@ class Followers_or_Following(generics.GenericAPIView):
     serializer_class = UserSerializer
     queryset = trilby_models.Person.objects.all()
 
-    def get(self, request, name, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
 
         params = request.data
 
@@ -794,7 +796,14 @@ class Followers_or_Following(generics.GenericAPIView):
             logger.debug('  -- user not logged in')
             return error_response(401, 'Not logged in')
 
-        the_person = get_person_or_404(name)
+        try:
+            the_person = get_object_or_404(
+                    self.get_queryset(),
+                    id = int(kwargs['id']),
+                    )
+        except ValueError:
+            return error_response(404, 'Non-decimal ID')
+
 
         queryset = self._get_list_for(the_person)
 

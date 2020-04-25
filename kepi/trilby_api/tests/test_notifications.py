@@ -25,7 +25,7 @@ class TestNotifications(TrilbyTestCase):
         alice = create_local_person(name='alice')
         bob   = create_local_person(name='bob')
 
-        self.post('/api/v1/accounts/alice/follow',
+        self.post(f'/api/v1/accounts/{alice.id}/follow',
                 {
                     'reblogs': True, # FIXME we don't yet support this
                     },

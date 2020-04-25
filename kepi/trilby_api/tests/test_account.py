@@ -14,7 +14,7 @@ class TestAccountCredentials(TrilbyTestCase):
 
     def test_verify_credentials_anonymous(self):
         result = self.get(
-                '/api/v1/accounts/verify_credentials',
+                f'/api/v1/accounts/verify_credentials',
                 expect_result = 401,
                 )
 
@@ -22,7 +22,7 @@ class TestAccountCredentials(TrilbyTestCase):
         alice = create_local_person(name='alice')
 
         content = self.get(
-                '/api/v1/accounts/alice',
+                f'/api/v1/accounts/{alice.id}',
                 as_user = alice,
                 )
 
@@ -112,7 +112,7 @@ class TestAccountCredentials(TrilbyTestCase):
 
 
             content = self.patch(
-                    '/api/v1/accounts/update_credentials',
+                    f'/api/v1/accounts/update_credentials',
                     data = delta,
                     as_user = alice,
                     )
@@ -154,7 +154,7 @@ class TestAccountDetails(TrilbyTestCase):
             follow.save()
 
         self._test_relationship(
-                path = '/api/v1/accounts/alice/followers',
+                path = '/api/v1/accounts/{alice.id}/followers',
                 count_param = 'followers_count',
                 make_follow_for = _make_follow_for,
                 )
@@ -175,7 +175,7 @@ class TestAccountDetails(TrilbyTestCase):
             follow.save()
 
         self._test_relationship(
-                path = '/api/v1/accounts/alice/following',
+                path = '/api/v1/accounts/{alice.id}/following',
                 count_param = 'following_count',
                 make_follow_for = _make_follow_for,
                 )
@@ -195,7 +195,7 @@ class TestAccountDetails(TrilbyTestCase):
             make_follow_for(others[-1], alice)
 
             content = self.get(
-                    '/api/v1/accounts/alice',
+                    f'/api/v1/accounts/{alice.id}',
                     as_user = alice,
                     )
 
@@ -203,7 +203,7 @@ class TestAccountDetails(TrilbyTestCase):
                     i+1)
 
             content = self.get(
-                    path,
+                    path.format(alice=alice),
                     as_user = alice,
                     )
 
@@ -241,7 +241,7 @@ class TestAccountActions(TrilbyTestCase):
                 auto_follow = False)
 
         content = self.post(
-                '/api/v1/accounts/bob/follow',
+                f'/api/v1/accounts/{bob.id}/follow',
                 as_user = alice,
                 )
 
@@ -266,7 +266,7 @@ class TestAccountActions(TrilbyTestCase):
                 auto_follow = True)
 
         content = self.post(
-                '/api/v1/accounts/bob/follow',
+                f'/api/v1/accounts/{bob.id}/follow',
                 as_user = alice,
                 )
 
@@ -290,7 +290,7 @@ class TestAccountActions(TrilbyTestCase):
         alice = create_local_person(name='alice')
 
         content = self.post(
-                '/api/v1/accounts/bananaman/follow',
+                f'/api/v1/accounts/1234/follow',
                 as_user = alice,
                 expect_result = 404,
                 )
@@ -313,7 +313,7 @@ class TestAccountActions(TrilbyTestCase):
                 1)
 
         content = self.post(
-                '/api/v1/accounts/bob/unfollow',
+                f'/api/v1/accounts/{bob.id}/unfollow',
                 as_user = alice,
                 )
 
