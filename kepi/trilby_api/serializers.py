@@ -3,6 +3,7 @@ from kepi.trilby_api.models import *
 from rest_framework_recursive.fields import RecursiveField
 from oauth2_provider.models import Application
 import kepi.trilby_api.utils as trilby_utils
+import markdown
 
 #########################################
 
@@ -36,6 +37,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     created_at = serializers.DateTimeField(
             )
+
+    note = serializers.SerializerMethodField()
+    def get_note(self, user):
+        result = markdown.markdown(user.note)
+        return result
+    def set_note(self, user, note):
+        user.note = note
+
 
     note = serializers.CharField(
             )
@@ -184,12 +193,16 @@ class StatusSerializer(serializers.ModelSerializer):
 
     # "content" is read-only for HTML;
     # "status" is write-only for text (or Markdown)
-    content = serializers.CharField(
+    content = serializers.SerializerMethodField(
             read_only = True)
 
     status = serializers.CharField(
             source='source_text',
             write_only = True)
+
+    def get_content(self, status):
+        result = markdown.markdown(status.content)
+        return result
 
     created_at = serializers.DateTimeField(
             required = False,

@@ -646,7 +646,7 @@ class TestGetStatus(TrilbyTestCase):
 
         self.assertEqual(
                 details['content'],
-                'Daisies are our silver.',
+                '<p>Daisies are our silver.</p>',
                 )
 
     def test_view_specific_status_404(self):

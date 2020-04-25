@@ -35,7 +35,7 @@ ACCOUNT_SOURCE_EXPECTED = {
 
 STATUS_EXPECTED = {
         'in_reply_to_account_id': None,
-        'content': 'Hello world.',
+        'content': '<p>Hello world.</p>',
         'emojis': [],
         'reblogs_count': 0,
         'favourites_count': 0,

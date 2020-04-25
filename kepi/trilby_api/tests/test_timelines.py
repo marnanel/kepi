@@ -58,7 +58,7 @@ class TestTimelines(TrilbyTestCase):
         expected = []
         for (id, visibility, visible_in) in TIMELINE_DATA:
             if situation in visible_in:
-                expected.append(id)
+                expected.append(f'<p>{id}</p>')
         expected = sorted(expected)
 
         details = sorted([x['content'] \

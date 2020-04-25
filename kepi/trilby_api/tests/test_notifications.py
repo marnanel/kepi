@@ -116,7 +116,7 @@ class TestNotifications(TrilbyTestCase):
         self.assertDictContainsSubset(
                 {
                     'id': str(status.id),
-                    'content': 'Curiouser and curiouser!',
+                    'content': '<p>Curiouser and curiouser!</p>',
                     },
                 content[0]['status'],
                 )
