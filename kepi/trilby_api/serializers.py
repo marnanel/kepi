@@ -135,7 +135,13 @@ class StatusSerializer(serializers.ModelSerializer):
                 'tags',
                 'card',
                 'poll',
-                'application',
+                # FIXME: "application" is supposed to be a dict
+                # of {name, website}. The app name is held in
+                # oauth2_provider, but we don't keep the website
+                # anywhere. We could, but it would mean patching
+                # an upstream library.
+                #
+                #'application',
                 'language',
                 'pinned',
                 'idempotency_key',

@@ -50,7 +50,9 @@ STATUS_EXPECTED = {
         'tags': [],
         'card': None,
         'poll': None,
-        'application': None,
+        # FIXME: See the note about "application" in
+        # trilby_api/serializers.py.
+        # 'application': None,
         'language': 'en',
         'pinned': False,
         }
