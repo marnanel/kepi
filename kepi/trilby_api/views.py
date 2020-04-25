@@ -449,47 +449,32 @@ class Statuses(generics.ListCreateAPIView,
 
         queryset = self.get_queryset()
 
-        if 'id' in kwargs:
-            number = kwargs['id']
-            logger.info('Looking up status numbered %s, for %s',
-                    number, request.user)
-
-            try:
-                activity = queryset.get(id=number)
-
-                serializer = StatusSerializer(
-                        activity,
-                        partial = True,
-                        context = {
-                            'request': request,
-                            },
-                        )
-            except Status.DoesNotExist:
-
-                return error_response(
-                        status = 404,
-                        reason = 'Record not found',
-                        )
-
-        else:
-            logger.info('Looking up all visible statuses, for %s',
-                   request.user)
-
-            serializer = StatusSerializer(
-                    queryset,
-                    context = {
-                        'request': request,
-                        },
-                    many = True,
+        try:
+            the_person = get_object_or_404(
+                    trilby_models.Person,
+                    id = int(kwargs['id']),
                     )
+        except ValueError:
+            return error_response(404, 'Non-decimal ID')
+
+        logger.info('Looking up all visible statuses, for %s',
+               the_person)
+
+        queryset = self.get_queryset().filter(
+                account = the_person,
+                )
+
+        serializer = StatusSerializer(
+                queryset,
+                context = {
+                    'request': request,
+                    },
+                many = True,
+                )
 
         return JsonResponse(serializer.data,
                 safe = False, # it's a list
                 )
-
-    def _string_to_html(self, s):
-        # FIXME this should be a bit more sophisticated :)
-        return '<p>{}</p>'.format(s)
 
     def create(self, request, *args, **kwargs):
 
@@ -501,11 +486,9 @@ class Statuses(generics.ListCreateAPIView,
                     content = 'You must supply a status or some media IDs',
                     )
 
-        content = self._string_to_html(data.get('status'))
-
         status = trilby_models.Status(
                 account = request.user.person,
-                content = content,
+                content = data.get('status', ''),
                 sensitive = data.get('sensitive', False),
                 spoiler_text = data.get('spoiler_text', ''),
                 visibility = data.get('visibility', 'public'),
