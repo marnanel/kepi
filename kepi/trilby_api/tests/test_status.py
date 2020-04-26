@@ -20,9 +20,9 @@ class TestStatus(TrilbyTestCase):
                 )
 
         content = self.get(
-                path = '/api/v1/statuses/'+str(self._status.id),
+                path = '/api/v1/statuses/'+str(self._alice.id),
                 as_user = self._alice,
-                )
+                )[0]
 
         for field, expected in STATUS_EXPECTED.items():
             self.assertIn(field, content)
@@ -635,17 +635,17 @@ class TestGetStatus(TrilbyTestCase):
             return
 
         self.assertEqual(
-                details['id'],
+                details[0]['id'],
                 str(self._alice_status.id),
                 )
 
         self.assertEqual(
-                details['account']['username'],
+                details[0]['account']['username'],
                 'alice',
                 )
 
         self.assertEqual(
-                details['content'],
+                details[0]['content'],
                 '<p>Daisies are our silver.</p>',
                 )
 
@@ -665,7 +665,7 @@ class TestGetStatus(TrilbyTestCase):
                 )
 
         self.assertEqual(
-                details['error'],
-                'Record not found',
+                details['detail'],
+                'Not found.',
                 )
 
