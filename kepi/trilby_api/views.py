@@ -13,7 +13,7 @@ import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 from .serializers import *
 import kepi.trilby_api.signals as kepi_signals
-from rest_framework import generics, response
+from rest_framework import generics, response, mixins
 from rest_framework.permissions import IsAuthenticated, \
         IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -74,7 +74,7 @@ class DoSomethingWithStatus(generics.GenericAPIView):
         try:
             the_status = get_object_or_404(
                     self.get_queryset(),
-                    id = int(kwargs['id']),
+                    id = int(kwargs['status']),
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')
@@ -212,7 +212,7 @@ class DoSomethingWithPerson(generics.GenericAPIView):
         try:
             the_person = get_object_or_404(
                     self.get_queryset(),
-                    id = int(kwargs['id']),
+                    id = int(kwargs['user']),
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')
@@ -427,7 +427,7 @@ class User(generics.GenericAPIView):
         try:
             whoever = get_object_or_404(
                     self.get_queryset(),
-                    id = int(kwargs['id']),
+                    id = int(kwargs['user']),
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')
@@ -435,9 +435,59 @@ class User(generics.GenericAPIView):
         serializer = UserSerializer(whoever)
         return JsonResponse(serializer.data)
 
+class SpecificStatus(generics.GenericAPIView):
+
+    queryset = trilby_models.Status.objects.filter(remote_url=None)
+    serializer_class = StatusSerializer
+    lookup_field = 'status'
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get(self, request, *args, **kwargs):
+
+        the_status = get_object_or_404(
+                self.get_queryset(),
+                id = int(kwargs['status']),
+                )
+
+        serializer = StatusSerializer(
+                the_status,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        response = JsonResponse(serializer.data)
+
+        return response
+
+    def delete(self, request, *args, **kwargs):
+
+        if 'status' not in kwargs:
+            return error_response(404, 'Can\'t delete all statuses at once')
+
+        the_status = get_object_or_404(
+                self.get_queryset(),
+                id = int(kwargs['status']),
+                )
+
+        if the_status.account != request.user.person:
+            return error_response(404, # sic
+                    'That isn\'t yours to delete')
+
+        serializer = StatusSerializer(
+                the_status,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        response = JsonResponse(serializer.data)
+
+        the_status.delete()
+
+        return response
+
 class Statuses(generics.ListCreateAPIView,
-        generics.CreateAPIView,
-        generics.DestroyAPIView,
         ):
 
     queryset = trilby_models.Status.objects.filter(remote_url=None)
@@ -452,7 +502,7 @@ class Statuses(generics.ListCreateAPIView,
         try:
             the_person = get_object_or_404(
                     trilby_models.Person,
-                    id = int(kwargs['id']),
+                    id = int(kwargs['user']),
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')
@@ -515,32 +565,6 @@ class Statuses(generics.ListCreateAPIView,
                 reason = 'Hot off the press',
                 )
 
-    def delete(self, request, *args, **kwargs):
-
-        if 'id' not in kwargs:
-            return error_response(404, 'Can\'t delete all statuses at once')
-
-        the_status = get_object_or_404(
-                self.get_queryset(),
-                id = int(kwargs['id']),
-                )
-
-        if the_status.account != request.user.person:
-            return error_response(404, # sic
-                    'That isn\'t yours to delete')
-
-        serializer = StatusSerializer(
-                the_status,
-                context = {
-                    'request': request,
-                    },
-                )
-
-        response = JsonResponse(serializer.data)
-
-        the_status.delete()
-
-        return response
 
 class StatusContext(generics.ListCreateAPIView):
 
@@ -550,7 +574,7 @@ class StatusContext(generics.ListCreateAPIView):
 
         queryset = self.get_queryset()
 
-        status = queryset.get(id=int(kwargs['id']))
+        status = queryset.get(id=int(kwargs['status']))
         serializer = StatusContextSerializer(status)
 
         return JsonResponse(serializer.data)
@@ -563,7 +587,7 @@ class StatusFavouritedBy(generics.ListCreateAPIView):
 
         queryset = self.get_queryset()
 
-        status = trilby_models.Status.objects.get(id=int(kwargs['id']))
+        status = trilby_models.Status.objects.get(id=int(kwargs['status']))
 
         status.save()
 
@@ -586,7 +610,7 @@ class StatusRebloggedBy(generics.ListCreateAPIView):
 
         queryset = self.get_queryset()
 
-        status = trilby_models.Status.objects.get(id=int(kwargs['id']))
+        status = trilby_models.Status.objects.get(id=int(kwargs['status']))
 
         people = queryset.filter(
                 poster__reblog_of = status,
@@ -684,7 +708,7 @@ class UserFeed(View):
         try:
             the_person = get_object_or_404(
                     self.get_queryset(),
-                    id = int(kwargs['id']),
+                    id = int(kwargs['user']),
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')
@@ -782,7 +806,7 @@ class Followers_or_Following(generics.GenericAPIView):
         try:
             the_person = get_object_or_404(
                     self.get_queryset(),
-                    id = int(kwargs['id']),
+                    id = int(kwargs['user']),
                     )
         except ValueError:
             return error_response(404, 'Non-decimal ID')

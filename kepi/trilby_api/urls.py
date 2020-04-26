@@ -13,26 +13,26 @@ urlpatterns = [
 
     path('api/v1/accounts/search', AccountsSearch.as_view()),
 
-    path('api/v1/accounts/<id>', User.as_view()),
-    path('api/v1/accounts/<id>/statuses', Statuses.as_view()),
-    path('api/v1/accounts/<id>/following', Following.as_view()),
-    path('api/v1/accounts/<id>/followers', Followers.as_view()),
-    path('api/v1/accounts/<id>/follow', Follow.as_view()),
-    path('api/v1/accounts/<id>/unfollow', Unfollow.as_view()),
+    path('api/v1/accounts/<user>', User.as_view()),
+    path('api/v1/accounts/<user>/statuses', Statuses.as_view()),
+    path('api/v1/accounts/<user>/following', Following.as_view()),
+    path('api/v1/accounts/<user>/followers', Followers.as_view()),
+    path('api/v1/accounts/<user>/follow', Follow.as_view()),
+    path('api/v1/accounts/<user>/unfollow', Unfollow.as_view()),
 
     path('api/v1/statuses', Statuses.as_view()),
-    path('api/v1/statuses/<id>', Statuses.as_view()),
-    path('api/v1/statuses/<id>/context', StatusContext.as_view()),
+    path('api/v1/statuses/<status>', SpecificStatus.as_view()),
+    path('api/v1/statuses/<status>/context', StatusContext.as_view()),
 
     # Favourite, aka like
-    path('api/v1/statuses/<id>/favourite', Favourite.as_view()),
-    path('api/v1/statuses/<id>/unfavourite', Unfavourite.as_view()),
-    path('api/v1/statuses/<id>/favourited_by', StatusFavouritedBy.as_view()),
+    path('api/v1/statuses/<status>/favourite', Favourite.as_view()),
+    path('api/v1/statuses/<status>/unfavourite', Unfavourite.as_view()),
+    path('api/v1/statuses/<status>/favourited_by', StatusFavouritedBy.as_view()),
 
     # Reblog, aka boost
-    path('api/v1/statuses/<id>/reblog', Reblog.as_view()),
-    path('api/v1/statuses/<id>/unreblog', Unreblog.as_view()),
-    path('api/v1/statuses/<id>/reblogged_by', StatusRebloggedBy.as_view()),
+    path('api/v1/statuses/<status>/reblog', Reblog.as_view()),
+    path('api/v1/statuses/<status>/unreblog', Unreblog.as_view()),
+    path('api/v1/statuses/<status>/reblogged_by', StatusRebloggedBy.as_view()),
 
     path('api/v1/notifications', Notifications.as_view()),
     path('api/v1/filters', Filters.as_view()),

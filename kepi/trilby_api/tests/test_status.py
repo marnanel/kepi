@@ -22,7 +22,7 @@ class TestStatus(TrilbyTestCase):
         content = self.get(
                 path = '/api/v1/statuses/'+str(self._alice.id),
                 as_user = self._alice,
-                )[0]
+                )
 
         for field, expected in STATUS_EXPECTED.items():
             self.assertIn(field, content)
@@ -616,36 +616,26 @@ class TestGetStatus(TrilbyTestCase):
                 content = 'Daisies are our silver.',
         )
 
-        c = APIClient()
-        c.force_authenticate(self._alice.local_user)
-
-        result = c.get(
+        details = self.get(
                 '/api/v1/statuses/{}'.format(
                     self._alice_status.id,
                     ),
+                as_user = self._alice,
+                expect_result = 200,
                 )
 
-        self.assertEqual(result.status_code,
-                200)
-
-        try:
-            details = json.loads(result.content.decode('UTF-8'))
-        except JSON.decoder.JSONDecodeError:
-            self.fail("Response was not JSON")
-            return
-
         self.assertEqual(
-                details[0]['id'],
+                details['id'],
                 str(self._alice_status.id),
                 )
 
         self.assertEqual(
-                details[0]['account']['username'],
+                details['account']['username'],
                 'alice',
                 )
 
         self.assertEqual(
-                details[0]['content'],
+                details['content'],
                 '<p>Daisies are our silver.</p>',
                 )
 
