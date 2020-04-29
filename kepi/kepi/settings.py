@@ -90,6 +90,7 @@ INSTALLED_APPS = (
         'django_fields',
         'polymorphic',
 
+        'kepi.busby_1st',
         'kepi.bowler_pub',
         'kepi.trilby_api',
 

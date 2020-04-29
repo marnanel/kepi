@@ -22,13 +22,5 @@ urlpatterns = [
         path('users/<str:username>/followers', bowler_pub_views.FollowersView.as_view()),
         path('users/<str:username>/following', bowler_pub_views.FollowingView.as_view()),
         path('sharedInbox', bowler_pub_views.InboxView.as_view()),
-
-        # XXX We might want to split out the patterns that HAVE to be
-        # at the root.
-
-        path('.well-known/host-meta', bowler_pub_views.HostMeta.as_view()),
-        path('.well-known/webfinger', bowler_pub_views.Webfinger.as_view()),
-        path('.well-known/nodeinfo', bowler_pub_views.NodeinfoPart1.as_view()),
-        path('nodeinfo.json', bowler_pub_views.NodeinfoPart2.as_view()),
         ]
 
