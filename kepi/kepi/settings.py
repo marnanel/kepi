@@ -92,6 +92,7 @@ INSTALLED_APPS = (
 
         'kepi.busby_1st',
         'kepi.bowler_pub',
+        'kepi.sombrero_sendpub',
         'kepi.trilby_api',
 
         )

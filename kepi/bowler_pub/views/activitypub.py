@@ -15,8 +15,7 @@ place to go.
 
 from kepi.bowler_pub import ATSIGN_CONTEXT
 import kepi.bowler_pub.validation
-from kepi.bowler_pub.find import find, is_local
-from kepi.bowler_pub.utils import configured_url, short_id_to_url, uri_to_url
+from kepi.bowler_pub.utils import configured_url, short_id_to_url, uri_to_url, is_local
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404

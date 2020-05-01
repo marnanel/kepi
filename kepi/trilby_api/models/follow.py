@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-from kepi.bowler_pub.create import create
 import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url
 from django.utils.timezone import now

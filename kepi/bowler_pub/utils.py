@@ -1,5 +1,6 @@
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
+from urllib.parse import urlparse
 
 def as_json(d,
         indent=2):
@@ -70,4 +71,15 @@ def short_id_to_url(v):
                 number = v[1:],
                 )
 
+def is_local(url):
+    """
+    True if "url" resides on the local server.
 
+    False otherwise. Returns False even if
+    the string argument is not in fact a URL.
+    """
+    if hasattr(url, 'url'):
+        url = url.url
+
+    parsed_url = urlparse(url)
+    return parsed_url.hostname in settings.ALLOWED_HOSTS

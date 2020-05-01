@@ -3,7 +3,6 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 import kepi.trilby_api.forms as trilby_forms
 import kepi.trilby_api.models as trilby_models
-from kepi.bowler_pub.create import create
 
 @admin.register(trilby_models.Person)
 class PersonAdmin(admin.ModelAdmin):
