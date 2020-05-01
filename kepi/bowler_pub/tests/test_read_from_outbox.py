@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.test import TestCase, Client
-from kepi.bowler_pub.create import create
 from . import create_local_person
 import httpretty
 import logging

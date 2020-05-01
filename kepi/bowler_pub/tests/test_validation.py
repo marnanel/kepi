@@ -1,6 +1,5 @@
 from django.test import TestCase, Client
-from kepi.bowler_pub.validation import IncomingMessage, validate
-from kepi.bowler_pub.models import AcObject
+from kepi.bowler_pub.validation import validate
 from unittest import skip
 import httpretty
 from . import *

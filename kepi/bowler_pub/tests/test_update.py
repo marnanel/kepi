@@ -5,11 +5,7 @@
 # Licensed under the GNU Public License v2.
 
 from django.test import TestCase
-from kepi.bowler_pub.create import create
-from kepi.bowler_pub.find import find
 from kepi.bowler_pub.utils import configured_url
-from kepi.bowler_pub.models.acobject import AcObject
-from kepi.bowler_pub.models.following import Following
 from . import create_local_person, create_remote_person, \
         create_local_note, mock_remote_object, PUBLIC
 import json

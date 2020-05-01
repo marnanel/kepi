@@ -1,11 +1,6 @@
 from django.test import TestCase
 from unittest import skip
 from kepi.bowler_pub.tests import *
-from kepi.bowler_pub.create import create
-from kepi.bowler_pub.models.audience import Audience, AUDIENCE_FIELD_NAMES
-from kepi.bowler_pub.models.mention import Mention
-from kepi.bowler_pub.models.item import AcItem
-from kepi.bowler_pub.models.following import Following
 from django.test import Client
 from urllib.parse import urlparse
 import httpretty

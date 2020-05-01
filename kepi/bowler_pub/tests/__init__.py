@@ -1,6 +1,6 @@
-from kepi.bowler_pub.create import create
 from kepi.bowler_pub.validation import validate
 from kepi.bowler_pub.models import Incoming
+import kepi.trilby_api.models as trilby_models
 from kepi.bowler_pub.utils import as_json, uri_to_url, configured_url
 from django.conf import settings
 import django.test
@@ -48,73 +48,44 @@ def create_local_person(name='jemima',
         if 'privateKey' not in kwargs:
             kwargs['privateKey'] = keys['private']
 
-    else:
-        keys = None
-
-    spec = {
-        'name': name,
-        'id': '@'+name,
-        'type': 'Person',
-        'endpoints': {
-            'sharedInbox': configured_url('SHARED_INBOX_LINK'),
-            },
-        'inbox': configured_url('SHARED_INBOX_LINK'),
-        }
-
-    spec.update(kwargs)
-
-    if 'publicKey' in spec:
-        user_id = configured_url('USER_LINK',
+    result = trilby_models.Person(
             username = name,
+            **kwargs,
             )
-        spec['publicKey'] = {
-            'id': user_id+'#main-key',
-            'owner': user_id,
-            'publicKeyPem': spec['publicKey'],
-        }
-
-    result = create(
-            value = spec,
-            run_delivery = False,
-            )
+    result.save()
 
     return result
 
 def create_local_note(
         attributedTo = None,
+        content = 'This is just a test',
         **kwargs):
 
-    if isinstance(attributedTo, AcObject):
-        attributedTo = attributedTo.id
+    if isinstance(attributed_to, TrilbyUser):
+        attributed_to = attributed_to.person
 
-    spec = {
-            'type': 'Create',
-            'actor': attributedTo,
-            'object': {
-                'type': 'Note',
-                'attributedTo': attributedTo,
-                'content': 'This is just a test.',
-                },
-            'to': [PUBLIC],
-            }
+    result = trilby_models.Status(
+        remote_url = None,
+        account = posted_by,
+        content = content,
+        **kwargs,
+        )
 
-    spec['object'].update(kwargs)
+    result.save()
 
-    result = create(**spec)
-    return result['object__obj']
+    return result
 
-def create_local_like(**kwargs):
+def create_local_like(
+        liked_by,
+        **kwargs):
 
     note = create_local_note()
 
-    spec = {
-        'type': 'Like',
-        'object': note.id,
-        }
+    result = trilby_models.Like(
+            liker = note,
+            liked = liked_by,
+            )
 
-    spec.update(kwargs)
-
-    result = create(**spec)
     return result
 
 def mock_remote_object(
