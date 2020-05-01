@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.test import TestCase, Client
-from . import create_local_person
+from kepi.trilby_api.tests import create_local_person
 import logging
 import json
 

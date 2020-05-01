@@ -1,7 +1,7 @@
-# views/webfinger.py
+# busby_1st/views/webfinger.py
 #
-# Part of  an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Part of kepi, an ActivityPub daemon.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
 """
@@ -18,6 +18,7 @@ import logging
 import re
 import json
 from kepi.bowler_pub.utils import as_json, configured_url
+import kepi.trilby_api.models as trilby_models
 
 logger = logging.Logger('kepi')
 
@@ -65,10 +66,10 @@ class Webfinger(django.views.View):
                     )
 
         try:
-            whoever = AcActor.objects.get(
-                    id = '@'+username,
+            whoever = trilby_models.TrilbyUser.objects.get(
+                    username = username,
                 )
-        except AcActor.DoesNotExist:
+        except trilby_models.TrilbyUser.DoesNotExist:
             logger.info('  -- we don\'t have anyone called %s',
                     username)
             return HttpResponse(
@@ -94,11 +95,11 @@ class Webfinger(django.views.View):
                     'type': 'text/html',
                     'href': actor_url,
                     },
-                    {
-                    'rel': 'http://schemas.google.com/g/2010#updates-from',
-                    'type': 'application/atom+xml',
-                    'href': whoever['feedURL'],
-                    },
+                    #{
+                    #'rel': 'http://schemas.google.com/g/2010#updates-from',
+                    #'type': 'application/atom+xml',
+                    #'href': 'FIXME', # FIXME whoever['feedURL'],
+                    #},
                     {
                     'rel': 'self',
                     'type': 'application/activity+json',
