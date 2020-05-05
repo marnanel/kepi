@@ -11,7 +11,7 @@ to their audiences.
 
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-from kepi.bowler_pub.find import find, find_local, is_local
+from kepi.bowler_pub.utils import is_local
 import kepi.bowler_pub.models
 from httpsig.verify import HeaderVerifier
 from urllib.parse import urlparse
@@ -26,7 +26,6 @@ import datetime
 import pytz
 import httpsig
 from collections.abc import Iterable
-from . import PUBLIC_IDS
 
 logger = logging.getLogger(name='kepi')
 

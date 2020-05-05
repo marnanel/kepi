@@ -9,10 +9,8 @@
 
 from django.test import TestCase, Client
 from django.conf import settings
-from kepi.bowler_pub.delivery import deliver
-from kepi.bowler_pub.create import create
-from kepi.bowler_pub.models import AcObject
-import kepi.bowler_pub.views as bowler_pub_views
+from kepi.sombrero_sendpub.delivery import deliver
+import kepi.sombrero_sendpub.views as sombrero_views
 from unittest.mock import Mock, patch
 from . import *
 import logging
