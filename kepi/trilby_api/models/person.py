@@ -155,6 +155,10 @@ class Person(models.Model):
         self.local_user.save()
 
     @property
+    def is_local(self):
+        return self.remote_url is None
+
+    @property
     def uri(self):
         # I know this property is called "uri", but
         # this matches the behaviour of Mastodon
