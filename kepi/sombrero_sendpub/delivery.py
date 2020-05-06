@@ -9,23 +9,28 @@ This module contains deliver(), which delivers objects
 to their audiences.
 """
 
-from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-from kepi.bowler_pub.utils import is_local
-import kepi.bowler_pub.models
-from httpsig.verify import HeaderVerifier
-from urllib.parse import urlparse
-from django.http.request import HttpRequest
-from django.conf import settings
-import django.urls
-import django.utils.datastructures
 import logging
 import requests
 import json
+import httpsig
+import random
+from django.http.request import HttpRequest
+from django.conf import settings
+from kepi.bowler_pub.utils import configured_url, as_json, is_local
+
+"""
+from __future__ import absolute_import, unicode_literals
+from kepi.bowler_pub.utils import is_local
+import kepi.bowler_pub.models
+from urllib.parse import urlparse
+import django.urls
+import django.utils.datastructures
 import datetime
 import pytz
-import httpsig
+from httpsig.verify import HeaderVerifier
 from collections.abc import Iterable
+""" # FIXME
 
 logger = logging.getLogger(name='kepi')
 
@@ -87,6 +92,8 @@ def _recipients_to_inboxes(recipients,
     Shared inboxes are preferred. This being a set,
     there will be no duplicates.
     """
+
+    from kepi.bowler_pub import PUBLIC_IDS
 
     logger.info('Looking up inboxes for: %s',
             recipients)
@@ -397,93 +404,69 @@ def _deliver_remote(
 
 @shared_task()
 def deliver(
-        activity_id,
-        incoming = False,
+        activity,
         ):
 
     """
     Deliver an activity to an actor.
 
     Keyword arguments:
-    activity_id -- the "id" field of an Activity
-    incoming -- True if we just received this, False otherwise
+        activity -- a dict representing an ActivityPub activity.
 
     This function is a shared task; it will be run by Celery behind
     the scenes.
     """
 
-    try:
-        activity = kepi.bowler_pub.models.AcActivity.objects.get(id=activity_id)
-    except kepi.bowler_pub.models.AcActivity.DoesNotExist:
-        logger.warn("Can't deliver activity %s because it doesn't exist",
-                activity_id)
-        return None
+    import kepi.sombrero_sendpub.models as sombrero_models
+    from kepi.bowler_pub import PUBLIC_IDS
 
-    logger.info('%s: begin delivery; incoming==%s',
-            activity, incoming)
+    message = sombrero_models.OutgoingActivity(
+            content=activity,
+            )
+    message.save()
 
-    activity_form = activity.activity_form
-    logger.debug('%s: full form is %s',
-            activity, activity_form)
-
-    local_actor = _find_local_actor(activity_form)
-    logger.debug('%s: local actor is %s',
-            activity, local_actor)
+    logger.info('activity %d: begin delivery: %s',
+            message.pk, message.content)
 
     recipients = set()
     for field in ['to', 'bto', 'cc', 'bcc', 'audience']:
-        if field in activity_form:
-            recipients.update(activity_form[field])
-
-    if local_actor is not None:
-        if incoming:
-            # Actors don't get told about their own (incoming) activities
-            if local_actor.url in recipients:
-                logger.info('  -- removing actor from recipients')
-                recipients.remove(local_actor.url)
-        else:
-            # but if it originated locally, the status should appear in the
-            # actor's own inbox too
-            if local_actor.url not in recipients:
-                logger.info('  -- adding actor to recipients')
-                recipients.add(local_actor.url)
+        if field in activity:
+            for recipient in activity[field]:
+                if not is_local(recipient):
+                    recipients.update(activity[field])
 
     if not recipients:
-        logger.debug('%s: there are no recipients; giving up',
-                activity)
+        logger.debug('activity %d: there are no recipients; giving up',
+                message.pk)
         return
 
-    logger.debug('%s: recipients are %s',
+    logger.debug('activity %d: recipients are %s',
             activity, recipients)
 
-    if incoming:
+    # Dereference collections.
 
-        inboxes = recipients
-        message = ''
-        signer = None
+    inboxes = _recipients_to_inboxes(recipients,
+            local_actor=activity['actor'])
 
-    else:
+    if not inboxes:
+        logger.debug('activity %s: there are no inboxes to send to; giving up',
+                message.pk)
+        return
 
-        # Dereference collections.
+    logger.debug('%s: inboxes are %s',
+            activity, inboxes)
 
-        inboxes = _recipients_to_inboxes(recipients,
-                local_actor=local_actor)
+    ############################
+    raise ValueError("XXX TO HERE") # XXX TO HERE
+    ############################
 
-        if not inboxes:
-            logger.debug('%s: there are no inboxes to send to; giving up',
-                    activity)
-            return
+    message = _activity_form_to_outgoing_string(
+            activity_form = activity_form,
+            )
 
-        logger.debug('%s: inboxes are %s',
-                activity, inboxes)
-
-        message = _activity_form_to_outgoing_string(
-                activity_form = activity_form,
-                )
-
-        signer = _signer_for_local_actor(
-                local_actor = local_actor,
-                )
+    signer = _signer_for_local_actor(
+            local_actor = local_actor,
+            )
 
     for inbox in inboxes:
         logger.debug('%s: %s: begin delivery',
@@ -497,12 +480,7 @@ def deliver(
             logger.debug("  -- mustn't deliver to Public")
             continue
 
-        parsed_target_url = urlparse(inbox,
-                allow_fragments = False,
-                )
-        is_local = parsed_target_url.hostname in settings.ALLOWED_HOSTS
-
-        if is_local:
+        if is_local(inbox):
             _deliver_local(
                     activity,
                     inbox,
