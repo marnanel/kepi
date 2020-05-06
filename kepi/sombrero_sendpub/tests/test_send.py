@@ -40,7 +40,7 @@ class TestSend(TestCase):
     def test_send_direct_message(self):
 
         result = self._client.post(
-                path='api/v1/statuses',
+                path='/api/v1/statuses',
                 format='json',
                 data = {
                     'status': '@zachary@remote.example.net Hello world',
@@ -63,7 +63,7 @@ class TestSend(TestCase):
     def test_follow(self):
 
         result = self._client.post(
-                path='api/v1/accounts/%d/follow' % (
+                path='/api/v1/accounts/%d/follow' % (
                     self._zachary.id,),
                 format='json',
                 )
