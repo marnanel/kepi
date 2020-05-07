@@ -12,6 +12,9 @@ from kepi.sombrero_sendpub.delivery import deliver
 from kepi.trilby_api.models import Person
 from kepi.trilby_api.tests import create_local_person
 import httpretty
+import logging
+
+logger = logging.Logger("kepi")
 
 REMOTE_URL = 'https://remote.example.net/users/zachary'
 
