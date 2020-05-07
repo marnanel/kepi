@@ -174,6 +174,10 @@ class Person(models.Model):
                 })
 
     @property
+    def key_name(self):
+        return self.url + '#main-key'
+
+    @property
     def following_count(self):
 
         import kepi.trilby_api.models as trilby_models
