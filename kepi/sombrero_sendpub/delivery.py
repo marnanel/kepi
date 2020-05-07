@@ -80,25 +80,19 @@ def _find_local_actor(activity_form):
 
     return find_local(parts.path)
 
-def _recipients_to_inboxes(recipients,
+def _send_target_recipients(recipients,
         local_actor=None):
     """
-    Find inbox URLs for a set of recipients.
+    Send a message to a set of recipients.
 
     "recipients" is an iterable of strings, each the ID of
     a recipient of a message. (These IDs will be URLs.)
-
-    Returns a set of strings of URLs for their inboxes.
-    Shared inboxes are preferred. This being a set,
-    there will be no duplicates.
     """
 
     from kepi.bowler_pub import PUBLIC_IDS
 
-    logger.info('Looking up inboxes for: %s',
+    logger.info('Sending to recipients for: %s',
             recipients)
-
-    inboxes = set()
 
     recipients = sorted(list(recipients))
 
@@ -106,14 +100,20 @@ def _recipients_to_inboxes(recipients,
 
     for recipient in recipients:
 
-        if recipient in PUBLIC_IDS:
-            if local_actor is not None:
-                logger.debug('  -- treating public as %s\'s outbox',
-                        local_actor)
-                inboxes.add(local_actor['outbox'])
-            else:
-                logger.debug('  -- ignoring public')
+        if not recipient:
+            logger.debug('  -- blank recipient: ignoring')
             continue
+
+        if recipient in PUBLIC_IDS:
+            # We can't literally send a message to "public".
+            # (Originally, for local actors, we marked
+            # the message as appearing in their inbox here.
+            # But now we have a field for that in trilby_api.
+            logger.debug('  -- "public" as a recipient: ignoring')
+            continue
+
+        if is_local(recipient):
+            pass #  FIXME
 
         discovered = find(recipient)
 
@@ -296,57 +296,27 @@ class LocalDeliveryRequest(HttpRequest):
 
 def _deliver_local(
         activity,
-        inbox,
-        parsed_target_url,
-        message,
+        recipient,
         ):
 
     """
-    Deliver an activity to a local actor.
+    Deliver an activity to a local Person.
 
     Keyword arguments:
     activity -- the activity we're delivering.
-    inbox -- the URL of the inbox, only used in logging
-    parsed_target_url -- the result of urlparse(url)
-    message -- the activity as a formatted string
-        (as it would appear if we were sending this out over HTTP)
+    recipient -- the Person who should receive it
     """
 
     logger.debug('%s: %s is local',
             activity, inbox)
 
-    try:
-        resolved = django.urls.resolve(parsed_target_url.path)
-    except django.urls.Resolver404:
-        logger.debug('%s: -- not found', parsed_target_url.path)
-        return
+    print(recipient," is local")
 
-    logger.debug('%s is handled by %s',
-            parsed_target_url.path, resolved)
-
-    request = LocalDeliveryRequest(
-            content = message,
-            activity = activity,
-            path = parsed_target_url.path,
-            )
-
-    result = resolved.func(request,
-            **resolved.kwargs,
-            local = True,
-            )
-
-    if result:
-        logger.debug('%s: resulting in %s %s', parsed_target_url.path,
-                result.status_code, result.reason_phrase)
-    else:
-        logger.debug('%s: done', parsed_target_url.path)
-
+    # TODO
 
 def _deliver_remote(
         activity,
-        inbox,
-        parsed_target_url,
-        message,
+        recipient,
         signer,
         ):
 
@@ -355,14 +325,14 @@ def _deliver_remote(
 
     Keyword arguments:
     activity -- the activity we're delivering.
-    inbox -- the URL of the inbox
-    parsed_target_url -- the result of urlparse(url)
-    message -- the activity as a formatted string
-        (as it would appear if we were sending this out over HTTP)
+    recipient -- the URL of the recipient
     signer -- an httpsig.HeaderSigner for the
-        local actor who sent this activity, or None
-        if there isn't one.
+        local actor who sent this activity
     """
+
+    print(recipient," is remote")
+    return
+    # TODO
 
     headers = {
             'Date': _rfc822_datetime(),
@@ -405,13 +375,20 @@ def _deliver_remote(
 @shared_task()
 def deliver(
         activity,
+        source,
+        target_people,
+        target_followers_of = [],
         ):
 
     """
-    Deliver an activity to an actor.
+    Deliver an activity to a set of actors.
 
     Keyword arguments:
         activity -- a dict representing an ActivityPub activity.
+        target_people -- list of Person objects who should receive it
+        target_followers_of -- list of Person objects whose followers
+            should receive it.
+            (These Person objects must be local at present.)
 
     This function is a shared task; it will be run by Celery behind
     the scenes.
@@ -428,78 +405,56 @@ def deliver(
     logger.info('activity %d: begin delivery: %s',
             message.pk, message.content)
 
-    recipients = set()
-    for field in ['to', 'bto', 'cc', 'bcc', 'audience']:
+    for field in [
+            'actor',
+            'to', 'cc', 'bto', 'bcc', 'audience',
+            ]:
         if field in activity:
-            for recipient in activity[field]:
-                if not is_local(recipient):
-                    recipients.update(activity[field])
+            raise ValueError("Taboo field '%s' in the activity: %s",
+                    field,
+                    str(activity))
 
-    if not recipients:
-        logger.debug('activity %d: there are no recipients; giving up',
-                message.pk)
-        return
+    recipients = set(target_people)
+
+    for person in target_followers_of:
+        if not person.is_local:
+            # Is this used? If it is, there's plenty of code to do it
+            # in the bowler-heavy branch. FIXME
+            raise ValueError("Attempt to send to friends of remote person. FIXME?")
+
+        recipients.union(person.followers)
 
     logger.debug('activity %d: recipients are %s',
-            activity, recipients)
+            message.pk, recipients)
 
-    # Dereference collections.
-
-    inboxes = _recipients_to_inboxes(recipients,
-            local_actor=activity['actor'])
-
-    if not inboxes:
-        logger.debug('activity %s: there are no inboxes to send to; giving up',
+    if not recipients:
+        logger.debug('activity %s: there are no recipients: giving up',
                 message.pk)
         return
 
-    logger.debug('%s: inboxes are %s',
-            activity, inboxes)
+    activity['actor'] = source.url
+    # FIXME Here we need to fill in the recipient fields of the activity
 
-    ############################
-    raise ValueError("XXX TO HERE") # XXX TO HERE
-    ############################
+    signer = None
 
-    message = _activity_form_to_outgoing_string(
-            activity_form = activity_form,
-            )
-
-    signer = _signer_for_local_actor(
-            local_actor = local_actor,
-            )
-
-    for inbox in inboxes:
-        logger.debug('%s: %s: begin delivery',
-                activity, inbox)
-
-        if inbox is None:
-            logger.warn('  -- attempt to deliver to None (but why?)')
-            continue
-
-        if inbox in PUBLIC_IDS:
-            logger.debug("  -- mustn't deliver to Public")
-            continue
-
-        if is_local(inbox):
+    for recipient in recipients:
+        if recipient.is_local:
             _deliver_local(
-                    activity,
-                    inbox,
-                    parsed_target_url,
-                    message,
+                    activity=activity,
+                    recipient=recipient,
                     )
         else:
 
-            if incoming:
-                logger.debug('  -- target is remote; ignoring')
-                continue
+            if signer is None:
+                signer = _signer_for_local_actor(
+                        local_actor = source,
+                        )
 
             _deliver_remote(
-                    activity,
-                    inbox,
-                    parsed_target_url,
-                    message,
-                    signer,
+                    activity=activity,
+                    recipient=recipient,
+                    signer=signer,
                     )
 
-    logger.debug('%s: message posted to all inboxes',
-            activity)
+    logger.debug('activity %d: message posted to all inboxes',
+        message.pk)

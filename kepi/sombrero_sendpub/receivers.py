@@ -24,8 +24,8 @@ def on_follow(sender, **kwargs):
     deliver(
             activity = {
                 'type': 'Follow',
-                'actor': sender.follower.url,
                 'object': sender.following.url,
-                'to': sender.following.url,
                 },
+            source = sender.follower,
+            target_people = [sender.following],
             )
