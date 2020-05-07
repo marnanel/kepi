@@ -17,17 +17,17 @@ import httpsig
 import random
 from django.http.request import HttpRequest
 from django.conf import settings
+from urllib.parse import urlparse
 from kepi.bowler_pub.utils import configured_url, as_json, is_local
+import datetime
+import pytz
 
 """
 from __future__ import absolute_import, unicode_literals
 from kepi.bowler_pub.utils import is_local
 import kepi.bowler_pub.models
-from urllib.parse import urlparse
 import django.urls
 import django.utils.datastructures
-import datetime
-import pytz
 from httpsig.verify import HeaderVerifier
 from collections.abc import Iterable
 """ # FIXME
@@ -47,38 +47,6 @@ def _rfc822_datetime(when=None):
         when.replace(tzinfo=pytz.UTC)
 
     return datetime.datetime.utcnow().strftime("%a, %d %b %Y %T GMT")
-
-def _find_local_actor(activity_form):
-    """
-    Given an activity, as a dict, return the local AcActor
-    who apparently created it. If there is no such AcActor,
-    or if the AcActor is remote, or if there's no Actor
-    at all, return None.
-
-    If the activity has no "actor" field, we use
-    the "attributedTo" field.
-    """
-
-    from kepi.bowler_pub.models.acobject import AcObject
-
-    parts = None
-    for fieldname in ['actor', 'attributedTo']:
-        if fieldname in activity_form:
-            value = activity_form[fieldname]
-
-            if isinstance(value, AcObject):
-                return value
-            else:
-                parts = urlparse(activity_form[fieldname])
-                break
-
-    if parts is None:
-        return None
-
-    if parts.hostname not in settings.ALLOWED_HOSTS:
-        return None
-
-    return find_local(parts.path)
 
 def _send_target_recipients(recipients,
         local_actor=None):
@@ -216,29 +184,6 @@ def _send_target_recipients(recipients,
 
     return inboxes
 
-def _activity_form_to_outgoing_string(activity_form):
-    """
-    Formats an activity ready to be sent out as
-    an HTTP response.
-    """
-
-    from kepi.bowler_pub import ATSIGN_CONTEXT
-    from kepi.bowler_pub.utils import as_json
-
-    format_for_delivery = activity_form.copy()
-    for blind_field in ['bto', 'bcc']:
-        if blind_field in format_for_delivery: 
-            del format_for_delivery[blind_field]
-
-    if '@context' not in format_for_delivery:
-        format_for_delivery['@context'] = ATSIGN_CONTEXT
-
-    message = as_json(
-            format_for_delivery,
-            )
-
-    return message
-
 def _signer_for_local_actor(local_actor):
 
     """
@@ -271,31 +216,8 @@ def _signer_for_local_actor(local_actor):
         logger.warn('Key was: %s', local_actor.privateKey)
         return None
 
-class LocalDeliveryRequest(HttpRequest):
-
-    """
-    These are fake HttpRequests which we send to the views
-    as an ACTIVITY_STORE method. For more information,
-    see the docstring in views/.
-    """
-
-    def __init__(self, content, activity, path, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.method = 'ACTIVITY_STORE'
-        self.headers = {
-            'Content-Type': 'application/activity+json',
-            }
-        self._content = bytes(content, encoding='UTF-8')
-        self.activity = activity
-        self.path = path
-
-    @property
-    def body(self):
-        return self._content
-
 def _deliver_local(
-        activity,
+        message,
         recipient,
         ):
 
@@ -303,19 +225,15 @@ def _deliver_local(
     Deliver an activity to a local Person.
 
     Keyword arguments:
-    activity -- the activity we're delivering.
+    message -- the OutgoingActivity we're delivering.
     recipient -- the Person who should receive it
     """
 
-    logger.debug('%s: %s is local',
-            activity, inbox)
-
-    print(recipient," is local")
-
-    # TODO
+    logger.debug('  -- delivering to local user %s', recipient.username)
+    raise ValueError("TODO - local delivery (via bowler)") # TODO
 
 def _deliver_remote(
-        activity,
+        message,
         recipient,
         signer,
         ):
@@ -324,15 +242,15 @@ def _deliver_remote(
     Deliver an activity to a remote actor.
 
     Keyword arguments:
-    activity -- the activity we're delivering.
+    message -- the OutgoingActivity we're delivering.
     recipient -- the URL of the recipient
     signer -- an httpsig.HeaderSigner for the
         local actor who sent this activity
     """
 
-    print(recipient," is remote")
-    return
-    # TODO
+    logger.debug('  -- delivering to remote user %s', recipient.url)
+
+    parsed_target_url = urlparse(recipient.remote_url)
 
     headers = {
             'Date': _rfc822_datetime(),
@@ -349,17 +267,16 @@ def _deliver_remote(
                 path = parsed_target_url.path,
                 )
 
-    logger.debug('%s: %s: headers are %s',
-            activity, inbox, headers)
+    logger.debug('    -- headers are %s', headers)
 
     response = requests.post(
-            inbox,
-            data=message,
+            recipient.url,
+            data=str(message),
             headers=headers,
             )
 
-    logger.debug('%s: %s: posted. Server replied: %s %s',
-            activity, inbox, response.status_code, response.reason)
+    logger.debug('    -- posted; server replied: %d %s',
+            response.status_code, response.reason)
 
     if response.status_code>=400 and response.status_code<=499 and \
             (response.status_code not in [404, 410]):
@@ -367,10 +284,10 @@ def _deliver_remote(
         # The server thinks we made an error. Log the request we made
         # so that we can debug it.
 
-        logger.debug("  -- for debugging: our signer was %s",
+        logger.debug("    -- for debugging: our signer was %s",
                 signer.__dict__)
-        logger.debug("  -- and this is how the message ran:")
-        logger.debug("%s\n%s", headers, message)
+        logger.debug("    -- and this is how the message ran: %s %s",
+                headers, message)
 
 @shared_task()
 def deliver(
@@ -395,15 +312,6 @@ def deliver(
     """
 
     import kepi.sombrero_sendpub.models as sombrero_models
-    from kepi.bowler_pub import PUBLIC_IDS
-
-    message = sombrero_models.OutgoingActivity(
-            content=activity,
-            )
-    message.save()
-
-    logger.info('activity %d: begin delivery: %s',
-            message.pk, message.content)
 
     for field in [
             'actor',
@@ -424,23 +332,28 @@ def deliver(
 
         recipients.union(person.followers)
 
-    logger.debug('activity %d: recipients are %s',
-            message.pk, recipients)
-
     if not recipients:
-        logger.debug('activity %s: there are no recipients: giving up',
-                message.pk)
+        logger.debug('activity has no recipients: giving up: %s',
+                activity)
         return
 
     activity['actor'] = source.url
     # FIXME Here we need to fill in the recipient fields of the activity
+
+    message = sombrero_models.OutgoingActivity(
+            content=activity,
+            )
+    message.save()
+
+    logger.info('activity %d: begin delivery: %s',
+            message.pk, message.content)
 
     signer = None
 
     for recipient in recipients:
         if recipient.is_local:
             _deliver_local(
-                    activity=activity,
+                    message=message,
                     recipient=recipient,
                     )
         else:
@@ -451,7 +364,7 @@ def deliver(
                         )
 
             _deliver_remote(
-                    activity=activity,
+                    message=message,
                     recipient=recipient,
                     signer=signer,
                     )
