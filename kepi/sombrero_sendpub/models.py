@@ -17,9 +17,6 @@ class OutgoingActivity(models.Model):
     def value(self):
         result = json.loads(self.content)
 
-        if not isinstance(result['to'], list):
-            result['to'] = [result['to']]
-
         if 'id' not in result:
             result['id'] = self.url
 
