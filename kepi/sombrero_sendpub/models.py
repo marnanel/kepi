@@ -39,10 +39,10 @@ class OutgoingActivity(models.Model):
 
         if not isinstance(self.content, str):
 
-            for field in ['type', 'actor', 'to']:
+            for field in ['type',]:
                 if field not in self.content:
-                    raise ValueError("activity is missing required fields: %s",
-                            self.content)
+                    raise ValueError("activity is missing required fields: "+\
+                            str(self.content))
 
             self.content = json.dumps(self.content)
 
