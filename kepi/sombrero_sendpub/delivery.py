@@ -269,6 +269,9 @@ def _deliver_remote(
 
     logger.debug('    -- headers are %s', headers)
 
+    # FIXME This is wrong-- we have to look up their inbox address
+    # if we don't have it, and post to that
+
     response = requests.post(
             recipient.url,
             data=str(message),

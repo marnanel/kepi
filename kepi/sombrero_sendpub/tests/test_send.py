@@ -22,10 +22,15 @@ class TestSend(TestCase):
 
     def setUp(self):
         httpretty.register_uri(
+                # FIXME: not the user's address, just their (shared) inbox
                 httpretty.POST,
                 REMOTE_URL,
                 '', # body is ignored
                 )
+
+        # FIXME Here we must also register an ActivityPub form of the user
+        # at the remote end
+        # FIXME It would be nice if we could check the Accept content-type
 
         self._zachary = Person(
                 remote_url = REMOTE_URL,
