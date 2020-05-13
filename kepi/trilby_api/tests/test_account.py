@@ -8,6 +8,9 @@ from django.conf import settings
 # Tests for accounts. API docs are here:
 # https://docs.joinmastodon.org/methods/accounts/
 
+# TODO since we split Person into LocalPerson and RemotePerson,
+# TODO we need to add tests for RemotePerson.
+
 class TestAccountCredentials(TrilbyTestCase):
 
     # Getting the list of an account's statuses is handled in test_timeline.

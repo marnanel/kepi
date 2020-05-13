@@ -1,3 +1,10 @@
+# person.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+from polymorphic.models import PolymorphicModel
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
@@ -11,48 +18,7 @@ import logging
 
 logger = logging.Logger('kepi')
 
-class TrilbyUser(AbstractUser):
-    """
-    A Django user.
-    """
-    pass
-
-class Person(models.Model):
-
-    remote_url = models.URLField(
-            max_length = 255,
-            null = True,
-            blank = True,
-            unique = True,
-            )
-
-    remote_username = models.CharField(
-            max_length = 255,
-            null = True,
-            blank = True,
-            )
-
-    local_user = models.OneToOneField(
-            to = TrilbyUser,
-            on_delete = models.CASCADE,
-            null = True,
-            blank = True,
-            )
-
-    icon_image = models.ImageField(
-            help_text="A small square image used to identify you.",
-            null=True,
-            verbose_name='icon',
-            blank = True,
-            )
-
-    header_image = models.ImageField(
-            help_text="A large image, wider than it's tall, which appears "+\
-                    "at the top of your profile page.",
-            null=True,
-            verbose_name='header image',
-            blank = True,
-            )
+class Person(PolymorphicModel):
 
     @property
     def icon_or_default(self):
@@ -78,20 +44,10 @@ class Person(models.Model):
                 'Something like "Alice Liddell".',
             )
 
-    created_at = models.DateTimeField(
-            default = now,
-            )
-
     publicKey = models.TextField(
             blank=True,
             null=True,
             verbose_name='public key',
-            )
-
-    privateKey = models.TextField(
-            blank=True,
-            null=True,
-            verbose_name='private key',
             )
 
     note = models.TextField(
@@ -143,147 +99,21 @@ class Person(models.Model):
             )
 
     @property
-    def username(self):
-        if self.is_local:
-            return self.local_user.username
-        else:
-            return self.remote_username
-
-    @username.setter
-    def username(self, newname):
-        self.local_user.username = newname
-        self.local_user.save()
-
-    @property
-    def is_local(self):
-        return self.remote_url is None
-
-    @property
     def uri(self):
         # I know this property is called "uri", but
         # this matches the behaviour of Mastodon
         return self.url
 
     @property
-    def url(self):
-        if self.remote_url is not None:
-            return self.remote_url
-
-        return uri_to_url(settings.KEPI['USER_LINK'] % {
-                'username': self.local_user.username,
-                })
-
-    @property
-    def key_name(self):
-        return self.url + '#main-key'
-
-    @property
-    def following_count(self):
-
-        import kepi.trilby_api.models as trilby_models
-
-        return trilby_models.Follow.objects.filter(
-                follower = self,
-                requested = False,
-                ).count()
-
-    @property
-    def followers_count(self):
-
-        import kepi.trilby_api.models as trilby_models
-
-        return trilby_models.Follow.objects.filter(
-                following = self,
-                requested = False,
-                ).count()
-
-    @property
-    def statuses_count(self):
-
-        import kepi.trilby_api.models as trilby_models
-
-        # TODO: not yet tested
-        return trilby_models.Status.objects.filter(
-                account = self,
-                ).count()
-
-    @property
-    def acct(self):
-        if self.remote_url is not None:
-            return self.remote_username
-        else:
-            return self.local_user.username
-
-    @property
-    def username(self):
-        if self.remote_url is not None:
-            return self.remote_username
-        else:
-            return self.local_user.username
-
-    def _generate_keys(self):
-
-        logger.info('%s: generating key pair.',
-                self.url)
-
-        key = crypto.Key()
-        self.privateKey = key.private_as_pem()
-        self.publicKey = key.public_as_pem()
-
-    def __init__(self, *args, **kwargs):
-
-        if 'username' in kwargs and 'local_user' not in kwargs:
-            new_user = TrilbyUser(
-                    username=kwargs['username'])
-            new_user.save()
-
-            kwargs['local_user'] = new_user
-            del kwargs['username']
-
-            logger.info('created new TrilbyUser: %s',
-                new_user)
-
-        super().__init__(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        
-        # Validate: either remote or local but not both or neither.
-        remote_set = \
-                self.remote_url is not None and \
-                self.remote_username is not None
-
-        local_set = \
-                self.local_user is not None
-
-        if local_set == remote_set:
-            raise ValidationError(
-                    "Either local or remote fields must be set."
-                    )
-
-        if local_set:
-
-            # Various defaults.
-
-            if self.display_name=='':
-                self.display_name = self.username
-
-            # Create keys, if we're local and we don't have them.
-
-            if local_set and self.privateKey is None and self.publicKey is None:
-                self._generate_keys()
-
-        # All good.
-
-        super().save(*args, **kwargs)
-
-    @property
     def followers(self):
+        # FIXME how should this work for remote?
         return Person.objects.filter(
             rel_following__following = self,
             )
 
     @property
     def following(self):
+        # FIXME how should this work for remote?
         return Person.objects.filter(
             rel_followers__follower = self,
             )
@@ -311,14 +141,8 @@ class Person(models.Model):
     def outbox(self):
         return [] # FIXME
 
-    def __str__(self):
-        if self.remote_url:
-            return self.remote_url
-        else:
-            return self.username
-
     @classmethod
-    def by_name(cls, name,
+    def FIXME_by_name(cls, name,
             local_only = False):
 
         """
@@ -353,3 +177,209 @@ class Person(models.Model):
             pass
 
         return None
+
+########################################
+
+class RemotePerson(Person):
+
+    url = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            unique = True,
+            )
+
+    username = models.CharField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            )
+
+    hostname = models.CharField(
+            max_length = 255,
+            default = '',
+            )
+
+    inbox = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
+
+    icon = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
+
+    header = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
+
+    key_name = models.CharField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = '',
+            )
+
+    @property
+    def acct(self):
+        return '{}@{}'.format(
+                self.username,
+                self.hostname,
+                )
+
+    @property
+    def is_local(self):
+        return False
+
+    def __str__(self):
+        return self.url
+
+########################################
+
+class TrilbyUser(AbstractUser):
+    """
+    A Django user.
+    """
+    pass
+
+class LocalPerson(Person):
+
+    local_user = models.OneToOneField(
+            to = TrilbyUser,
+            on_delete = models.CASCADE,
+            null = True,
+            blank = True,
+            )
+
+    created_at = models.DateTimeField(
+            default = now,
+            )
+
+    privateKey = models.TextField(
+            blank=True,
+            null=True,
+            verbose_name='private key',
+            )
+
+    icon_image = models.ImageField(
+            help_text="A small square image used to identify you.",
+            null=True,
+            verbose_name='icon',
+            blank = True,
+            )
+
+    header_image = models.ImageField(
+            help_text="A large image, wider than it's tall, which appears "+\
+                    "at the top of your profile page.",
+            null=True,
+            verbose_name='header image',
+            blank = True,
+            )
+
+    def _generate_keys(self):
+
+        logger.info('%s: generating key pair.',
+                self.url)
+
+        key = crypto.Key()
+        self.privateKey = key.private_as_pem()
+        self.publicKey = key.public_as_pem()
+
+    def __init__(self, *args, **kwargs):
+
+        if 'username' in kwargs and 'local_user' not in kwargs:
+            new_user = TrilbyUser(
+                    username=kwargs['username'])
+            new_user.save()
+
+            kwargs['local_user'] = new_user
+            del kwargs['username']
+
+            logger.info('created new TrilbyUser: %s',
+                new_user)
+
+        super().__init__(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        
+        # Various defaults.
+
+        if self.display_name=='':
+            self.display_name = self.username
+
+        # Create keys, if we're local and we don't have them.
+
+        if self.privateKey is None and self.publicKey is None:
+            self._generate_keys()
+
+        # All good.
+
+        super().save(*args, **kwargs)
+
+    @property
+    def username(self):
+        return self.local_user.username
+
+    @username.setter
+    def username(self, newname):
+        self.local_user.username = newname
+        self.local_user.save()
+
+    @property
+    def is_local(self):
+        return True
+
+    @property
+    def acct(self):
+        return self.local_user.username
+
+    def __str__(self):
+        return self.username
+
+    @property
+    def url(self):
+        return uri_to_url(settings.KEPI['USER_LINK'] % {
+                'username': self.local_user.username,
+                })
+
+    @property
+    def following_count(self):
+
+        import kepi.trilby_api.models as trilby_models
+
+        return trilby_models.Follow.objects.filter(
+                follower = self,
+                requested = False,
+                ).count()
+
+    @property
+    def followers_count(self):
+
+        import kepi.trilby_api.models as trilby_models
+
+        return trilby_models.Follow.objects.filter(
+                following = self,
+                requested = False,
+                ).count()
+
+    @property
+    def statuses_count(self):
+
+        import kepi.trilby_api.models as trilby_models
+
+        # TODO: not yet tested
+        return trilby_models.Status.objects.filter(
+                account = self,
+                ).count()
+
+    @property
+    def key_name(self):
+        return self.url + '#main-key'

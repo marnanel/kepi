@@ -7,6 +7,8 @@ from .follow import *
 __all__ = [
         'TrilbyUser',
         'Person',
+        'LocalPerson',
+        'RemotePerson',
         'Status',
         'Notification',
         'Like',

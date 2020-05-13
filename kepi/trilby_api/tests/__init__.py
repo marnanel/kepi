@@ -125,7 +125,7 @@ class TrilbyTestCase(TestCase):
 def create_local_person(name='jemima',
         **kwargs):
 
-    result = Person(
+    result = LocalPerson(
             username = name,
             **kwargs,
             )

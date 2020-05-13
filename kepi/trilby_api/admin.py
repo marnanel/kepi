@@ -4,8 +4,8 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 import kepi.trilby_api.forms as trilby_forms
 import kepi.trilby_api.models as trilby_models
 
-@admin.register(trilby_models.Person)
-class PersonAdmin(admin.ModelAdmin):
+@admin.register(trilby_models.LocalPerson)
+class LocalPersonAdmin(admin.ModelAdmin):
 
     fieldsets = (
             (None, {'fields': ('local_user', 'display_name', 'note',)}),
@@ -16,6 +16,10 @@ class PersonAdmin(admin.ModelAdmin):
             )
 
     #form = trilby_forms.UserForm
+
+@admin.register(trilby_models.RemotePerson)
+class RemotePersonAdmin(admin.ModelAdmin):
+    pass
 
 @admin.register(trilby_models.Status)
 class StatusAdmin(admin.ModelAdmin):

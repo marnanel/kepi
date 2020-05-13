@@ -12,6 +12,12 @@ class UserSerializer(serializers.ModelSerializer):
     id = serializers.CharField(
             read_only = True)
 
+    uri = serializers.CharField(
+            read_only = True)
+
+    url = serializers.CharField(
+            read_only = True)
+
     avatar = serializers.URLField(
             source='icon_or_default',
             )
@@ -38,38 +44,34 @@ class UserSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(
             )
 
-    note = serializers.SerializerMethodField()
-    def get_note(self, user):
-        result = markdown.markdown(user.note)
-        return result
-    def set_note(self, user, note):
-        user.note = note
-
-
     note = serializers.CharField(
             )
 
-    following_count = serializers.IntegerField()
-    followers_count = serializers.IntegerField()
-    statuses_count = serializers.IntegerField()
+    following_count = serializers.IntegerField(
+            read_only = True,
+            )
+    followers_count = serializers.IntegerField(
+            read_only = True,
+            )
+    statuses_count = serializers.IntegerField(
+            read_only = True,
+            )
 
     class Meta:
         model = Person
         fields = (
                 'id',
+                'uri',
+                'url',
                 'username',
                 'acct',
                 'display_name',
                 'locked',
-                'avatar',
-                'header',
                 'created_at',
                 'followers_count',
                 'following_count',
                 'statuses_count',
                 'note',
-                'uri',
-                'url',
                 'avatar',
                 'avatar_static',
                 'header',

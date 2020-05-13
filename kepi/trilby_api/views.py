@@ -103,7 +103,7 @@ class Favourite(DoSomethingWithStatus):
 
         try:
             like = trilby_models.Like(
-                liker = request.user.person,
+                liker = request.user.localperson,
                 liked = the_status,
                 )
 
@@ -123,7 +123,7 @@ class Unfavourite(DoSomethingWithStatus):
 
         try:
             like = trilby_models.Like.objects.get(
-                liker = request.user.person,
+                liker = request.user.localperson,
                 liked = the_status,
                 )
 
@@ -152,7 +152,7 @@ class Reblog(DoSomethingWithStatus):
         new_status = trilby_models.Status(
 
                 # Fields which are different in a reblog:
-                account = request.user.person,
+                account = request.user.localperson,
                 content = content,
                 reblog_of = the_status,
 
@@ -183,7 +183,7 @@ class Unreblog(DoSomethingWithStatus):
 
         reblogs = trilby_models.Status.objects.filter(
                 reblog_of = the_status,
-                account = request.user.person,
+                account = request.user.localperson,
                 )
 
         if not reblogs.exists():
@@ -241,7 +241,7 @@ class Follow(DoSomethingWithPerson):
 
         try:
             follow = trilby_models.Follow(
-                follower = request.user.person,
+                follower = request.user.localperson,
                 following = the_person,
                 requested = not the_person.auto_follow,
                 )
@@ -255,7 +255,7 @@ class Follow(DoSomethingWithPerson):
             if the_person.auto_follow:
                 follow_back = trilby_models.Follow(
                     follower = the_person,
-                    following = request.user.person,
+                    following = request.user.localperson,
                     requested = False,
                     )
 
@@ -276,7 +276,7 @@ class Unfollow(DoSomethingWithPerson):
 
         try:
             follow = trilby_models.Follow.objects.get(
-                follower = request.user.person,
+                follower = request.user.localperson,
                 following = the_person,
                 )
 
@@ -300,7 +300,7 @@ class UpdateCredentials(generics.GenericAPIView):
             logger.debug('  -- user not logged in')
             return error_response(401, 'Not logged in')
 
-        who = request.user.person
+        who = request.user.localperson
 
         # The Mastodon spec doesn't say what to do
         # if the user submits field names which don't
@@ -416,7 +416,7 @@ class Verify_Credentials(generics.GenericAPIView):
     queryset = TrilbyUser.objects.all()
 
     def get(self, request, *args, **kwargs):
-        serializer = UserSerializerWithSource(request.user.person)
+        serializer = UserSerializerWithSource(request.user.localperson)
         return JsonResponse(serializer.data)
 
 class User(generics.GenericAPIView):
@@ -470,7 +470,7 @@ class SpecificStatus(generics.GenericAPIView):
                 id = int(kwargs['status']),
                 )
 
-        if the_status.account != request.user.person:
+        if the_status.account != request.user.localperson:
             return error_response(404, # sic
                     'That isn\'t yours to delete')
 
@@ -537,7 +537,7 @@ class Statuses(generics.ListCreateAPIView,
                     )
 
         status = trilby_models.Status(
-                account = request.user.person,
+                account = request.user.localperson,
                 content = data.get('status', ''),
                 sensitive = data.get('sensitive', False),
                 spoiler_text = data.get('spoiler_text', ''),
@@ -664,7 +664,7 @@ class HomeTimeline(AbstractTimeline):
 
     def get_queryset(self, request):
 
-        return request.user.person.inbox
+        return request.user.localperson.inbox
 
 ########################################
 
@@ -769,7 +769,7 @@ class Notifications(generics.ListAPIView):
 
     def list(self, request):
         queryset = Notification.objects.filter(
-                for_account = request.user.person,
+                for_account = request.user.localperson,
                 )
 
         serializer = self.serializer_class(queryset, many=True)
@@ -799,7 +799,7 @@ class Followers_or_Following(generics.GenericAPIView):
 
         params = request.data
 
-        if request.user is None:
+        if request.user.localperson is None:
             logger.debug('  -- user not logged in')
             return error_response(401, 'Not logged in')
 
