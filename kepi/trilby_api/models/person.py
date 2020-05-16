@@ -82,22 +82,6 @@ class Person(PolymorphicModel):
                     "this is where it went."
             )
 
-    default_visibility = models.CharField(
-            max_length = 1,
-            choices = trilby_utils.VISIBILITY_CHOICES,
-            default = trilby_utils.VISIBILITY_PUBLIC,
-            )
-
-    default_sensitive = models.BooleanField(
-            default = False,
-            )
-
-    language = models.CharField(
-            max_length = 255,
-            null = True,
-            default = settings.KEPI['LANGUAGES'][0],
-            )
-
     @property
     def uri(self):
         # I know this property is called "uri", but
@@ -126,78 +110,35 @@ class Person(PolymorphicModel):
     def emojis(self):
         return [] # FIXME
 
-    @property
-    def inbox(self):
-
-        import kepi.trilby_api.models as trilby_models
-
-        def inbox_generator():
-            for status in trilby_models.Status.objects.all():
-                yield status
-
-        return inbox_generator()
-
-    @property
-    def outbox(self):
-        return [] # FIXME
-
-    @classmethod
-    def FIXME_by_name(cls, name,
-            local_only = False):
-
-        """
-        Return the Person who has the given name.
-        If local_only==False, name can also be a remote URL.
-
-        The name can begin with an @, which will force local_only=True.
-        """
-
-        logger.info('looking up Person by name=%s; local_only=%s',
-                name, local_only)
-
-        if name.startswith('@'):
-            name = name[1:]
-            local_only = True
-
-        try:
-            return cls.objects.get(
-                    local_user__username = name,
-                    )
-        except cls.DoesNotExist:
-            pass
-
-        if local_only:
-            return None
-
-        try:
-            return cls.objects.get(
-                    remote_url = name,
-                    )
-        except cls.DoesNotExist:
-            pass
-
-        return None
-
 ########################################
 
 class RemotePerson(Person):
 
     url = models.URLField(
             max_length = 255,
-            null = True,
-            blank = True,
             unique = True,
+            )
+
+    status = models.IntegerField(
+            default = 0,
+            choices = [
+                (0, 'pending'),
+                (200, 'found'),
+                (404, 'not found'),
+                (410, 'gone'),
+                (500, 'remote error'),
+                ],
+            )
+
+    found_at = models.DateTimeField(
+            null = True,
+            default = None,
             )
 
     username = models.CharField(
             max_length = 255,
             null = True,
             blank = True,
-            )
-
-    hostname = models.CharField(
-            max_length = 255,
-            default = '',
             )
 
     inbox = models.URLField(
@@ -228,12 +169,12 @@ class RemotePerson(Person):
             default = '',
             )
 
-    @property
-    def acct(self):
-        return '{}@{}'.format(
-                self.username,
-                self.hostname,
-                )
+    acct = models.CharField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
 
     @property
     def is_local(self):
