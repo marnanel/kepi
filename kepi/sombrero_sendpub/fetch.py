@@ -12,6 +12,23 @@ from kepi.trilby_api.models import RemotePerson
 
 logger = logging.Logger("kepi")
 
+def _get_url_from_atstyle(user):
+
+    url = f'https://{user.hostname}/.well-known/'+\
+            f'webfinger?acct={user.acct}'
+
+    response = requests.get(
+            url,
+            headers = {
+                'Accept': 'application/activity+json',
+                },
+            )
+
+    self_link = [x for x in response.json()['links']
+        if x['rel']=='self']
+
+    user.url = self_link[0]['href']
+
 @shared_task()
 def _async_fetch_user(user):
 
@@ -25,6 +42,12 @@ def _async_fetch_user(user):
         user.save()
 
         raise ValueError(complaint)
+
+    if user.url is None and user.acct is not None:
+        _get_url_from_atstyle(user)
+
+    if user.url is None:
+        complain("No URL given.")
 
     response = requests.get(
             user.url,
@@ -108,11 +131,17 @@ def _async_fetch_user(user):
 
     return user
 
-def fetch_user(url):
+def fetch_user(username):
 
-    result = RemotePerson(
-            url = url,
-            )
+    if '@' in username:
+        result = RemotePerson(
+                acct = username,
+                )
+    else:
+        result = RemotePerson(
+                url = username,
+                )
+
     result.save()
 
     _async_fetch_user(result)

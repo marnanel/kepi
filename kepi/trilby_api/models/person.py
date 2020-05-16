@@ -14,6 +14,7 @@ from kepi.bowler_pub.utils import uri_to_url
 import kepi.trilby_api.utils as trilby_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
+from urllib.parse import urlparse
 import logging
 
 logger = logging.Logger('kepi')
@@ -117,6 +118,8 @@ class RemotePerson(Person):
     url = models.URLField(
             max_length = 255,
             unique = True,
+            null = True,
+            blank = True,
             )
 
     status = models.IntegerField(
@@ -174,6 +177,7 @@ class RemotePerson(Person):
             null = True,
             blank = True,
             default = None,
+            unique = True,
             )
 
     @property
@@ -182,6 +186,22 @@ class RemotePerson(Person):
 
     def __str__(self):
         return self.url
+
+    @property
+    def hostname(self):
+        if self.url is not None:
+            return urlparse(self.url).netloc
+
+        if self.acct is not None:
+            parts = self.acct.split('@')
+
+            if parts[0]=='':
+                # the format was @user@hostname
+                parts.pop(0)
+
+            return parts[1]
+
+        return None
 
 ########################################
 

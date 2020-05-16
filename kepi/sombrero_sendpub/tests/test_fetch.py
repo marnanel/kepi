@@ -13,9 +13,10 @@ import logging
 
 logger = logging.Logger("kepi")
 
-EXAMPLE_URL = "https://example.org/users/wombat"
+EXAMPLE_ACTIVITY_URL = "https://example.org/users/wombat"
+EXAMPLE_ATSTYLE = "wombat@example.org"
 
-EXAMPLE_USER = """{"@context":["https://www.w3.org/ns/activitystreams",
+EXAMPLE_ACTIVITY_RESULT = """{"@context":["https://www.w3.org/ns/activitystreams",
 "https://w3id.org/security/v1",
 {"manuallyApprovesFollowers":"as:manuallyApprovesFollowers",
 "sensitive":"as:sensitive",
@@ -63,21 +64,45 @@ EXAMPLE_USER = """{"@context":["https://www.w3.org/ns/activitystreams",
 "url":"https://example.org/header.png"}}
 """
 
+EXAMPLE_WEBFINGER_URL = 'https://example.org/.well-known/webfinger?acct='+EXAMPLE_ATSTYLE
+EXAMPLE_WEBFINGER_RESULT = """{"subject":"acct:wombat@example.org",
+"aliases":["https://example.org/@wombat",
+"https://example.org/users/wombat"],
+"links":[{"rel":"http://webfinger.net/rel/profile-page",
+"type":"text/html",
+"href":"https://example.org/@wombat"},
+{"rel":"http://schemas.google.com/g/2010#updates-from",
+"type":"application/atom+xml",
+"href":"https://example.org/users/wombat.atom"},
+{"rel":"self",
+"type":"application/activity+json",
+"href":"https://example.org/users/wombat"},
+{"rel":"salmon",
+"href":"https://example.org/api/salmon/15322"},
+{"rel":"magic-public-key",
+"href":"data:application/magic-public-key,RSA.qjX5AgZxDY0udxuZlBRo6K-mA6XNfmEoscra_YUOZ0c8tnl122vPV5DOdOrm0jpah-GUn7CK43UOCXMLJe3DIO7Q3w4TgNTGFjNERO1Dlh3Jgw_CbFBNbIb1QyFS0QjKBUcLKgPezGxklyk8U2-ErSiP1xOlZZMlSTcMlR5c0LRdQQ0TJ9Lx8MbH66B9qM6HnYP-Z2nkm6SwBw9QOAloIiz1H6JkHX9CUa8ZzVQwp82LRWI25I_Szc-MDvTqdLu3lljyxcHlpxhs9_5hfxu99_CUdbPU6TqAkpXMtzcfaSKb7bzbYTtxzlzTnQX6EtLdpGjBp-kGLAt-XozlBeSybQ==.AQAB"},
+{"rel":"http://ostatus.org/schema/1.0/subscribe",
+"template":"https://example.org/authorize_interaction?uri={uri}"}]}"""
+
 class TestFetch(TestCase):
 
     @httpretty.activate
     def test_fetch_user(self):
         httpretty.register_uri(
                 'GET',
-                EXAMPLE_URL,
+                EXAMPLE_ACTIVITY_URL,
                 status=200,
                 headers = {
                         'Content-Type': 'application/activity+json',
                         },
-                body = EXAMPLE_USER,
+                body = EXAMPLE_ACTIVITY_RESULT,
                 )
 
-        user = fetch_user(EXAMPLE_URL)
+        user = fetch_user(EXAMPLE_ACTIVITY_URL)
+
+        self._asserts_for_example_user(user)
+
+    def _asserts_for_example_user(self, user):
 
         self.assertEqual(
                 user.display_name,
@@ -101,7 +126,7 @@ class TestFetch(TestCase):
 
         self.assertEqual(
                 user.url,
-                EXAMPLE_URL,
+                EXAMPLE_ACTIVITY_URL,
                 )
 
         self.assertEqual(
@@ -128,3 +153,30 @@ class TestFetch(TestCase):
                 user.is_local,
                 False,
                 )
+
+    @httpretty.activate
+    def test_atstyle(self):
+
+        httpretty.register_uri(
+        'GET',
+        EXAMPLE_ACTIVITY_URL,
+        status=200,
+        headers = {
+                'Content-Type': 'application/activity+json',
+                },
+        body = EXAMPLE_ACTIVITY_RESULT,
+        )
+
+        httpretty.register_uri(
+        'GET',
+        EXAMPLE_WEBFINGER_URL,
+        status=200,
+        headers = {
+                'Content-Type': 'application/jrd+json',
+                },
+        body = EXAMPLE_WEBFINGER_RESULT,
+        )
+
+        user = fetch_user(EXAMPLE_ATSTYLE)
+
+        self._asserts_for_example_user(user)
