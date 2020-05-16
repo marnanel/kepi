@@ -15,6 +15,17 @@ logger = logging.Logger("kepi")
 @shared_task()
 def _async_fetch_user(user):
 
+    def complain(complaint):
+        logging.warn("%s: %s",
+                user.url,
+                complaint
+                )
+
+        user.status = 404
+        user.save()
+
+        raise ValueError(complaint)
+
     response = requests.get(
             user.url,
             headers = {
@@ -27,22 +38,19 @@ def _async_fetch_user(user):
     # FIXME or the named host doesn't run an https server?
 
     if response.status_code!=200:
-        logging.warn("%s: unexpected status code: %d %s",
-                user.url,
-                response.status_code,
-                response.reason,
-                )
-        raise ValueError("Unexpected status code")
+        complain("Unexpected status code")
 
-    # This will raise ValueError if the response is not JSON
-    details = response.json()
+    try:
+        details = response.json()
+    except ValueError:
+        complain("Response was not JSON")
 
     if details['type'] not in ['Actor', 'Person']:
-        raise ValueError(
+        complain(
                 "Remote user was an unexpected type: "+details['type'])
 
     if details['id'] != user.url:
-        raise ValueError(
+        complain(
                 "Remote user's id was not the source url: expected "+\
                         user.url+" but got "+details['id'])
 
@@ -74,7 +82,7 @@ def _async_fetch_user(user):
 
         if 'owner' in key:
             if key['owner'] != user.url:
-                raise ValueError("Remote user gave us someone else's key")
+                complain("Remote user gave us someone else's key")
 
         if 'id' in key:
             user.key_name = key['id']
