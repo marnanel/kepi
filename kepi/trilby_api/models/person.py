@@ -185,7 +185,12 @@ class RemotePerson(Person):
         return False
 
     def __str__(self):
-        return self.url
+        if self.url is not None:
+            return f'[{self.url}]'
+        elif self.acct is not None:
+            return f'[{self.acct}]'
+        else:
+            return '[<empty>]'
 
     @property
     def hostname(self):
