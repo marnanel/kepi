@@ -84,6 +84,22 @@ EXAMPLE_WEBFINGER_RESULT = """{"subject":"acct:wombat@example.org",
 {"rel":"http://ostatus.org/schema/1.0/subscribe",
 "template":"https://example.org/authorize_interaction?uri={uri}"}]}"""
 
+EXAMPLE_WEBFINGER_RESULT_NO_ACTIVITY = """{"subject":"acct:wombat@example.org",
+"aliases":["https://example.org/@wombat",
+"https://example.org/users/wombat"],
+"links":[{"rel":"http://webfinger.net/rel/profile-page",
+"type":"text/html",
+"href":"https://example.org/@wombat"},
+{"rel":"http://schemas.google.com/g/2010#updates-from",
+"type":"application/atom+xml",
+"href":"https://example.org/users/wombat.atom"},
+{"rel":"salmon",
+"href":"https://example.org/api/salmon/15322"},
+{"rel":"magic-public-key",
+"href":"data:application/magic-public-key,RSA.qjX5AgZxDY0udxuZlBRo6K-mA6XNfmEoscra_YUOZ0c8tnl122vPV5DOdOrm0jpah-GUn7CK43UOCXMLJe3DIO7Q3w4TgNTGFjNERO1Dlh3Jgw_CbFBNbIb1QyFS0QjKBUcLKgPezGxklyk8U2-ErSiP1xOlZZMlSTcMlR5c0LRdQQ0TJ9Lx8MbH66B9qM6HnYP-Z2nkm6SwBw9QOAloIiz1H6JkHX9CUa8ZzVQwp82LRWI25I_Szc-MDvTqdLu3lljyxcHlpxhs9_5hfxu99_CUdbPU6TqAkpXMtzcfaSKb7bzbYTtxzlzTnQX6EtLdpGjBp-kGLAt-XozlBeSybQ==.AQAB"},
+{"rel":"http://ostatus.org/schema/1.0/subscribe",
+"template":"https://example.org/authorize_interaction?uri={uri}"}]}"""
+
 class TestFetch(TestCase):
 
     @httpretty.activate
@@ -101,6 +117,44 @@ class TestFetch(TestCase):
         user = fetch_user(EXAMPLE_ACTIVITY_URL)
 
         self._asserts_for_example_user(user)
+
+    @httpretty.activate
+    def test_fetch_user_404(self):
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_ACTIVITY_URL,
+                status=404,
+                headers = {
+                        'Content-Type': 'text/plain',
+                        },
+                body = 'nope',
+                )
+
+        user = fetch_user(EXAMPLE_ACTIVITY_URL)
+
+        self.assertEqual(
+                user.status,
+                404,
+                )
+
+    @httpretty.activate
+    def test_fetch_user_410(self):
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_ACTIVITY_URL,
+                status = 410,
+                headers = {
+                        'Content-Type': 'text/plain',
+                        },
+                body = 'not any more!',
+                )
+
+        user = fetch_user(EXAMPLE_ACTIVITY_URL)
+
+        self.assertEqual(
+                user.status,
+                410,
+                )
 
     def _asserts_for_example_user(self, user):
 
@@ -168,15 +222,84 @@ class TestFetch(TestCase):
         )
 
         httpretty.register_uri(
-        'GET',
-        EXAMPLE_WEBFINGER_URL,
-        status=200,
-        headers = {
-                'Content-Type': 'application/jrd+json',
-                },
-        body = EXAMPLE_WEBFINGER_RESULT,
-        )
+                'GET',
+                EXAMPLE_WEBFINGER_URL,
+                status=200,
+                headers = {
+                    'Content-Type': 'application/jrd+json',
+                    },
+                body = EXAMPLE_WEBFINGER_RESULT,
+                )
 
         user = fetch_user(EXAMPLE_ATSTYLE)
 
         self._asserts_for_example_user(user)
+
+
+    @httpretty.activate
+    def test_atstyle_404(self):
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_WEBFINGER_URL,
+                status=404,
+                headers = {
+                    'Content-Type': 'text/plain',
+                    },
+                body = "never heard of them",
+                )
+
+        fetch_user(EXAMPLE_ATSTYLE)
+
+        user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
+
+        self.assertEqual(
+                user.status,
+                404,
+                )
+
+    @httpretty.activate
+    def test_atstyle_410(self):
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_WEBFINGER_URL,
+                status=410,
+                headers = {
+                    'Content-Type': 'text/plain',
+                    },
+                body = "never heard of them",
+                )
+
+        fetch_user(EXAMPLE_ATSTYLE)
+
+        user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
+
+        self.assertEqual(
+                user.status,
+                410,
+                )
+
+    @httpretty.activate
+    def test_atstyle_no_activity(self):
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_WEBFINGER_URL,
+                status=200,
+                headers = {
+                    'Content-Type': 'application/jrd+json',
+                    },
+                body = EXAMPLE_WEBFINGER_RESULT_NO_ACTIVITY,
+                )
+
+        fetch_user(EXAMPLE_ATSTYLE)
+
+        user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
+
+        self.assertEqual(
+                user.status,
+                404,
+                )
+
+    # TODO: test for non-existent host. (How do you do that in httpretty?)

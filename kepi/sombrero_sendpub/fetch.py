@@ -12,7 +12,7 @@ from kepi.trilby_api.models import RemotePerson
 
 logger = logging.Logger("kepi")
 
-def _get_url_from_atstyle(user):
+def _get_url_from_webfinger(user):
 
     url = f'https://{user.hostname}/.well-known/'+\
             f'webfinger?acct={user.acct}'
@@ -24,30 +24,43 @@ def _get_url_from_atstyle(user):
                 },
             )
 
+    if response.status_code!=200:
+        user.status = response.status_code
+        user.save()
+        raise ValueError("Unexpected status code from webfinger lookup")
+
     self_link = [x for x in response.json()['links']
-        if x['rel']=='self']
+        if x.get("type",'') == "application/activity+json"]
+
+    if not self_link:
+        raise ValueError("Webfinger has no activity information")
 
     user.url = self_link[0]['href']
 
 @shared_task()
 def _async_fetch_user(user):
 
-    def complain(complaint):
-        logging.warn("%s: %s",
+    try:
+        _async_fetch_user_inner(user)
+    except ValueError as ve:
+        logging.info("%s: %s",
                 user.url,
-                complaint
+                ve,
                 )
 
-        user.status = 404
-        user.save()
+        if user.status==0:
+            user.status = 404
+            user.save()
 
-        raise ValueError(complaint)
+        # but don't re-raise the exception
+
+def _async_fetch_user_inner(user):
 
     if user.url is None and user.acct is not None:
-        _get_url_from_atstyle(user)
+        _get_url_from_webfinger(user)
 
     if user.url is None:
-        complain("No URL given.")
+        raise ValueError("No URL given.")
 
     response = requests.get(
             user.url,
@@ -61,19 +74,21 @@ def _async_fetch_user(user):
     # FIXME or the named host doesn't run an https server?
 
     if response.status_code!=200:
-        complain("Unexpected status code")
+        user.status = response.status_code
+        user.save()
+        raise ValueError("Unexpected status code from activity lookup")
 
     try:
         details = response.json()
     except ValueError:
-        complain("Response was not JSON")
+        raise ValueError("Response was not JSON")
 
     if details['type'] not in ['Actor', 'Person']:
-        complain(
+        raise ValueError(
                 "Remote user was an unexpected type: "+details['type'])
 
     if details['id'] != user.url:
-        complain(
+        raise ValueError(
                 "Remote user's id was not the source url: expected "+\
                         user.url+" but got "+details['id'])
 
@@ -105,7 +120,7 @@ def _async_fetch_user(user):
 
         if 'owner' in key:
             if key['owner'] != user.url:
-                complain("Remote user gave us someone else's key")
+                raise ValueError("Remote user gave us someone else's key")
 
         if 'id' in key:
             user.key_name = key['id']
