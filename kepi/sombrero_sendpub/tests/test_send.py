@@ -9,7 +9,7 @@ from django.test import TestCase
 from rest_framework.test import force_authenticate, APIClient
 from django.conf import settings
 from kepi.sombrero_sendpub.delivery import deliver
-from kepi.trilby_api.models import Person
+from kepi.trilby_api.models import RemotePerson
 from kepi.trilby_api.tests import create_local_person
 import httpretty
 import logging
@@ -32,9 +32,9 @@ class TestSend(TestCase):
         # at the remote end
         # FIXME It would be nice if we could check the Accept content-type
 
-        self._zachary = Person(
-                remote_url = REMOTE_URL,
-                remote_username = 'zachary',
+        self._zachary = RemotePerson(
+                url = REMOTE_URL,
+                username = 'zachary',
                 )
         self._zachary.save()
 

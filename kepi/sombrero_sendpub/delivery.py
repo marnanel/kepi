@@ -250,7 +250,7 @@ def _deliver_remote(
 
     logger.debug('  -- delivering to remote user %s', recipient.url)
 
-    parsed_target_url = urlparse(recipient.remote_url)
+    parsed_target_url = urlparse(recipient.url)
 
     headers = {
             'Date': _rfc822_datetime(),
