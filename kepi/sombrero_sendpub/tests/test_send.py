@@ -20,7 +20,7 @@ REMOTE_URL = 'https://remote.example.net/users/zachary'
 
 class TestSend(TestCase):
 
-    def setUp(self):
+    def _register_remote(self):
         httpretty.register_uri(
                 # FIXME: not the user's address, just their (shared) inbox
                 httpretty.POST,
@@ -70,6 +70,7 @@ class TestSend(TestCase):
     @httpretty.activate
     def test_follow(self):
 
+        self._register_remote()
         result = self._client.post(
                 path='/api/v1/accounts/%d/follow' % (
                     self._zachary.id,),
