@@ -102,8 +102,9 @@ def _async_fetch_user_inner(user):
             ('inbox', 'inbox'),
             #('outbox', 'outbox'),
             #('featured', 'featured'),
+            # ... created_at?
             # ... bot?
-            # ... moved_to?
+            ('movedTo', 'moved_to'),
             ]:
         if detailsname in details:
             setattr(user,
