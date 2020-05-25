@@ -18,7 +18,6 @@ def on_follow(sender, **kwargs):
         logger.debug("%s is local; not sending update", sender)
         return
 
-    print("Follow received:", sender)
     logger.info("Follow received: %s", sender)
 
     deliver(
