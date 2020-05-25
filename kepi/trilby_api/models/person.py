@@ -180,6 +180,26 @@ class RemotePerson(Person):
             unique = True,
             )
 
+    created_at = models.DateTimeField(
+            null = True,
+            default = None,
+            )
+
+    icon_image = models.ImageField(
+            help_text="A small square image used to identify you.",
+            null=True,
+            verbose_name='icon',
+            blank = True,
+            )
+
+    header_image = models.ImageField(
+            help_text="A large image, wider than it's tall, which appears "+\
+                    "at the top of your profile page.",
+            null=True,
+            verbose_name='header image',
+            blank = True,
+            )
+
     @property
     def is_local(self):
         return False
