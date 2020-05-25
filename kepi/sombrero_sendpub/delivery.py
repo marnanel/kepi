@@ -272,11 +272,15 @@ def _deliver_remote(
     # FIXME This is wrong-- we have to look up their inbox address
     # if we don't have it, and post to that
 
-    response = requests.post(
-            recipient.url,
-            data=str(message),
-            headers=headers,
-            )
+    try:
+        response = requests.post(
+                recipient.url,
+                data=str(message),
+                headers=headers,
+                )
+    except requests.exceptions.ConnectionError:
+        logger.debug('    -- cannot connect')
+        return
 
     logger.debug('    -- posted; server replied: %d %s',
             response.status_code, response.reason)
