@@ -69,6 +69,13 @@ class Person(PolymorphicModel):
             help_text="If True, only followers can see this account's statuses.",
             )
 
+    language = models.CharField(
+            default=settings.KEPI['LANGUAGES'][0],
+            max_length=16,
+            help_text="The language this user usually posts in. Use an ISO 639 "+\
+                    "code, such as 'en' or 'cy'.",
+            )
+
     bot = models.BooleanField(
             default=False,
             help_text="If True, this account is a bot. If False, it's a human.",
@@ -268,6 +275,18 @@ class LocalPerson(Person):
             null=True,
             verbose_name='header image',
             blank = True,
+            )
+
+    default_visibility = models.CharField(
+            max_length = 1,
+            default = trilby_utils.VISIBILITY_PUBLIC,
+            choices = trilby_utils.VISIBILITY_CHOICES,
+            help_text = "Default visibility.\n\n" +\
+                    trilby_utils.VISIBILITY_HELP_TEXT,
+            )
+
+    default_sensitive = models.BooleanField(
+            default = False,
             )
 
     def _generate_keys(self):

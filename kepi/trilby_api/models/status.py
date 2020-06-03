@@ -64,16 +64,8 @@ class Status(models.Model):
             max_length = 1,
             default = trilby_utils.VISIBILITY_PUBLIC,
             choices = trilby_utils.VISIBILITY_CHOICES,
-            help_text = """Visiblity of this status.
-
-            Public (A): visible to anyone.
-            Unlisted (U): visible to anyone, but
-                doesn't appear in timelines.
-            Private (X): only visible to followers.
-            Direct (D): visible to nobody except tagged people.
-
-            Additionally, a person tagged in a status can
-            always view that status.""",
+            help_text = "Visiblity of this status.\n\n"+\
+                    trilby_utils.VISIBILITY_HELP_TEXT,
             )
 
     language = models.CharField(
