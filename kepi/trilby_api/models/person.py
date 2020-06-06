@@ -98,14 +98,12 @@ class Person(PolymorphicModel):
 
     @property
     def followers(self):
-        # FIXME how should this work for remote?
         return Person.objects.filter(
             rel_following__following = self,
             )
 
     @property
     def following(self):
-        # FIXME how should this work for remote?
         return Person.objects.filter(
             rel_followers__follower = self,
             )
@@ -388,3 +386,51 @@ class LocalPerson(Person):
     @property
     def key_name(self):
         return self.url + '#main-key'
+
+    @property
+    def inbox(self):
+        """
+        Returns a QuerySet representing the user's inbox.
+
+        Your inbox contains:
+
+         - Everything you're tagged in
+         - All public and private posts of your own
+         - All public posts of your friends
+         - All private posts of your mutuals
+        """
+
+        import kepi.trilby_api.models as trilby_models
+
+        # tags aren't implemented; FIXME
+        everything_youre_tagged_in = trilby_models.Status.objects.none()
+
+        all_your_public_posts = trilby_models.Status.objects.filter(
+                account = self,
+                visibility = trilby_utils.VISIBILITY_PUBLIC,
+                )
+
+        all_your_private_posts = trilby_models.Status.objects.filter(
+                account = self,
+                visibility = trilby_utils.VISIBILITY_PRIVATE,
+                )
+
+        all_your_friends_public_posts = trilby_models.Status.objects.filter(
+                visibility = trilby_utils.VISIBILITY_PUBLIC,
+                account__rel_following__following = self,
+                )
+
+        all_your_mutuals_private_posts = trilby_models.Status.objects.filter(
+                visibility = trilby_utils.VISIBILITY_PRIVATE,
+                account__rel_following__following = self,
+                account__rel_followers__follower = self,
+                )
+
+        result = everything_youre_tagged_in.union(
+                all_your_public_posts,
+                all_your_private_posts,
+                all_your_friends_public_posts,
+                all_your_mutuals_private_posts,
+                )
+
+        return result
