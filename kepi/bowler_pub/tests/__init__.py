@@ -48,7 +48,7 @@ def create_local_person(name='jemima',
         if 'privateKey' not in kwargs:
             kwargs['privateKey'] = keys['private']
 
-    result = trilby_models.Person(
+    result = trilby_models.LocalPerson(
             username = name,
             **kwargs,
             )
