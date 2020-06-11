@@ -5,6 +5,10 @@ from oauth2_provider.models import Application
 import kepi.trilby_api.utils as trilby_utils
 import markdown
 
+"""
+These are the serialisers for the Mastodon protocol.
+"""
+
 #########################################
 
 class UserSerializer(serializers.ModelSerializer):

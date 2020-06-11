@@ -12,6 +12,7 @@ from django.conf import settings
 import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url
 import kepi.trilby_api.utils as trilby_utils
+import kepi.bowler_pub.serializers as bowler_serializers
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
@@ -387,10 +388,29 @@ class LocalPerson(Person):
     def key_name(self):
         return self.url + '#main-key'
 
+    def get_outbox_collection(self):
+        """
+        Returns a QuerySet representing the user's outbox.
+        """
+
+        # TODO Parameters to show access level.
+        # At present it only returns public posts.
+
+        import kepi.trilby_api.models as trilby_models
+
+        result = trilby_models.Status.objects.filter(
+                account = self,
+                visibility = trilby_utils.VISIBILITY_PUBLIC,
+                )
+
+        return result
+
     @property
     def inbox(self):
         """
         Returns a QuerySet representing the user's inbox.
+        (This will be called "inbox" rather than "get_inbox_collection"
+        until we can be sure it's not world-accessible from ActivityPub)
 
         Your inbox contains:
 

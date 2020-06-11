@@ -467,32 +467,42 @@ class UserCollectionView(KepiView):
             listname,
             *args, **kwargs):
 
-        from kepi.bowler_pub.models.collection import Collection, CollectionMember
+        from kepi.trilby_api.models import LocalPerson, Status
 
         logger.debug('Finding user %s\'s %s collection',
                 username, listname)
+
+        result = None
+
         try:
-            the_collection = Collection.objects.get(
-                    owner__id = '@'+username,
-                    name = listname)
+            user = LocalPerson.objects.get(local_user__username = username)
+        except LocalPerson.DoesNotExist:
+            logger.debug('  -- user does not exist')
+            user = None
 
-            logger.debug('  -- found collection: %s',
-                the_collection)
+        if user is not None:
+            method_name = f'get_{listname}_collection'
 
-            return CollectionMember.objects.filter(
-                    parent = the_collection,
-                    )
+            if hasattr(user, method_name):
+                method = getattr(user, method_name)
+                result = method()
+            else:
+                logger.warn(
+                        "user does not have a %s method; this is weird",
+                        method_name,
+                        )
 
-        except Collection.DoesNotExist:
-
+        if result is None:
             if self._default_to_existing:
                 logger.debug('  -- does not exist; returning empty')
 
-                return CollectionMember.objects.none()
+                return Status.objects.none()
             else:
                 logger.debug('  -- does not exist; 404')
 
                 raise Http404()
+
+        return result
 
     def activity_store(self, request,
             username,
@@ -544,7 +554,7 @@ class UserCollectionView(KepiView):
                 raise Http404()
 
     def _modify_list_item(self, obj):
-        return obj.member.activity_form
+        return obj
 
 class InboxView(UserCollectionView):
 
