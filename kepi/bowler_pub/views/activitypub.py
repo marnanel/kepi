@@ -24,16 +24,20 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from kepi.bowler_pub.models import *
 from kepi.bowler_pub.validation import validate
+import kepi.bowler_pub.serializers as bowler_serializers
+import kepi.bowler_pub.renderers
 from collections.abc import Iterable
 import logging
 import urllib.parse
 import json
+from rest_framework import generics, response
 
 logger = logging.getLogger(name='kepi')
 
 PAGE_LENGTH = 50
 PAGE_FIELD = 'page'
 
+# TODO: KepiView is obsolescent
 class KepiView(django.views.View):
 
     def __init__(self):
@@ -458,6 +462,7 @@ class AllUsersView(KepiView):
 
 ########################################
 
+# TODO: UserCollectionView is obsolescent
 class UserCollectionView(KepiView):
 
     _default_to_existing = False
@@ -624,9 +629,65 @@ class InboxView(UserCollectionView):
                     listname = 'inbox',
                     )
 
-class OutboxView(UserCollectionView):
+class OutboxView(generics.GenericAPIView):
 
-    _default_to_existing = True
+    listname = 'outbox'
+    permission_classes = ()
+    renderer_classes = [kepi.bowler_pub.renderers.ActivityRenderer]
+
+    def get(self, request,
+            username,
+            *args, **kwargs):
+
+        from kepi.trilby_api.models import LocalPerson, Status
+
+        logger.debug('Finding user %s\'s %s collection',
+                username, self.listname)
+
+        result = None
+
+        try:
+            user = LocalPerson.objects.get(local_user__username = username)
+        except LocalPerson.DoesNotExist:
+            logger.debug('  -- user does not exist')
+            user = None
+
+        if user is not None:
+            method_name = f'get_{self.listname}_collection'
+
+            if hasattr(user, method_name):
+                method = getattr(user, method_name)
+                result = method()
+            else:
+                logger.warn(
+                        "user does not have a %s method; this is weird",
+                        method_name,
+                        )
+
+        if result is None:
+            if self._default_to_existing:
+                logger.debug('  -- does not exist; returning empty')
+
+                return Status.objects.none()
+            else:
+                logger.debug('  -- does not exist; 404')
+
+                raise Http404()
+
+        serializer = bowler_serializers.CreateActivitySerializer(
+                result,
+                many = True,
+                context = {
+                    'request': request,
+                    },
+                )
+
+        return JsonResponse(
+                serializer.data,
+                safe = False, # it's a list
+                status = 200,
+                reason = 'Done',
+                )
 
     def activity_store(self, request,
             username, *args, **kwargs):

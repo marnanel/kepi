@@ -54,7 +54,7 @@ temp_example = """
 -}
 """
 
-class StatusCreateSerializer(serializers.ModelSerializer):
+class CreateActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Status
         fields = (
