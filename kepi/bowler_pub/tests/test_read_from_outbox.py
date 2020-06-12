@@ -2,6 +2,7 @@ from django.conf import settings
 from django.test import TestCase, Client
 from . import create_local_person
 from kepi.trilby_api.models import Status
+import kepi.trilby_api.utils as trilby_utils
 from unittest import skip
 import httpretty
 import logging
@@ -11,7 +12,7 @@ ALICE_ID = 'https://altair.example.com/users/alice'
 OUTBOX = ALICE_ID+'/outbox'
 OUTBOX_PATH = '/users/alice/outbox'
 
-MIME_TYPE = 'application/activity+json'
+MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 
 logger = logging.getLogger(name='kepi')
 
@@ -47,7 +48,7 @@ class TestOutbox(TestCase):
                 response.status_code,
                 200)
 
-        return json.loads(
+        return json.loadsj
                 str(response.content, encoding='UTF-8'))
 
     # XXX Add a boolean flag about whether to authenticate self
@@ -81,6 +82,7 @@ class TestOutbox(TestCase):
     def _add_Victoria_Wood_post(self):
         result = Status(
                 account = self._example_user,
+                visibility = trilby_utils.VISIBILITY_PUBLIC,
                 content = "<p>Victoria Wood parodying Peter Skellern. I laughed so much at this, though you might have to know both singers&apos; work in order to find it quite as funny.</p><p>- love song<br />- self-doubt<br />- refs to northern England<br />- preamble<br />- piano solo<br />- brass band<br />- choir backing<br />- love is cosy<br />- heavy rhotic vowels</p><p><a href=\"https://youtu.be/782hqdmnq7g\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">youtu.be/782hqdmnq7g</span><span class=\"invisible\"></span></a></p>",
                  )
 
