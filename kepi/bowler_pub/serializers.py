@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from kepi.trilby_api.models.status import Status
 from rest_framework_recursive.fields import RecursiveField
+from rest_framework_constant.fields import ConstantField
 
 """
 These are the serialisers for ActivityPub.
@@ -54,18 +55,6 @@ temp_example = """
 -}
 """
 
-class CreateActivitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Status
-        fields = (
-                'type',
-                'actor',
-                'published',
-                'to',
-                'cc',
-                'object',
-                )
-
 class StatusObjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Status
@@ -86,3 +75,34 @@ class StatusObjectSerializer(serializers.ModelSerializer):
                 'tag',
                 'replies',
                 )
+
+class CreateActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Status
+        fields = (
+                'type',
+                'actor',
+                'published',
+                'to',
+                'cc',
+                'object',
+                )
+
+    type = ConstantField(
+            value="Create",
+            )
+    actor = serializers.CharField(
+            source = "account",
+            )
+    published = serializers.DateTimeField(
+            source = "created_at",
+            )
+    to = ConstantField(
+            value="FIXME", # FIXME
+            )
+    cc = ConstantField(
+            value="FIXME", # FIXME
+            )
+    object = ConstantField(
+            value="FIXME", # FIXME
+            )
