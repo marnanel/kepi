@@ -11,7 +11,7 @@ ALICE_ID = 'https://altair.example.com/users/alice'
 OUTBOX = ALICE_ID+'/outbox'
 OUTBOX_PATH = '/users/alice/outbox'
 
-MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+MIME_TYPE = 'application/activity+json'
 
 logger = logging.getLogger(name='kepi')
 
