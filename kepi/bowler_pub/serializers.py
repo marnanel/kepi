@@ -106,3 +106,26 @@ class CreateActivitySerializer(serializers.ModelSerializer):
     object = ConstantField(
             value="FIXME", # FIXME
             )
+
+class CollectionIndexSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+                '@context',
+                'id',
+                'type',
+                'totalItems',
+                'first',
+                )
+
+class CollectionPageSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            '@context',
+            'id',
+            'type',
+            'totalItems',
+            'prev',
+            'next',
+            'partOf',
+            'orderedItems',
+            )
