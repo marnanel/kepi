@@ -1,13 +1,12 @@
-from .activitypub import KepiView, ThingView, ActorView, \
+from .activitypub import \
         FollowersView, FollowingView, \
         AllUsersView, \
-        UserCollectionView, \
-        InboxView, OutboxView
+        InboxView, OutboxView, \
+        CollectionView
 
 __all__ = [
-        'KepiView', 'ThingView', 'ActorView',
         'FollowersView', 'FollowingView',
         'AllUsersView',
-        'UserCollectionView',
         'InboxView', 'OutboxView',
+        'CollectionView',
         ]

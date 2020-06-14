@@ -629,14 +629,87 @@ class InboxView(UserCollectionView):
                     listname = 'inbox',
                     )
 
-class OutboxView(generics.GenericAPIView):
+class CollectionView(generics.GenericAPIView):
 
-    listname = 'outbox'
     permission_classes = ()
     renderer_classes = [kepi.bowler_pub.renderers.ActivityRenderer]
 
+    listname = None
+    default_to_existing = True
+
     def get(self, request,
             username,
+            listname = None,
+            *args, **kwargs):
+
+        items = self._get_items(username, listname,
+                *args, **kwargs)
+
+        # XXX assert that items.ordered
+
+        our_url = request.build_absolute_uri()
+        index_url = self._make_query_page_url(request, None)
+
+        if PAGE_FIELD in request.GET:
+
+            page_number = int(request.GET[PAGE_FIELD])
+            logger.debug("    -- it's a request for page %d",
+                    page_number)
+
+            start = (page_number-1) * PAGE_LENGTH
+
+            listed_items = items[start: start+PAGE_LENGTH]
+
+            result = {
+                    "@context": ATSIGN_CONTEXT,
+                    "type" : "OrderedCollectionPage",
+                    "id" : our_url,
+                    "totalItems" : items.count(),
+                    "orderedItems" : [self._modify_list_item(x)
+                        for x in listed_items],
+                    "partOf": index_url,
+                    }
+
+            if page_number > 1:
+               result["prev"] = self._make_query_page_url(request,
+                       page_number-1)
+
+            if start+PAGE_LENGTH < items.count():
+               result["next"] = self._make_query_page_url(request,
+                       page_number+1)
+
+        else:
+
+            # Index page.
+            logger.debug("    -- it's a request for the index")
+
+            count = items.count()
+
+            result = {
+                    "@context": ATSIGN_CONTEXT,
+                    "type": "OrderedCollection",
+                    "id": index_url,
+                    "totalItems" : count,
+                    }
+
+            if count>0:
+                    result["first"] = self._make_query_page_url(
+                            request = request,
+                            page_number = 1,
+                            )
+
+                    result["last"] = self._make_query_page_url(
+                            request = request,
+                            page_number = int(
+                                1 + ((count+1)/PAGE_LENGTH),
+                            ),
+                            )
+
+        return self._to_json(result)
+
+    def _get_items(self,
+            username,
+            listname = None,
             *args, **kwargs):
 
         from kepi.trilby_api.models import LocalPerson, Status
@@ -647,7 +720,9 @@ class OutboxView(generics.GenericAPIView):
         result = None
 
         try:
-            user = LocalPerson.objects.get(local_user__username = username)
+            user = LocalPerson.objects.get(
+                    local_user__username = username,
+                    )
         except LocalPerson.DoesNotExist:
             logger.debug('  -- user does not exist')
             user = None
@@ -665,7 +740,7 @@ class OutboxView(generics.GenericAPIView):
                         )
 
         if result is None:
-            if self._default_to_existing:
+            if self.default_to_existing:
                 logger.debug('  -- does not exist; returning empty')
 
                 return Status.objects.none()
@@ -674,75 +749,67 @@ class OutboxView(generics.GenericAPIView):
 
                 raise Http404()
 
+        return result
+
+    def _to_json(self, data):
+
+        if '@context' not in data:
+            data['@context'] = ATSIGN_CONTEXT
+
+        if 'former_type' in data:
+            data['type'] = 'Tombstone'
+
+        result = JsonResponse(
+                data=data,
+                json_dumps_params={
+                    'sort_keys': True,
+                    'indent': 2,
+                    }
+                )
+
+        result['Content-Type'] = 'application/activity+json; charset=utf-8'
+
+        if 'former_type' in data:
+            result.reason = 'Entombed'
+            result.status_code = 410
+
+        return result
+
+    def _make_query_page_url(
+            self,
+            request,
+            page_number,
+            ):
+        fields = dict(request.GET)
+
+        if page_number is None:
+            if PAGE_FIELD in fields:
+                del fields[PAGE_FIELD]
+        else:
+            fields[PAGE_FIELD] = page_number
+
+        encoded = urllib.parse.urlencode(fields)
+
+        if encoded!='':
+            encoded = '?'+encoded
+
+        return '{}://{}{}{}'.format(
+                request.scheme,
+                request.get_host(),
+                request.path,
+                encoded,
+                )
+
+    def _modify_list_item(self, item):
         serializer = bowler_serializers.CreateActivitySerializer(
-                result,
-                many = True,
-                context = {
-                    'request': request,
-                    },
+                item,
                 )
+        return serializer.data
 
-        return JsonResponse(
-                serializer.data,
-                safe = False, # it's a list
-                status = 200,
-                reason = 'Done',
-                )
+class OutboxView(CollectionView):
 
-    def activity_store(self, request,
-            username, *args, **kwargs):
-        super().activity_store(
-                request,
-                username = username,
-                listname = 'outbox',
-                )
+    listname = 'outbox'
 
-    def post(self, request, *args, **kwargs):
-        logger.debug('Outbox: received %s',
-                str(request.body, 'UTF-8'))
-        logger.debug('Outbox: with headers %s',
-                request.headers)
+class InboxView(CollectionView):
 
-        try:
-            fields = json.loads(request.body)
-        except json.JSONDecoderError:
-            logger.info('Outbox: invalid JSON; dropping')
-            return HttpResponse(
-                    status = 400,
-                    reason = 'Invalid JSON',
-                    content = 'Invalid JSON',
-                    content_type = 'text/plain',
-                    )
-
-        actor = fields.get('actor', None)
-        if actor is None:
-            actor = fields.get('attributedTo', None)
-
-        owner = configured_url('USER_LINK',
-                username = kwargs['username'],
-                )
-
-        if actor != owner:
-            logger.info('Outbox: actor was %s but we needed %s',
-                    actor, owner)
-
-            return HttpResponse(
-                    status = 410,
-                    reason = 'Not yours',
-                    content = 'Sir, you are an interloper!',
-                    content_type = 'text/plain',
-                    )
-
-        validate(
-                path = request.path,
-                headers = request.headers,
-                body = request.body,
-                is_local_user = True,
-                )
-
-        return HttpResponse(
-                status = 200,
-                reason = 'Thank you',
-                content = '',
-                content_type = 'text/plain',
-                )
+    listname = 'inbox'
