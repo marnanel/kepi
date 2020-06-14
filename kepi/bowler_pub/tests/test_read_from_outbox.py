@@ -12,7 +12,7 @@ ALICE_ID = 'https://altair.example.com/users/alice'
 OUTBOX = ALICE_ID+'/outbox'
 OUTBOX_PATH = '/users/alice/outbox'
 
-MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+MIME_TYPE = 'application/activity+json'
 
 logger = logging.getLogger(name='kepi')
 
@@ -48,7 +48,7 @@ class TestOutbox(TestCase):
                 response.status_code,
                 200)
 
-        return json.loadsj
+        return json.loads(
                 str(response.content, encoding='UTF-8'))
 
     # XXX Add a boolean flag about whether to authenticate self
