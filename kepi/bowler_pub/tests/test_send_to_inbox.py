@@ -35,11 +35,17 @@ OBJECT_FORM = {
         "cc": "https://e14n.com/evan"
         }
 
-MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+MIME_TYPE = 'application/activity+json'
 INVALID_UTF8 = b"\xa0\xa1"
 
 logger = logging.getLogger(name='kepi')
 
+@skip("""Sending to inbox is not yet implemented, not least
+because there don't seem to be any clients to test it with.
+The ActivityPub spec seems straightforward, though, so we
+should implement it at some point. The code in this test
+was written for the old bowler-heavy kepi design, and
+will need a lot of rewriting.""")
 class TestInbox2(TestCase):
 
     def setUp(self):
