@@ -61,12 +61,12 @@ def create_local_note(
         content = 'This is just a test',
         **kwargs):
 
-    if isinstance(attributed_to, TrilbyUser):
-        attributed_to = attributed_to.person
+    if isinstance(attributedTo, trilby_models.TrilbyUser):
+        attributedTo = attributedTo.person
 
     result = trilby_models.Status(
         remote_url = None,
-        account = posted_by,
+        account = attributedTo,
         content = content,
         **kwargs,
         )
