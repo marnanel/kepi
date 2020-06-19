@@ -28,13 +28,15 @@ REMOTE_SHARED_INBOX = 'https://remote.example.org/shared-inbox'
 LOCAL_ALICE = 'https://testserver/users/alice'
 LOCAL_BOB = 'https://testserver/users/bob'
 
-class TestValidationTasks(TestCase):
+class TestValidation(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
 
     @httpretty.activate
     def test_local_lookup(self):
+
+        from kepi.trilby_api.models import Follow
 
         keys = json.load(open('kepi/bowler_pub/tests/keys/keys-0001.json', 'r'))
 
@@ -55,13 +57,24 @@ class TestValidationTasks(TestCase):
                 secret = keys['private'],
                 )
 
+        create_remote_person(
+                LOCAL_ALICE,
+                'Alice',
+                load_default_keys_from='kepi/bowler_pub/tests/keys/keys-0001.json',
+                )
+
         validate(path=INBOX_PATH,
                 headers=headers,
                 body=body,
                 is_local_user=False)
 
-        self.assertTrue(remote_object_is_recorded(ACTIVITY_ID),
-                msg="Message passed validation")
+        self.assertTrue(
+                Follow.objects.filter(
+                    follower = alice,
+                    following = bob,
+                    ).exists(),
+                msg="Message passed validation",
+                )
 
     @httpretty.activate
     def test_remote_user_known(self):
