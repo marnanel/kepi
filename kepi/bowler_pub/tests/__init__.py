@@ -335,13 +335,3 @@ def remote_user(url, name,
                     }
 
         return result
-
-def remote_object_is_recorded(url):
-
-    from kepi.bowler_pub.models import AcObject
-
-    try:
-        result = AcObject.objects.get(id=url)
-        return True
-    except AcObject.DoesNotExist:
-        return False
