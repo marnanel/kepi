@@ -1,7 +1,7 @@
 # validation.py
 #
-# Part of kepi, an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
 """
@@ -20,6 +20,7 @@ import django.core.exceptions
 import uuid
 from httpsig.verify import HeaderVerifier
 from kepi.sombrero_sendpub.fetch import fetch_user
+from kepi.bowler_pub.create import create
 
 logger = logging.getLogger(name='kepi')
 
@@ -246,18 +247,6 @@ def _run_validation(
 
     logger.debug('%s: validation passed!', message)
 
-    result = create(
-            sender=actor,
-            is_local_user = message.is_local_user,
-            **(message.activity_form),
-            run_delivery = True,
-            incoming = True,
-            )
-
-    if result is None:
-        logger.info('%s: creation was refused; bailing', message)
-        return
-
-    logger.info('%s: produced new Thing %s', message, result)
+    result = create(message)
 
     return result

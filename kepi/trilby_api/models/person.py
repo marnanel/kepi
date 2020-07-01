@@ -12,10 +12,12 @@ from django.conf import settings
 import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url
 import kepi.trilby_api.utils as trilby_utils
+import kepi.bowler_pub.utils as bowler_utils
 import kepi.bowler_pub.serializers as bowler_serializers
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
+import re
 import logging
 
 logger = logging.Logger('kepi')
@@ -116,6 +118,62 @@ class Person(PolymorphicModel):
     @property
     def emojis(self):
         return [] # FIXME
+
+    @classmethod
+    def lookup(self, name,
+            create_missing_remote = False):
+        # FIXME not yet tested
+        # FIXME this should check @name@host form, too
+
+        if bowler_utils.is_local(name):
+
+            # FIXME This is inelegant.
+            # We should have this regexp in the settings.
+            # Alternatively, we could use the dispatcher and
+            # find whether it points at the relevant view.
+            names = re.findall(r'/users/([^/]+)', name)
+
+            if not names:
+                return None
+
+            try:
+                result = LocalPerson.objects.get(
+                        local_user__username = names[0],
+                        )
+                logger.debug('%s is local and exists: %s',
+                        name, result)
+
+            except LocalPerson.DoesNotExist:
+                logger.debug('%s is local but doesn\'t exist.',
+                        name)
+
+                return None
+
+        else:
+            try:
+                result = RemotePerson.objects.get(
+                        url = name,
+                        )
+                logger.debug('%s is remote and exists: %s',
+                        name, result)
+
+            except RemotePerson.DoesNotExist:
+
+                if not create_missing_remote:
+                    logger.debug('%s is remote but doesn\'t exist.',
+                            name)
+
+                    return None
+
+                result = RemotePerson(
+                        url = name,
+                        )
+                result.save()
+
+                logger.debug('%s is remote but didn\'t exist, so we created it: %s',
+                        name, result)
+
+        return result
 
 ########################################
 

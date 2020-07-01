@@ -56,6 +56,8 @@ def _async_fetch_user(user):
 
 def _async_fetch_user_inner(user):
 
+    # XXX If local...
+
     if user.url is None and user.acct is not None:
         _get_url_from_webfinger(user)
 
