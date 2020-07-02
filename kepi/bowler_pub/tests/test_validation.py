@@ -8,7 +8,7 @@ import logging
 import httpsig
 import json
 
-# FIXME This whole module should be rewritten to use httpretty
+# FIXME much refactoring could be done here
 
 # FIXME test caching
 # FIXME test invalid keys
@@ -111,6 +111,13 @@ class TestValidation(TestCase):
                 body=body,
                 is_local_user=False)
 
+        self.assertEqual(
+                len(trilby_models.Follow.objects.filter(
+                    following=alice,
+                    )),
+                1,
+                msg="The message validated successfully")
+
         fred = trilby_models.RemotePerson.objects.get(
             url=REMOTE_FRED,
             )
@@ -135,6 +142,10 @@ class TestValidation(TestCase):
 
         def on_fetch():
             fetched['fred'] = True
+
+        alice = create_local_person(
+                name = 'alice',
+                )
 
         create_remote_person(
                 url = REMOTE_FRED,
@@ -161,8 +172,12 @@ class TestValidation(TestCase):
                 body=body,
                 is_local_user=False)
 
-        self.assertFalse(remote_object_is_recorded(ACTIVITY_ID),
-                msg="Message failed validation")
+        self.assertEqual(
+                len(trilby_models.Follow.objects.filter(
+                    following=alice,
+                    )),
+                0,
+                msg="The message did not validate")
 
         self.assertTrue(
                 fetched['fred'],
@@ -177,6 +192,10 @@ class TestValidation(TestCase):
                 }
         def on_fetch():
             fetched['fred'] = True
+
+        alice = create_local_person(
+                name = 'alice',
+                )
 
         mock_remote_object(
                 url = REMOTE_FRED,
@@ -197,6 +216,13 @@ class TestValidation(TestCase):
                 headers=headers,
                 body=body,
                 is_local_user=False)
+
+        self.assertEqual(
+                len(trilby_models.Follow.objects.filter(
+                    following=alice,
+                    )),
+                0,
+                msg="The message did not validate")
 
         fred = trilby_models.RemotePerson.objects.get(
             url=REMOTE_FRED,
@@ -220,9 +246,13 @@ class TestValidation(TestCase):
         def on_fetch():
             fetched['fred'] = True
 
+        alice = create_local_person(
+                name = 'alice',
+                )
+
         mock_remote_object(
                 url = REMOTE_FRED,
-                content = "They went away",
+                content = "Who? Never heard of them",
                 status = 404,
                 on_fetch = on_fetch,
                 )
@@ -240,8 +270,12 @@ class TestValidation(TestCase):
                 body=body,
                 is_local_user=False)
 
-        self.assertFalse(remote_object_is_recorded(ACTIVITY_ID),
-                msg="Message failed validation")
+        self.assertEqual(
+                len(trilby_models.Follow.objects.filter(
+                    following=alice,
+                    )),
+                0,
+                msg="The message did not validate")
 
         self.assertTrue(
                 fetched['fred'],
