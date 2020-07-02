@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from kepi.bowler_pub.validation import validate
+import kepi.trilby_api.models as trilby_models
 from unittest import skip
 import httpretty
 from . import *
@@ -110,8 +111,10 @@ class TestValidation(TestCase):
                 body=body,
                 is_local_user=False)
 
-        self.assertTrue(remote_object_is_recorded(ACTIVITY_ID),
-                msg="Message passed validation")
+        self.assertTrue(trilby_models.RemotePerson.objects.filter(
+            url=REMOTE_FRED,
+            ).exists(),
+            msg="Fred's record was stored locally")
 
         self.assertTrue(
                 fetched['fred'],
