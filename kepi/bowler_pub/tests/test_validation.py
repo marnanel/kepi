@@ -111,10 +111,13 @@ class TestValidation(TestCase):
                 body=body,
                 is_local_user=False)
 
-        self.assertTrue(trilby_models.RemotePerson.objects.filter(
+        fred = trilby_models.RemotePerson.objects.get(
             url=REMOTE_FRED,
-            ).exists(),
-            msg="Fred's record was stored locally")
+            )
+
+        self.assertEqual(fred.status,
+                200,
+                msg="Fred's record was stored locally as OK")
 
         self.assertTrue(
                 fetched['fred'],
@@ -195,8 +198,13 @@ class TestValidation(TestCase):
                 body=body,
                 is_local_user=False)
 
-        self.assertFalse(remote_object_is_recorded(ACTIVITY_ID),
-                msg="Message failed validation")
+        fred = trilby_models.RemotePerson.objects.get(
+            url=REMOTE_FRED,
+            )
+
+        self.assertEqual(fred.status,
+                410,
+                msg="Fred's record was stored locally as Gone")
 
         self.assertTrue(
                 fetched['fred'],
