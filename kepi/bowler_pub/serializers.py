@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from kepi.trilby_api.models.status import Status
+import kepi.trilby_api.models as trilby_models
 from rest_framework_recursive.fields import RecursiveField
 from rest_framework_constant.fields import ConstantField
+from kepi.bowler_pub.utils import uri_to_url
+from django.conf import settings
 
 """
 These are the serialisers for ActivityPub.
@@ -9,55 +11,9 @@ These are the serialisers for ActivityPub.
 
 #########################################
 
-temp_example = """
--VICTORIA_WOOD = {
--            "type": "Create",
--            "actor": "https://altair.example.com/users/alice",
--            "published": "2019-07-27T13:08:46Z",
--            "to": [
--                "https://www.w3.org/ns/activitystreams#Public"
--            ],
--            "cc": [
--                "https://altair.example.com/users/alice/followers"
--            ],
--            "object": {
--                "id": "https://altair.example.com/users/alice/statuses/102513569060504404",
--                "type": "Note",
--                "summary": None,
--                "inReplyTo": "https://altair.example.com/users/alice/statuses/102513505242530375",
--                "published": "2019-07-27T13:08:46Z",
--                "url": "https://altair.example.com/@marnanel/102513569060504404",
--                "attributedTo": "https://altair.example.com/users/alice",
--                "to": [
--                    "https://www.w3.org/ns/activitystreams#Public"
--                ],
--                "cc": [
--                    "https://altair.example.com/users/alice/followers"
--                ],
--                "sensitive": False,
--                "conversation": "tag:altair.example.com,2019-07-27:objectId=17498957:objectType=Conversation",
--                "content": "<p>Victoria Wood parodying Peter Skellern. I laughed so much at this, though you might have to know both singers&apos; work in order to find it quite as funny.</p><p>- love song<br />- self-doubt<br />- refs to northern England<br />- preamble<br />- piano solo<br />- brass band<br />- choir backing<br />- love is cosy<br />- heavy rhotic vowels</p><p><a href=\"https://youtu.be/782hqdmnq7g\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">youtu.be/782hqdmnq7g</span><span class=\"invisible\"></span></a></p>",
--                "contentMap": {
--                    "en": "<p>Victoria Wood parodying Peter Skellern. I laughed so much at this, though you might have to know both singers&apos; work in order to find it quite as funny.</p><p>- love song<br />- self-doubt<br />- refs to northern England<br />- preamble<br />- piano solo<br />- brass band<br />- choir backing<br />- love is cosy<br />- heavy rhotic vowels</p><p><a href=\"https://youtu.be/782hqdmnq7g\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">youtu.be/782hqdmnq7g</span><span class=\"invisible\"></span></a></p>",
--                },
--                "attachment": [],
--                "tag": [],
--                "replies": {
--                    "id": "https://altair.example.com/users/alice/statuses/102513569060504404/replies",
--                    "type": "Collection",
--                    "first": {
--                        "type": "CollectionPage",
--                        "partOf": "https://altair.example.com/users/alice/statuses/102513569060504404/replies",
--                        "items": []
--                    }
--                }
--            }
--}
-"""
-
 class StatusObjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Status
+        model = trilby_models.Status
         fields = (
                 'id',
                 'type',
@@ -78,7 +34,7 @@ class StatusObjectSerializer(serializers.ModelSerializer):
 
 class CreateActivitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Status
+        model = trilby_models.Status
         fields = (
                 'type',
                 'actor',
@@ -105,4 +61,111 @@ class CreateActivitySerializer(serializers.ModelSerializer):
             )
     object = ConstantField(
             value="FIXME", # FIXME
+            )
+
+class ImageField(serializers.Field):
+
+    def to_representation(self, value):
+        return {
+                'type': 'Image',
+                'mediaType': 'image/jpg', # FIXME always?
+                'url': value,
+                }
+
+class PersonEndpointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = trilby_models.LocalPerson
+        fields = (
+                'sharedInbox',
+                )
+    sharedInbox = ConstantField(
+        value = uri_to_url(settings.KEPI['USER_OUTBOX_LINK'])
+            )
+
+class PersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = trilby_models.LocalPerson
+        fields = (
+                'id',
+                'type',
+                'following',
+                'followers',
+                'inbox',
+                'outbox',
+                'featured',
+                'endpoints',
+                'preferredUsername',
+                'name',
+                'summary',
+                'url',
+                'manuallyApprovesFollowers',
+                'publicKey',
+                'tag',
+                'attachment',
+                'icon',
+                'image',
+                )
+
+    id = serializers.URLField(
+            source = "url",
+            )
+
+    type = ConstantField(
+            value="Person",
+            )
+
+    following = serializers.URLField(
+            source = "following_url",
+            )
+
+    followers = serializers.URLField(
+            source = "followers_url",
+            )
+
+    inbox = serializers.URLField(
+            source = "inbox_url",
+            )
+
+    outbox = serializers.URLField(
+            source = "outbox_url",
+            )
+
+    featured = serializers.URLField(
+            source = "featured_url",
+            )
+
+    endpoints = PersonEndpointSerializer(
+            source = '*',
+            )
+
+    preferredUsername = serializers.CharField(
+            source = "username",
+            )
+
+    name = serializers.CharField(
+            source = "display_name",
+            )
+
+    summary = serializers.CharField(
+            source = "note",
+            )
+
+    manuallyApprovesFollowers = serializers.BooleanField(
+            source = "auto_follow",
+            )
+
+    tag = ConstantField(
+            value = [],
+            )
+
+    attachment = ConstantField(
+            value = [],
+            )
+
+    icon = ImageField(
+            source='icon_or_default',
+            )
+
+    image = ImageField(
+            source='header_or_default',
             )
