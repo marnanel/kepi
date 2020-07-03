@@ -26,6 +26,7 @@ from kepi.bowler_pub.models import *
 from kepi.bowler_pub.validation import validate
 import kepi.bowler_pub.serializers as bowler_serializers
 import kepi.bowler_pub.renderers
+import kepi.trilby_api.models as trilby_models
 from collections.abc import Iterable
 import logging
 import urllib.parse
@@ -292,52 +293,31 @@ class KepiView(django.views.View):
         logger.debug('  -- default _modify_list_item for %s', obj)
         return self._render_object(obj)
 
-class ThingView(KepiView):
-
-    def activity_get(self, request, *args, **kwargs):
-
-        try:
-            logger.debug('Looking up Object by id==%s',
-                    kwargs['id'])
-            activity_object = AcObject.objects.get(
-                    id='/'+kwargs['id'],
-                    )
-
-        except AcObject.DoesNotExist:
-            logger.info('  -- unknown: %s', kwargs)
-            return None
-        except django.core.exceptions.ValidationError:
-            logger.info('  -- invalid: %s', kwargs)
-            return None
-
-        result = activity_object
-        logger.debug('  -- found object: %s', result)
-
-        return result
-
-class ActorView(ThingView):
+class PersonView(KepiView):
 
     def activity_get(self, request, *args, **kwargs):
 
         self._username = kwargs['username']
 
         try:
-            activity_object = AcActor.objects.get(
-                    id='@'+kwargs['username'],
+            person = trilby_models.LocalPerson.objects.get(
+                    local_user__username = self._username,
                     )
+            logger.debug('  -- found user: %s', person)
 
-        except AcActor.DoesNotExist:
+        except trilby_models.LocalPerson.DoesNotExist:
             logger.info('  -- unknown user: %s', kwargs)
             return None
         except django.core.exceptions.ValidationError:
             logger.info('  -- invalid: %s', kwargs)
             return None
 
-        result = activity_object
-        logger.debug('  -- found object: %s', result)
+        serializer = bowler_serializers.PersonSerializer(
+                person,
+                )
+        return serializer.data
 
-        return result
-
+    # FIXME rewrite using new API
     def activity_store(self, request, *args, **kwargs):
 
         from kepi.bowler_pub.models.collection import Collection
