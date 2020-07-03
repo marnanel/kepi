@@ -13,7 +13,7 @@ import kepi.bowler_pub.views as bowler_pub_views
 
 urlpatterns = [
         path('users', bowler_pub_views.AllUsersView.as_view()),
-        #path('users/<str:username>', bowler_pub_views.ActorView.as_view()),
+        path('users/<str:username>', bowler_pub_views.PersonView.as_view()),
         path('users/<str:username>/inbox', bowler_pub_views.InboxView.as_view()),
         path('users/<str:username>/outbox', bowler_pub_views.OutboxView.as_view()),
         path('users/<str:username>/followers', bowler_pub_views.FollowersView.as_view()),
