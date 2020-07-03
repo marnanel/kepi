@@ -13,7 +13,6 @@ import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url
 import kepi.trilby_api.utils as trilby_utils
 import kepi.bowler_pub.utils as bowler_utils
-import kepi.bowler_pub.serializers as bowler_serializers
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
