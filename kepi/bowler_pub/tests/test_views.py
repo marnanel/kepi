@@ -28,11 +28,12 @@ class TestKepiView(TestCase):
     def test_single_bowler_pub_view(self):
 
         alice = create_local_person('alice',
-                summary = ALICE_SUMMARY,
+                note = ALICE_SUMMARY,
                 )
 
         c = Client()
         response = c.get('/users/alice')
+        self.assertEqual(response.status_code, 200)
         result = _response_to_dict(response)
 
         self.assertDictContainsSubset(
@@ -61,6 +62,7 @@ class TestKepiView(TestCase):
 
         c = Client()
         response = c.get('/users')
+        self.assertEqual(response.status_code, 200)
         result = _response_to_dict(response)
 
         self.assertDictContainsSubset(
