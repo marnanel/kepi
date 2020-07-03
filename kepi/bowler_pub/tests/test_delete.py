@@ -5,6 +5,7 @@
 # Licensed under the GNU Public License v2.
 
 from django.test import TestCase
+import logging
 
 logger = logging.getLogger(name='kepi')
 
