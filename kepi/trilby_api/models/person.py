@@ -511,3 +511,28 @@ class LocalPerson(Person):
                 )
 
         return result
+
+    def inbox_url(self):
+        return uri_to_url(settings.KEPI['USER_INBOX_LINK'] % {
+            'username': self.local_user.username,
+            })
+
+    def outbox_url(self):
+        return uri_to_url(settings.KEPI['USER_OUTBOX_LINK'] % {
+            'username': self.local_user.username,
+            })
+
+    def featured_url(self):
+        return uri_to_url(settings.KEPI['USER_FEATURED_LINK'] % {
+            'username': self.local_user.username,
+            })
+
+    def following_url(self):
+        return uri_to_url(settings.KEPI['USER_FOLLOWING_LINK'] % {
+            'username': self.local_user.username,
+            })
+
+    def followers_url(self):
+        return uri_to_url(settings.KEPI['USER_FOLLOWERS_LINK'] % {
+            'username': self.local_user.username,
+            })
