@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from . import *
+from unittest import skip
 import logging
 import json
 
@@ -55,55 +56,7 @@ class TestKepiView(TestCase):
                 ALICE_SUMMARY,
                 )
 
-    def test_multiple_bowler_pub_view(self):
-
-        alice = create_local_person('alice')
-        bob = create_local_person('bob')
-
-        c = Client()
-        response = c.get('/users')
-        self.assertEqual(response.status_code, 200)
-        result = _response_to_dict(response)
-
-        self.assertDictContainsSubset(
-                {
-                    "first": "http://testserver/users?page=1",
-                    "id": "http://testserver/users",
-                    "totalItems": 2,
-                    "type": "OrderedCollection"
-                    },
-                result,
-                )
-
-        response = c.get('/users?page=1')
-        result = _response_to_dict(response)
-
-        self.assertDictContainsSubset(
-                {
-                    'id': 'http://testserver/users?page=1',
-                    'partOf': 'http://testserver/users',
-                    'totalItems': 2,
-                    'type': 'OrderedCollectionPage',
-                    },
-                result,
-                )
-
-        self.assertEqual(
-                len(result['orderedItems']),
-                2)
-
-        for item, name in zip(
-                result['orderedItems'],
-                ['alice', 'bob']):
-            self.assertDictContainsSubset(
-                    {
-                        'id': 'https://testserver/users/'+name,
-                        'name': name,
-                        'type': 'Person',
-                        },
-                    item,
-                    )
-
+@skip("Tombstones are not supported in this version")
 class TestTombstone(TestCase):
 
     def setUp(self):
