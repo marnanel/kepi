@@ -13,6 +13,9 @@ logger = logging.getLogger(name='kepi')
 class DummyMessage(object):
     fields = None
 
+    def __str__(self):
+        return 'test message'
+
 class TestCreate(TestCase):
 
     def setUp(self):
