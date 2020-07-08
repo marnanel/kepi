@@ -1,18 +1,17 @@
 from django.test import TestCase
 from kepi.bowler_pub.tests import create_local_note, create_local_person
-from kepi.bowler_pub.create import create
-from kepi.bowler_pub.models.audience import Audience, AUDIENCE_FIELD_NAMES
-from kepi.bowler_pub.models.mention import Mention
-from kepi.bowler_pub.models.item import AcItem
-from .. import create_local_person
 import logging
-import json
 from django.conf import settings
+from kepi.bowler_pub.create import create
+import kepi.trilby_api.models as trilby_models
 
 REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'
 
 logger = logging.getLogger(name='kepi')
+
+class DummyMessage(object):
+    fields = None
 
 class TestCreate(TestCase):
 
@@ -39,16 +38,23 @@ class TestCreate(TestCase):
 
         logger.info('Submitting Create activity: %s', create_form)
 
-        activity = create(
-                value = create_form,
-                is_local=False)
+        message = DummyMessage()
+        message.fields = create_form
 
-        if activity is None:
-            logger.info('  -- no activity was created')
-            return None
+        create(message)
+
+    def _status_with_content(self, content):
+
+        import kepi.trilby_api.models as trilby_models
+
+        result = trilby_models.Status.objects.filter(
+                content = content,
+                )
+
+        if result:
+            return result[0]
         else:
-            logger.info('  -- created activity: %s', activity)
-            return activity['object__obj']
+            return None
 
     def test_unknown_object_type(self):
         object_form = {
@@ -214,7 +220,7 @@ class TestCreate(TestCase):
 
     def test_as_reply(self):
 
-        original_status = create_local_note(attributedTo=LOCAL_FRED)
+        original_status = create_local_note(attributedTo=self._fred)
 
         object_form = {
             'type': 'Note',
@@ -222,7 +228,8 @@ class TestCreate(TestCase):
             'inReplyTo': original_status.id,
           }
 
-        status = self._send_create_for_object(object_form)
+        self._send_create_for_object(object_form)
+        status = self._status_with_content('Lorem ipsum')
 
         self.assertIsNotNone(
                 status,
@@ -337,7 +344,7 @@ class TestCreate(TestCase):
 
     def test_when_sender_replies_to_local_status(self):
 
-        local_status = create_local_note(attributedTo=LOCAL_FRED)
+        local_status = create_local_note(attributedTo=self._fred)
 
         object_form = {
             'type': 'Note',
