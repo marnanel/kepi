@@ -122,7 +122,8 @@ def validate(path, headers, body, is_local_user):
         for f,v in headers.items()])
 
     message = IncomingMessage(
-            content_type = headers['content-type'],
+            content_type = headers.get('content-type',
+                'application/activity+json'),
             date = headers.get('date', ''),
             host = headers.get('host', ''),
             path = path,
