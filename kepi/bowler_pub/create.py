@@ -14,6 +14,7 @@ the message.
 
 import logging
 import kepi.trilby_api.models as trilby_models
+import kepi.trilby_api.utils as trilby_utils
 
 logger = logging.getLogger(name='kepi')
 
@@ -23,17 +24,50 @@ def create(message):
     logger.debug('%s: creating from %s',
             message, message.fields)
 
-    handler_name = 'on_'+fields['type'].lower()
+    if '_' in fields['type']:
+        # no types have underscores in their names, and
+        # in this module we use the underscore to separate
+        # activity type names from object type names
 
-    if handler_name not in globals():
-        logger.warn('%s: no handler for %s',
+        logger.warn('%s: underscore in type name "%s"; looks dodgy',
                 message,
-                handler_name)
+                fields['type'],
+                )
         return
 
-    result = globals()[handler_name](message)
+    activity_handler_name = 'on_%s' % (
+            fields['type'].lower(),
+            )
 
-    return result
+    object_handler_name = None
+
+    try:
+        object_handler_name = '%s_%s' % (
+                activity_handler_name,
+                fields['object']['type'].lower(),
+                )
+    except KeyError:
+        pass
+    except ValueError:
+        pass
+
+    if object_handler_name in globals():
+        result = globals()[object_handler_name](message)
+        return result
+
+    if activity_handler_name in globals():
+        result = globals()[activity_handler_name](message)
+        return result
+
+    if object_handler_name is not None:
+        logger.warn('%s: no handler for %s or %s',
+                message,
+                activity_handler_name,
+                object_handler_name)
+    else:
+        logger.warn('%s: no handler for %s',
+                message,
+                activity_handler_name)
 
 def on_follow(message):
 
@@ -66,3 +100,44 @@ def on_follow(message):
 
     result.save()
     return result
+
+def on_create_note(message):
+    fields = message.fields
+    logger.debug('%s: on_create_note %s', message, fields)
+
+    newborn_fields = fields['object']
+
+    poster = trilby_models.Person.lookup(
+        name = fields['actor'],
+        create_missing_remote = True,
+        )
+
+    if 'inReplyTo' in newborn_fields:
+        in_reply_to = trilby_models.Status.lookup(
+            url = newborn_fields['inReplyTo'],
+            )
+    else:
+        in_reply_to = None
+
+    is_sensitive = False # FIXME
+    spoiler_text = '' # FIXME
+    visibility = trilby_utils.VISIBILITY_PUBLIC # FIXME
+    language = 'en' # FIXME
+
+    newbie = trilby_models.Status(
+        remote_url = fields['id'],
+        account = poster,
+        in_reply_to = in_reply_to,
+        content = newborn_fields['content'],
+        sensitive = is_sensitive,
+        spoiler_text = spoiler_text,
+        visibility = visibility,
+        language = language,
+            )
+
+    newbie.save()
+
+    logger.debug('%s: created status %s',
+        message,
+        newbie,
+        )
