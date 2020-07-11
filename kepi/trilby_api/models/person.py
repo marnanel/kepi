@@ -119,7 +119,7 @@ class Person(PolymorphicModel):
         return [] # FIXME
 
     @classmethod
-    def lookup(self, name,
+    def lookup(cls, name,
             create_missing_remote = False):
         # FIXME not yet tested
         # FIXME this should check @name@host form, too
