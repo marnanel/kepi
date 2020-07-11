@@ -48,6 +48,11 @@ class TestCreate(TestCase):
 
         create(message)
 
+        if 'content' in object_form:
+            return self._status_with_content(object_form['content'])
+        else:
+            return None
+
     def _status_with_content(self, content):
 
         import kepi.trilby_api.models as trilby_models
@@ -233,8 +238,7 @@ class TestCreate(TestCase):
             'inReplyTo': original_status.url,
           }
 
-        self._send_create_for_object(object_form)
-        status = self._status_with_content('Lorem ipsum')
+        status = self._send_create_for_object(object_form)
 
         self.assertIsNotNone(
                 status,
