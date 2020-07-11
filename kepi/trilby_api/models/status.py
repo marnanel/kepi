@@ -3,11 +3,12 @@ from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 import kepi.bowler_pub.crypto as crypto
-from kepi.bowler_pub.utils import uri_to_url
+from kepi.bowler_pub.utils import uri_to_url, is_local
 import kepi.trilby_api.utils as trilby_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 import logging
+import re
 
 logger = logging.Logger('kepi')
 
@@ -141,8 +142,12 @@ class Status(models.Model):
         return None # FIXME
 
     @property
+    def conversation(self):
+        return 'conversation' # FIXME
+
+    @property
     def in_reply_to_account_id(self):
-        return None # FIXME
+        return self.in_reply_to.account.id
 
     @property
     def uri(self):
@@ -191,6 +196,15 @@ class Status(models.Model):
 
         return result
 
+    @property
+    def thread(self):
+
+        result = self.ancestors
+        result.append(self)
+        result.extend(self.descendants)
+
+        return result
+
     def save(self, *args, **kwargs):
 
         if self.reblog_of == self:
@@ -200,3 +214,66 @@ class Status(models.Model):
             raise ValueError("Status can't be a reply to itself")
 
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return '[Status %s: %s]' % (
+                self.id,
+                self.content,
+                )
+
+    @classmethod
+    def lookup(cls, url):
+
+        # TODO: not yet tested
+        # FIXME: if url is local, parse and return local <-- current breakage XXX
+        # FIXME: if remote is not found, *possibly* create and return?
+
+        if is_local(url):
+
+            # XXX We should do this with the dispatcher,
+            # XXX not regexes, but this'll do for now.
+
+            matches = re.match(r'.*/users/([^/]+)/(\d+)', url)
+
+            if matches is None:
+                return None
+
+            username, statusid = matches.groups()
+
+            try:
+                result = cls.objects.get(
+                        id=statusid,
+                        )
+            except cls.DoesNotExist:
+                logger.debug('%s is local but does not exist',
+                        url)
+                return None
+
+            if result.account.local_user.username != username:
+                logger.debug('%s is local but the username doesn\'t match',
+                        url)
+                return None
+
+            logger.debug('%s is local and exists: %s',
+                    url, result)
+            return result
+
+        # so, it's remote
+
+        try:
+            result = cls.objects.get(remote_url = url)
+            logger.debug('%s is remote and exists: %s',
+                    url, result)
+
+            return result
+        except cls.DoesNotExist:
+            pass
+
+        logger.debug('%s is unknown',
+                url)
+
+        return None
+
+    @property
+    def is_reply(self):
+        return self.in_reply_to is not None
