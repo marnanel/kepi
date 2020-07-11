@@ -7,6 +7,7 @@ import kepi.trilby_api.models as trilby_models
 
 REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'
+LOCAL_STATUS_ID = 'https://testserver/status/this-is-an-id'
 
 logger = logging.getLogger(name='kepi')
 
@@ -33,6 +34,7 @@ class TestCreate(TestCase):
             sender = self._fred.url
 
         create_form = {
+                'id': LOCAL_STATUS_ID,
                 '@context': 'https://www.w3.org/ns/activitystreams',
                 'type': 'Create',
                 'actor': sender,
@@ -228,7 +230,7 @@ class TestCreate(TestCase):
         object_form = {
             'type': 'Note',
             'content': 'Lorem ipsum',
-            'inReplyTo': original_status.id,
+            'inReplyTo': original_status.url,
           }
 
         self._send_create_for_object(object_form)
@@ -239,9 +241,9 @@ class TestCreate(TestCase):
                 msg = 'it creates status',
                 )
 
-        self.assertEqual(
-                status.thread,
+        self.assertIn(
                 original_status,
+                status.thread,
                 msg = 'status is in the thread',
                 )
 
@@ -253,7 +255,7 @@ class TestCreate(TestCase):
 
         self.assertEqual(
                 status.in_reply_to_account_id,
-                original_status.account,
+                original_status.account.id,
                 msg = 'status is a reply to the correct account',
                 )
 
