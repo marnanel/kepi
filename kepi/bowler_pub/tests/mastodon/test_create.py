@@ -3,6 +3,7 @@ from kepi.bowler_pub.tests import create_local_note, create_local_person
 import logging
 from django.conf import settings
 from kepi.bowler_pub.create import create
+import kepi.trilby_api.utils as trilby_utils
 import kepi.trilby_api.models as trilby_models
 
 REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
@@ -100,7 +101,7 @@ class TestCreate(TestCase):
 
         self.assertEqual(
                 status.visibility,
-                'direct',
+                trilby_utils.VISIBILITY_DIRECT,
                 msg = 'missing to/cc defaults to direct privacy',
                 )
 
@@ -126,7 +127,7 @@ class TestCreate(TestCase):
 
         self.assertEqual(
                 status.visibility,
-                'public',
+                trilby_utils.VISIBILITY_PUBLIC,
                 msg = 'status is public',
                 )
 
@@ -152,7 +153,7 @@ class TestCreate(TestCase):
 
         self.assertEqual(
                 status.visibility,
-                'unlisted',
+                trilby_utils.VISIBILITY_UNLISTED,
                 msg = 'status is unlisted',
                 )
 
@@ -178,7 +179,7 @@ class TestCreate(TestCase):
 
         self.assertEqual(
                 status.visibility,
-                'private',
+                trilby_utils.VISIBILITY_PRIVATE,
                 msg = 'status is private',
                 )
 
@@ -199,7 +200,7 @@ class TestCreate(TestCase):
 
         self.assertEqual(
                 status.visibility,
-                'limited',
+                trilby_utils.VISIBILITY_LIMITED,
                 msg = 'status is limited',
                 )
 
@@ -224,7 +225,7 @@ class TestCreate(TestCase):
 
         self.assertEqual(
                 status.visibility,
-                'direct',
+                trilby_utils.VISIBILITY_DIRECT,
                 msg = 'status is direct',
                 )
 

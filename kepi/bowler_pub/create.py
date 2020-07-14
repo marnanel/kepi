@@ -15,6 +15,7 @@ the message.
 import logging
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
+import kepi.bowler_pub.utils as bowler_utils
 
 logger = logging.getLogger(name='kepi')
 
@@ -101,6 +102,30 @@ def on_follow(message):
     result.save()
     return result
 
+def _visibility_from_fields(fields):
+
+    def get_list(fields, fieldname):
+        result = fields.get(fieldname, [])
+        if not isinstance(result, list):
+            result = [result]
+        return result
+
+    audience = dict([
+        (fieldname, get_list(fields, fieldname))
+        for fieldname in ['to', 'cc']
+        ])
+
+    for group, result in [
+            ('to', trilby_utils.VISIBILITY_PUBLIC),
+            ('cc', trilby_utils.VISIBILITY_UNLISTED),
+            ]:
+        for someone in audience[group]:
+            if someone in PUBLIC:
+                return result
+
+    # default
+    return trilby_utils.VISIBILITY_DIRECT
+
 def on_create_note(message):
     fields = message.fields
     logger.debug('%s: on_create_note %s', message, fields)
@@ -121,8 +146,9 @@ def on_create_note(message):
 
     is_sensitive = False # FIXME
     spoiler_text = '' # FIXME
-    visibility = trilby_utils.VISIBILITY_PUBLIC # FIXME
     language = 'en' # FIXME
+
+    visibility = _visibility_from_fields(fields)
 
     newbie = trilby_models.Status(
         remote_url = fields['id'],
