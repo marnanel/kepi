@@ -48,7 +48,7 @@ class Status(models.Model):
             default = now,
             )
 
-   # TODO Media
+    # TODO Media
 
     sensitive = models.BooleanField(
             default = False,
