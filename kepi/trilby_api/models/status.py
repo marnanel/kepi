@@ -277,3 +277,11 @@ class Status(models.Model):
     @property
     def is_reply(self):
         return self.in_reply_to is not None
+
+    @property
+    def text(self):
+        # XXX It's possible that one of (text, content) is
+        # HTML and one is plain text. But the docs don't
+        # seem to be forthcoming on this point, so we'll
+        # just have to wait until we find out.
+        return self.content
