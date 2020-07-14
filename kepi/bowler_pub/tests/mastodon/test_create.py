@@ -1,4 +1,5 @@
 from django.test import TestCase
+from unittest import skip
 from kepi.bowler_pub.tests import create_local_note, create_local_person
 import logging
 from django.conf import settings
@@ -183,6 +184,9 @@ class TestCreate(TestCase):
                 msg = 'status is private',
                 )
 
+    @skip(""""Mastodon spec requires VISIBILITY_LIMITED here
+    but it doesn't define a visibility named "limited".
+    I think this is an error in the spec.""")
     def test_limited(self):
 
         object_form = {
