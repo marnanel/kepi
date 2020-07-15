@@ -51,6 +51,8 @@ def create(message):
         pass
     except ValueError:
         pass
+    except TypeError:
+        pass
 
     if object_handler_name in globals():
         result = globals()[object_handler_name](message)
