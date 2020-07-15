@@ -15,7 +15,7 @@ the message.
 import logging
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
-import kepi.bowler_pub.utils as bowler_utils
+import kepi.bowler_pub
 
 logger = logging.getLogger(name='kepi')
 
@@ -104,14 +104,31 @@ def on_follow(message):
 
 def _visibility_from_fields(fields):
 
-    def get_list(fields, fieldname):
+    def get_set(fields, fieldname):
+
         result = fields.get(fieldname, [])
-        if not isinstance(result, list):
-            result = [result]
-        return result
+        if isinstance(result, list):
+            result = set(result)
+        else:
+            result = set([result])
+
+        try:
+            in_object = fields['object'].get(
+                    fieldname, [])
+            if isinstance(in_object, list):
+                result.update(in_object)
+            else:
+                result.add(in_object)
+
+        except TypeError:
+            pass
+        except KeyError:
+            pass
+
+        return set(result)
 
     audience = dict([
-        (fieldname, get_list(fields, fieldname))
+        (fieldname, get_set(fields, fieldname))
         for fieldname in ['to', 'cc']
         ])
 
@@ -120,7 +137,7 @@ def _visibility_from_fields(fields):
             ('cc', trilby_utils.VISIBILITY_UNLISTED),
             ]:
         for someone in audience[group]:
-            if someone in PUBLIC:
+            if someone in kepi.bowler_pub.PUBLIC_IDS:
                 return result
 
     # default
