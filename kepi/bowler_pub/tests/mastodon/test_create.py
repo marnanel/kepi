@@ -158,6 +158,11 @@ class TestCreate(TestCase):
                 msg = 'status is unlisted',
                 )
 
+    @skip("""
+        I have no idea how we can test whether "to" is a
+        followers list if it's on another server! What
+        does masto do?
+    """)
     def test_private(self):
         object_form = {
             'type': 'Note',
