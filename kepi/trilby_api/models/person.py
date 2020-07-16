@@ -16,7 +16,6 @@ import kepi.bowler_pub.utils as bowler_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
-import re
 import logging
 
 logger = logging.Logger('kepi')
@@ -126,18 +125,17 @@ class Person(PolymorphicModel):
 
         if bowler_utils.is_local(name):
 
-            # FIXME This is inelegant.
-            # We should have this regexp in the settings.
-            # Alternatively, we could use the dispatcher and
-            # find whether it points at the relevant view.
-            names = re.findall(r'/users/([^/]+)', name)
+            view = trilby_utils.find_local_view(
+                    name,
+                    which_views = ['PersonView'],
+                    )
 
-            if not names:
+            if view is None:
                 return None
 
             try:
                 result = LocalPerson.objects.get(
-                        local_user__username = names[0],
+                        local_user__username = view.kwargs['username'],
                         )
                 logger.debug('%s is local and exists: %s',
                         name, result)
