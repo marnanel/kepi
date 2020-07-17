@@ -279,6 +279,7 @@ class TestCreate(TestCase):
                 msg = 'status is in the same conversation',
                 )
 
+    @skip("Mentions are not yet implemented")
     def test_with_mentions(self):
 
         object_form = {
