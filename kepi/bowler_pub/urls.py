@@ -18,6 +18,7 @@ urlpatterns = [
         path('users/<str:username>/outbox', bowler_pub_views.OutboxView.as_view()),
         path('users/<str:username>/followers', bowler_pub_views.FollowersView.as_view()),
         path('users/<str:username>/following', bowler_pub_views.FollowingView.as_view()),
+        path('users/<str:username>/<int:status>', bowler_pub_views.StatusView.as_view()),
         path('sharedInbox', bowler_pub_views.InboxView.as_view()),
         ]
 

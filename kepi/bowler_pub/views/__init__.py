@@ -4,6 +4,8 @@ from .activitypub import \
         AllUsersView, \
         InboxView, OutboxView, \
         CollectionView
+from .status import \
+        StatusView
 
 __all__ = [
         'FollowersView', 'FollowingView',
@@ -11,4 +13,5 @@ __all__ = [
         'AllUsersView',
         'InboxView', 'OutboxView',
         'CollectionView',
+        'StatusView',
         ]
