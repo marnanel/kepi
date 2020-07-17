@@ -8,7 +8,6 @@ import kepi.trilby_api.utils as trilby_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 import logging
-import re
 
 logger = logging.Logger('kepi')
 
@@ -230,15 +229,19 @@ class Status(models.Model):
 
         if is_local(url):
 
-            # XXX We should do this with the dispatcher,
-            # XXX not regexes, but this'll do for now.
+            view = trilby_utils.find_local_view(
+                    url,
+                    )
 
-            matches = re.match(r'.*/users/([^/]+)/(\d+)', url)
+            view = trilby_utils.find_local_view(
+                    url,
+                    which_views = ['StatusView'],
+                    )
 
-            if matches is None:
+            if view is None:
                 return None
 
-            username, statusid = matches.groups()
+            statusid = int(view.kwargs['status'])
 
             try:
                 result = cls.objects.get(
@@ -249,7 +252,7 @@ class Status(models.Model):
                         url)
                 return None
 
-            if result.account.local_user.username != username:
+            if result.account.local_user.username != view.kwargs['username']:
                 logger.debug('%s is local but the username doesn\'t match',
                         url)
                 return None
