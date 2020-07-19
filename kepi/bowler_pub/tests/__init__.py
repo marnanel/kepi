@@ -35,6 +35,16 @@ CONTEXT_URL = "https://www.w3.org/ns/activitystreams"
 
 logger = logging.getLogger(name='kepi')
 
+class DummyMessage(object):
+
+    fields = None
+
+    def __init__(self, fields):
+        self.fields = fields
+
+    def __str__(self):
+        return 'test message'
+
 def create_local_person(name='jemima',
         load_default_keys_from='kepi/bowler_pub/tests/keys/keys-0003.json',
         **kwargs):
@@ -134,6 +144,7 @@ def create_remote_person(
         url,
         name,
         on_fetch = None,
+        auto_fetch = False,
         load_default_keys_from='kepi/bowler_pub/tests/keys/keys-0002.json',
         **fields):
 
@@ -154,6 +165,13 @@ def create_remote_person(
             on_fetch=on_fetch,
             content=body,
             )
+
+    if auto_fetch:
+        from kepi.sombrero_sendpub.fetch import fetch_user
+
+        return fetch_user(url)
+    else:
+        return None
 
 def create_remote_collection(
         url,

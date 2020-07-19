@@ -1,6 +1,6 @@
 from django.test import TestCase
 from unittest import skip, expectedFailure
-from kepi.bowler_pub.tests import create_local_note, create_local_person
+from kepi.bowler_pub.tests import create_local_note, create_local_person, DummyMessage
 import logging
 from django.conf import settings
 from kepi.bowler_pub.create import create
@@ -12,12 +12,6 @@ LOCAL_FRED = 'https://testserver/users/fred'
 LOCAL_STATUS_ID = 'https://testserver/status/this-is-an-id'
 
 logger = logging.getLogger(name='kepi')
-
-class DummyMessage(object):
-    fields = None
-
-    def __str__(self):
-        return 'test message'
 
 class TestCreate(TestCase):
 
