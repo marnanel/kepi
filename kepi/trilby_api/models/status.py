@@ -94,15 +94,28 @@ class Status(models.Model):
 
     @property
     def reblogs_count(self):
-        return 0 # FIXME
+        return self.reblogs.count()
 
     @property
     def favourites_count(self):
         return 0 # FIXME
 
     @property
+    def original(self):
+        result = self.reblog_of
+
+        if result is None:
+            return self
+
+        if result.reblog_of is not None:
+            # Reblog of reblog, which is invalid
+            return self
+
+        return result
+
+    @property
     def reblogged(self):
-        return False # FIXME
+        return self.reblogs.exists()
 
     @property
     def favourited(self):
