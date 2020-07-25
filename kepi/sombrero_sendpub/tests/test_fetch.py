@@ -10,13 +10,14 @@ from kepi.sombrero_sendpub.fetch import fetch_user
 from kepi.trilby_api.models import RemotePerson
 import httpretty
 import logging
+import requests
 
 logger = logging.Logger("kepi")
 
-EXAMPLE_ACTIVITY_URL = "https://example.org/users/wombat"
+EXAMPLE_USER_URL = "https://example.org/users/wombat"
 EXAMPLE_ATSTYLE = "wombat@example.org"
 
-EXAMPLE_ACTIVITY_RESULT = """{"@context":["https://www.w3.org/ns/activitystreams",
+EXAMPLE_USER_RESULT = """{"@context":["https://www.w3.org/ns/activitystreams",
 "https://w3id.org/security/v1",
 {"manuallyApprovesFollowers":"as:manuallyApprovesFollowers",
 "sensitive":"as:sensitive",
@@ -84,7 +85,7 @@ EXAMPLE_WEBFINGER_RESULT = """{"subject":"acct:wombat@example.org",
 {"rel":"http://ostatus.org/schema/1.0/subscribe",
 "template":"https://example.org/authorize_interaction?uri={uri}"}]}"""
 
-EXAMPLE_WEBFINGER_RESULT_NO_ACTIVITY = """{"subject":"acct:wombat@example.org",
+EXAMPLE_WEBFINGER_RESULT_NO_USER = """{"subject":"acct:wombat@example.org",
 "aliases":["https://example.org/@wombat",
 "https://example.org/users/wombat"],
 "links":[{"rel":"http://webfinger.net/rel/profile-page",
@@ -100,21 +101,21 @@ EXAMPLE_WEBFINGER_RESULT_NO_ACTIVITY = """{"subject":"acct:wombat@example.org",
 {"rel":"http://ostatus.org/schema/1.0/subscribe",
 "template":"https://example.org/authorize_interaction?uri={uri}"}]}"""
 
-class TestFetch(TestCase):
+class TestFetchUser(TestCase):
 
     @httpretty.activate
     def test_fetch_user(self):
         httpretty.register_uri(
                 'GET',
-                EXAMPLE_ACTIVITY_URL,
+                EXAMPLE_USER_URL,
                 status=200,
                 headers = {
                         'Content-Type': 'application/activity+json',
                         },
-                body = EXAMPLE_ACTIVITY_RESULT,
+                body = EXAMPLE_USER_RESULT,
                 )
 
-        user = fetch_user(EXAMPLE_ACTIVITY_URL)
+        user = fetch_user(EXAMPLE_USER_URL)
 
         self._asserts_for_example_user(user)
 
@@ -122,7 +123,7 @@ class TestFetch(TestCase):
     def test_fetch_user_404(self):
         httpretty.register_uri(
                 'GET',
-                EXAMPLE_ACTIVITY_URL,
+                EXAMPLE_USER_URL,
                 status=404,
                 headers = {
                         'Content-Type': 'text/plain',
@@ -130,7 +131,7 @@ class TestFetch(TestCase):
                 body = 'nope',
                 )
 
-        user = fetch_user(EXAMPLE_ACTIVITY_URL)
+        user = fetch_user(EXAMPLE_USER_URL)
 
         self.assertEqual(
                 user.status,
@@ -141,7 +142,7 @@ class TestFetch(TestCase):
     def test_fetch_user_410(self):
         httpretty.register_uri(
                 'GET',
-                EXAMPLE_ACTIVITY_URL,
+                EXAMPLE_USER_URL,
                 status = 410,
                 headers = {
                         'Content-Type': 'text/plain',
@@ -149,11 +150,88 @@ class TestFetch(TestCase):
                 body = 'not any more!',
                 )
 
-        user = fetch_user(EXAMPLE_ACTIVITY_URL)
+        user = fetch_user(EXAMPLE_USER_URL)
 
         self.assertEqual(
                 user.status,
                 410,
+                )
+
+    @httpretty.activate
+    def test_fetch_user_timeout(self):
+
+        def timeout(request, uri, headers):
+            raise requests.Timeout()
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_USER_URL,
+                status = 200,
+                headers = {
+                        'Content-Type': 'text/plain',
+                        },
+                body = timeout,
+                )
+
+        user = fetch_user(EXAMPLE_USER_URL)
+
+        self.assertEqual(
+                user.status,
+                0,
+                )
+
+    @httpretty.activate
+    def test_fetch_user_no_such_host(self):
+
+        def no_such_host(request, uri, headers):
+            raise requests.ConnectionError()
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_USER_URL,
+                status = 200,
+                headers = {
+                        'Content-Type': 'text/plain',
+                        },
+                body = no_such_host,
+                )
+
+        user = fetch_user(EXAMPLE_USER_URL)
+
+        self.assertEqual(
+                user.status,
+                0,
+                )
+
+    @httpretty.activate
+    def test_fetch_known_user(self):
+
+        existing = RemotePerson(
+                url = EXAMPLE_USER_URL,
+                )
+        existing.save()
+
+        found = {}
+        def finding(request, uri, headers):
+            found['found'] = True
+            return EXAMPLE_USER_RESULT
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_USER_URL,
+                status = 200,
+                headers = {
+                        'Content-Type': 'application/activity+json',
+                        },
+                body = finding,
+                )
+
+        user = fetch_user(EXAMPLE_USER_URL)
+
+        self.assertNotIn(
+                'found',
+                found,
+                msg = "Known remote user wasn't re-fetched",
                 )
 
     def _asserts_for_example_user(self, user):
@@ -180,7 +258,7 @@ class TestFetch(TestCase):
 
         self.assertEqual(
                 user.url,
-                EXAMPLE_ACTIVITY_URL,
+                EXAMPLE_USER_URL,
                 )
 
         self.assertEqual(
@@ -213,12 +291,12 @@ class TestFetch(TestCase):
 
         httpretty.register_uri(
         'GET',
-        EXAMPLE_ACTIVITY_URL,
+        EXAMPLE_USER_URL,
         status=200,
         headers = {
                 'Content-Type': 'application/activity+json',
                 },
-        body = EXAMPLE_ACTIVITY_RESULT,
+        body = EXAMPLE_USER_RESULT,
         )
 
         httpretty.register_uri(
@@ -290,7 +368,7 @@ class TestFetch(TestCase):
                 headers = {
                     'Content-Type': 'application/jrd+json',
                     },
-                body = EXAMPLE_WEBFINGER_RESULT_NO_ACTIVITY,
+                body = EXAMPLE_WEBFINGER_RESULT_NO_USER,
                 )
 
         fetch_user(EXAMPLE_ATSTYLE)
@@ -302,4 +380,6 @@ class TestFetch(TestCase):
                 404,
                 )
 
-    # TODO: test for non-existent host. (How do you do that in httpretty?)
+class TestFetchStatus(TestCase):
+
+    pass
