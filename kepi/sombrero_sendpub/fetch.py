@@ -7,7 +7,6 @@
 import logging
 import requests
 from urllib.parse import urlparse
-from celery import shared_task
 from kepi.trilby_api.models import RemotePerson
 
 logger = logging.Logger("kepi")
@@ -37,24 +36,7 @@ def _get_url_from_webfinger(user):
 
     user.url = self_link[0]['href']
 
-@shared_task()
-def _async_fetch_user(user):
-
-    try:
-        _async_fetch_user_inner(user)
-    except ValueError as ve:
-        logging.info("%s: %s",
-                user.url,
-                ve,
-                )
-
-        if user.status==0:
-            user.status = 404
-            user.save()
-
-        # but don't re-raise the exception
-
-def _async_fetch_user_inner(user):
+def _fetch_user_inner(user):
 
     # XXX If local...
 
@@ -151,6 +133,9 @@ def _async_fetch_user_inner(user):
 
 def fetch_user(username):
 
+    # FIXME Block; it's the caller's problem
+    # FIXME What if the RemotePerson already exists?
+
     if '@' in username:
         result = RemotePerson(
                 acct = username,
@@ -162,6 +147,41 @@ def fetch_user(username):
 
     result.save()
 
-    _async_fetch_user(result)
+    try:
+        _fetch_user_inner(result)
+    except ValueError as ve:
+        logging.info("%s: %s",
+                result.url,
+                ve,
+                )
+
+        if result.status==0:
+            result.status = 404
+            result.save()
+
+        # but don't re-raise the exception
 
     return result
+
+def fetch_status(url):
+
+    response = requests.get(
+            status.url,
+            headers = {
+                'Accept': 'application/activity+json',
+                },
+            )
+
+    if response.status_code!=200:
+        logger.info("%s: unexpected status code from status lookup: %d",
+                url, response.status_code,
+                )
+        return
+
+    status = Status(
+            remote_url = url,
+            )
+
+    status.save()
+
+    return status
