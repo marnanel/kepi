@@ -133,7 +133,7 @@ def _fetch_user_inner(user):
 
 def fetch_user(username):
 
-    # FIXME Block; it's the caller's problem
+    # FIXME What if the user is local?
     # FIXME What if the RemotePerson already exists?
 
     if '@' in username:

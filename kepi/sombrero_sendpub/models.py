@@ -1,6 +1,17 @@
+# fetch.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
 from django.db import models
 from kepi.bowler_pub.utils import configured_url, as_json
+from django.db.models.constraints import UniqueConstraint
+import django.utils.timezone
 import json
+
+logger = logging.Logger("kepi")
 
 class OutgoingActivity(models.Model):
 
@@ -44,3 +55,34 @@ class OutgoingActivity(models.Model):
             self.content = json.dumps(self.content)
 
         super().save(*args, **kwargs)
+
+class WebfingerUser(models.Model):
+
+    username = models.CharField(
+            max_length = 256,
+            )
+
+    hostname = models.CharField(
+            max_length = 256,
+            )
+
+    url = models.URLField(
+            blank = True,
+            null = True,
+            default = None,
+            )
+
+    fetched = models.DateTimeField(
+            default=django.utils.timezone.now,
+            )
+
+    class Meta:
+        constraints = [
+                UniqueConstraint(
+                    fields = ['username', 'hostname'],
+                    name = 'user_and_host',
+                    ),
+                ]
+
+    def __str__(self):
+        return f'{self.username}@{self.hostname} -> {self.url}'

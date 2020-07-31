@@ -16,6 +16,7 @@ import logging
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 import kepi.bowler_pub
+import kepi.bowler_pub.utils as bowler_utils
 
 logger = logging.getLogger(name='kepi')
 
@@ -186,3 +187,45 @@ def on_create_note(message):
         message,
         newbie,
         )
+
+def on_announce_note(message):
+    fields = message.fields
+    logger.debug('%s: on_announce_note %s', message, fields)
+
+    status_url = fields['object']
+
+    status = trilby_models.Status.lookup(
+            url = status_url,
+            )
+
+    if status is None:
+
+        if bowler_utils.is_local(status_url):
+            # If the status is local and doesn't exist,
+            # then we know for sure that it can't be reblogged.
+            logger.info("%s: attempted to reblog non-existent status %s",
+                    message, status_url)
+            return
+
+        # so it's unknown and remote.
+
+        fetch_status(status_url)
+
+        raise ValueError("now...")
+    else:
+        logger.debug('%s: reblogging existing status, %s',
+                message, status_url)
+
+    actor = trilby_models.Person.lookup(
+        name = fields['actor'],
+        create_missing_remote = True,
+        )
+
+    reblog = Reblog(
+            who = actor,
+            what = status,
+            )
+    reblog.save()
+
+    logger.debug('%s: created reblog: %s',
+            message, reblog)
