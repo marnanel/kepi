@@ -22,3 +22,5 @@ djangorestframework-xml
 djangorestframework-constant-field
 djangorestframework-recursive
 django-fields
+anyjson
+PyCryptodome
