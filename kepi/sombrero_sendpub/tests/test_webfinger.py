@@ -7,6 +7,7 @@
 from unittest import skip
 from django.test import TestCase
 from kepi.sombrero_sendpub.webfinger import get_webfinger
+from . import suppress_thread_exceptions
 import httpretty
 import logging
 import requests
@@ -166,10 +167,11 @@ class TestWebfinger(TestCase):
                 body = timeout,
                 )
 
-        webfinger = get_webfinger(
-                EXAMPLE_USERNAME,
-                EXAMPLE_HOSTNAME,
-                )
+        with suppress_thread_exceptions():
+            webfinger = get_webfinger(
+                    EXAMPLE_USERNAME,
+                    EXAMPLE_HOSTNAME,
+                    )
 
         self.assertEqual(
                 webfinger.url,
@@ -192,10 +194,11 @@ class TestWebfinger(TestCase):
                 body = no_such_host,
                 )
 
-        webfinger = get_webfinger(
-                EXAMPLE_USERNAME,
-                EXAMPLE_HOSTNAME,
-                )
+        with suppress_thread_exceptions():
+            webfinger = get_webfinger(
+                    EXAMPLE_USERNAME,
+                    EXAMPLE_HOSTNAME,
+                    )
 
         self.assertEqual(
                 webfinger.url,

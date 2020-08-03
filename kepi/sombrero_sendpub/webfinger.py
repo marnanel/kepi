@@ -20,18 +20,27 @@ def get_webfinger(username, hostname):
     url = f'https://{hostname}/.well-known/'+\
             f'webfinger?acct={username}'
 
-    response = requests.get(
-            url,
-            headers = {
-                'Accept': 'application/activity+json',
-                },
-            )
+    try:
+        response = requests.get(
+                url,
+                headers = {
+                    'Accept': 'application/activity+json',
+                    },
+                )
+    except requests.ConnectionError:
+        logger.info("webfinger: Connection to %s failed",
+                hostname)
+        result.status = 0
+        result.save()
+        return result
 
     result.status = response.status_code
 
     if response.status_code!=200:
         result.save()
-        logger.info("Unexpected status code from webfinger lookup")
+        logger.info("webfinger: Unexpected status code %d from lookup of %s@%s",
+                response.status_code,
+                username, hostname)
         return result
 
     self_link = [x for x in response.json()['links']
@@ -39,7 +48,8 @@ def get_webfinger(username, hostname):
 
     if not self_link:
         result.save()
-        logger.info("Webfinger has no activity information")
+        logger.info("webfinger: retrieved %s@%s, which has no activity information",
+                username, hostname)
         return result
 
     result.url = self_link[0]['href']
