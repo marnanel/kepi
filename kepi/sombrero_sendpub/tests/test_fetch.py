@@ -8,6 +8,7 @@ from unittest import skip
 from django.test import TestCase
 from kepi.sombrero_sendpub.fetch import fetch_user
 from kepi.trilby_api.models import RemotePerson
+from . import suppress_thread_exceptions
 import httpretty
 import logging
 import requests
@@ -173,7 +174,8 @@ class TestFetchUser(TestCase):
                 body = timeout,
                 )
 
-        user = fetch_user(EXAMPLE_USER_URL)
+        with suppress_thread_exceptions():
+            user = fetch_user(EXAMPLE_USER_URL)
 
         self.assertEqual(
                 user.status,
@@ -196,7 +198,8 @@ class TestFetchUser(TestCase):
                 body = no_such_host,
                 )
 
-        user = fetch_user(EXAMPLE_USER_URL)
+        with suppress_thread_exceptions():
+            user = fetch_user(EXAMPLE_USER_URL)
 
         self.assertEqual(
                 user.status,
@@ -377,7 +380,7 @@ class TestFetchUser(TestCase):
 
         self.assertEqual(
                 user.status,
-                404,
+                0,
                 )
 
 class TestFetchStatus(TestCase):

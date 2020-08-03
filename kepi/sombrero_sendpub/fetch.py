@@ -175,11 +175,6 @@ def fetch_user(username):
                 result.url,
                 ve,
                 )
-
-        if result.status==0:
-            result.status = 404
-            result.save()
-
         # but don't re-raise the exception
 
     return result
