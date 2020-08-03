@@ -6,6 +6,7 @@
 
 import logging
 import requests
+import django.db.utils
 from urllib.parse import urlparse
 from kepi.trilby_api.models import RemotePerson
 
@@ -46,12 +47,24 @@ def _fetch_user_inner(user):
     if user.url is None:
         raise ValueError("No URL given.")
 
-    response = requests.get(
-            user.url,
-            headers = {
-                'Accept': 'application/activity+json',
-                },
-            )
+    try:
+        response = requests.get(
+                user.url,
+                headers = {
+                    'Accept': 'application/activity+json',
+                    },
+                )
+    except requests.ConnectionError:
+        user.status = 0
+        user.save()
+        raise ValueError("webfinger: can't reach %s",
+            user)
+
+    except requests.TimeoutError:
+        user.status = 0
+        user.save()
+        raise ValueError("webfinger: timeout reaching %s",
+            user)
 
     user.status = response.status_code
     # FIXME What happens if the hostname doesn't exist,
@@ -137,14 +150,22 @@ def fetch_user(username):
     # FIXME What if the RemotePerson already exists?
 
     if '@' in username:
-        result = RemotePerson(
-                acct = username,
-                )
+        kwargs = {"acct": username}
     else:
-        result = RemotePerson(
-                url = username,
-                )
+        kwargs = {"url": username}
 
+    try:
+        result = RemotePerson.objects.get(
+                **kwargs,
+                )
+        return result
+    except RemotePerson.DoesNotExist:
+        pass
+
+    # okay, so create them
+    result = RemotePerson(
+            **kwargs,
+            )
     result.save()
 
     try:
