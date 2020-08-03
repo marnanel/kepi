@@ -39,7 +39,7 @@ class DummyMessage(object):
 
     fields = None
 
-    def __init__(self, fields):
+    def __init__(self, fields=None):
         self.fields = fields
 
     def __str__(self):
