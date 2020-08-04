@@ -1,3 +1,16 @@
+# utils.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+Various useful bits of code which didn't fit anywhere else.
+"""
+
+import logging
+logger = logging.getLogger(name="kepi")
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from urllib.parse import urlparse

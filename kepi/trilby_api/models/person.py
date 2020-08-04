@@ -4,6 +4,9 @@
 # Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
+import logging
+logger = logging.Logger("kepi")
+
 from polymorphic.models import PolymorphicModel
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
@@ -16,9 +19,6 @@ import kepi.bowler_pub.utils as bowler_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
-import logging
-
-logger = logging.Logger('kepi')
 
 class Person(PolymorphicModel):
 

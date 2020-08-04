@@ -1,15 +1,15 @@
-# validation.py
+# incoming.py
 #
-# Part of kepi, an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
-from django.db import models
 import logging
+logger = logging.getLogger(name="kepi")
+
+from django.db import models
 import uuid
 import json
-
-logger = logging.getLogger(name='kepi')
 
 class Incoming(models.Model):
     """

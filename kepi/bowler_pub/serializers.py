@@ -1,13 +1,21 @@
+# serializers.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+"""
+These are the serialisers for ActivityPub.
+"""
+import logging
+logger = logging.getLogger(name="kepi")
+
 from rest_framework import serializers
 import kepi.trilby_api.models as trilby_models
 from rest_framework_recursive.fields import RecursiveField
 from rest_framework_constant.fields import ConstantField
 from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
-
-"""
-These are the serialisers for ActivityPub.
-"""
 
 #########################################
 

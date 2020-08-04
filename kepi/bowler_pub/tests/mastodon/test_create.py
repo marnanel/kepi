@@ -1,7 +1,15 @@
+# test_create.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name="kepi")
+
 from django.test import TestCase
 from unittest import skip, expectedFailure
 from kepi.bowler_pub.tests import create_local_note, create_local_person, DummyMessage
-import logging
 from django.conf import settings
 from kepi.bowler_pub.create import create
 import kepi.trilby_api.utils as trilby_utils
@@ -10,8 +18,6 @@ import kepi.trilby_api.models as trilby_models
 REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'
 LOCAL_STATUS_ID = 'https://testserver/status/this-is-an-id'
-
-logger = logging.getLogger(name='kepi')
 
 class TestCreate(TestCase):
 

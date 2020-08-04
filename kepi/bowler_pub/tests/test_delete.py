@@ -4,10 +4,11 @@
 # Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
-from django.test import TestCase
 import logging
 
 logger = logging.getLogger(name='kepi')
+
+from django.test import TestCase
 
 class TestDelete(TestCase):
 

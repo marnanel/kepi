@@ -1,13 +1,16 @@
 # crypto.py
 #
-# Part of kepi, an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
 """
 Various crypto routines, used for signing messages and
 verifying other people's signatures.
 """
+
+import logging
+logger = logging.getLogger(name="kepi")
 
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256

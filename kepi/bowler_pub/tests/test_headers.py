@@ -1,8 +1,16 @@
+# test_headers.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name="kepi")
+
 from django.test import TestCase, Client
 from . import create_local_person
 from django.conf import settings
 from unittest import skip
-import logging
 
 MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 

@@ -1,13 +1,19 @@
+# test_announce.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name="kepi")
+
 from django.test import TestCase
 from kepi.bowler_pub.tests import *
 from unittest import skip, expectedFailure
 from django.conf import settings
 import kepi.trilby_api.models as trilby_models
 from kepi.bowler_pub.create import create
-import logging
 import httpretty
-
-logger = logging.getLogger(name='kepi')
 
 REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'

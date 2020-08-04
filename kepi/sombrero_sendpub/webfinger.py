@@ -5,10 +5,10 @@
 # Licensed under the GNU Public License v2.
 
 import logging
+logger = logging.getLogger(name="kepi")
+
 import requests
 import kepi.sombrero_sendpub.models as sombrero_models
-
-logger = logging.Logger("kepi")
 
 def get_webfinger(username, hostname):
 
