@@ -9,9 +9,11 @@ This contains validate(), which checks whether an incoming
 message is from who it claims to be from.
 """
 
+import logging
+logger = logging.getLogger(name="kepi")
+
 from django.db import models
 from celery import shared_task
-import logging
 import json
 import re
 from django.conf import settings
@@ -19,10 +21,8 @@ from urllib.parse import urlparse
 import django.core.exceptions
 import uuid
 from httpsig.verify import HeaderVerifier
-from kepi.sombrero_sendpub.fetch import fetch_user
+from kepi.sombrero_sendpub.fetch import fetch
 from kepi.bowler_pub.create import create
-
-logger = logging.getLogger(name='kepi')
 
 class IncomingMessage(models.Model):
 
@@ -186,7 +186,9 @@ def _run_validation_inner(
         return False
 
     try:
-        actor = fetch_user(message.actor)
+        from kepi.trilby_api.models import Person
+        actor = fetch(message.actor,
+                Person)
     except json.decoder.JSONDecodeError as jde:
         logger.info('%s: invalid JSON; dropping: %s',
                 message, jde)

@@ -5,89 +5,184 @@
 # Licensed under the GNU Public License v2.
 
 import logging
+logger = logging.getLogger(name="kepi")
+
 import requests
 import django.db.utils
 from urllib.parse import urlparse
 from kepi.trilby_api.models import RemotePerson
+from kepi.sombrero_sendpub.webfinger import get_webfinger
 
-logger = logging.Logger("kepi")
+def fetch(address,
+        expected_type = None):
 
-def _get_url_from_webfinger(user):
+    # TODO What if the URL is local?
 
-    url = f'https://{user.hostname}/.well-known/'+\
-            f'webfinger?acct={user.acct}'
+    if expected_type is None:
+        result = None
+    else:
 
-    response = requests.get(
-            url,
-            headers = {
-                'Accept': 'application/activity+json',
-                },
-            )
+        # Do they already exist?
 
-    if response.status_code!=200:
-        user.status = response.status_code
-        user.save()
-        raise ValueError("Unexpected status code from webfinger lookup")
+        if '@' in address:
+            kwargs = {"acct": address}
+        else:
+            kwargs = {"url": address}
 
-    self_link = [x for x in response.json()['links']
-        if x.get("type",'') == "application/activity+json"]
+        try:
+            result = expected_type.objects.get(
+                    **kwargs,
+                    )
+            # Yes.
+            return result
+        except expected_type.DoesNotExist:
+            pass
 
-    if not self_link:
-        raise ValueError("Webfinger has no activity information")
+        # No, so create them (but don't save yet).
 
-    user.url = self_link[0]['href']
+        result = expected_type(
+                **kwargs,
+                )
 
-def _fetch_user_inner(user):
+    if '@' in address:
 
-    # XXX If local...
+        fields = address.split('@')
 
-    if user.url is None and user.acct is not None:
-        _get_url_from_webfinger(user)
+        webfinger = get_webfinger(
+                username=fields[-2],
+                hostname=fields[-1],
+                )
 
-    if user.url is None:
-        raise ValueError("No URL given.")
+        if webfinger.url is None:
+            logger.info("%s: webfinger lookup failed; bailing",
+                    address)
+            result.save()
+            return None
+
+        logger.info("%s: webfinger gave us %s",
+                address, webfinger.url)
+        address = webfinger.url
+
+        result.url = address
+
+    # okay, time to go looking online
 
     try:
         response = requests.get(
-                user.url,
+                address,
                 headers = {
                     'Accept': 'application/activity+json',
                     },
                 )
     except requests.ConnectionError:
-        user.status = 0
-        user.save()
-        raise ValueError("webfinger: can't reach %s",
-            user)
+
+        logger.info("%s: can't reach host",
+            address)
+
+        if result is not None:
+            result.status = 0
+            result.save()
+
+        return result
 
     except requests.TimeoutError:
-        user.status = 0
-        user.save()
-        raise ValueError("webfinger: timeout reaching %s",
-            user)
 
-    user.status = response.status_code
-    # FIXME What happens if the hostname doesn't exist,
-    # FIXME or the named host doesn't run an https server?
+        logger.info("%s: timeout reaching host",
+            address)
+
+        if result is not None:
+            result.status = 0
+            result.save()
+
+        return result
+
+    # so, we have *something*...
+
+    if result is not None:
+        result.status = response.status_code
+        result.save()
 
     if response.status_code!=200:
-        user.status = response.status_code
-        user.save()
-        raise ValueError("Unexpected status code from activity lookup")
+        # HTTP error; bail immediately
+        logger.info("%s: unexpected status code from status lookup: %d",
+                address, response.status_code,
+                )
+        return result
 
     try:
         details = response.json()
     except ValueError:
-        raise ValueError("Response was not JSON")
+        logger.info("%s: response was not JSON",
+                address)
 
-    if details['type'] not in ['Actor', 'Person']:
-        raise ValueError(
-                "Remote user was an unexpected type: "+details['type'])
+        if result is not None:
+            result.status = 0
+            result.save()
 
-    if details['id'] != user.url:
-        raise ValueError(
-                "Remote user's id was not the source url: expected "+\
-                        user.url+" but got "+details['id'])
+        return result
+
+    if 'type' not in details:
+        logger.info("%s: retrieved JSON did not include a type",
+                address)
+
+        if result is not None:
+            result.status = 0
+            result.save()
+
+        return result
+
+    if 'id' in details:
+        if details['id'] != address:
+            logger.info(
+                    "%s: user's id was not the source url: got %s",
+                    address, details['id'],
+                    )
+            result.status = 0
+            result.save()
+
+            return result
+
+    # Do we have a handler to finish up with?
+
+    handler_name = 'on_%s' % (
+            details['type'].lower(),
+            )
+
+    if handler_name in globals():
+
+        try:
+            result = globals()[handler_name](details, result)
+            logger.info("%s: result was %s",
+                    address, result)
+        except ValueError as ve:
+            logger.info("%s: %s from handler; returning None",
+                    address, ve)
+            return None
+
+        if expected_type is not None and \
+                not isinstance(result, expected_type):
+
+                    logger.info("%s:    -- which wasn't %s; returning None",
+                            address, expected_type)
+
+                    return None
+
+        return result
+
+    else:
+
+        # no handler
+
+        if result is None:
+            logger.info("%s: no %s; returning %s",
+                    address, handler_name, result)
+            return result
+        else:
+            logger.info("%s: no %s; returning dict",
+                    address, handler_name)
+            return details
+
+def on_person(details, user):
 
     for detailsname, fieldname in [
             ('preferredUsername', 'username'),
@@ -118,7 +213,8 @@ def _fetch_user_inner(user):
 
         if 'owner' in key:
             if key['owner'] != user.url:
-                raise ValueError("Remote user gave us someone else's key")
+                raise ValueError(
+                        f"Remote user gave us someone else's key ({key['owner']})")
 
         if 'id' in key:
             user.key_name = key['id']
@@ -144,60 +240,4 @@ def _fetch_user_inner(user):
 
     return user
 
-def fetch_user(username):
-
-    # FIXME What if the user is local?
-    # FIXME What if the RemotePerson already exists?
-
-    if '@' in username:
-        kwargs = {"acct": username}
-    else:
-        kwargs = {"url": username}
-
-    try:
-        result = RemotePerson.objects.get(
-                **kwargs,
-                )
-        return result
-    except RemotePerson.DoesNotExist:
-        pass
-
-    # okay, so create them
-    result = RemotePerson(
-            **kwargs,
-            )
-    result.save()
-
-    try:
-        _fetch_user_inner(result)
-    except ValueError as ve:
-        logging.info("%s: %s",
-                result.url,
-                ve,
-                )
-        # but don't re-raise the exception
-
-    return result
-
-def fetch_status(url):
-
-    response = requests.get(
-            status.url,
-            headers = {
-                'Accept': 'application/activity+json',
-                },
-            )
-
-    if response.status_code!=200:
-        logger.info("%s: unexpected status code from status lookup: %d",
-                url, response.status_code,
-                )
-        return
-
-    status = Status(
-            remote_url = url,
-            )
-
-    status.save()
-
-    return status
+on_actor = on_person

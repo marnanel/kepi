@@ -4,16 +4,16 @@
 # Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
+import logging
+logger = logging.getLogger(name="kepi")
+
 from unittest import skip
 from django.test import TestCase
-from kepi.sombrero_sendpub.fetch import fetch_user
+from kepi.sombrero_sendpub.fetch import fetch
 from kepi.trilby_api.models import RemotePerson
 from . import suppress_thread_exceptions
 import httpretty
-import logging
 import requests
-
-logger = logging.Logger("kepi")
 
 EXAMPLE_USER_URL = "https://example.org/users/wombat"
 EXAMPLE_ATSTYLE = "wombat@example.org"
@@ -105,7 +105,7 @@ EXAMPLE_WEBFINGER_RESULT_NO_USER = """{"subject":"acct:wombat@example.org",
 class TestFetchUser(TestCase):
 
     @httpretty.activate
-    def test_fetch_user(self):
+    def test_fetch(self):
         httpretty.register_uri(
                 'GET',
                 EXAMPLE_USER_URL,
@@ -116,12 +116,13 @@ class TestFetchUser(TestCase):
                 body = EXAMPLE_USER_RESULT,
                 )
 
-        user = fetch_user(EXAMPLE_USER_URL)
+        user = fetch(EXAMPLE_USER_URL,
+                RemotePerson)
 
         self._asserts_for_example_user(user)
 
     @httpretty.activate
-    def test_fetch_user_404(self):
+    def test_fetch_404(self):
         httpretty.register_uri(
                 'GET',
                 EXAMPLE_USER_URL,
@@ -132,7 +133,8 @@ class TestFetchUser(TestCase):
                 body = 'nope',
                 )
 
-        user = fetch_user(EXAMPLE_USER_URL)
+        user = fetch(EXAMPLE_USER_URL,
+                RemotePerson)
 
         self.assertEqual(
                 user.status,
@@ -140,7 +142,7 @@ class TestFetchUser(TestCase):
                 )
 
     @httpretty.activate
-    def test_fetch_user_410(self):
+    def test_fetch_410(self):
         httpretty.register_uri(
                 'GET',
                 EXAMPLE_USER_URL,
@@ -151,7 +153,8 @@ class TestFetchUser(TestCase):
                 body = 'not any more!',
                 )
 
-        user = fetch_user(EXAMPLE_USER_URL)
+        user = fetch(EXAMPLE_USER_URL,
+                RemotePerson)
 
         self.assertEqual(
                 user.status,
@@ -159,7 +162,7 @@ class TestFetchUser(TestCase):
                 )
 
     @httpretty.activate
-    def test_fetch_user_timeout(self):
+    def test_fetch_timeout(self):
 
         def timeout(request, uri, headers):
             raise requests.Timeout()
@@ -175,7 +178,8 @@ class TestFetchUser(TestCase):
                 )
 
         with suppress_thread_exceptions():
-            user = fetch_user(EXAMPLE_USER_URL)
+            user = fetch(EXAMPLE_USER_URL,
+                    RemotePerson)
 
         self.assertEqual(
                 user.status,
@@ -183,7 +187,7 @@ class TestFetchUser(TestCase):
                 )
 
     @httpretty.activate
-    def test_fetch_user_no_such_host(self):
+    def test_fetch_no_such_host(self):
 
         def no_such_host(request, uri, headers):
             raise requests.ConnectionError()
@@ -199,7 +203,8 @@ class TestFetchUser(TestCase):
                 )
 
         with suppress_thread_exceptions():
-            user = fetch_user(EXAMPLE_USER_URL)
+            user = fetch(EXAMPLE_USER_URL,
+                    RemotePerson)
 
         self.assertEqual(
                 user.status,
@@ -229,7 +234,8 @@ class TestFetchUser(TestCase):
                 body = finding,
                 )
 
-        user = fetch_user(EXAMPLE_USER_URL)
+        user = fetch(EXAMPLE_USER_URL,
+                RemotePerson)
 
         self.assertNotIn(
                 'found',
@@ -312,10 +318,10 @@ class TestFetchUser(TestCase):
                 body = EXAMPLE_WEBFINGER_RESULT,
                 )
 
-        user = fetch_user(EXAMPLE_ATSTYLE)
+        user = fetch(EXAMPLE_ATSTYLE,
+                RemotePerson)
 
         self._asserts_for_example_user(user)
-
 
     @httpretty.activate
     def test_atstyle_404(self):
@@ -330,13 +336,14 @@ class TestFetchUser(TestCase):
                 body = "never heard of them",
                 )
 
-        fetch_user(EXAMPLE_ATSTYLE)
+        fetch(EXAMPLE_ATSTYLE,
+                RemotePerson)
 
         user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
 
         self.assertEqual(
                 user.status,
-                404,
+                0, # the user themselves didn't 404
                 )
 
     @httpretty.activate
@@ -349,16 +356,17 @@ class TestFetchUser(TestCase):
                 headers = {
                     'Content-Type': 'text/plain',
                     },
-                body = "never heard of them",
+                body = "not any more!",
                 )
 
-        fetch_user(EXAMPLE_ATSTYLE)
+        fetch(EXAMPLE_ATSTYLE,
+                RemotePerson)
 
         user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
 
         self.assertEqual(
                 user.status,
-                410,
+                0, # the user themselves didn't 410
                 )
 
     @httpretty.activate
@@ -374,7 +382,8 @@ class TestFetchUser(TestCase):
                 body = EXAMPLE_WEBFINGER_RESULT_NO_USER,
                 )
 
-        fetch_user(EXAMPLE_ATSTYLE)
+        fetch(EXAMPLE_ATSTYLE,
+                RemotePerson)
 
         user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
 

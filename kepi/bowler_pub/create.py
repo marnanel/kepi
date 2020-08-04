@@ -13,12 +13,13 @@ the message.
 """
 
 import logging
+logger = logging.getLogger(name="kepi")
+
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 import kepi.bowler_pub
 import kepi.bowler_pub.utils as bowler_utils
-
-logger = logging.getLogger(name='kepi')
+from kepi.sombrero_sendpub.fetch import fetch
 
 def create(message):
 
@@ -42,6 +43,17 @@ def create(message):
             )
 
     object_handler_name = None
+
+    if isinstance(fields.get('object', None), str):
+        # "object" is the address of an object, rather
+        # than the object written out literally.
+        # So, fetch that object.
+
+        referent = fetch(fields['object'])
+        logger.info("Retrieved referent of %s, which is %s",
+                fields['object'], referent)
+
+        fields['object'] = referent
 
     try:
         object_handler_name = '%s_%s' % (
