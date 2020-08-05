@@ -19,6 +19,49 @@ def fetch(address,
         expected_type_for_remote = None,
         expected_type_for_local = None):
 
+    """
+    Find remote or local objects.
+
+    For remote objects, if we already know about them,
+    return the existing object. If we don't, fetch it
+    over the network and store it, then return the value.
+
+    For local objects-- that is, ones where the hostname
+    is listed in this project's ALLOWED_HOSTS setting--
+    look it up locally and return it. If the address is
+    a URL, this will pass through the dispatcher.
+
+    "address" is the address of the thing we're looking for.
+    It's usually a URL. For Persons it can also be atstyle
+    ("username@hostname"), which will result in a webfinger
+    lookup to find the actual URL. URLs should not contain
+    an "@" sign.
+
+    "expected_type" is the type we're looking for; it can
+    be overridden for local or for remote objects, because
+    these may be different types (in a polymorphic database).
+
+    "expected_type" should contain at least the fields
+      - url (read/write)
+      - status (write-only; for an HTTP status code)
+
+    Particular types of object may define handlers which
+    can initialise other fields. The handler is looked up
+    using the "type" field in the retrieved object,
+    rather than the "expected_type" passed to this function.
+
+    HTTP status codes are stored even for records that are
+    rejected. (XXX This is an inconsistency: it means that
+    the first time we look something rejected up, the record
+    is stored but this function returns None; following times
+    get the record returned, because it's cached. Fix and test.)
+    Unreachable hosts and timeouts result in a status code of 0.
+
+    This function returns the requested object if it can.
+    If you didn't specify a type, raises ValueError.
+    On all other errors, which are logged, returns None.
+    """
+
     wanted = _parse_address(address)
 
     wanted['type'] = expected_type
