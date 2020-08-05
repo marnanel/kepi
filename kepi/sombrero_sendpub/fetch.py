@@ -9,48 +9,96 @@ logger = logging.getLogger(name="kepi")
 
 import requests
 import django.db.utils
+from django.conf import settings
 from urllib.parse import urlparse
 from kepi.trilby_api.models import RemotePerson
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 
-def fetch(address,
-        expected_type = None):
+def _parse_address(address):
 
-    # TODO What if the URL is local?
+    result = {
+        'is_atstyle': '@' in address,
+    }
 
-    if expected_type is None:
-        result = None
+    if result['is_atstyle']:
+        fields = address.split('@')
+        result['username'] = fields[-2]
+        result['hostname'] = fields[-1]
     else:
+        result['hostname'] = urlparse(address).netloc
 
-        # Do they already exist?
+    result['is_local'] = result['hostname'] in settings.ALLOWED_HOSTS
 
-        if '@' in address:
-            kwargs = {"acct": address}
-        else:
-            kwargs = {"url": address}
+    logger.debug("%s: wanted: %s", address, result)
 
-        try:
-            result = expected_type.objects.get(
-                    **kwargs,
-                    )
-            # Yes.
-            return result
-        except expected_type.DoesNotExist:
-            pass
+    return result
 
-        # No, so create them (but don't save yet).
+def fetch(address,
+        expected_type = None,
+        expected_type_for_remote = None,
+        expected_type_for_local = None):
 
-        result = expected_type(
+    wanted = _parse_address(address)
+
+    wanted['type'] = expected_type
+
+    if wanted['is_local']:
+        if expected_type_for_local is not None:
+            wanted['type'] = expected_type_for_local
+
+        handler = _fetch_local
+
+    else:
+        if expected_type_for_remote is not None:
+            wanted['type'] = expected_type_for_remote
+
+        handler = _fetch_remote
+
+    if wanted['type'] is None:
+        raise ValueError(
+                "fetch() requires some sort of type to be specified")
+
+    return handler(address, wanted)
+
+def _fetch_local(address, wanted):
+    raise ValueError("Not yet implemented") # FIXME
+
+def _fetch_remote(address, wanted):
+
+    # Do we already know about them?
+
+    if wanted['is_atstyle']:
+        # XXX Not certain about this (or indeed the benefit
+        # of storing "acct" in the Person object). Shouldn't we ask
+        # the webfinger module whether it knows them?
+        kwargs = {"acct": address}
+    else:
+        kwargs = {"url": address}
+
+    try:
+        result = wanted['type'].objects.get(
                 **kwargs,
                 )
 
-    if '@' in address:
+        logger.debug("%s: already known: %s",
+                address, result)
 
-        fields = address.split('@')
+        return result
+
+    except wanted['type'].DoesNotExist:
+        pass
+
+    # No, so create them (but don't save yet).
+
+    result = wanted['type'](
+            **kwargs,
+            )
+
+    if wanted['is_atstyle']:
 
         webfinger = get_webfinger(
-                username=fields[-2],
-                hostname=fields[-1],
+                username = wanted['username'],
+                hostname = wanted['hostname'],
                 )
 
         if webfinger.url is None:
@@ -110,9 +158,9 @@ def fetch(address,
         return result
 
     try:
-        details = response.json()
+        found = response.json()
     except ValueError:
-        logger.info("%s: response was not JSON",
+        logger.info("%s: response was not JSON; dropping",
                 address)
 
         if result is not None:
@@ -121,8 +169,8 @@ def fetch(address,
 
         return result
 
-    if 'type' not in details:
-        logger.info("%s: retrieved JSON did not include a type",
+    if 'type' not in found:
+        logger.info("%s: retrieved JSON did not include a type; dropping",
                 address)
 
         if result is not None:
@@ -131,11 +179,11 @@ def fetch(address,
 
         return result
 
-    if 'id' in details:
-        if details['id'] != address:
+    if 'id' in found:
+        if found['id'] != address:
             logger.info(
-                    "%s: user's id was not the source url: got %s",
-                    address, details['id'],
+                    "%s: user's id was not the source url: got %s; dropping",
+                    address, found['id'],
                     )
             result.status = 0
             result.save()
@@ -145,13 +193,13 @@ def fetch(address,
     # Do we have a handler to finish up with?
 
     handler_name = 'on_%s' % (
-            details['type'].lower(),
+            found['type'].lower(),
             )
 
     if handler_name in globals():
 
         try:
-            result = globals()[handler_name](details, result)
+            result = globals()[handler_name](found, result)
             logger.info("%s: result was %s",
                     address, result)
         except ValueError as ve:
@@ -159,13 +207,12 @@ def fetch(address,
                     address, ve)
             return None
 
-        if expected_type is not None and \
-                not isinstance(result, expected_type):
+        if not isinstance(result, wanted['type']):
 
-                    logger.info("%s:    -- which wasn't %s; returning None",
-                            address, expected_type)
+            logger.info("%s:    -- which wasn't %s; returning None",
+                    address, wanted['type'])
 
-                    return None
+            return None
 
         return result
 
@@ -173,18 +220,13 @@ def fetch(address,
 
         # no handler
 
-        if result is None:
-            logger.info("%s: no %s; returning %s",
-                    address, handler_name, result)
-            return result
-        else:
-            logger.info("%s: no %s; returning dict",
-                    address, handler_name)
-            return details
+        logger.info("%s: no %s; returning %s",
+                address, handler_name, result)
+        return result
 
-def on_person(details, user):
+def on_person(found, user):
 
-    for detailsname, fieldname in [
+    for foundname, fieldname in [
             ('preferredUsername', 'username'),
             ('name', 'display_name'),
             ('summary', 'note'),
@@ -198,18 +240,18 @@ def on_person(details, user):
             # ... bot?
             ('movedTo', 'moved_to'),
             ]:
-        if detailsname in details:
+        if foundname in found:
             setattr(user,
                     fieldname,
-                    details[detailsname])
+                    found[foundname])
 
     # A shared inbox takes priority over a personal inbox
-    if 'endpoints' in details:
-        if 'sharedInbox' in details['endpoints']:
-            user.inbox = details['endpoints']['sharedInbox']
+    if 'endpoints' in found:
+        if 'sharedInbox' in found['endpoints']:
+            user.inbox = found['endpoints']['sharedInbox']
 
-    if 'publicKey' in details:
-        key = details['publicKey']
+    if 'publicKey' in found:
+        key = found['publicKey']
 
         if 'owner' in key:
             if key['owner'] != user.url:
