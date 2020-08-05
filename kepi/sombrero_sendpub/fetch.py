@@ -14,25 +14,6 @@ from urllib.parse import urlparse
 from kepi.trilby_api.models import RemotePerson
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 
-def _parse_address(address):
-
-    result = {
-        'is_atstyle': '@' in address,
-    }
-
-    if result['is_atstyle']:
-        fields = address.split('@')
-        result['username'] = fields[-2]
-        result['hostname'] = fields[-1]
-    else:
-        result['hostname'] = urlparse(address).netloc
-
-    result['is_local'] = result['hostname'] in settings.ALLOWED_HOSTS
-
-    logger.debug("%s: wanted: %s", address, result)
-
-    return result
-
 def fetch(address,
         expected_type = None,
         expected_type_for_remote = None,
@@ -59,6 +40,25 @@ def fetch(address,
                 "fetch() requires some sort of type to be specified")
 
     return handler(address, wanted)
+
+def _parse_address(address):
+
+    result = {
+        'is_atstyle': '@' in address,
+    }
+
+    if result['is_atstyle']:
+        fields = address.split('@')
+        result['username'] = fields[-2]
+        result['hostname'] = fields[-1]
+    else:
+        result['hostname'] = urlparse(address).netloc
+
+    result['is_local'] = result['hostname'] in settings.ALLOWED_HOSTS
+
+    logger.debug("%s: wanted: %s", address, result)
+
+    return result
 
 def _fetch_local(address, wanted):
     raise ValueError("Not yet implemented") # FIXME
