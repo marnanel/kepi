@@ -9,8 +9,10 @@ logger = logging.getLogger(name="kepi")
 
 from unittest import skip
 from django.test import TestCase
+from django.conf import settings
 from kepi.sombrero_sendpub.fetch import fetch
-from kepi.trilby_api.models import RemotePerson
+from kepi.trilby_api.models import RemotePerson, Person
+from kepi.trilby_api.tests import create_local_person
 from . import suppress_thread_exceptions
 import httpretty
 import requests
@@ -102,7 +104,7 @@ EXAMPLE_WEBFINGER_RESULT_NO_USER = """{"subject":"acct:wombat@example.org",
 {"rel":"http://ostatus.org/schema/1.0/subscribe",
 "template":"https://example.org/authorize_interaction?uri={uri}"}]}"""
 
-class TestFetchUser(TestCase):
+class TestFetchRemoteUser(TestCase):
 
     @httpretty.activate
     def test_fetch(self):
@@ -391,6 +393,79 @@ class TestFetchUser(TestCase):
                 user.status,
                 0,
                 )
+
+class TestFetchLocalUser(TestCase):
+
+    def setUp(self):
+        self._alice = create_local_person(
+                name = 'alice',
+                )
+        settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+
+    @httpretty.activate
+    def test_atstyle(self):
+
+        found = fetch('alice@testserver',
+                expected_type = Person)
+
+        self.assertEqual(
+                found,
+                self._alice,
+                )
+
+    @httpretty.activate
+    def test_url(self):
+
+        found = fetch('https://testserver/users/alice',
+                expected_type = Person)
+
+        self.assertEqual(
+                found,
+                self._alice,
+                )
+
+    @httpretty.activate
+    def test_atstyle_404(self):
+
+        found = fetch('bob@testserver',
+                expected_type = Person)
+
+        self.assertEqual(
+                found,
+                None,
+                )
+
+    @httpretty.activate
+    def test_url_404(self):
+        found = fetch('https://testserver/users/bob',
+                expected_type = Person)
+
+        self.assertEqual(
+                found,
+                None,
+                )
+
+    @httpretty.activate
+    def test_url_wrong_type(self):
+        found = fetch('https://testserver/users/bob/outbox',
+                expected_type = Person)
+
+        self.assertEqual(
+                found,
+                None,
+                )
+
+    @httpretty.activate
+    def test_expected_localtype(self):
+        found = fetch('https://testserver/users/bob/outbox',
+                expected_type = Status, # obviously silly
+                expected_local_type = Person)
+
+        self.assertEqual(
+                found,
+                None,
+                )
+
 
 class TestFetchStatus(TestCase):
 
