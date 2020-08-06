@@ -160,6 +160,12 @@ def _fetch_local_by_url(address, wanted):
     logger.info("%s: result from handler was %s",
             address, result)
 
+    if result is not None and not isinstance(result, wanted['type']):
+        logger.info("%s: type mismatch (%s vs %s); discarding",
+                address, type(result), wanted['type'],
+                )
+        return None
+
     return result
 
 def _fetch_local(address, wanted):
