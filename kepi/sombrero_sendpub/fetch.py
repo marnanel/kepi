@@ -9,6 +9,7 @@ logger = logging.getLogger(name="kepi")
 
 import requests
 import django.db.utils
+from django.http.request import HttpRequest
 from django.conf import settings
 from urllib.parse import urlparse
 from kepi.trilby_api.models import LocalPerson, RemotePerson
@@ -95,7 +96,9 @@ def _parse_address(address):
         result['username'] = fields[-2]
         result['hostname'] = fields[-1]
     else:
-        result['hostname'] = urlparse(address).netloc
+        parsed = urlparse(address)
+        result['hostname'] = parsed.netloc
+        result['path'] = parsed.path
 
     result['is_local'] = result['hostname'] in settings.ALLOWED_HOSTS
 
@@ -121,7 +124,43 @@ def _fetch_local_by_atstyle(address, wanted):
     return result
 
 def _fetch_local_by_url(address, wanted):
-    raise ValueError("Not yet implemented") # FIXME
+    from django.urls import resolve
+
+    class ActivityRequest(HttpRequest):
+        """
+        These are fake HttpRequests which we send to the views
+        as an ACTIVITY_GET method.
+        """
+
+        def __init__(self, path):
+            super().__init__()
+
+            self.path = path
+            self.method = 'ACTIVITY_GET'
+
+    try:
+        resolved = resolve(wanted['path'])
+    except django.urls.Resolver404:
+        logger.info('%s: not found', address)
+        return None
+
+    logger.debug('%s: handled by %s, %s, %s',
+            address,
+            str(resolved.func),
+            str(resolved.args),
+            str(resolved.kwargs),
+            )
+
+    request = ActivityRequest(
+            path=wanted['path'],
+            )
+    result = resolved.func(request,
+            **resolved.kwargs)
+
+    logger.info("%s: result from handler was %s",
+            address, result)
+
+    return result
 
 def _fetch_local(address, wanted):
     if wanted['is_atstyle']:
