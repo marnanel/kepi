@@ -11,7 +11,7 @@ import requests
 import django.db.utils
 from django.conf import settings
 from urllib.parse import urlparse
-from kepi.trilby_api.models import RemotePerson
+from kepi.trilby_api.models import LocalPerson, RemotePerson
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 
 def fetch(address,
@@ -103,8 +103,31 @@ def _parse_address(address):
 
     return result
 
-def _fetch_local(address, wanted):
+def _fetch_local_by_atstyle(address, wanted):
+
+    # atstyle only makes sense for Person
+
+    try:
+        result = LocalPerson.objects.get(
+                local_user__username = wanted['username'],
+                )
+        logger.info("%s: found local user: %s",
+                address, result)
+    except LocalPerson.DoesNotExist:
+        logger.info("%s: no such user: %s",
+                address, wanted['username'])
+        result = None
+
+    return result
+
+def _fetch_local_by_url(address, wanted):
     raise ValueError("Not yet implemented") # FIXME
+
+def _fetch_local(address, wanted):
+    if wanted['is_atstyle']:
+        return _fetch_local_by_atstyle(address, wanted)
+    else:
+        return _fetch_local_by_url(address, wanted)
 
 def _fetch_remote(address, wanted):
 
