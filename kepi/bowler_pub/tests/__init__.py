@@ -167,9 +167,10 @@ def create_remote_person(
             )
 
     if auto_fetch:
-        from kepi.sombrero_sendpub.fetch import fetch_user
+        from kepi.sombrero_sendpub.fetch import fetch
 
-        return fetch_user(url)
+        return fetch(url,
+                expected_type=trilby_models.RemotePerson)
     else:
         return None
 
