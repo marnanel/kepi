@@ -19,8 +19,9 @@ import kepi.bowler_pub.utils as bowler_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
+from .acobject import AcObject
 
-class Person(PolymorphicModel):
+class Person(AcObject):
 
     @property
     def icon_or_default(self):
