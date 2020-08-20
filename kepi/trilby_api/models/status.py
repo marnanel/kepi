@@ -8,11 +8,11 @@ import kepi.trilby_api.utils as trilby_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 import logging
-from .acobject import AcObject
+from polymorphic.models import PolymorphicModel
 
 logger = logging.Logger('kepi')
 
-class Status(AcObject):
+class Status(PolymorphicModel):
 
     class Meta:
         verbose_name_plural = 'Statuses'
