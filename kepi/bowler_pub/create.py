@@ -42,48 +42,13 @@ def create(message):
             fields['type'].lower(),
             )
 
-    object_handler_name = None
-
-    if isinstance(fields.get('object', None), str):
-        # "object" is the address of an object, rather
-        # than the object written out literally.
-        # So, fetch that object.
-
-        referent = fetch(fields['object'])
-        logger.info("Retrieved referent of %s, which is %s",
-                fields['object'], referent)
-
-        fields['object'] = referent
-
-    try:
-        object_handler_name = '%s_%s' % (
-                activity_handler_name,
-                fields['object']['type'].lower(),
-                )
-    except KeyError:
-        pass
-    except ValueError:
-        pass
-    except TypeError:
-        pass
-
-    if object_handler_name in globals():
-        result = globals()[object_handler_name](message)
-        return result
-
     if activity_handler_name in globals():
         result = globals()[activity_handler_name](message)
         return result
 
-    if object_handler_name is not None:
-        logger.warn('%s: no handler for %s or %s',
-                message,
-                activity_handler_name,
-                object_handler_name)
-    else:
-        logger.warn('%s: no handler for %s',
-                message,
-                activity_handler_name)
+    logger.warn('%s: no handler for %s',
+            message,
+            activity_handler_name)
 
 def on_follow(message):
 
@@ -158,11 +123,12 @@ def _visibility_from_fields(fields):
     # default
     return trilby_utils.VISIBILITY_DIRECT
 
-def on_create_note(message):
+def on_create(message):
     fields = message.fields
     logger.debug('%s: on_create_note %s', message, fields)
 
     newborn_fields = fields['object']
+    # XXX Can fields['object'] validly be a URL?
 
     poster = trilby_models.Person.lookup(
         name = fields['actor'],
@@ -200,44 +166,50 @@ def on_create_note(message):
         newbie,
         )
 
-def on_announce_note(message):
+def on_announce(message):
     fields = message.fields
     logger.debug('%s: on_announce_note %s', message, fields)
 
-    status_url = fields['object']
+    try:
+        if isinstance(fields.get('object', None), dict):
+            # We don't trust an object passed to us as part of
+            # an Announce, because it generally comes from a
+            # different user. So we take the id and go and
+            # look it up for ourselves.
+            status_url = fields['object']['id']
+        else:
+            status_url = fields['object']
+    except FieldError as fe:
+        logger.info("%s: unusable object field: %s",
+                message, fe)
+        return None
 
-    status = trilby_models.Status.lookup(
-            url = status_url,
+    status = fetch(status_url,
+            expected_type = trilby_models.Status,
             )
 
     if status is None:
 
-        if bowler_utils.is_local(status_url):
-            # If the status is local and doesn't exist,
-            # then we know for sure that it can't be reblogged.
-            logger.info("%s: attempted to reblog non-existent status %s",
-                    message, status_url)
-            return
-
-        # so it's unknown and remote.
-
-        fetch_status(status_url)
-
-        raise ValueError("now...")
-    else:
-        logger.debug('%s: reblogging existing status, %s',
+        logger.info("%s: attempted to reblog non-existent status %s",
                 message, status_url)
+        return None
 
-    actor = trilby_models.Person.lookup(
-        name = fields['actor'],
-        create_missing_remote = True,
-        )
+    actor = fetch(fields['actor'],
+            expected_type = trilby_models.Person,
+            expected_type_for_remote = trilby_models.RemotePerson,
+            expected_type_for_local = trilby_models.LocalPerson,
+            )
 
-    reblog = Reblog(
-            who = actor,
-            what = status,
+    logger.debug('%s: reblogging status %s by %s',
+            message, status_url, actor)
+
+    reblog = trilby_models.Status(
+            account = actor,
+            reblog_of = status,
             )
     reblog.save()
 
     logger.debug('%s: created reblog: %s',
             message, reblog)
+
+    return reblog
