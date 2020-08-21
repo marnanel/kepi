@@ -125,7 +125,7 @@ def _visibility_from_fields(fields):
 
 def on_create(message):
     fields = message.fields
-    logger.debug('%s: on_create_note %s', message, fields)
+    logger.debug('%s: on_create %s', message, fields)
 
     newborn_fields = fields['object']
     # XXX Can fields['object'] validly be a URL?
@@ -168,7 +168,7 @@ def on_create(message):
 
 def on_announce(message):
     fields = message.fields
-    logger.debug('%s: on_announce_note %s', message, fields)
+    logger.debug('%s: on_announce %s', message, fields)
 
     try:
         if isinstance(fields.get('object', None), dict):
