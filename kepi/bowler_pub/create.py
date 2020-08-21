@@ -130,6 +130,17 @@ def on_create(message):
     newborn_fields = fields['object']
     # XXX Can fields['object'] validly be a URL?
 
+    if 'type' not in newborn_fields:
+        logger.info("%s: newborn object had no type",
+                message)
+        return None
+
+    if newborn_fields['type']!='Note':
+        logger.info("%s: don't know how to create %s objects",
+                message, newborn_fields,
+                )
+        return None
+
     poster = trilby_models.Person.lookup(
         name = fields['actor'],
         create_missing_remote = True,
