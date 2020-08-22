@@ -207,8 +207,6 @@ def on_announce(message):
 
     actor = fetch(fields['actor'],
             expected_type = trilby_models.Person,
-            expected_type_for_remote = trilby_models.RemotePerson,
-            expected_type_for_local = trilby_models.LocalPerson,
             )
 
     logger.debug('%s: reblogging status %s by %s',

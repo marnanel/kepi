@@ -455,16 +455,5 @@ class TestFetchLocalUser(TestCase):
                 None,
                 )
 
-    @httpretty.activate
-    def test_expected_localtype(self):
-        found = fetch('https://testserver/users/alice',
-                expected_type = Status, # obviously silly
-                expected_type_for_local = Person)
-
-        self.assertEqual(
-                found,
-                self._alice,
-                )
-
 class TestFetchStatus(TestCase):
     pass

@@ -17,6 +17,14 @@ class Status(PolymorphicModel):
     class Meta:
         verbose_name_plural = 'Statuses'
 
+    @classmethod
+    def local_form(cls):
+        return Status
+
+    @classmethod
+    def remote_form(cls):
+        return Status
+
     # TODO: The original design has the serial number
     # monotonically but unpredictably increasing.
 

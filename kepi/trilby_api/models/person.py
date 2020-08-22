@@ -22,6 +22,14 @@ from urllib.parse import urlparse
 
 class Person(PolymorphicModel):
 
+    @classmethod
+    def local_form(cls):
+        return LocalPerson
+
+    @classmethod
+    def remote_form(cls):
+        return RemotePerson
+
     @property
     def icon_or_default(self):
         if self.icon_image:
@@ -342,6 +350,10 @@ class LocalPerson(Person):
     default_sensitive = models.BooleanField(
             default = False,
             )
+
+    @property
+    def status(self):
+        return 200 # necessarily
 
     def _generate_keys(self):
 

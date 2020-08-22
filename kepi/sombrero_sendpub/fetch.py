@@ -16,9 +16,8 @@ from kepi.trilby_api.models import LocalPerson, RemotePerson
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 
 def fetch(address,
-        expected_type = None,
-        expected_type_for_remote = None,
-        expected_type_for_local = None):
+        expected_type,
+        ):
 
     """
     Find remote or local objects.
@@ -38,13 +37,12 @@ def fetch(address,
     lookup to find the actual URL. URLs should not contain
     an "@" sign.
 
-    "expected_type" is the type we're looking for; it can
-    be overridden for local or for remote objects, because
-    these may be different types (in a polymorphic database).
+    "expected_type" is the type we're looking for.
 
     "expected_type" should contain at least the fields
       - url (read/write)
       - status (write-only; for an HTTP status code)
+      - local_form and remote_form, which may be identity functions
 
     Particular types of object may define handlers which
     can initialise other fields. The handler is looked up
@@ -68,15 +66,8 @@ def fetch(address,
     wanted['type'] = expected_type
 
     if wanted['is_local']:
-        if expected_type_for_local is not None:
-            wanted['type'] = expected_type_for_local
-
         handler = _fetch_local
-
     else:
-        if expected_type_for_remote is not None:
-            wanted['type'] = expected_type_for_remote
-
         handler = _fetch_remote
 
     if wanted['type'] is None:
@@ -109,6 +100,10 @@ def _parse_address(address):
 def _fetch_local_by_atstyle(address, wanted):
 
     # atstyle only makes sense for Person
+    if not isintance(wanted['type'], Person):
+        logger.warn("%s: atstyle request made for %s, not Person",
+                address, wanted['type'])
+        return None
 
     try:
         result = LocalPerson.objects.get(
@@ -187,7 +182,7 @@ def _fetch_remote(address, wanted):
         kwargs = {"url": address}
 
     try:
-        result = wanted['type'].objects.get(
+        result = wanted['type'].remote_form().objects.get(
                 **kwargs,
                 )
 
@@ -201,7 +196,7 @@ def _fetch_remote(address, wanted):
 
     # No, so create them (but don't save yet).
 
-    result = wanted['type'](
+    result = wanted['type'].remote_form()(
             **kwargs,
             )
 
