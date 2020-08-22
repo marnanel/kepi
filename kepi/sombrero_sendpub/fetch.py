@@ -12,7 +12,7 @@ import django.db.utils
 from django.http.request import HttpRequest
 from django.conf import settings
 from urllib.parse import urlparse
-from kepi.trilby_api.models import LocalPerson, RemotePerson
+from kepi.trilby_api.models import *
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 
 def fetch(address,
@@ -100,7 +100,7 @@ def _parse_address(address):
 def _fetch_local_by_atstyle(address, wanted):
 
     # atstyle only makes sense for Person
-    if not isintance(wanted['type'], Person):
+    if not issubclass(wanted['type'], Person):
         logger.warn("%s: atstyle request made for %s, not Person",
                 address, wanted['type'])
         return None
