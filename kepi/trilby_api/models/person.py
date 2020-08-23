@@ -482,7 +482,7 @@ class LocalPerson(Person):
         Your inbox contains:
 
          - Everything you're tagged in
-         - All public and private posts of your own
+         - All posts of your own
          - All public posts of your friends
          - All private posts of your mutuals
         """
@@ -495,21 +495,12 @@ class LocalPerson(Person):
         logger.debug("%s.inbox: tagged in: %s",
                 self, everything_youre_tagged_in)
 
-        all_your_public_posts = trilby_models.Status.objects.filter(
+        all_your_posts = trilby_models.Status.objects.filter(
                 account = self,
-                visibility = trilby_utils.VISIBILITY_PUBLIC,
                 )
 
-        logger.debug("%s.inbox: all public: %s",
-                self, all_your_public_posts)
-
-        all_your_private_posts = trilby_models.Status.objects.filter(
-                account = self,
-                visibility = trilby_utils.VISIBILITY_PRIVATE,
-                )
-
-        logger.debug("%s.inbox: all private: %s",
-                self, all_your_private_posts)
+        logger.debug("%s.inbox: all your posts: %s",
+                self, all_your_posts)
 
         all_your_friends_public_posts = trilby_models.Status.objects.filter(
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
@@ -529,8 +520,7 @@ class LocalPerson(Person):
                 self, all_your_mutuals_private_posts)
 
         result = everything_youre_tagged_in.union(
-                all_your_public_posts,
-                all_your_private_posts,
+                all_your_posts,
                 all_your_friends_public_posts,
                 all_your_mutuals_private_posts,
                 )
