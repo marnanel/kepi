@@ -190,6 +190,7 @@ class StatusSerializer(serializers.ModelSerializer):
 
     in_reply_to_account_id = serializers.PrimaryKeyRelatedField(
             queryset=Person.objects.all,
+            default = None,
             required = False)
 
     reblog = RecursiveField(
