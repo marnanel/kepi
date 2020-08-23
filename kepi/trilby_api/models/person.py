@@ -492,26 +492,41 @@ class LocalPerson(Person):
         # tags aren't implemented; FIXME
         everything_youre_tagged_in = trilby_models.Status.objects.none()
 
+        logger.debug("%s.inbox: tagged in: %s",
+                self, everything_youre_tagged_in)
+
         all_your_public_posts = trilby_models.Status.objects.filter(
                 account = self,
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
                 )
+
+        logger.debug("%s.inbox: all public: %s",
+                self, all_your_public_posts)
 
         all_your_private_posts = trilby_models.Status.objects.filter(
                 account = self,
                 visibility = trilby_utils.VISIBILITY_PRIVATE,
                 )
 
+        logger.debug("%s.inbox: all private: %s",
+                self, all_your_private_posts)
+
         all_your_friends_public_posts = trilby_models.Status.objects.filter(
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
                 account__rel_following__following = self,
                 )
+
+        logger.debug("%s.inbox: all friends' public: %s",
+                self, all_your_friends_public_posts)
 
         all_your_mutuals_private_posts = trilby_models.Status.objects.filter(
                 visibility = trilby_utils.VISIBILITY_PRIVATE,
                 account__rel_following__following = self,
                 account__rel_followers__follower = self,
                 )
+
+        logger.debug("%s.inbox: all mutuals' private: %s",
+                self, all_your_mutuals_private_posts)
 
         result = everything_youre_tagged_in.union(
                 all_your_public_posts,

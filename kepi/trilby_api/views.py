@@ -671,7 +671,12 @@ class HomeTimeline(AbstractTimeline):
 
     def get_queryset(self, request):
 
-        return request.user.localperson.inbox
+        result = request.user.localperson.inbox
+
+        logger.debug("Home timeline is %s",
+                result)
+
+        return result
 
 ########################################
 
