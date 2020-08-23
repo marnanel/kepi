@@ -5,7 +5,7 @@
 # Licensed under the GNU Public License v2.
 
 import logging
-logger = logging.Logger("kepi")
+logger = logging.getLogger(name='kepi')
 
 from polymorphic.models import PolymorphicModel
 from django.db import models

@@ -1,3 +1,12 @@
+# status.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
+
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
@@ -7,10 +16,7 @@ from kepi.bowler_pub.utils import uri_to_url, is_local
 import kepi.trilby_api.utils as trilby_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
-import logging
 from polymorphic.models import PolymorphicModel
-
-logger = logging.Logger('kepi')
 
 class Status(PolymorphicModel):
 

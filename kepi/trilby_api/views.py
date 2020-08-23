@@ -1,3 +1,12 @@
+# views.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
+
 from django.db import IntegrityError, transaction
 from django.shortcuts import render, get_object_or_404
 from django.views import View
@@ -19,11 +28,9 @@ from rest_framework.permissions import IsAuthenticated, \
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 import kepi.trilby_api.receivers
-import logging
 import json
 import re
 
-logger = logging.Logger(name='kepi')
 
 ###########################
 

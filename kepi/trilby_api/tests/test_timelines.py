@@ -1,3 +1,12 @@
+# test_timelines.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
+
 from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *

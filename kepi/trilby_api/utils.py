@@ -1,3 +1,12 @@
+# utils.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
+
 VISIBILITY_PUBLIC = 'A'
 VISIBILITY_UNLISTED = 'U'
 VISIBILITY_PRIVATE = 'X'

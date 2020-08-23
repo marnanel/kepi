@@ -1,3 +1,9 @@
+# urls.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
 from django.urls import path
 from .views import *
 
