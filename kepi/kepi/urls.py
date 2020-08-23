@@ -6,6 +6,7 @@ import oauth2_provider.views as oauth2_views
 import kepi.busby_1st.urls
 import kepi.bowler_pub.urls
 import kepi.trilby_api.urls
+import kepi.tophat_ui.urls
 from kepi.trilby_api.views import fix_oauth2_redirects
 from . import settings
 
@@ -31,7 +32,7 @@ urlpatterns = [
         path('oauth/', include((oauth2_endpoint_views, 'oauth2_provider'), namespace="oauth2_provider")),
 
         # kepi's own stuff
-        # path('', kepi.tophat_ui.views.FrontPageView.as_view()), # or something
+        path(r'', include(kepi.tophat_ui.urls)),
         path(r'', include(kepi.busby_1st.urls)),
         path(r'', include(kepi.bowler_pub.urls)),
         path(r'', include(kepi.trilby_api.urls)),

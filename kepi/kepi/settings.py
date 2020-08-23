@@ -94,6 +94,7 @@ INSTALLED_APPS = (
         'kepi.bowler_pub',
         'kepi.sombrero_sendpub',
         'kepi.trilby_api',
+        'kepi.tophat_ui',
 
         )
 
