@@ -1,8 +1,11 @@
-# views/nodeinfo.py
+# busby_1st/views/nodeinfo.py
 #
-# Part of kepi, an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
 
 """
 Implements nodeinfo.
@@ -15,11 +18,8 @@ from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
 from kepi import __version__
-import logging
 import re
 from kepi.bowler_pub.utils import as_json
-
-logger = logging.Logger('kepi')
 
 class NodeinfoPart1(django.views.View):
     """

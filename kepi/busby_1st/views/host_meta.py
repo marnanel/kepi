@@ -1,8 +1,11 @@
-# views/host_meta.py
+# busby_1st/views/host_meta.py
 #
-# Part of kepi, an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
 
 """
 Implements ".well-known/host-meta".
@@ -12,9 +15,6 @@ for the full details.
 
 import django.views
 from django.shortcuts import render
-import logging
-
-logger = logging.Logger('kepi')
 
 class HostMeta(django.views.View):
 

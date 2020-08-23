@@ -1,8 +1,11 @@
 # busby_1st/views/webfinger.py
 #
-# Part of kepi, an ActivityPub daemon.
+# Part of kepi.
 # Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
 
 """
 Implements ".well-known/webfinger".
@@ -14,13 +17,10 @@ import django.views
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
-import logging
 import re
 import json
 from kepi.bowler_pub.utils import as_json, configured_url
 import kepi.trilby_api.models as trilby_models
-
-logger = logging.Logger('kepi')
 
 class Webfinger(django.views.View):
     """

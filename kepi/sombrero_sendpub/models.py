@@ -5,13 +5,13 @@
 # Licensed under the GNU Public License v2.
 
 import logging
+logger = logging.getLogger(name='kepi')
+
 from django.db import models
 from kepi.bowler_pub.utils import configured_url, as_json
 from django.db.models.constraints import UniqueConstraint
 import django.utils.timezone
 import json
-
-logger = logging.Logger("kepi")
 
 class OutgoingActivity(models.Model):
 

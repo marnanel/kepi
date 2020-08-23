@@ -1,16 +1,13 @@
 # delivery.py
 #
-# Part of kepi, an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
-"""
-This module contains deliver(), which delivers objects
-to their audiences.
-"""
+import logging
+logger = logging.getLogger(name='kepi')
 
 from celery import shared_task
-import logging
 import requests
 import json
 import httpsig
@@ -31,8 +28,6 @@ import django.utils.datastructures
 from httpsig.verify import HeaderVerifier
 from collections.abc import Iterable
 """ # FIXME
-
-logger = logging.getLogger(name='kepi')
 
 def _rfc822_datetime(when=None):
     """

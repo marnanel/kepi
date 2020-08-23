@@ -4,6 +4,9 @@
 # Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
+import logging
+logger = logging.getLogger(name='kepi')
+
 from unittest import skip
 from django.test import TestCase
 from rest_framework.test import force_authenticate, APIClient
@@ -12,9 +15,6 @@ from kepi.sombrero_sendpub.delivery import deliver
 from kepi.trilby_api.models import RemotePerson
 from kepi.trilby_api.tests import create_local_person
 import httpretty
-import logging
-
-logger = logging.Logger("kepi")
 
 REMOTE_URL = 'https://remote.example.net/users/zachary'
 

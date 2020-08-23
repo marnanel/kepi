@@ -4,15 +4,14 @@
 # Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
+import logging
+logger = logging.getLogger(name='kepi')
+
 from unittest import skip
 from django.test import TestCase
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 from . import suppress_thread_exceptions
 import httpretty
-import logging
-import requests
-
-logger = logging.Logger("kepi")
 
 EXAMPLE_USERNAME = "wombat"
 EXAMPLE_HOSTNAME = "example.org"

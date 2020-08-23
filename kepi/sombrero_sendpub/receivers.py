@@ -1,9 +1,15 @@
+# receivers.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
+
 import kepi.trilby_api.signals as kepi_signals
 from django.dispatch import receiver
 from kepi.sombrero_sendpub.delivery import deliver
-import logging
-
-logger = logging.Logger("kepi")
 
 @receiver(kepi_signals.followed)
 def on_follow(sender, **kwargs):
