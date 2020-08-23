@@ -14,6 +14,7 @@ from django.conf import settings
 from kepi.bowler_pub.create import create
 import kepi.trilby_api.utils as trilby_utils
 import kepi.trilby_api.models as trilby_models
+from kepi.sombrero_sendpub.fetch import fetch
 
 REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'
@@ -34,6 +35,8 @@ class TestCreate(TestCase):
 
         if sender is None:
             sender = self._fred.url
+        elif not isinstance(sender, str):
+            sender = sender.url
 
         create_form = {
                 'id': LOCAL_STATUS_ID,
@@ -336,9 +339,8 @@ class TestCreate(TestCase):
         from kepi.trilby_api.models import Follow, Person
 
         local_user = create_local_person()
-        remote_alice = Person.lookup(REMOTE_ALICE,
-                create_missing_remote = True,
-                )
+        remote_alice = fetch(REMOTE_ALICE,
+                expected_type = Person)
 
         following = Follow(
                 follower = local_user,

@@ -55,8 +55,15 @@ def on_follow(message):
     fields = message.fields
     logger.debug('%s: on_follow %s', message, fields)
 
-    follower = trilby_models.Person.lookup(fields['actor'],
-            create_missing_remote = True)
+    if not bowler_utils.is_local(fields['object']):
+        logger.info("%s: ignoring someone following non-local user",
+                message)
+        return None
+
+    follower = fetch(
+            fields['actor'],
+            expected_type = trilby_models.Person,
+            )
 
     if follower is None:
         # shouldn't happen
@@ -64,15 +71,19 @@ def on_follow(message):
                 message,
                 fields['actor'],
                 )
-        return
+        return None
 
-    following = trilby_models.Person.lookup(fields['object'])
+    following = fetch(
+            fields['object'],
+            expected_type = trilby_models.Person,
+            )
+
     if following is None:
         logger.info('%s: there is no local user %s',
                 message,
                 fields['object'],
                 )
-        return
+        return None
 
     result = trilby_models.Follow(
             follower = follower,
@@ -141,14 +152,15 @@ def on_create(message):
                 )
         return None
 
-    poster = trilby_models.Person.lookup(
-        name = fields['actor'],
-        create_missing_remote = True,
+    poster = fetch(
+        fields['actor'],
+        expected_type = trilby_models.Person,
         )
 
     if 'inReplyTo' in newborn_fields:
-        in_reply_to = trilby_models.Status.lookup(
-            url = newborn_fields['inReplyTo'],
+        in_reply_to = fetch(
+            newborn_fields['inReplyTo'],
+            expected_type = trilby_models.Status,
             )
     else:
         in_reply_to = None

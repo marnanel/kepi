@@ -125,61 +125,6 @@ class Person(PolymorphicModel):
     def emojis(self):
         return [] # FIXME
 
-    @classmethod
-    def lookup(cls, name,
-            create_missing_remote = False):
-        # FIXME not yet tested
-        # FIXME this should check @name@host form, too
-
-        if bowler_utils.is_local(name):
-
-            view = trilby_utils.find_local_view(
-                    name,
-                    which_views = ['PersonView'],
-                    )
-
-            if view is None:
-                return None
-
-            try:
-                result = LocalPerson.objects.get(
-                        local_user__username = view.kwargs['username'],
-                        )
-                logger.debug('%s is local and exists: %s',
-                        name, result)
-
-            except LocalPerson.DoesNotExist:
-                logger.debug('%s is local but doesn\'t exist.',
-                        name)
-
-                return None
-
-        else:
-            try:
-                result = RemotePerson.objects.get(
-                        url = name,
-                        )
-                logger.debug('%s is remote and exists: %s',
-                        name, result)
-
-            except RemotePerson.DoesNotExist:
-
-                if not create_missing_remote:
-                    logger.debug('%s is remote but doesn\'t exist.',
-                            name)
-
-                    return None
-
-                result = RemotePerson(
-                        url = name,
-                        )
-                result.save()
-
-                logger.debug('%s is remote but didn\'t exist, so we created it: %s',
-                        name, result)
-
-        return result
-
 ########################################
 
 class RemotePerson(Person):
