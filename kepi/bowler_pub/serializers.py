@@ -87,7 +87,7 @@ class PersonEndpointSerializer(serializers.ModelSerializer):
                 'sharedInbox',
                 )
     sharedInbox = ConstantField(
-        value = uri_to_url(settings.KEPI['USER_OUTBOX_LINK'])
+        value = uri_to_url(settings.KEPI['SHARED_INBOX_LINK'])
             )
 
 class PersonSerializer(serializers.ModelSerializer):
