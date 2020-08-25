@@ -1,3 +1,12 @@
+# serializers.py
+#
+# Part of kepi, an ActivityPub daemon.
+# Copyright (c) 2018-2020 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
+import logging
+logger = logging.getLogger(name='kepi')
+
 from rest_framework import serializers
 from kepi.trilby_api.models import *
 from rest_framework_recursive.fields import RecursiveField
