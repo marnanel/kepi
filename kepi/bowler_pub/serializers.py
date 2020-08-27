@@ -76,7 +76,7 @@ class ImageField(serializers.Field):
     def to_representation(self, value):
         return {
                 'type': 'Image',
-                'mediaType': 'image/jpg', # FIXME always?
+                'mediaType': 'image/jpeg', # FIXME always?
                 'url': value,
                 }
 
