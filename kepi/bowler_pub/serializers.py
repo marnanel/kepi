@@ -80,15 +80,23 @@ class ImageField(serializers.Field):
                 'url': value,
                 }
 
-class PersonEndpointSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = trilby_models.LocalPerson
-        fields = (
-                'sharedInbox',
-                )
-    sharedInbox = ConstantField(
-        value = uri_to_url(settings.KEPI['SHARED_INBOX_LINK'])
-            )
+class PersonEndpointSerializer(serializers.BaseSerializer):
+
+    def to_representation(self, instance):
+        return {
+                'sharedInbox': uri_to_url(
+                    settings.KEPI['SHARED_INBOX_LINK'],
+                    ),
+                }
+
+class PersonPublicKeySerializer(serializers.BaseSerializer):
+
+    def to_representation(self, instance):
+        return {
+                'id': instance.url+'#main-key',
+                'owner': instance.url,
+                'publicKey': instance.publicKey,
+                }
 
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -143,6 +151,10 @@ class PersonSerializer(serializers.ModelSerializer):
             )
 
     endpoints = PersonEndpointSerializer(
+            source = '*',
+            )
+
+    publicKey = PersonPublicKeySerializer(
             source = '*',
             )
 

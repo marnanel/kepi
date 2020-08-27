@@ -42,18 +42,44 @@ class TestKepiView(TestCase):
                     'name': 'alice',
                     'id': 'https://testserver/users/alice',
                     'type': 'Person',
+
+                    'attachment': [],
+                    'endpoints': {
+                        'sharedInbox': 'https://testserver/inbox',
+                        },
+                    'featured': 'https://testserver/users/alice/featured',
+                    'followers': 'https://testserver/users/alice/followers',
+                    'following': 'https://testserver/users/alice/following',
+                    'icon': {
+                        'mediaType': 'image/jpg',
+                        'type': 'Image',
+                        'url': 'https://testserver/static/defaults/avatar_1.jpg',
+                        },
+                    'id': 'https://testserver/users/alice',
+                    'image': {
+                        'mediaType': 'image/jpg',
+                        'type': 'Image',
+                        'url': 'https://testserver/static/defaults/header.jpg'
+                        },
+                    'inbox': 'https://testserver/users/alice/inbox',
+                    'manuallyApprovesFollowers': True,
+                    'name': 'alice',
+                    'outbox': 'https://testserver/users/alice/outbox',
+                    'preferredUsername': 'alice',
+                    'publicKey': {'id': 'https://testserver/users/alice#main-key',
+                        'owner': 'https://testserver/users/alice',
+                        'publicKey': '-----BEGIN PUBLIC KEY-----\n'
+                        'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDIUCqW/lyJ9eWkqvE7wpmHacu9\n'
+                        'XOOSWZsx/+B2MM/xQYpUUIMZ3cyI3yMSOa3MS14wMBWdxlWNIMF7gVKHO6L9Ppns\n'
+                        'BfTLbe/QMcssQ5rHv9oAMy/hWHGyaES3vbxzqT2qMxI5bIJRpOJfDlTpAY5AVqrn\n'
+                        '8sYx/1XA9YJOKFkQIQIDAQAB\n'
+                        '-----END PUBLIC KEY-----'},
+                    'summary': ALICE_SUMMARY,
+                    'tag': [],
+                    'type': 'Person',
+                    'url': 'https://testserver/users/alice',
                     },
                 result,
-                )
-
-        self.assertIn(
-                'publicKey',
-                result,
-                )
-
-        self.assertEqual(
-                result['summary'],
-                ALICE_SUMMARY,
                 )
 
 @skip("Tombstones are not supported in this version")
