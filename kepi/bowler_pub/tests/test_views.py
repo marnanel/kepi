@@ -51,13 +51,13 @@ class TestKepiView(TestCase):
                     'followers': 'https://testserver/users/alice/followers',
                     'following': 'https://testserver/users/alice/following',
                     'icon': {
-                        'mediaType': 'image/jpg',
+                        'mediaType': 'image/jpeg',
                         'type': 'Image',
                         'url': 'https://testserver/static/defaults/avatar_1.jpg',
                         },
                     'id': 'https://testserver/users/alice',
                     'image': {
-                        'mediaType': 'image/jpg',
+                        'mediaType': 'image/jpeg',
                         'type': 'Image',
                         'url': 'https://testserver/static/defaults/header.jpg'
                         },
