@@ -204,7 +204,7 @@ class FollowingView(KepiView):
                 username = kwargs['username'],
                 )
 
-        return Following.objects.filter(
+        return trilby_models.Follow.objects.filter(
                 follower=user,
                 pending=False)
 
@@ -221,7 +221,7 @@ class FollowersView(KepiView):
                 username = kwargs['username'],
                 )
 
-        return Following.objects.filter(
+        return trilby_models.Follow.objects.filter(
                 following=user,
                 pending=False)
 
@@ -417,6 +417,12 @@ class CollectionView(generics.GenericAPIView):
             if hasattr(user, method_name):
                 method = getattr(user, method_name)
                 result = method()
+                logger.debug(
+                        "  -- found %s(): %s",
+                        method_name,
+                        result,
+                        )
+
             else:
                 logger.warn(
                         "user does not have a %s method; this is weird",
