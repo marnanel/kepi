@@ -406,13 +406,11 @@ class LocalPerson(Person):
         """
 
         # TODO Parameters to show access level.
-        # At present it only returns public posts.
 
         import kepi.trilby_api.models as trilby_models
 
         result = trilby_models.Status.objects.filter(
                 account = self,
-                visibility = trilby_utils.VISIBILITY_PUBLIC,
                 )
 
         return result
