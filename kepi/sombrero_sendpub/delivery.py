@@ -15,7 +15,7 @@ import random
 from django.http.request import HttpRequest
 from django.conf import settings
 from urllib.parse import urlparse
-from kepi.bowler_pub.utils import configured_url, as_json, is_local
+from kepi.bowler_pub.utils import *
 import datetime
 import pytz
 
@@ -346,6 +346,11 @@ def deliver(
             content=activity,
             )
     message.save()
+
+    log_one_message(
+            direction = "outgoing",
+            body = activity,
+            )
 
     logger.info('activity %d: begin delivery: %s',
             message.pk, message.content)

@@ -96,3 +96,23 @@ def is_local(url):
 
     parsed_url = urlparse(url)
     return parsed_url.hostname in settings.ALLOWED_HOSTS
+
+def log_one_message(
+        direction = None,
+        body = None,
+        ):
+    """
+    Writes a message to the "kepi" logger at DEBUG level.
+    FIXME There must be a better way to do this.
+    """
+
+    if body is not None and '@context' in body:
+        body = body.copy()
+        del body['@context']
+
+    if direction:
+        logger.debug(f"== Message %s == %s",
+                direction, body)
+    else:
+        logger.debug(f"== Message == %s",
+                body)

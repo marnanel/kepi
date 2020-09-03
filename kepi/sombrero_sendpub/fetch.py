@@ -13,6 +13,7 @@ from django.http.request import HttpRequest
 from django.conf import settings
 from urllib.parse import urlparse
 from kepi.trilby_api.models import *
+from kepi.bowler_pub.utils import log_one_message
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 
 def fetch(address,
@@ -274,6 +275,11 @@ def _fetch_remote(address, wanted):
             result.save()
 
         return result
+
+    log_one_message(
+            direction = "retrieved",
+            body = found,
+            )
 
     if 'type' not in found:
         logger.info("%s: retrieved JSON did not include a type; dropping",

@@ -6,7 +6,7 @@
 
 from kepi.bowler_pub import ATSIGN_CONTEXT
 import kepi.bowler_pub.validation
-from kepi.bowler_pub.utils import configured_url, short_id_to_url, uri_to_url, is_local
+from kepi.bowler_pub.utils import *
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
@@ -78,9 +78,13 @@ class KepiView(django.views.View):
             return result
 
         data = self._render_object(result)
-        logger.debug('  -- rendered to %s', data)
+
+        log_one_message(
+                direction=f"response to {request.path}",
+                body=data,
+                )
+
         httpresponse = self._to_httpresponse(data)
-        logger.debug('  -- as HttpResponse, %s', httpresponse)
         return httpresponse
 
     def _to_httpresponse(self, data):
