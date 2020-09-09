@@ -13,6 +13,7 @@ from django.conf import settings
 from kepi.sombrero_sendpub.fetch import fetch
 from kepi.trilby_api.models import RemotePerson, Person, Status
 from kepi.trilby_api.tests import create_local_person
+from kepi.sombrero_sendpub.collections import Collection
 from . import suppress_thread_exceptions
 import httpretty
 import requests
@@ -103,6 +104,67 @@ EXAMPLE_WEBFINGER_RESULT_NO_USER = """{"subject":"acct:wombat@example.org",
 "href":"data:application/magic-public-key,RSA.qjX5AgZxDY0udxuZlBRo6K-mA6XNfmEoscra_YUOZ0c8tnl122vPV5DOdOrm0jpah-GUn7CK43UOCXMLJe3DIO7Q3w4TgNTGFjNERO1Dlh3Jgw_CbFBNbIb1QyFS0QjKBUcLKgPezGxklyk8U2-ErSiP1xOlZZMlSTcMlR5c0LRdQQ0TJ9Lx8MbH66B9qM6HnYP-Z2nkm6SwBw9QOAloIiz1H6JkHX9CUa8ZzVQwp82LRWI25I_Szc-MDvTqdLu3lljyxcHlpxhs9_5hfxu99_CUdbPU6TqAkpXMtzcfaSKb7bzbYTtxzlzTnQX6EtLdpGjBp-kGLAt-XozlBeSybQ==.AQAB"},
 {"rel":"http://ostatus.org/schema/1.0/subscribe",
 "template":"https://example.org/authorize_interaction?uri={uri}"}]}"""
+
+EXAMPLE_SIMPLE_COLLECTION_MEMBERS = [
+        'apple', 'banana',
+        'coconut', 'damson', 'elderberry',
+        ]
+EXAMPLE_SIMPLE_COLLECTION_URL = "https://example.com/fruits"
+EXAMPLE_SIMPLE_COLLECTION = """{
+"@context":"https://www.w3.org/ns/activitystreams",
+"id":"%s",
+"type":"OrderedCollection",
+"totalItems":5,
+"orderedItems": ["apple", "banana", "coconut", "damson", "elderberry"]
+}""" % (EXAMPLE_SIMPLE_COLLECTION_URL,)
+
+EXAMPLE_COMPLEX_COLLECTION_MEMBERS = sorted([
+    "Bolton", "Bury", "Oldham", "Manchester", "Rochdale",
+    "Salford", "Stockport", "Tameside", "Trafford", "Wigan"
+        ])
+EXAMPLE_COMPLEX_COLLECTION_URL = "https://example.com/boroughs"
+EXAMPLE_COMPLEX_COLLECTION = """{
+"@context":"https://www.w3.org/ns/activitystreams",
+"id":"%s",
+"type":"OrderedCollection",
+"totalItems":10,
+"first":"%s/1"
+}""" % (
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        )
+
+EXAMPLE_COMPLEX_COLLECTION_PAGE_1 = """{
+"@context":"https://www.w3.org/ns/activitystreams",
+"id":"%s/1",
+"type":"OrderedCollectionPage",
+"totalItems":10,
+"partOf":"%s",
+"next":"%s/2",
+"orderedItems": [
+    "Bolton", "Bury", "Oldham", "Manchester", "Rochdale"
+    ]
+}""" % (
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        )
+
+EXAMPLE_COMPLEX_COLLECTION_PAGE_2 = """{
+"@context":"https://www.w3.org/ns/activitystreams",
+"id":"%s/2",
+"type":"OrderedCollectionPage",
+"totalItems":10,
+"partOf":"%s",
+"prev":"%s/2",
+"orderedItems": [
+    "Salford", "Stockport", "Tameside", "Trafford", "Wigan"
+    ]
+}""" % (
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        EXAMPLE_COMPLEX_COLLECTION_URL,
+        )
 
 class TestFetchRemoteUser(TestCase):
 
@@ -393,6 +455,86 @@ class TestFetchRemoteUser(TestCase):
                 user.status,
                 0,
                 )
+
+    @httpretty.activate
+    def test_fetch_simple_collection(self):
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_SIMPLE_COLLECTION_URL,
+                status=200,
+                headers = {
+                    'Content-Type': 'application/activity+json',
+                    },
+                body = EXAMPLE_SIMPLE_COLLECTION,
+                )
+
+        collection = fetch(EXAMPLE_SIMPLE_COLLECTION_URL,
+                expected_type = Collection)
+
+        self.assertEqual(
+                sorted(collection),
+                EXAMPLE_SIMPLE_COLLECTION_MEMBERS,
+                msg="Collection can be iterated")
+
+        self.assertEqual(
+                sorted(collection),
+                EXAMPLE_SIMPLE_COLLECTION_MEMBERS,
+                msg="Collection can be iterated twice")
+
+        self.assertEqual(
+                len(collection),
+                len(EXAMPLE_SIMPLE_COLLECTION_MEMBERS),
+                msg="Collection has a length")
+
+    @httpretty.activate
+    def test_fetch_complex_collection(self):
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_COMPLEX_COLLECTION_URL,
+                status=200,
+                headers = {
+                    'Content-Type': 'application/activity+json',
+                    },
+                body = EXAMPLE_COMPLEX_COLLECTION,
+                )
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_COMPLEX_COLLECTION_URL+"/1",
+                status=200,
+                headers = {
+                    'Content-Type': 'application/activity+json',
+                    },
+                body = EXAMPLE_COMPLEX_COLLECTION_PAGE_1,
+                )
+
+        httpretty.register_uri(
+                'GET',
+                EXAMPLE_COMPLEX_COLLECTION_URL+"/2",
+                status=200,
+                headers = {
+                    'Content-Type': 'application/activity+json',
+                    },
+                body = EXAMPLE_COMPLEX_COLLECTION_PAGE_2,
+                )
+
+        collection = fetch(EXAMPLE_COMPLEX_COLLECTION_URL,
+                expected_type = Collection)
+
+        self.assertEqual(
+                sorted(collection),
+                EXAMPLE_COMPLEX_COLLECTION_MEMBERS,
+                msg="Collection can be iterated")
+
+        self.assertEqual(
+                sorted(collection),
+                EXAMPLE_COMPLEX_COLLECTION_MEMBERS,
+                msg="Collection can be iterated twice")
+
+        self.assertEqual(
+                len(collection),
+                len(EXAMPLE_COMPLEX_COLLECTION_MEMBERS),
+                msg="Collection has a length")
 
 class TestFetchLocalUser(TestCase):
 

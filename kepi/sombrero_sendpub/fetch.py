@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 from kepi.trilby_api.models import *
 from kepi.bowler_pub.utils import log_one_message
 from kepi.sombrero_sendpub.webfinger import get_webfinger
+import kepi.sombrero_sendpub.collections as sombrero_collections
 
 def fetch(address,
         expected_type,
@@ -191,6 +192,10 @@ def _fetch_remote(address, wanted):
                 address, result)
 
         return result
+
+    except AttributeError:
+        # Types don't have to support object lookup
+        pass
 
     except wanted['type'].DoesNotExist:
         pass
@@ -395,3 +400,11 @@ def on_person(found, user):
     return user
 
 on_actor = on_person
+
+def on_collection(found, obj):
+    obj.update(found)
+    return obj
+
+on_collection_page = on_collection
+on_orderedcollection = on_collection
+on_orderedcollectionpage = on_collection
