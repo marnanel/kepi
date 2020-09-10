@@ -31,6 +31,6 @@ def on_follow(sender, **kwargs):
                 'type': 'Follow',
                 'object': sender.following.url,
                 },
-            source = sender.follower,
+            sender = sender.follower,
             target_people = [sender.following],
             )
