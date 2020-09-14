@@ -250,7 +250,7 @@ def _deliver_remote(
 def deliver(
         activity,
         sender,
-        target_people,
+        target_people = [],
         target_followers_of = [],
         ):
 
@@ -294,6 +294,17 @@ def deliver(
                 message.pk, target, target.inbox)
 
         postie.send_to(target.inbox)
+
+    for following in target_followers_of:
+
+        logger.debug("outgoing %s: sending to person %s's followers...",
+                message.pk, following)
+
+        for follower in following.followers:
+            logger.debug("outgoing %s:   -- to %s",
+                    message.pk, follower)
+
+            postie.send_to(follower.inbox)
 
     logger.debug('outgoing %s: message posted to all inboxes',
         message.pk)

@@ -11,6 +11,7 @@ from unittest import skip
 from django.test import TestCase
 from kepi.sombrero_sendpub.delivery import deliver
 from kepi.bowler_pub.tests import create_local_person
+from kepi.trilby_api.models import Follow
 import json
 
 TEST_ACTIVITY = {"hello": "world"}
@@ -46,9 +47,21 @@ class TestDelivery(TestCase):
                     ],
                 )
 
-    @skip(reason="nyi")
     def test_send_to_followers_of_local_user(self):
-        pass
+        alice = create_local_person("alice")
+        bob = create_local_person("bob")
+        carol = create_local_person("carol")
+
+        Follow(following=alice, follower=bob).save()
+        Follow(following=alice, follower=carol).save()
+
+        deliver(
+                activity = TEST_ACTIVITY,
+                sender = alice,
+                target_followers_of = [
+                    alice,
+                    ],
+                )
 
     @skip(reason="nyi")
     def test_send_to_remote_user(self):
