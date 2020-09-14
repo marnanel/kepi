@@ -324,18 +324,17 @@ def post_test_message(
 
 def remote_user(url, name,
         publicKey='',
-        inbox=None,
         sharedInbox=None,
-        followers=None,
         ):
         result = {
                 '@context': CONTEXT_URL,
                 'id': url,
                 'type': 'Person',
-                'following': '',
-                'followers': followers,
-                'outbox': '',
-                'featured': '',
+                'following': url+"/following",
+                'followers': url+"/followers",
+                'inbox': url+"/inbox",
+                'outbox': url+"/outbox",
+                'featured': url+"/collections/featured",
                 'preferredUsername': name,
                 'url': url,
                 'publicKey': {
@@ -344,9 +343,6 @@ def remote_user(url, name,
                     'publicKeyPem': publicKey,
                     },
                 }
-
-        if inbox is not None:
-            result['inbox'] = inbox
 
         if sharedInbox is not None:
             result['endpoints'] = {
