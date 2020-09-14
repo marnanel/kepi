@@ -106,12 +106,6 @@ class Person(PolymorphicModel):
         return self.url
 
     @property
-    def followers(self):
-        return Person.objects.filter(
-            rel_following__following = self,
-            )
-
-    @property
     def following(self):
         return Person.objects.filter(
             rel_followers__follower = self,
@@ -241,6 +235,48 @@ class RemotePerson(Person):
             return parts[1]
 
         return None
+
+    @property
+    def followers(self):
+        from kepi.sombrero_sendpub.fetch import fetch
+        from kepi.sombrero_sendpub.collections import Collection
+
+        class RemotePersonFollowers(object):
+            def __init__(self, address):
+                logger.debug(
+                        "Initialising RemotePerson's followers iterator: %s",
+                        address,
+                        )
+
+                self.collection = None
+                self.address = address
+
+            def __iter__(self):
+                self.collection = fetch(
+                        self.address,
+                        Collection,
+                        )
+                return self
+
+            def __next__(self):
+
+                url = self.collection.__next__()
+
+                logger.debug("Next follower is at %s", url)
+
+                person = fetch(
+                        url,
+                        Person,
+                        )
+                logger.debug("  -- which is %s", person)
+
+                return person
+
+        result = RemotePersonFollowers(
+                self.followers_url,
+                )
+
+        return result
 
 ########################################
 
@@ -475,6 +511,12 @@ class LocalPerson(Person):
                 )
 
         return result
+
+    @property
+    def followers(self):
+        return Person.objects.filter(
+            rel_following__following = self,
+            )
 
     def inbox_url(self):
         return uri_to_url(settings.KEPI['USER_INBOX_LINK'] % {
