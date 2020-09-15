@@ -22,7 +22,7 @@ REMOTE_FOLLOWERS_COLLECTION = """{
 "https://example.com/users/quentin",
 "https://example.com/users/roger",
 "https://testserver/users/alice",
-"https://testserver/users/bob",
+"https://testserver/users/bob"
 ]}"""
 
 # This needs expanding into a full unit test.
