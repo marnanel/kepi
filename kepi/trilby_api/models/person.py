@@ -152,7 +152,35 @@ class RemotePerson(Person):
             blank = True,
             )
 
-    inbox = models.URLField(
+    inbox_url = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
+
+    outbox_url = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
+
+    following_url = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
+
+    followers_url = models.URLField(
+            max_length = 255,
+            null = True,
+            blank = True,
+            default = None,
+            )
+
+    featured_url = models.URLField(
             max_length = 255,
             null = True,
             blank = True,
@@ -244,7 +272,7 @@ class RemotePerson(Person):
         class RemotePersonFollowers(object):
             def __init__(self, address):
                 logger.debug(
-                        "Initialising RemotePerson's followers iterator: %s",
+                        "%s RemotePerson: initialising",
                         address,
                         )
 
@@ -255,20 +283,37 @@ class RemotePerson(Person):
                 self.collection = fetch(
                         self.address,
                         Collection,
+                        ).__iter__()
+                logger.debug(
+                        "%s RemotePerson: retrieved collection %s",
+                        self.address,
+                        self.collection,
                         )
+
                 return self
 
             def __next__(self):
 
+                logger.debug("%s RemotePerson: finding next follower...",
+                        self.address,
+                        )
+
                 url = self.collection.__next__()
 
-                logger.debug("Next follower is at %s", url)
+                logger.debug("%s RemotePerson: next follower is at %s",
+                        self.address,
+                        url,
+                        )
 
                 person = fetch(
                         url,
                         Person,
                         )
-                logger.debug("  -- which is %s", person)
+
+                logger.debug("%s RemotePerson:  -- which is %s",
+                        url,
+                        person,
+                        )
 
                 return person
 

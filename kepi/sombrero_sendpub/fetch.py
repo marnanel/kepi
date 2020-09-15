@@ -348,13 +348,13 @@ def on_person(found, user):
             ('name', 'display_name'),
             ('summary', 'note'),
             ('manuallyApprovesFollowers', 'locked'),
-            #('following', 'following'),
-            #('followers', 'followers'),
-            ('inbox', 'inbox'),
-            #('outbox', 'outbox'),
-            #('featured', 'featured'),
-            # ... created_at?
-            # ... bot?
+            ('following', 'following_url'),
+            ('followers', 'followers_url'),
+            ('inbox', 'inbox_url'),
+            ('outbox', 'outbox_url'),
+            ('featured', 'featured_url'),
+            ('created_at', 'created_at'),
+            ('bot', 'bot'),
             ('movedTo', 'moved_to'),
             ]:
         if foundname in found:
@@ -365,7 +365,7 @@ def on_person(found, user):
     # A shared inbox takes priority over a personal inbox
     if 'endpoints' in found:
         if 'sharedInbox' in found['endpoints']:
-            user.inbox = found['endpoints']['sharedInbox']
+            user.inbox_url = found['endpoints']['sharedInbox']
 
     if 'publicKey' in found:
         key = found['publicKey']
