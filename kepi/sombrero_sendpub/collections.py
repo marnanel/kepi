@@ -91,6 +91,11 @@ class Collection(ErsatzModel):
         self.items = found.get('items', [])
         self.items.extend(found.get('orderedItems', []))
 
+        logger.debug("%s: updated with items: %s",
+                self.url,
+                self.items,
+                )
+
     def __len__(self):
 
         if self.totalItems is None:
