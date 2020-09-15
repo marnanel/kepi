@@ -24,6 +24,9 @@ class ErsatzModel(object):
         self.url = url
         self.status = 0
 
+        self._iter_items = []
+        self._next_page = None
+
     def update(self, found):
         """
         Update this object with information retrieved from
