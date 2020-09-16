@@ -10,6 +10,7 @@ from kepi.bowler_pub.utils import *
 from django.shortcuts import render, get_object_or_404
 import django.views
 from django.http import HttpResponse, JsonResponse, Http404
+from kepi.bowler_pub.activityresponse import ActivityResponse
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -71,6 +72,9 @@ class KepiView(django.views.View):
 
         logger.debug('  -- activity_get returned %s (%s)',
                 result, type(result))
+
+        if isinstance(result, ActivityResponse):
+            result = result.activity_value
 
         if isinstance(result, HttpResponse):
             logger.info('self.activity_get() returned HttpResponse %s',
@@ -245,78 +249,6 @@ class AllUsersView(KepiView):
 
 ########################################
 
-# TODO: UserCollectionView is obsolescent
-class UserCollectionView(KepiView):
-
-    _default_to_existing = False
-
-    def activity_get(self, request,
-            username,
-            listname,
-            *args, **kwargs):
-
-        from kepi.trilby_api.models import LocalPerson, Status
-
-        logger.debug('Finding user %s\'s %s collection',
-                username, listname)
-
-        result = None
-
-        try:
-            user = LocalPerson.objects.get(local_user__username = username)
-        except LocalPerson.DoesNotExist:
-            logger.debug('  -- user does not exist')
-            user = None
-
-        if user is not None:
-            method_name = f'get_{listname}_collection'
-
-            if hasattr(user, method_name):
-                method = getattr(user, method_name)
-                result = method()
-            else:
-                logger.warn(
-                        "user does not have a %s method; this is weird",
-                        method_name,
-                        )
-
-        if result is None:
-            if self._default_to_existing:
-                logger.debug('  -- does not exist; returning empty')
-
-                return Status.objects.none()
-            else:
-                logger.debug('  -- does not exist; 404')
-
-                raise Http404()
-
-        return result
-
-    def _modify_list_item(self, obj):
-        return obj
-
-class InboxView(UserCollectionView):
-
-    _default_to_existing = True
-
-    # username can be None for the shared inbox.
-
-    # FIXME: Only externally visible to the owner
-    def activity_get(self, request, username=None, *args, **kwargs):
-
-        if username is None:
-            logger.info('Attempt to read from the shared inbox')
-            return HttpResponse(
-                    status = 403,
-                    reason = 'The shared inbox is write-only',
-                    )
-
-        return super().activity_get(
-                request,
-                username = username,
-                listname = 'inbox',
-                )
-
 class CollectionView(generics.GenericAPIView):
 
     permission_classes = ()
@@ -325,12 +257,15 @@ class CollectionView(generics.GenericAPIView):
     listname = None
     default_to_existing = True
 
+    def _modify_list_item(self, obj):
+        return obj
+
     def get(self, request,
             username,
             listname = None,
             *args, **kwargs):
 
-        items = self._get_items(username, listname,
+        items = self.activity_get(username, listname,
                 *args, **kwargs)
 
         # XXX assert that items.ordered
@@ -395,12 +330,14 @@ class CollectionView(generics.GenericAPIView):
 
         return self._to_httpresponse(result)
 
-    def _get_items(self,
-            username,
-            listname = None,
+    def activity_get(self,
+            request,
             *args, **kwargs):
 
         from kepi.trilby_api.models import LocalPerson, Status
+
+        username = kwargs.get('username', None)
+        listname = kwargs.get('listname')
 
         logger.debug('Finding user %s\'s %s collection',
                 username, self.listname)
@@ -437,13 +374,13 @@ class CollectionView(generics.GenericAPIView):
             if self.default_to_existing:
                 logger.debug('  -- does not exist; returning empty')
 
-                return Status.objects.none()
+                return ActivityResponse(Status.objects.none())
             else:
                 logger.debug('  -- does not exist; 404')
 
                 raise Http404()
 
-        return result
+        return ActivityResponse(result)
 
     def _to_httpresponse(self, data):
 
@@ -507,3 +444,27 @@ class OutboxView(CollectionView):
 class InboxView(CollectionView):
 
     listname = 'inbox'
+
+    # FIXME: Only externally visible to the owner
+    def activity_get(self, request, username=None, *args, **kwargs):
+
+        if username is None:
+            logger.info('Attempt to read from the shared inbox')
+            return HttpResponse(
+                    status = 403,
+                    reason = 'The shared inbox is write-only',
+                    )
+
+        return super().activity_get(
+                request,
+                username = username,
+                listname = 'inbox',
+                )
+
+    def post(self,
+            *args, **kwargs):
+
+        return HttpResponse(
+                status = 410,
+                reason = 'See https://gitlab.com/marnanel/kepi/-/issues/37',
+                )

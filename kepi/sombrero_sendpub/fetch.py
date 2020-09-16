@@ -14,8 +14,10 @@ from django.conf import settings
 from urllib.parse import urlparse
 from kepi.trilby_api.models import *
 from kepi.bowler_pub.utils import log_one_message
+from kepi.bowler_pub.activityresponse import ActivityResponse
 from kepi.sombrero_sendpub.webfinger import get_webfinger
 import kepi.sombrero_sendpub.collections as sombrero_collections
+from django.http import HttpResponse, JsonResponse, Http404
 
 def fetch(address,
         expected_type,
@@ -152,10 +154,14 @@ def _fetch_local_by_url(address, wanted):
             path=wanted['path'],
             )
     result = resolved.func(request,
+            *resolved.args,
             **resolved.kwargs)
 
     logger.info("%s: result from handler was %s",
             address, result)
+
+    if isinstance(result, ActivityResponse):
+        result = result.activity_value
 
     if result is not None and not isinstance(result, wanted['type']):
         logger.info("%s: type mismatch (%s vs %s); discarding",
