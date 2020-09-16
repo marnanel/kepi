@@ -345,7 +345,7 @@ class TestFetchRemoteUser(TestCase):
                 )
 
         self.assertEqual(
-                user.inbox,
+                user.inbox_url,
                 'https://example.org/inbox',
                 )
 

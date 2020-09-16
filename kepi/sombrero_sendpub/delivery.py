@@ -291,9 +291,9 @@ def deliver(
     for target in target_people:
 
         logger.debug("outgoing %s: person %s has inbox %s",
-                message.pk, target, target.inbox)
+                message.pk, target, target.inbox_url)
 
-        postie.send_to(target.inbox)
+        postie.send_to(target.inbox_url)
 
     for following in target_followers_of:
 
@@ -304,7 +304,7 @@ def deliver(
             logger.debug("outgoing %s:   -- to %s",
                     message.pk, follower)
 
-            postie.send_to(follower.inbox)
+            postie.send_to(follower.inbox_url)
 
     logger.debug('outgoing %s: message posted to all inboxes',
         message.pk)
