@@ -1,4 +1,4 @@
-from kepi.bowler_pub.tests import create_local_note, create_local_person
+from kepi.trilby_api.tests import create_local_status, create_local_person
 from unittest import skip
 from kepi.bowler_pub.create import create
 from django.test import TestCase
@@ -10,7 +10,7 @@ class TestLike(TestCase):
 
         sender = create_local_person('sender')
         recipient = create_local_person('recipient')
-        status = create_local_note(attributedTo=sender.id)
+        status = create_local_status(posted_by=sender.id)
 
         object_json = {
             '@context': 'https://www.w3.org/ns/activitystreams',

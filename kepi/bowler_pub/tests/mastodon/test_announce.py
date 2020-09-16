@@ -9,6 +9,7 @@ logger = logging.getLogger(name="kepi")
 
 from django.test import TestCase
 from kepi.bowler_pub.tests import *
+from kepi.trilby_api.tests import create_local_person, create_local_status
 from unittest import skip, expectedFailure
 from django.conf import settings
 import kepi.trilby_api.models as trilby_models
@@ -41,8 +42,8 @@ class TestAnnounce(TestCase):
                 )
         follow.save()
 
-        original_status = create_local_note(
-                attributedTo=self._local_fred,
+        original_status = create_local_status(
+                posted_by=self._local_fred,
                 )
 
         self.assertFalse(

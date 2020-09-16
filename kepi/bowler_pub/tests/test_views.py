@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from . import *
+from kepi.trilby_api.tests import create_local_person
 from unittest import skip
 import logging
 import json

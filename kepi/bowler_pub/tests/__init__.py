@@ -45,59 +45,6 @@ class DummyMessage(object):
     def __str__(self):
         return 'test message'
 
-def create_local_person(name='jemima',
-        load_default_keys_from='kepi/bowler_pub/tests/keys/keys-0003.json',
-        **kwargs):
-
-    if 'publicKey' or 'privateKey' not in kwargs:
-        keys = json.load(open(load_default_keys_from, 'r'))
-
-        if 'publicKey' not in kwargs:
-            kwargs['publicKey'] = keys['public']
-
-        if 'privateKey' not in kwargs:
-            kwargs['privateKey'] = keys['private']
-
-    result = trilby_models.LocalPerson(
-            username = name,
-            **kwargs,
-            )
-    result.save()
-
-    return result
-
-def create_local_note(
-        attributedTo = None,
-        content = 'This is just a test',
-        **kwargs):
-
-    if isinstance(attributedTo, trilby_models.TrilbyUser):
-        attributedTo = attributedTo.person
-
-    result = trilby_models.Status(
-        remote_url = None,
-        account = attributedTo,
-        content = content,
-        **kwargs,
-        )
-
-    result.save()
-
-    return result
-
-def create_local_like(
-        liked_by,
-        **kwargs):
-
-    note = create_local_note()
-
-    result = trilby_models.Like(
-            liker = note,
-            liked = liked_by,
-            )
-
-    return result
-
 def mock_remote_object(
         url,
         content = '',

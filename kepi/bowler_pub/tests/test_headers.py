@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(name="kepi")
 
 from django.test import TestCase, Client
-from . import create_local_person
+from kepi.trilby_api.tests import create_local_person
 from django.conf import settings
 from unittest import skip
 

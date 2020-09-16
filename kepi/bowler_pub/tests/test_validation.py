@@ -4,6 +4,7 @@ import kepi.trilby_api.models as trilby_models
 from unittest import skip
 import httpretty
 from . import *
+from kepi.trilby_api.tests import create_local_person, create_local_status
 import logging
 import httpsig
 import json

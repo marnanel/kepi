@@ -1,5 +1,5 @@
 from django.test import TestCase
-from kepi.bowler_pub.tests import create_local_note, create_local_person
+from kepi.trilby_api.tests import create_local_person
 from unittest import skip
 from kepi.bowler_pub.create import create
 from kepi.bowler_pub.models import *

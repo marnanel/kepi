@@ -9,7 +9,8 @@ logger = logging.getLogger(name="kepi")
 
 from django.test import TestCase
 from unittest import skip, expectedFailure
-from kepi.bowler_pub.tests import create_local_note, create_local_person, DummyMessage
+from kepi.bowler_pub.tests import DummyMessage
+from kepi.trilby_api.tests import create_local_status, create_local_person
 from django.conf import settings
 from kepi.bowler_pub.create import create
 import kepi.trilby_api.utils as trilby_utils
@@ -243,7 +244,7 @@ class TestCreate(TestCase):
 
     def test_as_reply(self):
 
-        original_status = create_local_note(attributedTo=self._fred)
+        original_status = create_local_status(posted_by=self._fred)
 
         object_form = {
             'type': 'Note',
@@ -369,7 +370,7 @@ class TestCreate(TestCase):
 
     def test_when_sender_replies_to_local_status(self):
 
-        local_status = create_local_note(attributedTo=self._fred)
+        local_status = create_local_status(posted_by=self._fred)
 
         object_form = {
             'type': 'Note',

@@ -123,7 +123,17 @@ class TrilbyTestCase(TestCase):
         return self.request('delete', *args, **kwargs)
 
 def create_local_person(name='jemima',
+        load_default_keys_from='kepi/bowler_pub/tests/keys/keys-0003.json',
         **kwargs):
+
+    if 'publicKey' or 'privateKey' not in kwargs:
+        keys = json.load(open(load_default_keys_from, 'r'))
+
+        if 'publicKey' not in kwargs:
+            kwargs['publicKey'] = keys['public']
+
+        if 'privateKey' not in kwargs:
+            kwargs['privateKey'] = keys['private']
 
     result = LocalPerson(
             username = name,
@@ -133,8 +143,9 @@ def create_local_person(name='jemima',
 
     return result
 
-def create_local_status(content,
-        posted_by,
+def create_local_status(
+        content = 'This is just a test',
+        posted_by = None,
         **kwargs,
         ):
 
@@ -151,3 +162,18 @@ def create_local_status(content,
     result.save()
 
     return result
+
+def create_local_like(
+        liked_by,
+        **kwargs):
+
+    note = create_local_status()
+
+    result = Like(
+            liker = note,
+            liked = liked_by,
+            )
+
+    return result
+
+
