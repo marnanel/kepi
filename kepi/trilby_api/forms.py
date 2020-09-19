@@ -37,4 +37,3 @@ class UserForm(forms.ModelForm):
     header = forms.ImageField(
             required = False,
             )
-

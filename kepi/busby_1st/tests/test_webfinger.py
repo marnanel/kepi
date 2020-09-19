@@ -108,5 +108,3 @@ class TestWebfinger(TestCase):
                     },
                 parsed['links'],
                 )
-
-

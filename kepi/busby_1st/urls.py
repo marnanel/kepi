@@ -13,4 +13,3 @@ urlpatterns = [
         path('.well-known/nodeinfo', busby_views.NodeinfoPart1.as_view()),
         path('nodeinfo.json', busby_views.NodeinfoPart2.as_view()),
         ]
-

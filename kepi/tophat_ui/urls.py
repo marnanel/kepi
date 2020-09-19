@@ -10,4 +10,3 @@ import kepi.tophat_ui.views as tophat_views
 urlpatterns = [
         path('', tophat_views.RootPageView.as_view()),
         ]
-

@@ -77,5 +77,3 @@ class Incoming(models.Model):
     @property
     def activity_form(self):
         return self.fields
-
-

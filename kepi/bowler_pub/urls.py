@@ -21,4 +21,3 @@ urlpatterns = [
         path('users/<str:username>/<int:status>', bowler_pub_views.StatusView.as_view()),
         path('sharedInbox', bowler_pub_views.InboxView.as_view()),
         ]
-

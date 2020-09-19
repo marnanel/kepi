@@ -658,4 +658,3 @@ class TestGetStatus(TrilbyTestCase):
                 details['detail'],
                 'Not found.',
                 )
-

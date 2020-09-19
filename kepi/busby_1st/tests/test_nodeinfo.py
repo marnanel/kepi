@@ -76,4 +76,3 @@ class TestNodeinfo(TestCase):
                 'activitypub',
                 response['protocols'],
                 )
-

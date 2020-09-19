@@ -175,5 +175,3 @@ def create_local_like(
             )
 
     return result
-
-

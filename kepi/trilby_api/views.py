@@ -860,4 +860,3 @@ class Followers(Followers_or_Following):
 class Following(Followers_or_Following):
     def _get_list_for(self, the_person):
         return the_person.following
-

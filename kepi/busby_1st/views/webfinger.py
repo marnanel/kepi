@@ -126,5 +126,3 @@ class Webfinger(django.views.View):
 
         result['Access-Control-Allow-Origin'] = '*'
         return result
-
-

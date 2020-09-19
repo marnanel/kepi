@@ -103,5 +103,3 @@ class TestReblog(TestCase):
                     0,
                     "Reblogs count of reblogs remains zero",
                     )
-
-

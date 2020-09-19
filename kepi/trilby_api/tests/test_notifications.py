@@ -132,5 +132,3 @@ class TestNotifications(TrilbyTestCase):
     @skip("Not yet implemented")
     def test_clear_single(self):
         pass
-
-

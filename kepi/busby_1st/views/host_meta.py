@@ -34,4 +34,3 @@ class HostMeta(django.views.View):
                 )
 
         return result
-

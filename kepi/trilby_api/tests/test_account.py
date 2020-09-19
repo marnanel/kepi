@@ -342,4 +342,3 @@ class TestAccountActions(TrilbyTestCase):
     @skip("Not yet implemented")
     def test_unmute(self):
         pass
-

@@ -281,4 +281,3 @@ class TestValidation(TestCase):
         self.assertTrue(
                 fetched['fred'],
                 msg="Fred's record was fetched from his server")
-
