@@ -88,9 +88,9 @@ class _Postie(object):
                 'content-type': "application/activity+json",
                 }
 
-        if self.signer is None and self.source is not None:
+        if self.signer is None and self.sender is not None:
             self.signer = _signer_for_localperson(
-                    localperson = self.source,
+                    localperson = self.sender,
                     )
 
         if self.signer is not None:
@@ -104,8 +104,8 @@ class _Postie(object):
 
         _deliver_remote(
                 message=self.message,
-                recipient=recipient,
-                signer=signer,
+                recipient=inbox,
+                signer=self.signer,
                 )
 
         # Even if _deliver_remote fails, we continue here.
@@ -132,8 +132,8 @@ def _signer_for_localperson(localperson):
 
     try:
         return httpsig.HeaderSigner(
-                key_id=local_actor.key_name,
-                secret=local_actor.privateKey,
+                key_id=localperson.key_name,
+                secret=localperson.privateKey,
                 algorithm='rsa-sha256',
                 headers=['(request-target)', 'host', 'date', 'content-type'],
                 sign_header='signature',
@@ -141,8 +141,8 @@ def _signer_for_localperson(localperson):
     except httpsig.utils.HttpSigException as hse:
         logger.warn('Local private key was not honoured.')
         logger.warn('This should never happen!')
-        logger.warn('Error was: %s', str(hse))
-        logger.warn('Key was: %s', local_actor.privateKey)
+        logger.warn('Error was: %s', hse)
+        logger.warn('Key was: %s', localperson.privateKey)
         return None
 
 def _deliver_local(
@@ -198,9 +198,9 @@ def _deliver_remote(
         local actor who sent this activity
     """
 
-    logger.debug('  -- delivering to remote user %s', recipient.url)
+    logger.debug('  -- delivering to remote user %s', recipient)
 
-    parsed_target_url = urlparse(recipient.url)
+    parsed_target_url = urlparse(recipient)
 
     headers = {
             'Date': _rfc822_datetime(),
@@ -224,7 +224,7 @@ def _deliver_remote(
 
     try:
         response = requests.post(
-                recipient.url,
+                recipient,
                 data=str(message),
                 headers=headers,
                 )
