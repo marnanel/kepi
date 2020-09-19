@@ -468,6 +468,6 @@ class InboxView(CollectionView):
             *args, **kwargs):
 
         return HttpResponse(
-                status = 410,
+                status = 403,
                 reason = 'See https://gitlab.com/marnanel/kepi/-/issues/37',
                 )
