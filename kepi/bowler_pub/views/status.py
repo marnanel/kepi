@@ -42,7 +42,7 @@ class StatusView(ap.KepiView):
                     result.account.username, self._username)
                 return None
         except status.Status.account.RelatedObjectDoesNotExist:
-            logger.warn("  -- status %d has no associated account "+\
+            logger.warning("  -- status %d has no associated account "+\
                     "(shouldn't happen)",
                     self._status)
             return None

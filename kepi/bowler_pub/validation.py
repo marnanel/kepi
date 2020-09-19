@@ -181,7 +181,7 @@ def _run_validation_inner(
     try:
         key_id = message.key_id
     except ValueError:
-        logger.warn('%s: message is unsigned; dropping',
+        logger.warning('%s: message is unsigned; dropping',
                 message)
         return False
 

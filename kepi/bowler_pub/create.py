@@ -32,7 +32,7 @@ def create(message):
         # in this module we use the underscore to separate
         # activity type names from object type names
 
-        logger.warn('%s: underscore in type name "%s"; looks dodgy',
+        logger.warning('%s: underscore in type name "%s"; looks dodgy',
                 message,
                 fields['type'],
                 )
@@ -46,7 +46,7 @@ def create(message):
         result = globals()[activity_handler_name](message)
         return result
 
-    logger.warn('%s: no handler for %s',
+    logger.warning('%s: no handler for %s',
             message,
             activity_handler_name)
 
@@ -67,7 +67,7 @@ def on_follow(message):
 
     if follower is None:
         # shouldn't happen
-        logger.warn('%s: could not find remote user %s',
+        logger.warning('%s: could not find remote user %s',
                 message,
                 fields['actor'],
                 )

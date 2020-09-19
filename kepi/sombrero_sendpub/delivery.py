@@ -126,7 +126,7 @@ def _signer_for_localperson(localperson):
         return None
 
     if localperson.privateKey is None:
-        logger.warn('not signing outgoing messages because local person %s '+\
+        logger.warning('not signing outgoing messages because local person %s '+\
                 'has no private key!', localperson)
         return None
 
@@ -139,10 +139,10 @@ def _signer_for_localperson(localperson):
                 sign_header='signature',
                 )
     except httpsig.utils.HttpSigException as hse:
-        logger.warn('Local private key was not honoured.')
-        logger.warn('This should never happen!')
-        logger.warn('Error was: %s', hse)
-        logger.warn('Key was: %s', localperson.privateKey)
+        logger.warning('Local private key was not honoured.')
+        logger.warning('This should never happen!')
+        logger.warning('Error was: %s', hse)
+        logger.warning('Key was: %s', localperson.privateKey)
         return None
 
 def _deliver_local(
@@ -179,7 +179,7 @@ def _deliver_local(
     if result.status_code==200:
         logger.debug("Message posted to local /sharedInbox")
     else:
-        logger.warn("Message failed to post to local /sharedInbox: error %d",
+        logger.warning("Message failed to post to local /sharedInbox: error %d",
                 result.status_code)
 
 def _deliver_remote(

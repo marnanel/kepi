@@ -366,7 +366,7 @@ class CollectionView(generics.GenericAPIView):
                         )
 
             else:
-                logger.warn(
+                logger.warning(
                         "user does not have a %s method; this is weird",
                         method_name,
                         )

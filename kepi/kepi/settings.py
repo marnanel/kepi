@@ -207,4 +207,4 @@ AUTH_USER_MODEL = 'trilby_api.TrilbyUser'
 try:
     from .local_config import *
 except ModuleNotFoundError:
-    logger.warn("kepi's local_config.py not found! Running with default settings")
+    logger.warning("kepi's local_config.py not found! Running with default settings")

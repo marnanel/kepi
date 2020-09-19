@@ -105,7 +105,7 @@ def _fetch_local_by_atstyle(address, wanted):
 
     # atstyle only makes sense for Person
     if not issubclass(wanted['type'], Person):
-        logger.warn("%s: atstyle request made for %s, not Person",
+        logger.warning("%s: atstyle request made for %s, not Person",
                 address, wanted['type'])
         return None
 
