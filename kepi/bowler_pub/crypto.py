@@ -63,7 +63,7 @@ class Key(object):
 
     def modulus(self):
         return self._rsa_key.n
-    
+
     def public_exponent(self):
         return self._rsa_key.e
 

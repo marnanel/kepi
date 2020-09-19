@@ -166,7 +166,7 @@ class TestStatus(TrilbyTestCase):
                 'We can have or hold.',
                 'Raindrops are our diamonds.',
                 'And the morning dew.',
-                ]:  
+                ]:
             statuses.append(create_local_status(
                 posted_by = self._alice,
                 content = line,
@@ -352,7 +352,7 @@ class TestStatus(TrilbyTestCase):
         class Mock(object):
             def id():
                 return 1234
-        
+
         self._test_doing_something('favourite',
                 self._alice,
                 Mock(),

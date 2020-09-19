@@ -13,7 +13,7 @@ for person in data:
                 'public': fields['public_key'],
                 'private': fields['private_key'],
                 }
-        json.dump(result, 
+        json.dump(result,
                 open('keys-%04d.json' % (count,), 'w'),
                 sort_keys=True, indent=4)
         count += 1

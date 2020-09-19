@@ -45,7 +45,7 @@ class TestAccountCredentials(TrilbyTestCase):
     def test_register(self):
         # FIXME not sure how to implement this test!
         pass
-   
+
     def test_update_credentials(self):
 
         expected_fields = ACCOUNT_EXPECTED.copy()

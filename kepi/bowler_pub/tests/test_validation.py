@@ -236,7 +236,7 @@ class TestValidation(TestCase):
         self.assertTrue(
                 fetched['fred'],
                 msg="Fred's record was fetched from his server")
- 
+
     @httpretty.activate
     def test_remote_user_unknown(self):
 

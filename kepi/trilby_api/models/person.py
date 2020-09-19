@@ -406,7 +406,7 @@ class LocalPerson(Person):
         super().__init__(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        
+
         # Various defaults.
 
         if self.display_name=='':

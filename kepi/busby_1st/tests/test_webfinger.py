@@ -88,7 +88,7 @@ class TestWebfinger(TestCase):
         # per RFC:
         self.assertEqual(response['Access-Control-Allow-Origin'],
             '*')
-        
+
         parsed = json.loads(response.content)
 
         self.assertEqual(parsed['subject'],
@@ -99,7 +99,7 @@ class TestWebfinger(TestCase):
             'https://testserver/users/alice',
             parsed['aliases'],
             )
-        
+
         self.assertIn(
                 {
                     'rel': 'self',

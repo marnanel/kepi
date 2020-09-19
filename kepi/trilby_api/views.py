@@ -136,7 +136,7 @@ class Unfavourite(DoSomethingWithStatus):
 
             logger.info('  -- deleting the Like: %s',
                     like)
-            
+
             like.delete()
 
         except trilby_models.Like.DoesNotExist:

@@ -29,7 +29,7 @@ class TestHostMeta(TestCase):
 
         self.assertEqual(response['Content-Type'],
                 HOST_META_MIME_TYPE)
-        
+
         self.assertIn(
                 "/.well-known/webfinger?resource={uri}",
                 str(response.content, encoding='UTF-8'))

@@ -32,11 +32,11 @@ class TestNodeinfo(TestCase):
                 MIME_TYPE)
 
         response = json.loads(response.content)
-        
+
         self.assertIn(
                 "links",
                 response)
-        
+
         self.assertIn(
                 {
                     "rel": "http://nodeinfo.diaspora.software/ns/schema/2.0",

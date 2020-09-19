@@ -41,7 +41,7 @@ class _CollectionPage(ErsatzModel):
         self.items.extend(found.get('orderedItems', []))
 
         self.next = found.get('next', None)
- 
+
 class Collection(ErsatzModel):
 
     """

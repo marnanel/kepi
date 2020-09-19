@@ -43,7 +43,7 @@ class TestDelivery(TestCase):
 
         for name in ['peter', 'robert', 'quentin']:
             self.remotes[name] = create_remote_person(
-                    url = 'https://example.org/people/'+name, 
+                    url = 'https://example.org/people/'+name,
                     name = name,
                     auto_fetch = True,
                     )

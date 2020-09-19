@@ -54,7 +54,7 @@ class Status(PolymorphicModel):
             null = True,
             blank = True,
             )
-    
+
     content = models.TextField(
         )
 
