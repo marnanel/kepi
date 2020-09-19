@@ -277,9 +277,9 @@ def _fetch_remote(address, wanted):
 
     try:
         found = response.json()
-    except ValueError:
-        logger.info("%s: response was not JSON; dropping",
-                address)
+    except ValueError as ve:
+        logger.info("%s: response was not JSON (%s); dropping",
+                address, ve)
 
         if result is not None:
             result.status = 0
