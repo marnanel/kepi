@@ -265,8 +265,11 @@ class CollectionView(generics.GenericAPIView):
             listname = None,
             *args, **kwargs):
 
-        items = self.activity_get(username, listname,
+        items = self.activity_get(request, username, listname,
                 *args, **kwargs)
+
+        if isinstance(items, ActivityResponse):
+            items = items.activity_value
 
         # XXX assert that items.ordered
 
@@ -306,7 +309,7 @@ class CollectionView(generics.GenericAPIView):
             # Index page.
             logger.debug("    -- it's a request for the index")
 
-            count = items.count()
+            count = len(items)
 
             result = {
                     "@context": ATSIGN_CONTEXT,
@@ -330,14 +333,12 @@ class CollectionView(generics.GenericAPIView):
 
         return self._to_httpresponse(result)
 
-    def activity_get(self,
-            request,
+    def activity_get(self, request,
+            username,
+            listname = None,
             *args, **kwargs):
 
         from kepi.trilby_api.models import LocalPerson, Status
-
-        username = kwargs.get('username', None)
-        listname = kwargs.get('listname')
 
         logger.debug('Finding user %s\'s %s collection',
                 username, self.listname)
@@ -372,15 +373,17 @@ class CollectionView(generics.GenericAPIView):
 
         if result is None:
             if self.default_to_existing:
-                logger.debug('  -- does not exist; returning empty')
+                logger.debug('  -- collection does not exist')
 
-                return ActivityResponse(Status.objects.none())
+                result = []
             else:
-                logger.debug('  -- does not exist; 404')
+                logger.debug('  -- collection does not exist; 404')
 
                 raise Http404()
 
-        return ActivityResponse(result)
+        result = ActivityResponse(result)
+        logger.debug('  -- result: %s', result)
+        return result
 
     def _to_httpresponse(self, data):
 
