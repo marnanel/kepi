@@ -12,9 +12,10 @@ from django.test import TestCase
 from kepi.sombrero_sendpub.delivery import deliver
 from kepi.trilby_api.tests import create_local_person
 from kepi.trilby_api.models import Follow
+from kepi.bowler_pub.tests import create_remote_person, mock_remote_object
 from unittest.mock import MagicMock
 import kepi.bowler_pub.views as bowler_views
-import json
+import httpretty
 
 TEST_ACTIVITY = {"hello": "world"}
 
@@ -31,6 +32,31 @@ class TestDelivery(TestCase):
                 )
         bowler_views.InboxView.post = self._local_mock
 
+    def acknowledge_remote(self, name):
+        logger.info("Received post for %s", name)
+        self.received_post.add(name)
+
+    def setup_remotes(self):
+
+        self.remotes = {}
+        self.received_post = set()
+
+        for name in ['peter', 'robert', 'quentin']:
+            self.remotes[name] = create_remote_person(
+                    url = 'https://example.org/people/'+name, 
+                    name = name,
+                    auto_fetch = True,
+                    )
+
+            # and the inbox:
+            mock_remote_object(
+                    url = f'https://example.org/people/{name}/inbox',
+                    content = 'Thank you',
+                    status = 200,
+                    as_post = True,
+                    on_fetch = lambda n=name: self.acknowledge_remote(n),
+                    )
+
     def test_send_to_local_users(self):
 
         self.setup_locals()
@@ -39,21 +65,6 @@ class TestDelivery(TestCase):
                 activity = TEST_ACTIVITY,
                 sender = self.alice,
                 target_people = [
-                    self.bob, self.carol,
-                    ],
-                )
-
-        self._local_mock.assert_called_once()
-
-    def test_send_to_local_users_not_self(self):
-
-        self.setup_locals()
-
-        deliver(
-                activity = TEST_ACTIVITY,
-                sender = self.alice,
-                target_people = [
-                    self.alice,
                     self.bob, self.carol,
                     ],
                 )
@@ -77,10 +88,23 @@ class TestDelivery(TestCase):
 
         self._local_mock.assert_called_once()
 
-    @skip(reason="nyi")
+    @httpretty.activate
     def test_send_to_remote_user(self):
-        # FIXME
-        pass
+        self.setup_locals()
+        self.setup_remotes()
+
+        deliver(
+                activity = TEST_ACTIVITY,
+                sender = self.alice,
+                target_people = [
+                    self.remotes['peter'],
+                    ],
+                )
+
+        self.assertEqual(
+                self.received_post,
+                set(['peter']),
+                )
 
     @skip(reason="nyi")
     def test_send_to_followers_of_remote_user(self):
