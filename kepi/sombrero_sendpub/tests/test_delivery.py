@@ -106,7 +106,34 @@ class TestDelivery(TestCase):
                 set(['peter']),
                 )
 
-    @skip(reason="nyi")
+    @httpretty.activate
     def test_send_to_followers_of_remote_user(self):
-        # FIXME
-        pass
+        self.setup_locals()
+        self.setup_remotes()
+
+        mock_remote_object(
+                url = 'https://example.org/people/peter/followers',
+                content = """{
+                "id":"https://example.org/people/peter/followers",
+                "type":"OrderedCollection",
+                "totalItems":2,
+                "orderedItems":[
+                "https://example.org/people/quentin",
+                "https://example.org/people/robert"
+                ]
+                }""",
+                status = 200,
+                )
+
+        deliver(
+                activity = TEST_ACTIVITY,
+                sender = self.alice,
+                target_followers_of = [
+                    self.remotes['peter'],
+                    ],
+                )
+
+        self.assertEqual(
+                self.received_post,
+                set(['quentin', 'robert']),
+                )
