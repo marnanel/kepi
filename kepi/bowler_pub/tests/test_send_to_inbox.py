@@ -3,9 +3,13 @@ from unittest import skip
 from kepi.bowler_pub.tests import *
 from django.test import Client
 from urllib.parse import urlparse
+from kepi.trilby_api.tests import create_local_person
+from kepi.trilby_api.models import Status
 import httpretty
-import logging
 import json
+import logging
+
+logger = logging.getLogger(name='kepi')
 
 REMOTE_DAVE_ID = "https://dave.example.net/users/dave"
 REMOTE_DAVE_DOMAIN = urlparse(REMOTE_DAVE_ID).netloc
@@ -40,13 +44,7 @@ INVALID_UTF8 = b"\xa0\xa1"
 
 logger = logging.getLogger(name='kepi')
 
-@skip("""Sending to inbox is not yet implemented, not least
-because there don't seem to be any clients to test it with.
-The ActivityPub spec seems straightforward, though, so we
-should implement it at some point. The code in this test
-was written for the old bowler-heavy kepi design, and
-will need a lot of rewriting.""")
-class TestInbox2(TestCase):
+class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
@@ -65,14 +63,9 @@ class TestInbox2(TestCase):
                 'testserver',
                 ]
 
-        if recipientKeys is None:
-            recipientKeys = json.load(open('kepi/bowler_pub/tests/keys/keys-0001.json', 'r'))
-
         if recipient is None:
             recipient = create_local_person(
                     name = 'alice',
-                    publicKey = recipientKeys['public'],
-                    privateKey = recipientKeys['private'],
                     )
 
         if senderKeys is None:
@@ -82,9 +75,10 @@ class TestInbox2(TestCase):
             sender = create_remote_person(
                     url = BOB_ID,
                     name = 'bob',
-                    inbox = BOB_INBOX_URL,
                     publicKey = senderKeys['public'],
                     )
+
+        self._sender = sender
 
         if not isinstance(content, dict):
             # Overriding the usual content.
@@ -111,6 +105,10 @@ class TestInbox2(TestCase):
                 **f_body,
                 )
 
+        logger.debug("Response code: %s", response.status_code)
+        if response.status_code!=200:
+            logger.debug("Response body: %s", response.content)
+
         return response
 
     @httpretty.activate
@@ -125,8 +123,8 @@ class TestInbox2(TestCase):
                     },
                 )
 
-        items = AcItem.objects.filter(
-                f_attributedTo=BOB_ID,
+        items = Status.objects.filter(
+                account = self._sender,
                 )
 
         self.assertEqual(
@@ -164,12 +162,8 @@ class TestInbox2(TestCase):
 
     @httpretty.activate
     def test_sole_inbox(self):
-        recipientKeys = json.load(open('kepi/bowler_pub/tests/keys/keys-0001.json', 'r'))
         recipient = create_local_person(
                 name = 'alice',
-                publicKey = recipientKeys['public'],
-                privateKey = recipientKeys['private'],
-                inbox = ALICE_SOLE_INBOX_PATH,
                 )
 
         self._send(
@@ -183,8 +177,8 @@ class TestInbox2(TestCase):
                 path = ALICE_SOLE_INBOX_PATH,
                 )
 
-        items = AcItem.objects.filter(
-                f_attributedTo=BOB_ID,
+        items = Status.objects.filter(
+                account = self._sender,
                 )
 
         self.assertEqual(
@@ -193,13 +187,8 @@ class TestInbox2(TestCase):
 
     @httpretty.activate
     def test_shared_inbox(self):
-        recipientKeys = json.load(open('kepi/bowler_pub/tests/keys/keys-0001.json', 'r'))
         recipient = create_local_person(
                 name = 'alice',
-                publicKey = recipientKeys['public'],
-                privateKey = recipientKeys['private'],
-                inbox = ALICE_SOLE_INBOX_PATH,
-                sharedInbox = INBOX_PATH,
                 )
 
         self._send(
@@ -213,8 +202,8 @@ class TestInbox2(TestCase):
                 path = INBOX_PATH,
                 )
 
-        items = AcItem.objects.filter(
-                f_attributedTo=BOB_ID,
+        items = Status.objects.filter(
+                account = self._sender,
                 )
 
         self.assertEqual(
@@ -228,8 +217,8 @@ class TestInbox2(TestCase):
                 content = 'Hello',
                 )
 
-        items = AcItem.objects.filter(
-                f_attributedTo=BOB_ID,
+        items = Status.objects.filter(
+                account = self._sender,
                 )
 
         self.assertEqual(
@@ -243,8 +232,8 @@ class TestInbox2(TestCase):
                 content = INVALID_UTF8,
                 )
 
-        items = AcItem.objects.filter(
-                f_attributedTo=BOB_ID,
+        items = Status.objects.filter(
+                account = self._sender,
                 )
 
         self.assertEqual(
