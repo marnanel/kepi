@@ -199,6 +199,11 @@ REST_FRAMEWORK = {
             'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
             ),
 
+        'DEFAULT_PARSER_CLASSES': (
+            'rest_framework.parsers.JSONParser',
+            'kepi.bowler_pub.parsers.ActivityParser',
+            ),
+
 #        'PAGE_SIZE': 50,
         }
 
