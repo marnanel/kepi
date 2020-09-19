@@ -497,17 +497,15 @@ class LocalPerson(Person):
         return result
 
     @property
-    def inbox(self):
+    def inbox_url(self):
         return uri_to_url(settings.KEPI['USER_INBOX_LINK'] % {
                 'username': self.local_user.username,
                 })
 
     @property
-    def inbox_collection(self):
+    def inbox(self):
         """
         Returns a QuerySet representing the user's inbox.
-        (This will be called "inbox_collection" rather than "get_inbox_collection"
-        until we can be sure it's not world-accessible from ActivityPub)
 
         Your inbox contains:
 
