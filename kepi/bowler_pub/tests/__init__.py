@@ -95,6 +95,30 @@ def create_remote_person(
         load_default_keys_from='kepi/bowler_pub/tests/keys/keys-0002.json',
         **fields):
 
+    """
+    Mock a remote user.
+
+    Parameters:
+        url: the URL representing this user
+        name: the user's name (their "preferredUsername")
+        on_fetch: an optional callback for when someone
+            fetches the user's details
+        auto_fetch: if True, after creation we immediately
+            fetch the new remote person and return its
+            RemotePerson value. If False (the default), we
+            only mock the user, not updating RemotePerson
+            at all, and return None.
+        load_default_keys_from: the filename for the default
+            public and private keys. Probably best to
+            leave this alone.
+
+        Any other named parameters will be used to populate the
+        JSON for the remote user.
+
+    If you use this function, you must decorate your test with
+    @httpretty.activate .
+    """
+
     if 'publicKey' not in fields:
         keys = json.load(open(load_default_keys_from, 'r'))
 
