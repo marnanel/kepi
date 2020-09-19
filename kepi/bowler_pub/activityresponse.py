@@ -24,7 +24,7 @@ class ActivityResponse(HttpResponse):
     def __init__(self, activity_value):
         super().__init__()
 
-        self.activity_value = None
+        self.activity_value = activity_value
 
     def __str__(self):
         return '<ActivityResponse, wrapping %s>' % (self.activity_value,)
