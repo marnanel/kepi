@@ -1,7 +1,7 @@
 # views/activitypub.py
 #
 # Part of kepi, an ActivityPub daemon.
-# Copyright (c) 2018-2019 Marnanel Thurman.
+# Copyright (c) 2018-2020 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
 from kepi.bowler_pub import ATSIGN_CONTEXT
