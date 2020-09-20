@@ -67,8 +67,7 @@ class TestValidation(TestCase):
 
         validate(path=INBOX_PATH,
                 headers=headers,
-                body=body,
-                is_local_user=False)
+                body=body)
 
         self.assertTrue(
                 Follow.objects.filter(
@@ -109,8 +108,7 @@ class TestValidation(TestCase):
 
         validate(path=INBOX_PATH,
                 headers=headers,
-                body=body,
-                is_local_user=False)
+                body=body)
 
         self.assertEqual(
                 len(trilby_models.Follow.objects.filter(
@@ -170,8 +168,7 @@ class TestValidation(TestCase):
 
         validate(path=INBOX_PATH,
                 headers=headers,
-                body=body,
-                is_local_user=False)
+                body=body)
 
         self.assertEqual(
                 len(trilby_models.Follow.objects.filter(
@@ -215,8 +212,7 @@ class TestValidation(TestCase):
 
         validate(path=INBOX_PATH,
                 headers=headers,
-                body=body,
-                is_local_user=False)
+                body=body)
 
         self.assertEqual(
                 len(trilby_models.Follow.objects.filter(
@@ -268,8 +264,7 @@ class TestValidation(TestCase):
 
         validate(path=INBOX_PATH,
                 headers=headers,
-                body=body,
-                is_local_user=False)
+                body=body)
 
         self.assertEqual(
                 len(trilby_models.Follow.objects.filter(

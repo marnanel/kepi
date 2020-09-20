@@ -54,7 +54,6 @@ class IncomingMessage(models.Model):
     body = models.TextField(default='')
     key_id = models.CharField(max_length=255, default='')
     digest = models.CharField(max_length=255, default='')
-    is_local_user = models.BooleanField(default=False)
 
     @property
     def actor(self):
@@ -88,7 +87,7 @@ class IncomingMessage(models.Model):
                     self, self._fields)
             return self._fields
 
-def validate(path, headers, body, is_local_user):
+def validate(path, headers, body):
 
     """
     Validates a message.
@@ -100,9 +99,6 @@ def validate(path, headers, body, is_local_user):
     path -- the URL path that the message was sent to
     headers -- the HTTP headers
     body -- the content of the message, as bytes or str
-    is_local_user -- whether the source is local; this
-        only exists so we can pass it to create() if
-        the message is validated.
     """
 
     import kepi.trilby_api.models as trilby_models
@@ -130,7 +126,6 @@ def validate(path, headers, body, is_local_user):
             signature = headers.get('signature', ''),
             digest = headers.get('digest', ''),
             body = body,
-            is_local_user = is_local_user,
             )
     message.save()
 
