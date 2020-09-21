@@ -103,13 +103,19 @@ def validate(path, headers, body):
 
     import kepi.trilby_api.models as trilby_models
 
-    if isinstance(body, bytes):
-        body = str(body, encoding='UTF-8')
-
     logger.info('Begin validation. Body is %s',
             body)
     logger.info('and headers are %s',
             headers)
+
+    if isinstance(body, bytes):
+        try:
+            # XXX It might not be UTF-8; we have to check the headers
+            body = str(body, encoding='UTF-8')
+        except UnicodeDecodeError as ude:
+            logger.info("  -- failed validation: invalid encoding: %s",
+                    ude)
+            return
 
     # make sure this is a real dict.
     # httpsig.utils.CaseInsensitiveDict doesn't
@@ -132,8 +138,6 @@ def validate(path, headers, body):
     logger.debug('%s: invoking the validation task',
             message.id)
     _run_validation(message.id)
-    logger.debug('%s: finished invoking the validation task',
-            message.id)
 
 @shared_task()
 def _run_validation(
