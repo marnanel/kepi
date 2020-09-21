@@ -191,9 +191,10 @@ def test_message_body_and_headers(secret='',
         path=INBOX_PATH,
         host=INBOX_HOST,
         signed = True,
-        **fields):
+        fields = {},
+        ):
 
-    body = dict([(f[2:],v) for f,v in fields.items() if f.startswith('f_')])
+    body = fields.copy()
     body['@context'] = CONTEXT_URL
     body['Host'] = host
 
@@ -206,7 +207,12 @@ def test_message_body_and_headers(secret='',
     if 'key_id' in fields:
         key_id = fields['key_id']
     else:
-        key_id = body['actor']+'#main-key'
+        # the only reason "actor" would be missing from body
+        # is if we're deliberately messing around with the body
+        # but we still need the headers. In that case it's
+        # not a problem for the test value of the key name
+        # to be "#main-key".
+        key_id = body.get('actor', '')+'#main-key'
 
     if signed:
 
@@ -234,11 +240,11 @@ def test_message_body_and_headers(secret='',
 
     return body, headers
 
-def test_message(secret='', **fields):
+def test_message(secret='', fields={}):
 
     body, headers = test_message_body_and_headers(
-            secret,
-            **fields,
+            secret = secret,
+            fields = fields,
             )
 
     result = IncomingMessage(
@@ -258,10 +264,9 @@ def post_test_message(
         secret,
         path=INBOX_PATH,
         host=INBOX_HOST,
-        f_id=ACTIVITY_ID,
         client = None,
         content = None,
-        **fields,
+        fields = {},
         ):
 
     if client is None:
@@ -271,14 +276,14 @@ def post_test_message(
             secret = secret,
             path = path,
             host = host,
-            **fields,
+            fields = fields,
             )
 
     if content is None:
         content = body
 
     logger.debug("Test message is %s",
-            body)
+            content)
     logger.debug("  -- with headers %s",
             headers)
 

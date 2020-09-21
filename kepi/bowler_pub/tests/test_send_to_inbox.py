@@ -24,14 +24,13 @@ ALICE_SOLE_INBOX_PATH = '/users/alice/inbox'
 BOB_ID = 'https://bobs-computer.example.net/users/bob'
 BOB_INBOX_URL = 'https://bobs-computer.example.net/users/bob/inbox'
 
-# as given in https://www.w3.org/TR/activitypub/
 OBJECT_FORM = {
         "@context": ["https://www.w3.org/ns/activitystreams",
             {"@language": "en"}],
         "id": "https://bobs-computer.example.net/object/1",
         "type": "Note",
         'attributedTo': BOB_ID,
-        "name": "Chris liked 'Minimal ActivityPub update client'",
+        "content": "Chris liked 'Minimal ActivityPub update client'",
         "object": "https://rhiaro.co.uk/2016/05/minimal-activitypub",
         "to": [ALICE_ID,
             "https://dustycloud.org/followers",
@@ -48,20 +47,16 @@ class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
+        settings.ALLOWED_HOSTS = ['testserver']
 
     def _send(self,
-            content,
+            message,
             recipient = None,
             recipientKeys = None,
             sender = None,
             senderKeys = None,
             path = INBOX_PATH,
             ):
-
-        settings.ALLOWED_HOSTS = [
-                'testserver',
-                'testserver',
-                ]
 
         if recipient is None:
             recipient = create_local_person(
@@ -76,33 +71,37 @@ class Tests(TestCase):
                     url = BOB_ID,
                     name = 'bob',
                     publicKey = senderKeys['public'],
+                    auto_fetch = True,
                     )
 
         self._sender = sender
 
-        if not isinstance(content, dict):
-            # Overriding the usual content.
+        if not isinstance(message, dict):
             # This is used for things like checking
             # whether non-JSON content is handled correctly.
 
-            f_body = {'content': content}
-            content = {}
+            content = message
+            fields = {}
 
-        if '@context' not in content:
-            content['@context'] = 'https://www.w3.org/ns/activitystreams'
+        else:
 
-        if 'id' not in content:
-            content['id'] = BOB_ID+'#foo'
+            # "message" is a dict
 
-        if 'actor' not in content:
-            content['actor'] = BOB_ID
+            content = None
+            fields = message.copy()
 
-        f_body = dict([('f_'+f,v) for f,v in content.items()])
+            if 'id' not in fields:
+                fields['id'] = BOB_ID+'#foo'
+
+            if 'actor' not in fields:
+                fields['actor'] = BOB_ID
+
         response = post_test_message(
                 path = path,
                 host = INBOX_HOST,
                 secret = senderKeys['private'],
-                **f_body,
+                content = content,
+                fields = fields,
                 )
 
         logger.debug("Response code: %s", response.status_code)
@@ -115,7 +114,7 @@ class Tests(TestCase):
     def test_create(self):
 
         self._send(
-                content = {
+                message = {
                     'type': 'Create',
                     'object': OBJECT_FORM,
                     'to': OBJECT_FORM['to'],
@@ -142,7 +141,7 @@ class Tests(TestCase):
                 )
 
         self._send(
-                content = {
+                message = {
                     'type': 'Follow',
                     'object': ALICE_ID,
                     'actor': BOB_ID,
@@ -167,7 +166,7 @@ class Tests(TestCase):
                 )
 
         self._send(
-                content = {
+                message = {
                     'type': 'Create',
                     'object': OBJECT_FORM,
                     'to': OBJECT_FORM['to'],
@@ -192,7 +191,7 @@ class Tests(TestCase):
                 )
 
         self._send(
-                content = {
+                message = {
                     'type': 'Create',
                     'object': OBJECT_FORM,
                     'to': OBJECT_FORM['to'],
@@ -214,7 +213,7 @@ class Tests(TestCase):
     def test_non_json(self):
 
         self._send(
-                content = 'Hello',
+                message = 'Hello',
                 )
 
         items = Status.objects.filter(
@@ -229,7 +228,7 @@ class Tests(TestCase):
     def test_invalid_utf8(self):
 
         self._send(
-                content = INVALID_UTF8,
+                message = INVALID_UTF8,
                 )
 
         items = Status.objects.filter(

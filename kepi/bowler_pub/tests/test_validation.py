@@ -52,10 +52,12 @@ class TestValidation(TestCase):
                 )
 
         body, headers = test_message_body_and_headers(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=LOCAL_ALICE,
-                f_object=LOCAL_BOB,
+                fields = {
+                    'id': ACTIVITY_ID,
+                    'type': "Follow",
+                    'actor': LOCAL_ALICE,
+                    'object': LOCAL_BOB,
+                    },
                 secret = keys['private'],
                 )
 
@@ -99,10 +101,12 @@ class TestValidation(TestCase):
                 )
 
         body, headers = test_message_body_and_headers(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
+                fields = {
+                    'id': ACTIVITY_ID,
+                    'type': "Follow",
+                    'actor': REMOTE_FRED,
+                    'object': LOCAL_ALICE,
+                    },
                 secret = keys['private'],
                 )
 
@@ -154,10 +158,12 @@ class TestValidation(TestCase):
                 )
 
         body, headers = test_message_body_and_headers(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
+                fields = {
+                    'id': ACTIVITY_ID,
+                    'type': "Follow",
+                    'actor': REMOTE_FRED,
+                    'object': LOCAL_ALICE,
+                    },
                 secret = keys1['private'],
                 )
 
@@ -203,10 +209,12 @@ class TestValidation(TestCase):
                 )
 
         body, headers = test_message_body_and_headers(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
+                fields = {
+                    'id': ACTIVITY_ID,
+                    'type': "Follow",
+                    'actor': REMOTE_FRED,
+                    'object': LOCAL_ALICE,
+                    },
                 secret = keys['private'],
                 )
 
@@ -255,10 +263,12 @@ class TestValidation(TestCase):
                 )
 
         body, headers = test_message_body_and_headers(
-                f_id=ACTIVITY_ID,
-                f_type="Follow",
-                f_actor=REMOTE_FRED,
-                f_object=LOCAL_ALICE,
+                fields = {
+                    'id': ACTIVITY_ID,
+                    'type': "Follow",
+                    'actor': REMOTE_FRED,
+                    'object': LOCAL_ALICE,
+                    },
                 secret = keys['private'],
                 )
 
