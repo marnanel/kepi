@@ -21,7 +21,7 @@ REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'
 LOCAL_STATUS_ID = 'https://testserver/status/this-is-an-id'
 
-class TestCreate(TestCase):
+class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
@@ -335,6 +335,7 @@ class TestCreate(TestCase):
     #   - emoji
     #   - polls
 
+    @skip("Need to set up a remote sender convincingly")
     def test_when_sender_is_followed_by_local_users(self):
 
         from kepi.trilby_api.models import Follow, Person
@@ -443,7 +444,7 @@ class TestCreate(TestCase):
     # Does it make a difference whether the message
     # was submitted to the shared inbox?
     # Check through masto's code.
-    @expectedFailure
+    @skip("Need to set up a remote sender convincingly")
     def test_when_sender_has_no_relevance_to_local_activity(self):
 
         local_user = create_local_person()
