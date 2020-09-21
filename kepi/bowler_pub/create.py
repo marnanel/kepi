@@ -27,6 +27,10 @@ def create(message):
     logger.debug('%s: creating from %s',
             message, message.fields)
 
+    if 'type' not in fields:
+        logger.warning("%s: no type name; can't continue")
+        return
+
     if '_' in fields['type']:
         # no types have underscores in their names, and
         # in this module we use the underscore to separate
