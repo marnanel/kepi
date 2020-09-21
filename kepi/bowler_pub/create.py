@@ -156,10 +156,14 @@ def on_create(message):
                 )
         return None
 
+    logger.debug("Looking up actor: %s", fields['actor'])
+
     poster = fetch(
         fields['actor'],
         expected_type = trilby_models.Person,
         )
+
+    logger.debug("  -- found %s", poster)
 
     if 'inReplyTo' in newborn_fields:
         in_reply_to = fetch(
