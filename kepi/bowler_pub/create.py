@@ -171,23 +171,35 @@ def on_create(message):
 
     visibility = _visibility_from_fields(fields)
 
-    newbie = trilby_models.Status(
-        remote_url = fields['id'],
-        account = poster,
-        in_reply_to = in_reply_to,
-        content = newborn_fields['content'],
-        sensitive = is_sensitive,
-        spoiler_text = spoiler_text,
-        visibility = visibility,
-        language = language,
+    logger.debug('%s: creating status from %s',
+        message,
+        newborn_fields,
+        )
+
+    try:
+
+        newbie = trilby_models.Status(
+            remote_url = fields['id'],
+            account = poster,
+            in_reply_to = in_reply_to,
+            content = newborn_fields['content'],
+            sensitive = is_sensitive,
+            spoiler_text = spoiler_text,
+            visibility = visibility,
+            language = language,
+                )
+
+        newbie.save()
+
+        logger.debug('%s: created status %s',
+            message,
+            newbie,
             )
 
-    newbie.save()
-
-    logger.debug('%s: created status %s',
-        message,
-        newbie,
-        )
+    except Exception as ke:
+        logger.debug('%s: failed to create status: %s',
+            message,
+            ke)
 
 def on_announce(message):
     fields = message.fields
