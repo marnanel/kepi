@@ -465,9 +465,43 @@ class InboxView(CollectionView):
                 )
 
     def post(self,
+            request,
+            username = None,
             *args, **kwargs):
 
-        return HttpResponse(
-                status = 403,
-                reason = 'See https://gitlab.com/marnanel/kepi/-/issues/37',
+        """
+        Accept a message posted to one of our inboxes.
+
+        All we do here is pass the message on to validate(),
+        which will run asynchronously, and then thank the
+        caller. There is no situation where the caller can
+        get an error, because errors are being checked for
+        behind the scenes by the validate() task.
+
+        Params:
+            request:  the HttpRequest
+            username: the name of the owner of the inbox;
+                      can be None for the shared inbox.
+                      (We ignore this. There's nothing to
+                      be gained by checking it.)
+        """
+
+        body = request.data
+
+        log_one_message(
+                direction = 'incoming',
+                body = body,
+        )
+
+        validate(
+                path=request.path,
+                headers=request.headers,
+                body=body,
                 )
+
+        # I think this should be 201 Created, but the spec
+        # says 200, so 200 is what they get.
+        return HttpResponse(
+            status = 200,
+            reason = "Thank you!",
+            )
