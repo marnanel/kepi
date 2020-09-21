@@ -106,9 +106,10 @@ def log_one_message(
     FIXME There must be a better way to do this.
     """
 
-    if body is not None and '@context' in body:
-        body = body.copy()
-        del body['@context']
+    if body is not None and isinstance(body, dict):
+        if '@context' in body:
+            body = body.copy()
+            del body['@context']
 
     if direction:
         logger.debug(f"== Message %s == %s",
