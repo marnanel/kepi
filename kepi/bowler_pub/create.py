@@ -19,6 +19,7 @@ import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 import kepi.bowler_pub
 import kepi.bowler_pub.utils as bowler_utils
+import kepi.trilby_api.signals as trilby_signals
 from kepi.sombrero_sendpub.fetch import fetch
 
 def create(message):
@@ -95,6 +96,9 @@ def on_follow(message):
             )
 
     result.save()
+
+    trilby_signals.followed.send(sender = result)
+
     return result
 
 def _visibility_from_fields(fields):
