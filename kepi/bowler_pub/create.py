@@ -97,7 +97,10 @@ def on_follow(message):
 
     result.save()
 
-    trilby_signals.followed.send(sender = result)
+    trilby_signals.followed.send(
+        sender = result,
+        id = fields.get('id'),
+        )
 
     return result
 
