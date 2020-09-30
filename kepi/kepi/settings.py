@@ -52,7 +52,7 @@ KEPI = {
         'USER_OUTBOX_LINK': '/users/%(username)s/outbox',
         'USER_FEATURED_LINK': '/users/%(username)s/featured',
         'FOLLOW_REQUEST_LINK' : '/users/%(username)s/follow/%(number)x',
-        'SHARED_INBOX_LINK': '/inbox',
+        'SHARED_INBOX_LINK': '/sharedInbox',
 
         'TOMBSTONES': True,
 
