@@ -493,11 +493,20 @@ class InboxView(CollectionView):
                 body = body,
         )
 
-        validate(
-                path=request.path,
-                headers=request.headers,
-                body=body,
-                )
+        try:
+            validate(
+                    path=request.path,
+                    headers=request.headers,
+                    body=body,
+                    )
+        except Exception as problem:
+            import traceback
+
+            log.warning("Processing this message caused an exception: %s %s",
+                    problem,
+                    ''.join(traceback.format_exception(
+                        None, problem, problem.__traceback__)),
+                    )
 
         # I think this should be 201 Created, but the spec
         # says 200, so 200 is what they get.
