@@ -65,6 +65,9 @@ def fetch(address,
     On all other errors, which are logged, returns None.
     """
 
+    if address is None:
+        return None
+
     wanted = _parse_address(address)
 
     wanted['type'] = expected_type
