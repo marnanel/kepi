@@ -32,7 +32,7 @@ WSGI_APPLICATION = 'kepi.kepi.wsgi.application'
 SECRET_KEY = 'cmfy8%_q^u#bix$_4bq!p^8eq@=46bb*a7ztmg4i)l8jo(kl%^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 LANGUAGE_CODE = 'en'
 
