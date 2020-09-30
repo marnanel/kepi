@@ -454,7 +454,7 @@ class LocalPerson(Person):
 
         return trilby_models.Follow.objects.filter(
                 follower = self,
-                requested = False,
+                offer = None,
                 ).count()
 
     @property
@@ -464,7 +464,7 @@ class LocalPerson(Person):
 
         return trilby_models.Follow.objects.filter(
                 following = self,
-                requested = False,
+                offer = None,
                 ).count()
 
     @property

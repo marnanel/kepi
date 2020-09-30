@@ -93,13 +93,13 @@ def on_follow(message):
     result = trilby_models.Follow(
             follower = follower,
             following = following,
+            offer = fields.get('id'),
             )
 
     result.save()
 
     trilby_signals.followed.send(
         sender = result,
-        id = fields.get('id'),
         )
 
     return result

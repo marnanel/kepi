@@ -28,9 +28,10 @@ from rest_framework.permissions import IsAuthenticated, \
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 import kepi.trilby_api.receivers
+from kepi.bowler_pub.utils import uri_to_url
 import json
 import re
-
+import random
 
 ###########################
 
@@ -247,23 +248,34 @@ class Follow(DoSomethingWithPerson):
     def _do_something_with(self, the_person, request):
 
         try:
+
+            if the_person.auto_follow:
+                offer = None
+            else:
+                number = random.randint(0, 0xffffffff)
+                offer = uri_to_url(settings.KEPI['FOLLOW_REQUEST_LINK'] % {
+                    'username': request.user.username,
+                    'number': number,
+                    })
+
             follow = trilby_models.Follow(
                 follower = request.user.localperson,
                 following = the_person,
-                requested = not the_person.auto_follow,
+                offer = offer,
                 )
 
             with transaction.atomic():
                 follow.save()
 
             logger.info('  -- follow: %s', follow)
+            logger.debug('    -- offer ID: %s', offer)
             kepi_signals.followed.send(sender=follow)
 
             if the_person.auto_follow:
                 follow_back = trilby_models.Follow(
                     follower = the_person,
                     following = request.user.localperson,
-                    requested = False,
+                    offer = None,
                     )
 
                 with transaction.atomic():

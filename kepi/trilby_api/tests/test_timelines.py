@@ -99,7 +99,7 @@ class TestTimelines(TrilbyTestCase):
         follow = Follow(
                 follower = self._george,
                 following = self._alice,
-                requested = False,
+                offer = None,
                 )
         follow.save()
 

@@ -152,7 +152,7 @@ class TestAccountDetails(TrilbyTestCase):
             follow = Follow(
                     follower = whom,
                     following = alice,
-                    requested = False,
+                    offer = None,
             )
             follow.save()
 
@@ -173,7 +173,7 @@ class TestAccountDetails(TrilbyTestCase):
             follow = Follow(
                     follower = alice,
                     following = whom,
-                    requested = False,
+                    offer = None,
             )
             follow.save()
 
@@ -252,8 +252,9 @@ class TestAccountActions(TrilbyTestCase):
                 Follow.objects.filter(
                     following = bob,
                     follower = alice,
-                    requested = True,
-                    ).count(),
+                    ).exclude(
+                        offer = None,
+                        ).count(),
                 1)
 
         self.assertEqual(
@@ -277,7 +278,7 @@ class TestAccountActions(TrilbyTestCase):
                 Follow.objects.filter(
                     following = bob,
                     follower = alice,
-                    requested = False,
+                    offer = None,
                     ).count(),
                 1)
 
@@ -285,7 +286,7 @@ class TestAccountActions(TrilbyTestCase):
                 Follow.objects.filter(
                     following = alice,
                     follower = bob,
-                    requested = False,
+                    offer = None,
                     ).count(),
                 1)
 

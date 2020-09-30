@@ -18,24 +18,38 @@ from django.core.exceptions import ValidationError
 
 class Follow(models.Model):
 
+    """
+    A record that someone follows someone else.
+    """
+
     follower = models.ForeignKey(
             'Person',
             on_delete = models.DO_NOTHING,
             related_name = 'rel_following',
+            help_text = "The person who's following.",
             )
 
     following = models.ForeignKey(
             'Person',
             on_delete = models.DO_NOTHING,
             related_name = 'rel_followers',
+            help_text = "The person who's being followed.",
             )
 
-    requested = models.BooleanField(
-            default=True,
+    offer = models.URLField(
+            max_length = 255,
+            default = None,
+            null = True,
+            blank = True,
+            help_text = "If this is an offer, the ID of the offer. "+\
+                    "If this isn't an offer, None.",
             )
 
     show_reblogs = models.BooleanField(
             default=True,
+            help_text = "True if the following person wants to see "+\
+                    "reblogs from the follower. False if they only "+\
+                    "want to see the follower's original posts.",
             )
 
     class Meta:
@@ -47,7 +61,7 @@ class Follow(models.Model):
                 ]
 
     def __str__(self):
-        if self.requested:
+        if self.offer is not None:
             return '[%s requests to follow %s]' % (
                     self.follower,
                     self.following,

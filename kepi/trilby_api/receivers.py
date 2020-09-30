@@ -41,7 +41,7 @@ def on_follow(sender, **kwargs):
                     'type': 'Accept',
                     'to': [follow.follower.url],
                     'actor': follow.following.url,
-                    'object': kwargs.get('id'),
+                    'object': follow.offer,
                     }
 
             sombrero_delivery.deliver(
@@ -52,7 +52,7 @@ def on_follow(sender, **kwargs):
                         ],
                     )
 
-        follow.requested = False
+        follow.offer = None
         follow.save()
     else:
         logger.info("    -- not sending automatic Accept")
