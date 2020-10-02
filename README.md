@@ -1,24 +1,17 @@
-kepi
-====
+# kepi
 
-kepi is an ActivityPub daemon.
+kepi is a Django-based microblogging system, implemented in Python.
+It uses the ActivityPub protocol to communicate with other servers,
+and the Mastodon protocol to communicate with clients.
 
-[ActivityPub](https://www.w3.org/TR/activitypub/) is a standard protocol
-for integrating social media across Internet sites.
+There is nothing particularly interesting at [kepi.org.uk](https://kepi.org.uk),
+but there will be.
 
-For example, you might post an article. Someone else on another site
-might reply to it, and someone else might "like" it. Someone else again
-might "follow" you, in order to get notifications when you post
-anything else.
+## Links
 
-kepi runs in the background on your server, distributing your messages
-to other sites, and receiving their responses.
-
-* [Installation guide](docs/installation.md)
-* [Source](https://gitlab.com/marnanel/kepi/)
-
-If you'd like to contribute, there's lots to do. Find something on the
-[bug tracker](https://gitlab.com/marnanel/kepi/issues?label_name%5B%5D=newbie)
-and dive in. If you'd like a gentler learning curve, look
-for
-[bugs marked "newbie"](https://gitlab.com/marnanel/kepi/issues?label_name%5B%5D=newbie)
+* [The installation guide](docs/installation.md) (may be out of date)
+* [A guide to the structure](docs/modules.md)
+* [The roadmap](docs/roadmap.md)
+* [Source control](https://gitlab.com/marnanel/kepi)
+* [The bug tracker](https://gitlab.com/marnanel/kepi/issues)
+* [kepi threads on the activitypub forums](https://socialhub.activitypub.rocks/c/software/kepi/32)
