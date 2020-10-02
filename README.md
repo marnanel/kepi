@@ -19,3 +19,4 @@ but there will be.
 ## Trivia
 
 * [bowler-heavy](docs/bowler-heavy.md) was a historical course change that may still affect the state of the codebase.
+* [Why the name?](docs/name.md)
