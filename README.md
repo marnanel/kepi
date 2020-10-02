@@ -15,3 +15,7 @@ but there will be.
 * [Source control](https://gitlab.com/marnanel/kepi)
 * [The bug tracker](https://gitlab.com/marnanel/kepi/issues)
 * [kepi threads on the activitypub forums](https://socialhub.activitypub.rocks/c/software/kepi/32)
+
+## Trivia
+
+* [bowler-heavy](docs/bowler-heavy.md) was a historical course change that may still affect the state of the codebase.
