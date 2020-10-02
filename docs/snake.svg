@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="svg2"
+   width="2048.0059"
+   height="1023.9999"
+   viewBox="0 0 2048.0059 1023.9999"
+   sodipodi:docname="un_chapeau_logo.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:export-filename="/tmp/un_chapeau_logo.png"
+   inkscape:export-xdpi="139.94"
+   inkscape:export-ydpi="139.94">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6">
+    <filter
+       inkscape:label="Smart Jelly"
+       inkscape:menu="Bevels"
+       inkscape:menu-tooltip="Same as Matte jelly but with more controls"
+       style="color-interpolation-filters:sRGB"
+       id="filter2085">
+      <feBlend
+         in2="SourceGraphic"
+         mode="normal"
+         result="result3"
+         id="feBlend2067" />
+      <feComposite
+         result="result4"
+         operator="arithmetic"
+         k2="1"
+         in2="result3"
+         id="feComposite2069"
+         k1="0"
+         k3="0"
+         k4="0" />
+      <feColorMatrix
+         in="result4"
+         result="result0"
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.85 0 "
+         id="feColorMatrix2071" />
+      <feGaussianBlur
+         stdDeviation="7"
+         in="SourceAlpha"
+         id="feGaussianBlur2073" />
+      <feSpecularLighting
+         result="result1"
+         specularExponent="25"
+         specularConstant="1"
+         surfaceScale="5"
+         id="feSpecularLighting2077">
+        <feDistantLight
+           azimuth="225"
+           elevation="60"
+           id="feDistantLight2075" />
+      </feSpecularLighting>
+      <feComposite
+         in2="result0"
+         k1="0.5"
+         k2="1"
+         operator="arithmetic"
+         k3="0.5"
+         id="feComposite2079"
+         k4="0" />
+      <feComposite
+         result="result2"
+         in2="result0"
+         operator="atop"
+         id="feComposite2081" />
+      <feComposite
+         operator="in"
+         in2="SourceGraphic"
+         id="feComposite2083" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1366"
+     inkscape:window-height="713"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="0.34834311"
+     inkscape:cx="1022.2985"
+     inkscape:cy="510.29301"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2"
+     inkscape:snap-global="false"
+     fit-margin-top="10"
+     fit-margin-left="10"
+     fit-margin-right="10"
+     fit-margin-bottom="10" />
+  <rect
+     style="opacity:1;fill:white;fill-opacity:1;stroke:none;stroke-width:7.55905533;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect2087"
+     width="2048"
+     height="1024"
+     x="0"
+     y="-0.00011232067" />
+  <path
+     style="fill:black;stroke:#03faff;stroke-width:2.99999976;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 1141.9545,11.51305 C 966.45059,10.89857 790.79674,31.78932 649.4587,120.77442 450.59822,245.97507 474.79583,317.41181 360.70222,682.42664 329.23775,783.0896 -8.6106672,803.08091 29.969507,949.22029 c 39.767335,7.98242 72.095483,-18.33946 17.623978,18.33353 -46.2577562,22.4684 -25.765167,1.68673 -35.995836,42.66698 6.354554,11.5763 17.755564,-24.81871 22.195797,-23.22224 26.22498,-19.44164 84.672794,-58.36978 28.764157,-8.19405 50.000067,28.76039 114.668147,26.40809 168.243937,10.60221 87.06358,-14.97638 149.0132,-81.26827 230.305,-104.64963 156.83674,-45.10982 322.62891,-59.60614 486.11929,-65.71924 315.85897,-11.81038 518.32697,-12.43375 946.48877,56.45804 45.372,7.30043 170.2418,64.27969 137.337,-12.90651 -29.3491,-55.47479 -86.0274,-79.33055 -128.1869,-118.24551 -319.6225,-178.12009 51.3952,-664.58118 -524.9178,-723.03762 -76.4755,-4.79117 -156.2177,-9.51389 -235.9922,-9.7932 z m 122.1517,29.22536 c 99.1336,0.39287 200.2043,26.53962 282.3186,80.32875 113.9527,123.51175 128.3569,237.99991 176.6226,298.91147 l -13.3631,66.14323 c -31.7999,-18.33097 -101.3635,-99.17093 -105.5199,-134.99485 -31.8401,-82.45364 -84.4981,-7.22934 -113.4015,28.9011 -19.8738,49.30592 -85.7195,16.6704 -101.985,51.07511 -22.8703,63.76817 -77.6265,103.5995 -132.3066,139.12573 -52.4818,69.05224 1.3261,159.75484 -4.1653,225.69368 -44.2741,9.06975 -135.011,24.86543 -158.6841,-13.96421 13.0757,-58.6648 33.7786,-181.56811 -54.9367,-186.5209 -66.26032,53.60637 -149.91179,-49.48047 -199.74602,16.49828 -54.56058,64.23573 96.16999,189.23471 -19.43514,191.98571 -58.2386,3.68573 -179.03419,10.21303 -149.00712,-82.28679 5.66303,-78.15319 45.30122,-174.58073 -27.83418,-234.86044 -40.01418,-23.67588 -31.62443,-160.83713 -86.54932,-120.15946 -40.1594,72.2988 -41.02347,3.26372 -18.10521,-36.00913 47.64456,-136.62885 175.61845,-244.74546 326.0988,-258.00085 58.63346,3.35798 172.79579,-22.63145 192.23789,34.96402 -35.1962,116.24797 1.157,274.78331 132.3359,316.74743 90.5344,40.19169 166.6848,-37.0712 163.3307,-124.26437 -41.0547,-14.1314 -43.1295,96.47829 -98.0765,99.64444 -95.8109,-12.68752 -162.1157,-106.5609 -154.9414,-197.26163 -1.8275,-76.52904 49.3107,-156.81185 134.4332,-160.99436 10.1907,-0.50848 20.4242,-0.74261 30.6794,-0.70196 z m 205.8558,133.48464 c -40.4181,0.31197 -91.2262,30.49961 -38.8052,68.58384 22.1796,3.6869 49.1988,2.99529 66.5419,-13.00092 25.72,-40.13031 1.7576,-55.81059 -27.7367,-55.58292 z m -14.2325,23.13094 c 28.1734,0.28205 62.5882,23.68766 -19.7993,28.68706 -9.8475,-21.72588 3.9947,-28.84527 19.7993,-28.68706 z m -10.6329,10.53612 c -34.2591,33.7688 43.2451,6.7468 0,0 z M 175.36404,811.49855 c 2.10677,0.1017 4.44823,1.31954 6.76669,3.27701 29.73557,1.81343 55.79851,17.77902 17.03869,47.47071 -14.73741,6.02595 -32.09903,5.13886 -46.61574,-1.03567 -35.64283,-29.12301 -11.21179,-44.44243 17.51017,-46.39413 1.36301,-2.40879 3.21054,-3.41872 5.30019,-3.31792 z m -5.30019,3.31792 c -3.09275,5.46565 -3.65962,18.2409 1.33317,42.35849 36.04531,3.6235 23.80839,-31.3608 10.73371,-42.3994 -4.0072,-0.24439 -8.07586,-0.23031 -12.06688,0.0409 z"
+     id="path12"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="sssccccccssscccsssccccccccccccccccccccccssscsscscccccccccccccc" />
+</svg>
