@@ -1,6 +1,8 @@
 Installing kepi
 ===============
 
+**This may be out of date**
+
 kepi is still pre-alpha software, so installation is still a
 little fiddly at present.
 
