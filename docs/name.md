@@ -34,4 +34,4 @@ merge the two repos together again, and renamed the whole thing "kepi". The orig
 
 The default user image comes from a prewar German magazine, but I no longer remember which.
 
-![Default user image](hat-person.png)
+![Default user image](hat-person.jpg)
