@@ -46,7 +46,7 @@ class TestKepiView(TestCase):
 
                     'attachment': [],
                     'endpoints': {
-                        'sharedInbox': 'https://testserver/inbox',
+                        'sharedInbox': 'https://testserver/sharedInbox',
                         },
                     'featured': 'https://testserver/users/alice/featured',
                     'followers': 'https://testserver/users/alice/followers',
