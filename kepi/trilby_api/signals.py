@@ -33,5 +33,9 @@ deleted = Signal(
             'entombed',
             ])
 
+posted = Signal(
+        providing_args=[
+            ])
+
 reblogged = Signal(
     )

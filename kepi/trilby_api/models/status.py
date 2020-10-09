@@ -14,6 +14,7 @@ from django.conf import settings
 import kepi.bowler_pub.crypto as crypto
 from kepi.bowler_pub.utils import uri_to_url, is_local
 import kepi.trilby_api.utils as trilby_utils
+import kepi.trilby_api.signals as trilby_signals
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from polymorphic.models import PolymorphicModel
@@ -234,6 +235,8 @@ class Status(PolymorphicModel):
 
     def save(self, *args, **kwargs):
 
+        newly_made = self.pk is None
+
         if self.reblog_of == self:
             raise ValueError("Status can't be a reblog of itself")
 
@@ -241,6 +244,9 @@ class Status(PolymorphicModel):
             raise ValueError("Status can't be a reply to itself")
 
         super().save(*args, **kwargs)
+
+        if newly_made:
+            trilby_signals.posted.send(sender=self)
 
     def __str__(self):
         return '[Status %s: %s]' % (
