@@ -329,7 +329,24 @@ class TrilbyUser(AbstractUser):
     """
     A Django user.
     """
-    pass
+
+    def save(self,
+            create_twin = True,
+            *args, **kwargs):
+
+        first_time = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if create_twin and first_time:
+
+            local_person = LocalPerson(
+                    local_user = self,
+                    )
+            local_person.save()
+
+            logger.info('%s: created twin %s',
+                self, local_person)
 
 class LocalPerson(Person):
 
@@ -394,8 +411,11 @@ class LocalPerson(Person):
 
         if 'username' in kwargs and 'local_user' not in kwargs:
             new_user = TrilbyUser(
-                    username=kwargs['username'])
-            new_user.save()
+                    username = kwargs['username'],
+                    )
+            new_user.save(
+                    create_twin = False,
+                )
 
             kwargs['local_user'] = new_user
             del kwargs['username']
