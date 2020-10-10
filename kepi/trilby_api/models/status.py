@@ -322,3 +322,7 @@ class Status(PolymorphicModel):
         # seem to be forthcoming on this point, so we'll
         # just have to wait until we find out.
         return self.content
+
+    @property
+    def is_local(self):
+        return self.remote_url is None

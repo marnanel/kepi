@@ -3,6 +3,7 @@ from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
 from kepi.trilby_api.models import *
+from kepi.bowler_pub.tests import create_remote_person
 from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
 
@@ -657,4 +658,34 @@ class TestGetStatus(TrilbyTestCase):
         self.assertEqual(
                 details['detail'],
                 'Not found.',
+                )
+
+    def test_is_local(self):
+        self._alice = create_local_person(name='alice')
+
+        self._alice_status = create_local_status(
+                posted_by = self._alice,
+                content = 'Daisies are our silver.',
+        )
+
+        self.assertTrue(
+                self._alice_status.is_local,
+                )
+
+        self._bob = create_remote_person(
+                url = "https://example.org/people/bob",
+                name='bob',
+                auto_fetch = True,
+                )
+
+        self._bob_status = Status(
+                remote_url = "https://example.org/people/bob/status/100",
+                account = self._bob,
+                in_reply_to = self._alice_status,
+                content = "Buttercups our gold.",
+                )
+        self._bob_status.save()
+
+        self.assertFalse(
+                self._bob_status.is_local,
                 )
