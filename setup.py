@@ -20,9 +20,9 @@ version = get_version('kepi')
 setup(
     name='kepi',
     version=version,
-    url='https://gitlab.com/marnanel/kepi/',
+    url='https://kepi.org.uk',
     license='GPL-2',
-    description='ActivityPub social media daemon',
+    description='ActivityPub and Mastodon-alike social media',
     long_description=README,
     long_description_content_type='text/markdown',
     author='Marnanel Thurman',
@@ -37,10 +37,5 @@ setup(
         'Framework :: Django',
         'Topic :: Communications :: Conferencing',
     ],
-    entry_points = {
-        'console_scripts': [
-            'kepi=kepi.kepi.command_line:main',
-            ],
-        },
 )
 
