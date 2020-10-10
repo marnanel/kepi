@@ -34,3 +34,37 @@ def on_follow(sender, **kwargs):
             sender = sender.follower,
             target_people = [sender.following],
             )
+
+@receiver(kepi_signals.posted)
+def on_posted(sender, **kwargs):
+    """
+    If the posted event describes a remote person being followed,
+    then send them an ActivityPub "Create" activity message about it.
+
+    The spec for "Follow" is here:
+    https://www.w3.org/TR/activitystreams-vocabulary/#dfn-create
+    """
+
+    if not sender.is_local:
+        logger.debug("%s is remote; not notifying remote hosts",
+                sender)
+        return
+
+    logger.info("%s: status creation received", sender)
+
+    deliver(
+            activity = {
+                "type": "Create",
+                "actor": sender.account.url,
+                "object": {
+                    "type": "Note",
+                    "id": sender.url,
+                    "content": sender.content,
+                    }
+                },
+            sender = sender.account,
+            target_people = sender.account.followers,
+            )
+
+    logger.info("%s: status creation notification delivered",
+            sender)
