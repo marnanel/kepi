@@ -22,6 +22,10 @@ def on_follow(sender, **kwargs):
 
     follow = sender # rename to prevent confusion below
 
+    if not follow.following.is_local:
+        # we're only concerned with local accounts
+        return
+
     notification = kepi_models.Notification(
             notification_type = kepi_models.Notification.FOLLOW,
             for_account = follow.following,
@@ -61,6 +65,10 @@ def on_follow(sender, **kwargs):
 def on_like(sender, **kwargs):
 
     like = sender # rename to prevent confusion below
+
+    if not like.liked.account.is_local:
+        # we're only concerned with local accounts
+        return
 
     notification = kepi_models.Notification(
             notification_type = kepi_models.Notification.FAVOURITE,

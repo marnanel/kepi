@@ -40,7 +40,7 @@ class Notification(models.Model):
             )
 
     for_account = models.ForeignKey(
-            'Person',
+            'LocalPerson',
             on_delete = models.DO_NOTHING,
             related_name = 'notifications_for',
             )
