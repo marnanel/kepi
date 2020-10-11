@@ -101,8 +101,26 @@ class Tests(TestCase):
                 'id': 'http://testserver/users/alice/featured',
                 'totalItems': 0,
                 'type': 'OrderedCollection',
-                }
+                },
+            result,
             )
+
+        alice.featured = status
+        alice.save()
+
+        response = c.get('/users/alice/featured')
+        self.assertEqual(response.status_code, 200)
+        result = _response_to_dict(response)
+
+        self.assertDictContainsSubset(
+            {
+                'id': 'http://testserver/users/alice/featured',
+                'totalItems': 1,
+                'type': 'OrderedCollection',
+                },
+            result,
+            )
+
 
 @skip("Tombstones are not supported in this version")
 class TestTombstone(TestCase):

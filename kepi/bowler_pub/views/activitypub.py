@@ -514,3 +514,13 @@ class InboxView(CollectionView):
             status = 200,
             reason = "Thank you!",
             )
+
+class FeaturedView(CollectionView):
+
+    listname = 'featured'
+
+    def _modify_list_item(self, item):
+        serializer = bowler_serializers.StatusSerializer(
+                item,
+                )
+        return serializer.data

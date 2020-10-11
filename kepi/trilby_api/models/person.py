@@ -394,6 +394,13 @@ class LocalPerson(Person):
             default = False,
             )
 
+    featured = models.ForeignKey(
+        'Status',
+        on_delete = models.DO_NOTHING,
+        null = True,
+        blank = True,
+        )
+
     @property
     def status(self):
         return 200 # necessarily
@@ -515,6 +522,13 @@ class LocalPerson(Person):
                 )
 
         return result
+
+    def get_featured_collection(self):
+
+        if self.featured is None:
+            return []
+        else:
+            return [self.featured]
 
     @property
     def inbox_url(self):
