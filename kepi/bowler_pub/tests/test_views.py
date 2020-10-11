@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from . import *
-from kepi.trilby_api.tests import create_local_person
+from kepi.trilby_api.tests import create_local_person, create_local_status
 from unittest import skip
 import logging
 import json
@@ -21,7 +21,7 @@ def _response_to_dict(response):
 
     return result
 
-class TestKepiView(TestCase):
+class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
@@ -82,6 +82,27 @@ class TestKepiView(TestCase):
                     },
                 result,
                 )
+
+    def test_featured(self):
+
+        alice = create_local_person('alice')
+        status = create_local_status(
+                content = 'Hello world',
+                posted_by = alice,
+                )
+
+        c = Client()
+        response = c.get('/users/alice/featured')
+        self.assertEqual(response.status_code, 200)
+        result = _response_to_dict(response)
+
+        self.assertDictContainsSubset(
+            {
+                'id': 'http://testserver/users/alice/featured',
+                'totalItems': 0,
+                'type': 'OrderedCollection',
+                }
+            )
 
 @skip("Tombstones are not supported in this version")
 class TestTombstone(TestCase):
