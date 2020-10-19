@@ -19,9 +19,9 @@ class ErsatzModel(object):
         pass
 
     def __init__(self,
-            url):
+            remote_url):
 
-        self.url = url
+        self.url = remote_url
         self.status = 0
 
         self._iter_items = []
@@ -137,6 +137,11 @@ class Collection(ErsatzModel):
                 self._next_page,
                 expected_type = _CollectionPage,
                 )
+
+        if next_bit is None:
+            logger.info("%s: error in fetching items",
+                    self.url)
+            raise StopIteration
 
         self._iter_items = next_bit.items
         self._next_page = next_bit.next
