@@ -29,7 +29,7 @@ class Tests(django.test.TestCase):
         self.alice = create_local_person("alice")
 
         self.bob = create_remote_person(
-                url = 'https://example.org/people/bob',
+                remote_url = 'https://example.org/people/bob',
                 name = 'bob',
                 auto_fetch = True,
                 )
@@ -40,7 +40,7 @@ class Tests(django.test.TestCase):
             self.seen_message = True
 
         mock_remote_object(
-                url = 'https://example.org/people/bob/inbox',
+                remote_url = 'https://example.org/people/bob/inbox',
                 content = 'Thank you',
                 status = 200,
                 as_post = True,

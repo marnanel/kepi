@@ -37,17 +37,17 @@ class TestPerson(TrilbyTestCase):
         carol = create_local_person(name='carol')
 
         peter = create_remote_person(
-                url = "https://example.com/users/peter",
+                remote_url = "https://example.com/users/peter",
                 name = "peter",
                 auto_fetch = True,
                 )
         quentin = create_remote_person(
-                url = "https://example.com/users/quentin",
+                remote_url = "https://example.com/users/quentin",
                 name = "quentin",
                 auto_fetch = True,
                 )
         roger = create_remote_person(
-                url = "https://example.com/users/roger",
+                remote_url = "https://example.com/users/roger",
                 name = "roger",
                 auto_fetch = True,
                 )
@@ -69,7 +69,7 @@ class TestPerson(TrilbyTestCase):
                 )
 
         mock_remote_object(
-                url="https://example.com/users/peter/followers",
+                remote_url="https://example.com/users/peter/followers",
                 content=REMOTE_FOLLOWERS_COLLECTION,
                 )
 

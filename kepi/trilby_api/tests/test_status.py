@@ -6,6 +6,7 @@ from kepi.trilby_api.models import *
 from kepi.bowler_pub.tests import create_remote_person
 from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
+import httpretty
 
 # Tests for statuses. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
@@ -660,6 +661,7 @@ class TestGetStatus(TrilbyTestCase):
                 'Not found.',
                 )
 
+    @httpretty.activate
     def test_is_local(self):
         self._alice = create_local_person(name='alice')
 
@@ -673,7 +675,7 @@ class TestGetStatus(TrilbyTestCase):
                 )
 
         self._bob = create_remote_person(
-                url = "https://example.org/people/bob",
+                remote_url = "https://example.org/people/bob",
                 name='bob',
                 auto_fetch = True,
                 )
