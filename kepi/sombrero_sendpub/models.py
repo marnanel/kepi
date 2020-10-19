@@ -86,3 +86,28 @@ class WebfingerUser(models.Model):
 
     def __str__(self):
         return f'{self.username}@{self.hostname} -> {self.url}'
+
+class Failure(models.Model):
+
+    url = models.URLField(
+            max_length = 256,
+            )
+
+    status = models.IntegerField()
+
+    found_at = models.DateTimeField(
+            auto_now = True,
+            )
+
+    def save(self, *args, **kwargs):
+
+        if self.status//100 == 2:
+            raise ValueError(
+                    f"{self.url}: a result of {self.status} is "
+                    f"a success, not a failure!",
+                    )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'[{self.url} got {self.status}]'
