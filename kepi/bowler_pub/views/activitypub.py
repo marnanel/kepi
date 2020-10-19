@@ -502,7 +502,7 @@ class InboxView(CollectionView):
         except Exception as problem:
             import traceback
 
-            log.warning("Processing this message caused an exception: %s %s",
+            logger.warning("Processing this message caused an exception: %s %s",
                     problem,
                     ''.join(traceback.format_exception(
                         None, problem, problem.__traceback__)),
