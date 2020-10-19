@@ -33,7 +33,7 @@ class TestSend(TestCase):
         # FIXME It would be nice if we could check the Accept content-type
 
         self._zachary = RemotePerson(
-                url = REMOTE_URL,
+                remote_url = REMOTE_URL,
                 username = 'zachary',
                 )
         self._zachary.save()
