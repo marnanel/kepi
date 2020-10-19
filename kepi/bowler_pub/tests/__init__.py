@@ -140,8 +140,14 @@ def create_remote_person(
     if auto_fetch:
         from kepi.sombrero_sendpub.fetch import fetch
 
-        return fetch(remote_url,
+        result = fetch(remote_url,
                 expected_type=trilby_models.RemotePerson)
+
+        if result is None:
+            raise ValueError(f"{remote_url}: can't reach. Did you forget "
+                    "to @httpretty.activate ?")
+
+        return result
     else:
         return None
 
