@@ -9,14 +9,15 @@ logger = logging.getLogger(name="kepi")
 
 import requests
 import django.db.utils
+from urllib.parse import urlparse
 from django.http.request import HttpRequest
 from django.conf import settings
-from urllib.parse import urlparse
 from kepi.trilby_api.models import *
 from kepi.bowler_pub.utils import log_one_message
 from kepi.bowler_pub.activityresponse import ActivityResponse
 from kepi.sombrero_sendpub.webfinger import get_webfinger
-import kepi.sombrero_sendpub.collections as sombrero_collections
+import kepi.sombrero_sendpub.models as sombrero_models
+import kepi.bowler_pub.create as bowler_create
 from django.http import HttpResponse, JsonResponse, Http404
 
 def fetch(address,
@@ -44,21 +45,13 @@ def fetch(address,
     "expected_type" is the type we're looking for.
 
     "expected_type" should contain at least the fields
-      - url (read/write)
-      - status (write-only; for an HTTP status code)
+      - remote_url (read/write)
       - local_form and remote_form, which may be identity functions
 
     Particular types of object may define handlers which
     can initialise other fields. The handler is looked up
     using the "type" field in the retrieved object,
     rather than the "expected_type" passed to this function.
-
-    HTTP status codes are stored even for records that are
-    rejected. (XXX This is an inconsistency: it means that
-    the first time we look something rejected up, the record
-    is stored but this function returns None; following times
-    get the record returned, because it's cached. Fix and test.)
-    Unreachable hosts and timeouts result in a status code of 0.
 
     This function returns the requested object if it can.
     If you didn't specify a type, raises ValueError.
@@ -190,7 +183,19 @@ def _fetch_remote(address, wanted):
         # the webfinger module whether it knows them?
         kwargs = {"acct": address}
     else:
-        kwargs = {"url": address}
+        kwargs = {"remote_url": address}
+
+        try:
+            failure = sombrero_models.Failure.objects.get(
+                    url = address,
+                    )
+            logger.debug("%s: %s",
+                    address, failure)
+
+            return None
+        except sombrero_models.Failure.DoesNotExist:
+            # all good then
+            pass
 
     try:
         result = wanted['type'].remote_form().objects.get(
@@ -211,9 +216,8 @@ def _fetch_remote(address, wanted):
 
     # No, so create them (but don't save yet).
 
-    result = wanted['type'].remote_form()(
-            **kwargs,
-            )
+    logger.debug("%s: wanted %s; kwargs=%s",
+            address, wanted, kwargs)
 
     if wanted['is_atstyle']:
 
@@ -225,14 +229,11 @@ def _fetch_remote(address, wanted):
         if webfinger.url is None:
             logger.info("%s: webfinger lookup failed; bailing",
                     address)
-            result.save()
             return None
 
         logger.info("%s: webfinger gave us %s",
                 address, webfinger.url)
         address = webfinger.url
-
-        result.url = address
 
     # okay, time to go looking online
 
@@ -248,35 +249,40 @@ def _fetch_remote(address, wanted):
         logger.info("%s: can't reach host",
             address)
 
-        if result is not None:
-            result.status = 0
-            result.save()
+        sombrero_models.Failure(
+                url = address,
+                status = 0,
+                ).save()
 
-        return result
+        return None
 
-    except requests.TimeoutError:
+    except requests.exceptions.Timeout:
 
         logger.info("%s: timeout reaching host",
             address)
 
-        if result is not None:
-            result.status = 0
-            result.save()
+        sombrero_models.Failure(
+                url = address,
+                status = 0,
+                ).save()
 
-        return result
+        return None
 
     # so, we have *something*...
 
-    if result is not None:
-        result.status = response.status_code
-        result.save()
-
     if response.status_code!=200:
         # HTTP error; bail immediately
+
         logger.info("%s: unexpected status code from status lookup: %d",
                 address, response.status_code,
                 )
-        return result
+
+        sombrero_models.Failure(
+                url = address,
+                status = response.status_code,
+                ).save()
+
+        return None
 
     try:
         found = response.json()
@@ -284,11 +290,9 @@ def _fetch_remote(address, wanted):
         logger.info("%s: response was not JSON (%s); dropping",
                 address, ve)
 
-        if result is not None:
-            result.status = 0
-            result.save()
+        # Not actually an HTTP failure, so don't create a Failure here
 
-        return result
+        return None
 
     log_one_message(
             direction = "retrieved",
@@ -299,11 +303,7 @@ def _fetch_remote(address, wanted):
         logger.info("%s: retrieved JSON did not include a type; dropping",
                 address)
 
-        if result is not None:
-            result.status = 0
-            result.save()
-
-        return result
+        return None
 
     if 'id' in found:
         if found['id'] != address:
@@ -311,109 +311,25 @@ def _fetch_remote(address, wanted):
                     "%s: user's id was not the source url: got %s; dropping",
                     address, found['id'],
                     )
-            result.status = 0
-            result.save()
-
-            return result
-
-    # Do we have a handler to finish up with?
-
-    handler_name = 'on_%s' % (
-            found['type'].lower(),
-            )
-
-    if handler_name in globals():
-
-        try:
-            result = globals()[handler_name](found, result)
-            logger.info("%s: result was %s",
-                    address, result)
-        except ValueError as ve:
-            logger.info("%s: %s from handler; returning None",
-                    address, ve)
             return None
 
-        if not isinstance(result, wanted['type']):
-
-            logger.info("%s:    -- which wasn't %s; returning None",
-                    address, wanted['type'])
-
-            return None
-
-        return result
-
-    else:
-
-        # no handler
-
-        logger.info("%s: no %s; returning %s",
-                address, handler_name, result)
-        return result
-
-def on_person(found, user):
-
-    for foundname, fieldname in [
-            ('preferredUsername', 'username'),
-            ('name', 'display_name'),
-            ('summary', 'note'),
-            ('manuallyApprovesFollowers', 'locked'),
-            ('following', 'following_url'),
-            ('followers', 'followers_url'),
-            ('inbox', 'inbox_url'),
-            ('outbox', 'outbox_url'),
-            ('featured', 'featured_url'),
-            ('created_at', 'created_at'),
-            ('bot', 'bot'),
-            ('movedTo', 'moved_to'),
-            ]:
-        if foundname in found:
-            setattr(user,
-                    fieldname,
-                    found[foundname])
-
-    # A shared inbox takes priority over a personal inbox
-    if 'endpoints' in found:
-        if 'sharedInbox' in found['endpoints']:
-            user.inbox_url = found['endpoints']['sharedInbox']
-
-    if 'publicKey' in found:
-        key = found['publicKey']
-
-        if 'owner' in key:
-            if key['owner'] != user.url:
-                raise ValueError(
-                        f"Remote user gave us someone else's key ({key['owner']})")
-
-        if 'id' in key:
-            user.key_name = key['id']
-
-        if 'publicKeyPem' in key:
-            user.publicKey = key['publicKeyPem']
-
-    if user.acct is None:
-
-        # We might already know the acct,
-        # if we got to this user by looking up their acct.
-        # This will probably have to be cleverer later.
-
-        hostname = urlparse(user.url).netloc
-        user.acct = '{}@{}'.format(
-            user.username,
-            hostname,
+    result = bowler_create.deserialise(
+            found,
+            address,
             )
 
-    # FIXME Header and icon
+    if result is None:
+        logger.info("%s:    -- can't deserialise; returning None",
+                address)
+        return None
 
-    user.save()
+    logger.info("%s:    -- deserialised as %s",
+            address, result)
 
-    return user
+    if not isinstance(result, wanted['type']):
+        logger.info("%s:      -- which wasn't %s; returning None",
+                address, wanted['type'])
 
-on_actor = on_person
+        return None
 
-def on_collection(found, obj):
-    obj.update(found)
-    return obj
-
-on_collection_page = on_collection
-on_orderedcollection = on_collection
-on_orderedcollectionpage = on_collection
+    return result

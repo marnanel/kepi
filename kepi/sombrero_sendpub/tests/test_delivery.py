@@ -69,14 +69,14 @@ class Tests(TestCase):
 
         for name in ['peter', 'robert', 'quentin']:
             self.remotes[name] = create_remote_person(
-                    url = 'https://example.org/people/'+name,
+                    remote_url = 'https://example.org/people/'+name,
                     name = name,
                     auto_fetch = True,
                     )
 
             # and the inbox:
             mock_remote_object(
-                    url = f'https://example.org/people/{name}/inbox',
+                    remote_url = f'https://example.org/people/{name}/inbox',
                     content = 'Thank you',
                     status = 200,
                     as_post = True,
@@ -144,7 +144,7 @@ class Tests(TestCase):
         self.setup_remotes()
 
         mock_remote_object(
-                url = 'https://example.org/people/peter/followers',
+                remote_url = 'https://example.org/people/peter/followers',
                 content = """{
                 "id":"https://example.org/people/peter/followers",
                 "type":"OrderedCollection",

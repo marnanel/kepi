@@ -155,7 +155,10 @@ def _run_validation(
     valid = _run_validation_inner(message)
 
     if valid:
-        result = create(message)
+        result = create(
+                fields = message.fields,
+                address = str(message),
+                )
         return result
 
     return None
@@ -196,19 +199,12 @@ def _run_validation_inner(
         logger.info('%s: invalid UTF-8; dropping', message)
         return False
 
-    if actor is None or actor.status==404:
+    if actor is None:
         logger.info('%s: remote actor does not exist; dropping message',
             message)
-        return False
-    elif actor.status==410:
-        logger.info('%s: remote actor has Gone',
-            message)
         # FIXME: If this message is an instruction to delete a remote user,
-        # it's valid if the remote user is Gone.
-        return False
-    elif actor.status!=200:
-        logger.info('%s: remote actor could not be fetched (status %d)',
-            message, actor.status)
+        # it's valid if the remote user is Gone. Need to pass this out
+        # from fetch() somehow.
         return False
 
     logger.debug('%s: message signature is: %s',

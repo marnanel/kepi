@@ -10,6 +10,7 @@ logger = logging.getLogger(name="kepi")
 from django.test import TestCase
 from kepi.bowler_pub.tests import *
 from kepi.trilby_api.tests import create_local_person, create_local_status
+from kepi.bowler_pub.utils import as_json
 from unittest import skip, expectedFailure
 from django.conf import settings
 import kepi.trilby_api.models as trilby_models
@@ -20,7 +21,7 @@ REMOTE_ALICE = 'https://somewhere.example.com/users/alice'
 LOCAL_FRED = 'https://testserver/users/fred'
 LOCAL_BOOST_ID = 'https://testserver/status/this-is-a-boost-id'
 
-class TestAnnounce(TestCase):
+class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
@@ -31,7 +32,7 @@ class TestAnnounce(TestCase):
     @httpretty.activate
     def test_sender_with_local_follower_boosts_known_status(self):
         self._remote_alice = create_remote_person(
-            url = REMOTE_ALICE,
+            remote_url = REMOTE_ALICE,
             name = 'alice',
             auto_fetch = True,
             )
@@ -60,17 +61,73 @@ class TestAnnounce(TestCase):
                 'to': 'http://example.com/followers',
         }
 
-        message = DummyMessage(boost_form)
-
-        create(message)
+        create(fields = boost_form)
 
         self.assertTrue(
                 original_status.reblogged,
                 msg = 'the status was reblogged at the end',
                 )
 
+    @httpretty.activate
     def test_sender_with_local_follower_boosts_unknown_status(self):
-        pass
+        self._remote_alice = create_remote_person(
+            remote_url = REMOTE_ALICE,
+            name = 'alice',
+            auto_fetch = True,
+            )
+
+        follow = trilby_models.Follow(
+                follower = self._local_fred,
+                following = self._remote_alice,
+                )
+        follow.save()
+
+        original_remote_form = {
+                '@context': 'https://www.w3.org/ns/activitystreams',
+                'id': 'https://example.com/actor/hello-world',
+                'type': 'Note',
+                'attributedTo': 'https://example.com/actor',
+                'content': 'Hello world',
+                'to': 'http://example.com/followers',
+                }
+
+        create_remote_person(
+                remote_url = 'https://example.com/actor',
+                name = 'random',
+                )
+
+        mock_remote_object(
+                'https://example.com/actor/hello-world',
+                as_json(
+                    original_remote_form,
+                    ),
+                )
+
+        boost_form = {
+                '@context': 'https://www.w3.org/ns/activitystreams',
+                'id': 'foo',
+                'type': 'Announce',
+                'actor': REMOTE_ALICE,
+                'object': 'https://example.com/actor/hello-world',
+                'to': 'http://example.com/followers',
+        }
+
+        create(boost_form)
+
+        original_status = trilby_models.Status.objects.get(
+                remote_url = 'https://example.com/actor/hello-world',
+                )
+
+        self.assertTrue(
+                original_status.reblogged,
+                msg = 'the status was reblogged at the end',
+                )
+
+        self.assertEqual(
+                original_status.content,
+                'Hello world',
+                msg = 'the status was reblogged at the end',
+                )
 
     def test_sender_with_local_follower_selfboosts_unknown_status(self):
         pass

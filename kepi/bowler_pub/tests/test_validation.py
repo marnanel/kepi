@@ -94,7 +94,7 @@ class TestValidation(TestCase):
                 )
 
         create_remote_person(
-                url = REMOTE_FRED,
+                remote_url = REMOTE_FRED,
                 name = 'Fred',
                 publicKey=keys['public'],
                 on_fetch = on_fetch,
@@ -122,12 +122,8 @@ class TestValidation(TestCase):
                 msg="The message validated successfully")
 
         fred = trilby_models.RemotePerson.objects.get(
-            url=REMOTE_FRED,
+            remote_url=REMOTE_FRED,
             )
-
-        self.assertEqual(fred.status,
-                200,
-                msg="Fred's record was stored locally as OK")
 
         self.assertTrue(
                 fetched['fred'],
@@ -151,7 +147,7 @@ class TestValidation(TestCase):
                 )
 
         create_remote_person(
-                url = REMOTE_FRED,
+                remote_url = REMOTE_FRED,
                 name = 'Fred',
                 publicKey=keys2['public'],
                 on_fetch = on_fetch,
@@ -202,7 +198,7 @@ class TestValidation(TestCase):
                 )
 
         mock_remote_object(
-                url = REMOTE_FRED,
+                remote_url = REMOTE_FRED,
                 content = "They went away",
                 status = 410,
                 on_fetch = on_fetch,
@@ -229,13 +225,14 @@ class TestValidation(TestCase):
                 0,
                 msg="The message did not validate")
 
-        fred = trilby_models.RemotePerson.objects.get(
-            url=REMOTE_FRED,
+        freds = trilby_models.RemotePerson.objects.filter(
+            remote_url=REMOTE_FRED,
             )
 
-        self.assertEqual(fred.status,
-                410,
-                msg="Fred's record was stored locally as Gone")
+        self.assertEqual(
+                len(freds),
+                0,
+                msg="Fred's record was not stored locally")
 
         self.assertTrue(
                 fetched['fred'],
@@ -256,7 +253,7 @@ class TestValidation(TestCase):
                 )
 
         mock_remote_object(
-                url = REMOTE_FRED,
+                remote_url = REMOTE_FRED,
                 content = "Who? Never heard of them",
                 status = 404,
                 on_fetch = on_fetch,

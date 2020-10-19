@@ -15,18 +15,23 @@ the message.
 import logging
 logger = logging.getLogger(name="kepi")
 
+from urllib.parse import urlparse
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 import kepi.bowler_pub
 import kepi.bowler_pub.utils as bowler_utils
 import kepi.trilby_api.signals as trilby_signals
-from kepi.sombrero_sendpub.fetch import fetch
+import kepi.sombrero_sendpub.fetch as sombrero_fetch
+import kepi.sombrero_sendpub.collections as sombrero_collections
 
-def create(message):
+def create(fields,
+        address = None):
 
-    fields = message.fields
+    if address is None:
+        address = fields.get('id', '')
+
     logger.debug('%s: creating from %s',
-            message, message.fields)
+            address, fields)
 
     if 'type' not in fields:
         logger.warning("%s: no type name; can't continue")
@@ -38,34 +43,52 @@ def create(message):
         # activity type names from object type names
 
         logger.warning('%s: underscore in type name "%s"; looks dodgy',
-                message,
+                address,
                 fields['type'],
                 )
         return
 
-    activity_handler_name = 'on_%s' % (
+    result = deserialise(fields)
+
+    return result
+
+def deserialise(fields,
+        address = None,
+        ):
+
+    if address is None:
+        address = fields.get('id', '')
+
+    handler_name = 'on_%s' % (
             fields['type'].lower(),
             )
 
-    if activity_handler_name in globals():
-        result = globals()[activity_handler_name](message)
-        return result
+    if handler_name not in globals():
+        logger.info("%s: no %s; returning dict",
+                address, handler_name)
+        return fields
 
-    logger.warning('%s: no handler for %s',
-            message,
-            activity_handler_name)
+    try:
+        result = globals()[handler_name](fields, address)
+        logger.info("%s: result from %s was %s",
+                address, handler_name, result)
+    except ValueError as ve:
+        logger.info("%s: error from %s was %s; returning None",
+                address, handler_name, ve)
+        return None
 
-def on_follow(message):
+    return result
 
-    fields = message.fields
-    logger.debug('%s: on_follow %s', message, fields)
+def on_follow(fields, address):
+
+    logger.debug('%s: on_follow %s', address, fields)
 
     if not bowler_utils.is_local(fields['object']):
         logger.info("%s: ignoring someone following non-local user",
-                message)
+                address)
         return None
 
-    follower = fetch(
+    follower = sombrero_fetch.fetch(
             fields['actor'],
             expected_type = trilby_models.Person,
             )
@@ -73,19 +96,19 @@ def on_follow(message):
     if follower is None:
         # shouldn't happen
         logger.warning('%s: could not find remote user %s',
-                message,
+                address,
                 fields['actor'],
                 )
         return None
 
-    following = fetch(
+    following = sombrero_fetch.fetch(
             fields['object'],
             expected_type = trilby_models.Person,
             )
 
     if following is None:
         logger.info('%s: there is no local user %s',
-                message,
+                address,
                 fields['object'],
                 )
         return None
@@ -121,10 +144,11 @@ def _visibility_from_fields(fields):
                 result.update(in_object)
             else:
                 result.add(in_object)
-
         except TypeError:
             pass
         except KeyError:
+            pass
+        except AttributeError:
             pass
 
         return set(result)
@@ -145,36 +169,42 @@ def _visibility_from_fields(fields):
     # default
     return trilby_utils.VISIBILITY_DIRECT
 
-def on_create(message):
-    fields = message.fields
-    logger.debug('%s: on_create %s', message, fields)
+def on_create(fields, address):
+
+    logger.debug('%s: on_create %s', address, fields)
 
     newborn_fields = fields['object']
     # XXX Can fields['object'] validly be a URL?
 
     if 'type' not in newborn_fields:
         logger.info("%s: newborn object had no type",
-                message)
+                address)
         return None
 
-    if newborn_fields['type'].title()!='Note':
-        logger.info("%s: don't know how to create %s objects",
-                message, newborn_fields,
-                )
-        return None
+    logger.debug('%s:  -- recurse',
+            address)
 
-    logger.debug("Looking up actor: %s", fields['actor'])
+    return create(newborn_fields)
 
-    poster = fetch(
-        fields['actor'],
+def on_note(fields, address):
+
+    logger.debug("Looking up actor: %s",
+            fields['attributedTo'])
+
+    poster = sombrero_fetch.fetch(
+        fields['attributedTo'],
         expected_type = trilby_models.Person,
         )
 
-    logger.debug("  -- found %s", poster)
+    if poster is None:
+        logger.debug("  -- who does not exist")
+        return None
 
-    if 'inReplyTo' in newborn_fields:
-        in_reply_to = fetch(
-            newborn_fields['inReplyTo'],
+    logger.debug("  -- who is %s", poster)
+
+    if 'inReplyTo' in fields:
+        in_reply_to = sombrero_fetch.fetch(
+            fields['inReplyTo'],
             expected_type = trilby_models.Status,
             )
     else:
@@ -184,20 +214,20 @@ def on_create(message):
     spoiler_text = '' # FIXME
     language = 'en' # FIXME
 
-    visibility = _visibility_from_fields(fields)
+    visibility = _visibility_from_fields(
+            fields)
 
     logger.debug('%s: creating status from %s',
-        message,
-        newborn_fields,
+        address,
+        fields,
         )
 
     try:
-
         newbie = trilby_models.Status(
             remote_url = fields['id'],
             account = poster,
             in_reply_to = in_reply_to,
-            content = newborn_fields['content'],
+            content = fields['content'],
             sensitive = is_sensitive,
             spoiler_text = spoiler_text,
             visibility = visibility,
@@ -207,18 +237,21 @@ def on_create(message):
         newbie.save()
 
         logger.debug('%s: created status %s',
-            message,
+            address,
             newbie,
             )
 
+        return newbie
+
     except Exception as ke:
         logger.debug('%s: failed to create status: %s',
-            message,
+            address,
             ke)
+        return None
 
-def on_announce(message):
-    fields = message.fields
-    logger.debug('%s: on_announce %s', message, fields)
+def on_announce(fields, address):
+
+    logger.debug('%s: on_announce %s', address, fields)
 
     try:
         if isinstance(fields.get('object', None), dict):
@@ -231,25 +264,25 @@ def on_announce(message):
             status_url = fields['object']
     except FieldError as fe:
         logger.info("%s: unusable object field: %s",
-                message, fe)
+                address, fe)
         return None
 
-    status = fetch(status_url,
+    status = sombrero_fetch.fetch(status_url,
             expected_type = trilby_models.Status,
             )
 
     if status is None:
 
         logger.info("%s: attempted to reblog non-existent status %s",
-                message, status_url)
+                address, status_url)
         return None
 
-    actor = fetch(fields['actor'],
+    actor = sombrero_fetch.fetch(fields['actor'],
             expected_type = trilby_models.Person,
             )
 
     logger.debug('%s: reblogging status %s by %s',
-            message, status_url, actor)
+            address, status_url, actor)
 
     reblog = trilby_models.Status(
             account = actor,
@@ -258,6 +291,92 @@ def on_announce(message):
     reblog.save()
 
     logger.debug('%s: created reblog: %s',
-            message, reblog)
+            address, reblog)
 
     return reblog
+
+def on_person(fields, address):
+
+    user = trilby_models.RemotePerson(
+            remote_url = fields['id'],
+            )
+
+    for fieldsname, fieldname in [
+            ('preferredUsername', 'username'),
+            ('name', 'display_name'),
+            ('summary', 'note'),
+            ('manuallyApprovesFollowers', 'locked'),
+            ('following', 'following_url'),
+            ('followers', 'followers_url'),
+            ('inbox', 'inbox_url'),
+            ('outbox', 'outbox_url'),
+            ('featured', 'featured_url'),
+            ('created_at', 'created_at'),
+            ('bot', 'bot'),
+            ('movedTo', 'moved_to'),
+            ]:
+        if fieldsname in fields:
+            setattr(user,
+                    fieldname,
+                    fields[fieldsname])
+
+    # A shared inbox takes priority over a personal inbox
+    if 'endpoints' in fields:
+        if 'sharedInbox' in fields['endpoints']:
+            user.inbox_url = fields['endpoints']['sharedInbox']
+
+    if 'publicKey' in fields:
+        key = fields['publicKey']
+
+        if 'owner' in key:
+            if key['owner'] != user.remote_url:
+                raise ValueError(
+                        f"Remote user gave us someone else's key "
+                                f"({key['owner']} for {user.remote_url})")
+
+        if 'id' in key:
+            user.key_name = key['id']
+
+        if 'publicKeyPem' in key:
+            user.publicKey = key['publicKeyPem']
+
+    if user.acct is None:
+
+        # We might already know the acct,
+        # if we got to this user by looking up their acct.
+        # This will probably have to be cleverer later.
+
+        hostname = urlparse(user.remote_url).netloc
+        user.acct = '{}@{}'.format(
+            user.username,
+            hostname,
+            )
+
+    # FIXME Header and icon
+
+    user.save()
+
+    return user
+
+on_actor = on_person
+
+def on_collection(fields, address):
+
+    result = sombrero_collections.Collection(
+            remote_url = address,
+            )
+    result.update(fields)
+
+    return result
+
+on_orderedcollection = on_collection
+
+def on_collection_page(fields, address):
+    result = sombrero_collections._CollectionPage(
+            remote_url = address,
+            )
+    result.update(fields)
+
+    return result
+
+on_orderedcollectionpage = on_collection_page

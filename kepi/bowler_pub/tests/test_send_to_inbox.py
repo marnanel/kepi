@@ -68,7 +68,7 @@ class Tests(TestCase):
 
         if sender is None:
             sender = create_remote_person(
-                    url = BOB_ID,
+                    remote_url = BOB_ID,
                     name = 'bob',
                     publicKey = senderKeys['public'],
                     auto_fetch = True,

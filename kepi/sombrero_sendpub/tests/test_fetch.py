@@ -200,9 +200,8 @@ class TestFetchRemoteUser(TestCase):
         user = fetch(EXAMPLE_USER_URL,
                 RemotePerson)
 
-        self.assertEqual(
-                user.status,
-                404,
+        self.assertIsNone(
+                user,
                 )
 
     @httpretty.activate
@@ -220,9 +219,8 @@ class TestFetchRemoteUser(TestCase):
         user = fetch(EXAMPLE_USER_URL,
                 RemotePerson)
 
-        self.assertEqual(
-                user.status,
-                410,
+        self.assertIsNone(
+                user,
                 )
 
     @httpretty.activate
@@ -245,9 +243,8 @@ class TestFetchRemoteUser(TestCase):
             user = fetch(EXAMPLE_USER_URL,
                     RemotePerson)
 
-        self.assertEqual(
-                user.status,
-                0,
+        self.assertIsNone(
+                user,
                 )
 
     @httpretty.activate
@@ -270,16 +267,15 @@ class TestFetchRemoteUser(TestCase):
             user = fetch(EXAMPLE_USER_URL,
                     RemotePerson)
 
-        self.assertEqual(
-                user.status,
-                0,
+        self.assertIsNone(
+                user,
                 )
 
     @httpretty.activate
     def test_fetch_known_user(self):
 
         existing = RemotePerson(
-                url = EXAMPLE_USER_URL,
+                remote_url = EXAMPLE_USER_URL,
                 )
         existing.save()
 
@@ -330,18 +326,13 @@ class TestFetchRemoteUser(TestCase):
                 )
 
         self.assertEqual(
-                user.url,
+                user.remote_url,
                 EXAMPLE_USER_URL,
                 )
 
         self.assertEqual(
                 user.username,
                 'wombat',
-                )
-
-        self.assertEqual(
-                user.status,
-                200,
                 )
 
         self.assertEqual(
@@ -403,11 +394,11 @@ class TestFetchRemoteUser(TestCase):
         fetch(EXAMPLE_ATSTYLE,
                 RemotePerson)
 
-        user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
+        users = RemotePerson.objects.filter(acct=EXAMPLE_ATSTYLE)
 
         self.assertEqual(
-                user.status,
-                0, # the user themselves didn't 404
+                len(users),
+                0,
                 )
 
     @httpretty.activate
@@ -426,11 +417,11 @@ class TestFetchRemoteUser(TestCase):
         fetch(EXAMPLE_ATSTYLE,
                 RemotePerson)
 
-        user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
+        users = RemotePerson.objects.filter(acct=EXAMPLE_ATSTYLE)
 
         self.assertEqual(
-                user.status,
-                0, # the user themselves didn't 410
+                len(users),
+                0,
                 )
 
     @httpretty.activate
@@ -449,10 +440,10 @@ class TestFetchRemoteUser(TestCase):
         fetch(EXAMPLE_ATSTYLE,
                 RemotePerson)
 
-        user = RemotePerson.objects.get(acct=EXAMPLE_ATSTYLE)
+        users = RemotePerson.objects.filter(acct=EXAMPLE_ATSTYLE)
 
         self.assertEqual(
-                user.status,
+                len(users),
                 0,
                 )
 
