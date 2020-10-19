@@ -123,22 +123,11 @@ class Person(PolymorphicModel):
 
 class RemotePerson(Person):
 
-    url = models.URLField(
+    remote_url = models.URLField(
             max_length = 255,
             unique = True,
             null = True,
             blank = True,
-            )
-
-    status = models.IntegerField(
-            default = 0,
-            choices = [
-                (0, 'pending'),
-                (200, 'found'),
-                (404, 'not found'),
-                (410, 'gone'),
-                (500, 'remote error'),
-                ],
             )
 
     found_at = models.DateTimeField(
@@ -237,6 +226,10 @@ class RemotePerson(Person):
             )
 
     @property
+    def url(self):
+        return self.remote_url
+
+    @property
     def is_local(self):
         return False
 
@@ -280,12 +273,24 @@ class RemotePerson(Person):
                 self.address = address
 
             def __iter__(self):
-                self.collection = fetch(
+
+                remote_collection = fetch(
                         self.address,
                         Collection,
-                        ).__iter__()
+                        )
+
+                if remote_collection is None:
+                    logger.debug(
+                            "%s RemotePerson: could not retrieve collection",
+                            self.address,
+                            )
+                    self.collection = [].__iter__()
+                    return self
+
+                self.collection = remote_collection.__iter__()
+
                 logger.debug(
-                        "%s RemotePerson: retrieved collection %s",
+                        "%s: retrieved collection %s",
                         self.address,
                         self.collection,
                         )
@@ -400,10 +405,6 @@ class LocalPerson(Person):
         null = True,
         blank = True,
         )
-
-    @property
-    def status(self):
-        return 200 # necessarily
 
     def _generate_keys(self):
 
