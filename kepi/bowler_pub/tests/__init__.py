@@ -46,7 +46,7 @@ class DummyMessage(object):
         return 'test message'
 
 def mock_remote_object(
-        url,
+        remote_url,
         content = '',
         status = 200,
         as_post = False,
@@ -67,15 +67,15 @@ def mock_remote_object(
     else:
         method = httpretty.GET
 
-    def return_body(request, url, stuff):
-        logger.info('%s: fetched', url)
+    def return_body(request, remote_url, stuff):
+        logger.info('%s: fetched', remote_url)
         if on_fetch is not None:
             on_fetch()
         return status, stuff, body
 
     httpretty.register_uri(
             method,
-            url,
+            remote_url,
             status=status,
             headers=headers,
             body = return_body,
@@ -83,12 +83,12 @@ def mock_remote_object(
             )
 
     logger.debug('Mocking %s as %d: %s',
-            url,
+            remote_url,
             status,
             content)
 
 def create_remote_person(
-        url,
+        remote_url,
         name,
         on_fetch = None,
         auto_fetch = False,
@@ -99,7 +99,7 @@ def create_remote_person(
     Mock a remote user.
 
     Parameters:
-        url: the URL representing this user
+        remote_url: the URL representing this user
         name: the user's name (their "preferredUsername")
         on_fetch: an optional callback for when someone
             fetches the user's details
@@ -126,13 +126,13 @@ def create_remote_person(
 
     body = as_json(
             remote_user(
-                url=url,
+                remote_url=remote_url,
                 name=name,
                 **fields,
                 ))
 
     mock_remote_object(
-            url=url,
+            remote_url=remote_url,
             on_fetch=on_fetch,
             content=body,
             )
@@ -140,13 +140,13 @@ def create_remote_person(
     if auto_fetch:
         from kepi.sombrero_sendpub.fetch import fetch
 
-        return fetch(url,
+        return fetch(remote_url,
                 expected_type=trilby_models.RemotePerson)
     else:
         return None
 
 def create_remote_collection(
-        url,
+        remote_url,
         items,
         number_per_page = 10,
         ):
@@ -154,13 +154,13 @@ def create_remote_collection(
     PAGE_URL_FORMAT = '%s?page=%d'
 
     mock_remote_object(
-            url=url,
+            remote_url=remote_url,
             content=as_json({
                     "@context" : "https://www.w3.org/ns/activitystreams",
-                    "id" : url,
+                    "id" : remote_url,
                     "type" : "OrderedCollection",
                     "totalItems" : len(items),
-                    "first" : PAGE_URL_FORMAT % (url, 1),
+                    "first" : PAGE_URL_FORMAT % (remote_url, 1),
                     }),
                 )
 
@@ -169,21 +169,21 @@ def create_remote_collection(
 
         fields = {
                 "@context" : CONTEXT_URL,
-                "id" : PAGE_URL_FORMAT % (url, i),
+                "id" : PAGE_URL_FORMAT % (remote_url, i),
                 "type" : "OrderedCollectionPage",
                 "totalItems" : len(items),
-                "partOf": url,
+                "partOf": remote_url,
                 "orderedItems": items[(i-1)*number_per_page:i*number_per_page],
             }
 
         if i>1:
-            fields['prev'] = PAGE_URL_FORMAT % (url, i-1)
+            fields['prev'] = PAGE_URL_FORMAT % (remote_url, i-1)
 
         if i<page_count+1:
-            fields['next'] = PAGE_URL_FORMAT % (url, i+1)
+            fields['next'] = PAGE_URL_FORMAT % (remote_url, i+1)
 
         mock_remote_object(
-            url = PAGE_URL_FORMAT % (url, i),
+            remote_url = PAGE_URL_FORMAT % (remote_url, i),
             content=as_json(fields),
             )
 
@@ -298,24 +298,24 @@ def post_test_message(
 
     return response
 
-def remote_user(url, name,
+def remote_user(remote_url, name,
         publicKey='',
         sharedInbox=None,
         ):
         result = {
                 '@context': CONTEXT_URL,
-                'id': url,
+                'id': remote_url,
                 'type': 'Person',
-                'following': url+"/following",
-                'followers': url+"/followers",
-                'inbox': url+"/inbox",
-                'outbox': url+"/outbox",
-                'featured': url+"/collections/featured",
+                'following': remote_url+"/following",
+                'followers': remote_url+"/followers",
+                'inbox': remote_url+"/inbox",
+                'outbox': remote_url+"/outbox",
+                'featured': remote_url+"/collections/featured",
                 'preferredUsername': name,
-                'url': url,
+                'url': remote_url,
                 'publicKey': {
-                    'id': url+'#main-key',
-                    'owner': url,
+                    'id': remote_url+'#main-key',
+                    'owner': remote_url,
                     'publicKeyPem': publicKey,
                     },
                 }
