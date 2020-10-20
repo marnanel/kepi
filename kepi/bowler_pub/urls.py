@@ -19,4 +19,5 @@ urlpatterns = [
         path('users/<str:username>/following', bowler_pub_views.FollowingView.as_view()),
         path('users/<str:username>/featured', bowler_pub_views.FeaturedView.as_view()),
         path('sharedInbox', bowler_pub_views.InboxView.as_view()),
+        path('inbox', bowler_pub_views.InboxView.as_view()), # config error, marnanel.org specific
         ]
