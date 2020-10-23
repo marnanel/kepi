@@ -86,6 +86,6 @@ class Follow(models.Model):
     def delete(self, *args, **kwargs):
 
         logger.debug("%s: sending 'unfollowed'", self)
-        kepi_signals.unfollowed.send(sender=self)
+        trilby_signals.unfollowed.send(sender=self)
 
         super().delete(*args, **kwargs)

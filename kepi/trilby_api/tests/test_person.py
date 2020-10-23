@@ -32,9 +32,12 @@ class TestPerson(TrilbyTestCase):
     @httpretty.activate
     def test_followers(self):
 
-        alice = create_local_person(name='alice')
-        bob = create_local_person(name='bob')
-        carol = create_local_person(name='carol')
+        alice = create_local_person(name='alice',
+                auto_follow=False)
+        bob = create_local_person(name='bob',
+                auto_follow=False)
+        carol = create_local_person(name='carol',
+                auto_follow=False)
 
         peter = create_remote_person(
                 remote_url = "https://example.com/users/peter",
