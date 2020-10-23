@@ -269,7 +269,6 @@ class Follow(DoSomethingWithPerson):
 
             logger.info('  -- follow: %s', follow)
             logger.debug('    -- offer ID: %s', offer)
-            kepi_signals.followed.send(sender=follow)
 
             if the_person.auto_follow:
                 follow_back = trilby_models.Follow(
@@ -282,7 +281,6 @@ class Follow(DoSomethingWithPerson):
                     follow_back.save()
 
                 logger.info('  -- follow back: %s', follow_back)
-                kepi_signals.followed.send(sender=follow_back)
 
             return the_person
 
@@ -300,7 +298,6 @@ class Unfollow(DoSomethingWithPerson):
                 )
 
             logger.info('  -- unfollowing: %s', follow)
-            kepi_signals.unfollowed.send(sender=follow)
 
             with transaction.atomic():
                 follow.delete()
