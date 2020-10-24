@@ -27,6 +27,7 @@ class Tests(TestCase):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
         self._local_fred = create_local_person(
                 name = 'fred',
+                auto_follow = False,
                 )
 
     @httpretty.activate
