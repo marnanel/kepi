@@ -52,6 +52,7 @@ class Tests(django.test.TestCase):
         create_local_status(
                 posted_by = self.alice,
                 content = "I'll tell you the tale of the sweet nightingale.",
+                send_signal = True,
                 )
 
         self.assertTrue(self.seen_message,

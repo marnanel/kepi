@@ -571,7 +571,9 @@ class Statuses(generics.ListCreateAPIView,
                 # FIXME: idempotency_key
                 )
 
-        status.save()
+        status.save(
+                send_signal = True,
+                )
 
         serializer = StatusSerializer(
                 status,

@@ -233,7 +233,9 @@ class Status(PolymorphicModel):
 
         return result
 
-    def save(self, *args, **kwargs):
+    def save(self,
+            send_signal = False,
+            *args, **kwargs):
 
         newly_made = self.pk is None
 
@@ -245,7 +247,7 @@ class Status(PolymorphicModel):
 
         super().save(*args, **kwargs)
 
-        if newly_made:
+        if send_signal and newly_made:
             trilby_signals.posted.send(sender=self)
 
     def __str__(self):
