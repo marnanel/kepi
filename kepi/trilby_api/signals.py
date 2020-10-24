@@ -15,6 +15,12 @@ liked = Signal(
             'liked',
             ])
 
+unliked = Signal(
+        providing_args=[
+            'liker',
+            'liked',
+            ])
+
 followed = Signal(
         providing_args=[
             'follower',

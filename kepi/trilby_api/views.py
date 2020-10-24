@@ -116,11 +116,11 @@ class Favourite(DoSomethingWithStatus):
                 )
 
             with transaction.atomic():
-                like.save()
+                like.save(
+                        send_signal = True,
+                        )
 
             logger.info('  -- created a Like')
-
-            kepi_signals.liked.send(sender=like)
 
         except IntegrityError:
             logger.info('  -- not creating a Like; it already exists')
