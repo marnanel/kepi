@@ -21,7 +21,6 @@ from django.conf import settings
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 from .serializers import *
-import kepi.trilby_api.signals as kepi_signals
 from rest_framework import generics, response, mixins
 from rest_framework.permissions import IsAuthenticated, \
         IsAuthenticatedOrReadOnly
@@ -173,11 +172,11 @@ class Reblog(DoSomethingWithStatus):
                 )
 
         with transaction.atomic():
-            new_status.save()
+            new_status.save(
+                    send_signal = True,
+                    )
 
         logger.info('  -- created a reblog')
-
-        kepi_signals.reblogged.send(sender=new_status)
 
         return new_status
 

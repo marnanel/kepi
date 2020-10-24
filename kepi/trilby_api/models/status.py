@@ -248,7 +248,11 @@ class Status(PolymorphicModel):
         super().save(*args, **kwargs)
 
         if send_signal and newly_made:
-            trilby_signals.posted.send(sender=self)
+
+            if self.reblog_of is None:
+                trilby_signals.posted.send(sender=self)
+            else:
+                trilby_signals.reblogged.send(sender=self)
 
     def __str__(self):
         return '[Status %s: %s]' % (
