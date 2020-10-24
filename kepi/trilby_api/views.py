@@ -265,7 +265,9 @@ class Follow(DoSomethingWithPerson):
                 )
 
             with transaction.atomic():
-                follow.save()
+                follow.save(
+                        send_signal = True,
+                        )
 
             logger.info('  -- follow: %s', follow)
             logger.debug('    -- offer ID: %s', offer)
@@ -278,7 +280,9 @@ class Follow(DoSomethingWithPerson):
                     )
 
                 with transaction.atomic():
-                    follow_back.save()
+                    follow_back.save(
+                            send_signal = True,
+                            )
 
                 logger.info('  -- follow back: %s', follow_back)
 
@@ -300,7 +304,9 @@ class Unfollow(DoSomethingWithPerson):
             logger.info('  -- unfollowing: %s', follow)
 
             with transaction.atomic():
-                follow.delete()
+                follow.delete(
+                    send_signal = True,
+                    )
 
             return the_person
 

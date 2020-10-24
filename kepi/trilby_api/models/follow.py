@@ -73,19 +73,24 @@ class Follow(models.Model):
                     self.following,
                     )
 
-    def save(self, *args, **kwargs):
+    def save(self,
+            send_signal = False,
+            *args, **kwargs):
 
         newly_made = self.pk is None
 
         super().save(*args, **kwargs)
 
-        if newly_made:
+        if send_signal and newly_made:
             logger.debug("%s: sending 'followed'", self)
             trilby_signals.followed.send(sender=self)
 
-    def delete(self, *args, **kwargs):
+    def delete(self,
+            send_signal = False,
+            *args, **kwargs):
 
-        logger.debug("%s: sending 'unfollowed'", self)
-        trilby_signals.unfollowed.send(sender=self)
+        if send_signal:
+            logger.debug("%s: sending 'unfollowed'", self)
+            trilby_signals.unfollowed.send(sender=self)
 
         super().delete(*args, **kwargs)
