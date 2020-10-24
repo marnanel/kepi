@@ -21,7 +21,6 @@ from django.conf import settings
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 from .serializers import *
-import kepi.trilby_api.signals as kepi_signals
 from rest_framework import generics, response, mixins
 from rest_framework.permissions import IsAuthenticated, \
         IsAuthenticatedOrReadOnly
@@ -116,11 +115,11 @@ class Favourite(DoSomethingWithStatus):
                 )
 
             with transaction.atomic():
-                like.save()
+                like.save(
+                        send_signal = True,
+                        )
 
             logger.info('  -- created a Like')
-
-            kepi_signals.liked.send(sender=like)
 
         except IntegrityError:
             logger.info('  -- not creating a Like; it already exists')
@@ -173,11 +172,11 @@ class Reblog(DoSomethingWithStatus):
                 )
 
         with transaction.atomic():
-            new_status.save()
+            new_status.save(
+                    send_signal = True,
+                    )
 
         logger.info('  -- created a reblog')
-
-        kepi_signals.reblogged.send(sender=new_status)
 
         return new_status
 
@@ -265,11 +264,12 @@ class Follow(DoSomethingWithPerson):
                 )
 
             with transaction.atomic():
-                follow.save()
+                follow.save(
+                        send_signal = True,
+                        )
 
             logger.info('  -- follow: %s', follow)
             logger.debug('    -- offer ID: %s', offer)
-            kepi_signals.followed.send(sender=follow)
 
             if the_person.auto_follow:
                 follow_back = trilby_models.Follow(
@@ -279,10 +279,11 @@ class Follow(DoSomethingWithPerson):
                     )
 
                 with transaction.atomic():
-                    follow_back.save()
+                    follow_back.save(
+                            send_signal = True,
+                            )
 
                 logger.info('  -- follow back: %s', follow_back)
-                kepi_signals.followed.send(sender=follow_back)
 
             return the_person
 
@@ -300,10 +301,11 @@ class Unfollow(DoSomethingWithPerson):
                 )
 
             logger.info('  -- unfollowing: %s', follow)
-            kepi_signals.unfollowed.send(sender=follow)
 
             with transaction.atomic():
-                follow.delete()
+                follow.delete(
+                    send_signal = True,
+                    )
 
             return the_person
 
@@ -568,7 +570,9 @@ class Statuses(generics.ListCreateAPIView,
                 # FIXME: idempotency_key
                 )
 
-        status.save()
+        status.save(
+                send_signal = True,
+                )
 
         serializer = StatusSerializer(
                 status,

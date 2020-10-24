@@ -146,6 +146,7 @@ def create_local_person(name='jemima',
 def create_local_status(
         content = 'This is just a test',
         posted_by = None,
+        send_signal = False,
         **kwargs,
         ):
 
@@ -159,7 +160,9 @@ def create_local_status(
         **kwargs,
         )
 
-    result.save()
+    result.save(
+            send_signal = send_signal,
+            )
 
     return result
 

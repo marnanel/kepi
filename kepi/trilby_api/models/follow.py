@@ -12,6 +12,7 @@ from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 import kepi.bowler_pub.crypto as crypto
+import kepi.trilby_api.signals as trilby_signals
 from kepi.bowler_pub.utils import uri_to_url
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
@@ -71,3 +72,25 @@ class Follow(models.Model):
                     self.follower,
                     self.following,
                     )
+
+    def save(self,
+            send_signal = False,
+            *args, **kwargs):
+
+        newly_made = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if send_signal and newly_made:
+            logger.debug("%s: sending 'followed'", self)
+            trilby_signals.followed.send(sender=self)
+
+    def delete(self,
+            send_signal = False,
+            *args, **kwargs):
+
+        if send_signal:
+            logger.debug("%s: sending 'unfollowed'", self)
+            trilby_signals.unfollowed.send(sender=self)
+
+        super().delete(*args, **kwargs)
