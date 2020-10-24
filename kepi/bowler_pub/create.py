@@ -20,7 +20,6 @@ import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
 import kepi.bowler_pub
 import kepi.bowler_pub.utils as bowler_utils
-import kepi.trilby_api.signals as trilby_signals
 import kepi.sombrero_sendpub.fetch as sombrero_fetch
 import kepi.sombrero_sendpub.collections as sombrero_collections
 
@@ -119,11 +118,9 @@ def on_follow(fields, address):
             offer = fields.get('id'),
             )
 
-    result.save()
-
-    trilby_signals.followed.send(
-        sender = result,
-        )
+    result.save(
+            send_signal = True,
+            )
 
     return result
 
