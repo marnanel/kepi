@@ -484,12 +484,14 @@ class Tests(Create_TestCase):
                 msg = 'it creates status text',
                 )
 
+    @skip("""
     # XXX What are the terms
     # under which masto will decide that
     # a sender has no relevance to local activity?
     # Does it make a difference whether the message
     # was submitted to the shared inbox?
     # Check through masto's code.
+    """)
     @httpretty.activate
     def test_when_sender_has_no_relevance_to_local_activity(self):
 
