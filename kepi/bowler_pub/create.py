@@ -178,6 +178,9 @@ def on_create(fields, address):
                 address)
         return None
 
+    if 'attributedTo' not in newborn_fields:
+        newborn_fields['attributedTo'] = fields['actor']
+
     logger.debug('%s:  -- recurse',
             address)
 
@@ -240,10 +243,16 @@ def on_note(fields, address):
 
         return newbie
 
-    except Exception as ke:
-        logger.debug('%s: failed to create status: %s',
+    except KeyError as ke:
+        logger.debug('%s: missing field: %s',
             address,
             ke)
+        return None
+
+    except Exception as e:
+        logger.debug('%s: failed to create status: %s',
+            address,
+            e)
         return None
 
 def on_announce(fields, address):
