@@ -388,6 +388,7 @@ class Tests(Create_TestCase):
         following.save()
 
         object_form = {
+            'id': 'https://example.com/some-note',
             'type': 'Note',
             'content': 'Lorem ipsum',
           }
