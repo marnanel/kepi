@@ -1,4 +1,3 @@
-from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
@@ -547,27 +546,21 @@ class TestStatus(TrilbyTestCase):
                 self._alice_status,
                 expect_result = 404)
 
-    @skip("Not yet implemented")
     def test_bookmark(self):
-        pass
+        raise NotImplementedError() 
 
-    @skip("Not yet implemented")
     def test_unbookmark(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_mute(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_unmute(self):
-        pass
+       raise NotImplementedError() 
 
-    @skip("Not yet implemented")
     def test_pin(self):
         self.fail("Test not yet implemented")
 
-    @skip("Not yet implemented")
     def test_unpin(self):
         self.fail("Test not yet implemented")
 

@@ -14,7 +14,6 @@ from unittest import skip
 
 MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
 
-@skip("The header middleware is causing problems with testing at present")
 class TestHeaders(TestCase):
 
     def setUp(self):

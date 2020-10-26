@@ -315,7 +315,6 @@ class Tests(Create_TestCase):
                 msg = 'status is in the same conversation',
                 )
 
-    @skip("Mentions are not yet implemented")
     @httpretty.activate
     def test_with_mentions(self):
 
@@ -373,7 +372,6 @@ class Tests(Create_TestCase):
     #   - emoji
     #   - polls
 
-    @skip("Need to set up a remote sender convincingly")
     @httpretty.activate
     def test_when_sender_is_followed_by_local_users(self):
 
@@ -492,7 +490,6 @@ class Tests(Create_TestCase):
     # Does it make a difference whether the message
     # was submitted to the shared inbox?
     # Check through masto's code.
-    @skip("Need to set up a remote sender convincingly")
     @httpretty.activate
     def test_when_sender_has_no_relevance_to_local_activity(self):
 

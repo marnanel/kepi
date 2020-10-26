@@ -1,4 +1,3 @@
-from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
@@ -12,8 +11,8 @@ class TestSearch(TrilbyTestCase):
 
     @skip("Not yet implemented")
     def test_v1(self):
-        pass
+        raise NotImplementedError()
 
     @skip("Not yet implemented")
     def test_v2(self):
-        pass
+        raise NotImplementedError()

@@ -1,4 +1,3 @@
-from unittest import skip
 from rest_framework.test import force_authenticate, APIClient, APIRequestFactory
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
@@ -121,14 +120,11 @@ class TestNotifications(TrilbyTestCase):
                 content[0]['status'],
                 )
 
-    @skip("Not yet implemented")
     def test_get_single(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_clear(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_clear_single(self):
-        pass
+        raise NotImplementedError()

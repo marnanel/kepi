@@ -1,11 +1,9 @@
 from kepi.trilby_api.tests import create_local_status, create_local_person
-from unittest import skip
 from kepi.bowler_pub.create import create
 from django.test import TestCase
 
 class TestLike(TestCase):
 
-    @skip("this assumes we can ask Person.has_favourited(); we can't yet")
     def test_like(self):
 
         sender = create_local_person('sender')

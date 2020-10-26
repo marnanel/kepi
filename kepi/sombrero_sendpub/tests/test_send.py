@@ -7,7 +7,6 @@
 import logging
 logger = logging.getLogger(name='kepi')
 
-from unittest import skip
 from django.test import TestCase
 from rest_framework.test import force_authenticate, APIClient
 from django.conf import settings
@@ -43,7 +42,6 @@ class TestSend(TestCase):
         self._client = APIClient()
         self._client.force_authenticate(self._alice.local_user)
 
-    @skip("TODO - mentions aren't yet implemented")
     @httpretty.activate
     def test_send_direct_message(self):
 
@@ -59,13 +57,11 @@ class TestSend(TestCase):
         self.assertEqual(result.status_code,
                 200)
 
-    @skip("TODO")
     def test_irrelevant(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("TODO - mentions aren't implemented")
     def test_mention(self):
-        pass
+        raise NotImplementedError()
 
     @httpretty.activate
     def test_follow(self):
@@ -80,10 +76,8 @@ class TestSend(TestCase):
         self.assertEqual(result.status_code,
                 200)
 
-    @skip("TODO")
     def test_accept_follow(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("TODO")
     def test_reject_follow(self):
-        pass
+        raise NotImplementedError()

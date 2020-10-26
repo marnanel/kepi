@@ -1,4 +1,3 @@
-from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
@@ -22,13 +21,11 @@ class TestInstance(TrilbyTestCase):
                 ]:
             self.assertIn(k, content)
 
-    @skip("Not yet implemented")
     def test_list_peers(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_list_weekly_activity(self):
-        pass
+        raise NotImplementedError()
 
     def test_get_emojis(self):
 

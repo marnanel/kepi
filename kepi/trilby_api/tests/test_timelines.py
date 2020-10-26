@@ -7,7 +7,6 @@
 import logging
 logger = logging.getLogger(name='kepi')
 
-from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
@@ -128,16 +127,15 @@ class TestTimelines(TrilbyTestCase):
             as_user = self._alice,
             )
 
-    @skip("Hashtags not yet implemented")
     def test_hashtag(self):
+        raise NotImplementedError()
         pass
 
-    @skip("Not yet implemented")
     def test_account_statuses(self):
         # Special case: this isn't considered a timeline method
         # in the API, but it's similar enough that we test it here
+        raise NotImplementedError()
         pass
 
-    @skip("Lists not yet implemented")
     def test_list(self):
-        pass
+        raise NotImplementedError()

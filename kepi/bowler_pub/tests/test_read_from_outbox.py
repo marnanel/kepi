@@ -3,7 +3,6 @@ from django.test import TestCase, Client
 from kepi.trilby_api.tests import create_local_person
 from kepi.trilby_api.models import Status
 import kepi.trilby_api.utils as trilby_utils
-from unittest import skip
 import httpretty
 import logging
 import json
@@ -106,7 +105,6 @@ class TestOutbox(TestCase):
                 [x['type'] for x in contents],
                 ['Create'])
 
-    @skip("still moving boosts over from the old architecture")
     def test_read_announce(self):
         # Announce, aka boost
         self._create_example_user([

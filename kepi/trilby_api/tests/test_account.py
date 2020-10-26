@@ -41,9 +41,8 @@ class TestAccountCredentials(TrilbyTestCase):
                         expected,
                         ))
 
-    @skip("I'll write this test later")
+    @skip("not sure how to write this test")
     def test_register(self):
-        # FIXME not sure how to implement this test!
         pass
 
     def test_update_credentials(self):
@@ -221,17 +220,14 @@ class TestAccountDetails(TrilbyTestCase):
                         o.username,
                         )
 
-    @skip("Not yet implemented")
     def test_account_in_lists(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_account_relationships(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_account_search(self):
-        pass
+        raise NotImplementedError()
 
 class TestAccountActions(TrilbyTestCase):
 
@@ -328,18 +324,14 @@ class TestAccountActions(TrilbyTestCase):
                     ).count(),
                 0)
 
-    @skip("Not yet implemented")
     def test_block(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_unblock(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_mute(self):
-        pass
+        raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_unmute(self):
-        pass
+        raise NotImplementedError()

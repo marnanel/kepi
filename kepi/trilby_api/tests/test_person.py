@@ -6,7 +6,6 @@
 
 from kepi.trilby_api.tests import *
 from kepi.bowler_pub.tests import create_remote_person, mock_remote_object
-from unittest import skip
 from rest_framework.test import APIClient, force_authenticate
 import logging
 import httpretty

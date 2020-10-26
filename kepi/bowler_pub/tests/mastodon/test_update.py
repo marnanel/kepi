@@ -16,7 +16,6 @@ logger = logging.getLogger(name='kepi')
 
 class TestUpdate(TestCase):
 
-    @skip("hardly written")
     def test_update_profile(self):
 
         sender = create_local_person()

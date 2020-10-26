@@ -1,7 +1,6 @@
 from django.test import TestCase, Client
 from . import *
 from kepi.trilby_api.tests import create_local_person, create_local_status
-from unittest import skip
 import logging
 import json
 
@@ -122,7 +121,6 @@ class Tests(TestCase):
             )
 
 
-@skip("Tombstones are not supported in this version")
 class TestTombstone(TestCase):
 
     def setUp(self):
