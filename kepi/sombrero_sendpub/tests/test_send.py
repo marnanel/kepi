@@ -45,6 +45,7 @@ class TestSend(TestCase):
     @httpretty.activate
     def test_send_direct_message(self):
 
+        self._register_remote()
         result = self._client.post(
                 path='/api/v1/statuses',
                 format='json',
