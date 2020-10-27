@@ -38,7 +38,9 @@ class Like(models.Model):
                 ]
 
     def __str__(self):
-        return '[%s likes %s]' % (liker, liked)
+        return '[%s likes %s]' % (
+                self.liker,
+                self.liked)
 
     def save(self,
             send_signal = False,
