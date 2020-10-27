@@ -119,6 +119,18 @@ class Person(PolymorphicModel):
     def emojis(self):
         return [] # FIXME
 
+    def has_liked(self, status):
+        from kepi.trilby_api.models.like import Like
+
+        try:
+            Like.objects.get(
+                    liker = self,
+                    liked = status,
+                    )
+            return True
+        except Like.DoesNotExist:
+            return False
+
 ########################################
 
 class RemotePerson(Person):

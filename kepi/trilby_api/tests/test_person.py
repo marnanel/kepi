@@ -87,3 +87,27 @@ class TestPerson(TrilbyTestCase):
                     'https://testserver/users/bob',
                     ],
                 )
+
+    def test_has_liked(self):
+        alice = create_local_person(name='alice',
+                auto_follow=False)
+        bob = create_local_person(name='bob',
+                auto_follow=False)
+
+        status1 = create_local_status(
+                content = 'A crowd flowed over London Bridge, so many',
+                posted_by = bob,
+                )
+        status2 = create_local_status(
+                content = 'I had not thought that death had undone so many',
+                posted_by = bob,
+                )
+
+        Like(liker=alice, liked=status1).save()
+
+        self.assertTrue(
+                alice.has_liked(status1),
+                )
+        self.assertFalse(
+                alice.has_liked(status2),
+                )
