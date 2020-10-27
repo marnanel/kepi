@@ -366,6 +366,46 @@ def on_person(fields, address):
 
 on_actor = on_person
 
+def on_like(fields, address):
+
+    logger.debug('%s: on_like %s', address, fields)
+
+    liker = sombrero_fetch.fetch(
+            fields['actor'],
+            expected_type = trilby_models.Person,
+            )
+
+    if liker is None:
+        # shouldn't happen
+        logger.warning('%s: could not find user %s',
+                address,
+                fields['actor'],
+                )
+        return None
+
+    liked = sombrero_fetch.fetch(
+            fields['object'],
+            expected_type = trilby_models.Status,
+            )
+
+    if liked is None:
+        logger.info('%s: could not find status %s',
+                address,
+                fields['object'],
+                )
+        return None
+
+    like = trilby_models.Like(
+            liker = liker,
+            liked = liked,
+            )
+
+    like.save(
+            send_signal = True,
+            )
+
+    return like
+
 def on_collection(fields, address):
 
     result = sombrero_collections.Collection(
