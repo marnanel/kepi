@@ -47,9 +47,13 @@ def create(fields,
                 )
         return
 
-    result = deserialise(fields)
-
-    return result
+    try:
+        result = deserialise(fields)
+        return result
+    except Exception as e:
+        logger.info("%s: can't deserialise: %s",
+                address, repr(e))
+        return None
 
 def deserialise(fields,
         address = None,
@@ -301,11 +305,26 @@ def on_announce(fields, address):
 
     return reblog
 
-def on_person(fields, address):
+def on_person(fields, address,
+        update_existing = False):
 
-    user = trilby_models.RemotePerson(
-            remote_url = fields['id'],
-            )
+    if update_existing:
+        try:
+            user = trilby_models.RemotePerson.objects.get(
+                    remote_url = fields['id'],
+                    )
+            logger.debug("%s: updating existing user %s",
+                    address, user)
+        except trilby_models.RemotePerson.DoesNotExist:
+            logger.debug("%s: can't update %s because they don't exist",
+                    address, fields['id'])
+            return None
+    else:
+        user = trilby_models.RemotePerson(
+                remote_url = fields['id'],
+                )
+        logger.debug("%s: creating new user",
+                    address)
 
     for fieldsname, fieldname in [
             ('preferredUsername', 'username'),
@@ -322,6 +341,9 @@ def on_person(fields, address):
             ('movedTo', 'moved_to'),
             ]:
         if fieldsname in fields:
+            logger.debug('%s:   %s = %s',
+                    address, fieldname, fields[fieldsname])
+
             setattr(user,
                     fieldname,
                     fields[fieldsname])
@@ -405,6 +427,29 @@ def on_like(fields, address):
             )
 
     return like
+
+def on_update(fields, address):
+
+    # TODO: According to the spec, "Update" is partial
+    # if we're getting the message from a local user,
+    # but total if we're getting it from a remote user.
+    # Since we don't currently support ActivityPub from
+    # local users, we treat all updates as total for now.
+    # See https://gitlab.com/marnanel/kepi/-/issues/8 .
+
+    handler = on_person # FIXME there are other possibilities!
+    # See https://gitlab.com/marnanel/kepi/-/issues/63 .
+
+    logger.debug('%s: on_update %s', address, fields)
+
+    changes = fields['object']
+
+    logger.debug('%s:   -- changes: %s', address, changes)
+
+    result = handler(changes, address,
+            update_existing = True)
+
+    return result
 
 def on_collection(fields, address):
 
