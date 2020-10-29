@@ -33,12 +33,6 @@ unfollowed = Signal(
             'followed',
             ])
 
-deleted = Signal(
-        providing_args=[
-            'url',
-            'entombed',
-            ])
-
 posted = Signal(
         providing_args=[
             ])
