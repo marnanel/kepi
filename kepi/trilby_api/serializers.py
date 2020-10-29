@@ -155,7 +155,6 @@ class StatusSerializer(serializers.ModelSerializer):
                 'spoiler_text',
                 'visibility',
                 'media_attachments',
-                'mentions',
                 'tags',
                 'card',
                 'poll',
