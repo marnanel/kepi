@@ -7,12 +7,10 @@ from django.conf import settings
 # Tests for search. API docs are here:
 # https://docs.joinmastodon.org/methods/search/
 
-class TestSearch(TrilbyTestCase):
+class Tests(TrilbyTestCase):
 
-    @skip("Not yet implemented")
     def test_v1(self):
         raise NotImplementedError()
 
-    @skip("Not yet implemented")
     def test_v2(self):
         raise NotImplementedError()
