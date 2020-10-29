@@ -220,15 +220,6 @@ class TestAccountDetails(TrilbyTestCase):
                         o.username,
                         )
 
-    def test_account_in_lists(self):
-        raise NotImplementedError()
-
-    def test_account_relationships(self):
-        raise NotImplementedError()
-
-    def test_account_search(self):
-        raise NotImplementedError()
-
 class TestAccountActions(TrilbyTestCase):
 
     # TODO: these "follow" tests will need to be a bit more complex,
@@ -324,14 +315,18 @@ class TestAccountActions(TrilbyTestCase):
                     ).count(),
                 0)
 
+    @skip("blocks are not yet implemented")
     def test_block(self):
         raise NotImplementedError()
 
+    @skip("blocks are not yet implemented")
     def test_unblock(self):
         raise NotImplementedError()
 
+    @skip("muting is not yet implemented")
     def test_mute(self):
         raise NotImplementedError()
 
+    @skip("muting is not yet implemented")
     def test_unmute(self):
         raise NotImplementedError()
