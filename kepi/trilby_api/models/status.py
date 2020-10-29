@@ -19,6 +19,8 @@ from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from polymorphic.models import PolymorphicModel
 
+PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
+
 class Status(PolymorphicModel):
 
     class Meta:
@@ -153,9 +155,9 @@ class Status(PolymorphicModel):
     def tags(self):
         import kepi.trilby_api.models.person as trilby_person
 
-        return trilby_person.Person.objects.filter(
+        return list(trilby_person.Person.objects.filter(
                 mention__status = self,
-                )
+                ))
 
     @property
     def card(self):
@@ -244,6 +246,14 @@ class Status(PolymorphicModel):
         result.extend(self.descendants)
 
         return result
+
+    @property
+    def to(self):
+        return [PUBLIC] # FIXME
+
+    @property
+    def cc(self):
+        return [] # FIXME
 
     def save(self,
             send_signal = False,

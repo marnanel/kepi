@@ -46,7 +46,6 @@ STATUS_EXPECTED = {
         'spoiler_text': '',
         'visibility': 'A',
         'media_attachments': [],
-        'mentions': [],
         'tags': [],
         'card': None,
         'poll': None,
