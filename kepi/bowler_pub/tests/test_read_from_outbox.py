@@ -3,7 +3,6 @@ from django.test import TestCase, Client
 from kepi.trilby_api.tests import create_local_person
 from kepi.trilby_api.models import Status
 import kepi.trilby_api.utils as trilby_utils
-from unittest import skip
 import httpretty
 import logging
 import json
@@ -16,7 +15,7 @@ MIME_TYPE = 'application/activity+json'
 
 logger = logging.getLogger(name='kepi')
 
-class TestOutbox(TestCase):
+class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
@@ -106,15 +105,18 @@ class TestOutbox(TestCase):
                 [x['type'] for x in contents],
                 ['Create'])
 
-    @skip("still moving boosts over from the old architecture")
     def test_read_announce(self):
-        # Announce, aka boost
-        self._create_example_user([
-            BOOST,
-            ])
+
+        victoria_wood = self._add_Victoria_Wood_post()
+
+        boost = Status(
+                account = self._example_user,
+                reblog_of = victoria_wood,
+                 )
+        boost.save()
 
         contents = self._get_collection(OUTBOX)
 
         self.assertEqual(
                 [x['type'] for x in contents],
-                ['Announce'])
+                ['Create', 'Announce'])
