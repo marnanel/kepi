@@ -326,7 +326,7 @@ class Tests(Create_TestCase):
             'tag': [
               {
                 'type': 'Mention',
-                'href': self._fred.id,
+                'href': self._fred.url,
               },
             ],
           }
@@ -340,7 +340,7 @@ class Tests(Create_TestCase):
 
         self.assertIn(
                 self._fred,
-                status.mentions,
+                status.tags,
                 msg = 'status mentions self._fred',
                 )
 

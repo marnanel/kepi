@@ -150,12 +150,12 @@ class Status(PolymorphicModel):
         return [] # FIXME
 
     @property
-    def mentions(self):
-        return [] # FIXME
-
-    @property
     def tags(self):
-        return [] # FIXME
+        import kepi.trilby_api.models.person as trilby_person
+
+        return trilby_person.Person.objects.filter(
+                mention__status = self,
+                )
 
     @property
     def card(self):

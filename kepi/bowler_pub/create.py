@@ -245,8 +245,6 @@ def on_note(fields, address):
             newbie,
             )
 
-        return newbie
-
     except KeyError as ke:
         logger.debug('%s: missing field: %s',
             address,
@@ -258,6 +256,48 @@ def on_note(fields, address):
             address,
             e)
         return None
+
+    if 'tag' in fields:
+
+        logger.debug('%s: adding tags', address)
+
+        for tag in fields['tag']:
+
+            if 'type' not in tag or 'href' not in tag:
+                logger.debug('%s:  -- missing fields: %s',
+                        address, tag)
+                continue
+
+            if tag['type'].lower() != 'mention':
+                logger.debug('%s:  -- unknown tag type: %s',
+                        address, tag)
+                continue
+
+            logger.debug('%s:   -- %s',
+                    address, tag['href'])
+
+            whom = sombrero_fetch.fetch(tag['href'],
+                    expected_type = trilby_models.Person)
+
+            if whom is None:
+                logger.debug('%s:     -- not found',
+                        address)
+                continue
+
+            mention = trilby_models.Mention(
+                    status = newbie,
+                    whom = whom,
+                    )
+            mention.save()
+
+            logger.debug('%s:     -- %s',
+                    address, mention)
+
+        logger.debug('%s:   -- tags done',
+                address)
+
+    return newbie
+>>>>>>> mentions
 
 def on_announce(fields, address):
 
