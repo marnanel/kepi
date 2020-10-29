@@ -399,6 +399,11 @@ class LocalPerson(Person):
             default = False,
             )
 
+    gone = models.BooleanField(
+            help_text = "If True, the user has gone away.",
+            default = False,
+            )
+
     featured = models.ForeignKey(
         'Status',
         on_delete = models.DO_NOTHING,
