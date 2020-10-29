@@ -153,9 +153,9 @@ class Status(PolymorphicModel):
     def tags(self):
         import kepi.trilby_api.models.person as trilby_person
 
-        return trilby_person.Person.objects.filter(
+        return list(trilby_person.Person.objects.filter(
                 mention__status = self,
-                )
+                ))
 
     @property
     def card(self):
