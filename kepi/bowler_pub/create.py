@@ -297,7 +297,6 @@ def on_note(fields, address):
                 address)
 
     return newbie
->>>>>>> mentions
 
 def on_announce(fields, address):
 
