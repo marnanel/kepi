@@ -1,4 +1,4 @@
-# follow.py
+# like.py
 #
 # Part of kepi.
 # Copyright (c) 2018-2020 Marnanel Thurman.
