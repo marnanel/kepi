@@ -42,7 +42,7 @@ class StatusObjectSerializer(serializers.ModelSerializer):
                 'replies',
                 )
 
-class CreateActivitySerializer(serializers.ModelSerializer):
+class StatusActivitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = trilby_models.Status
