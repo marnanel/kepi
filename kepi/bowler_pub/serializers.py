@@ -17,38 +17,18 @@ from rest_framework_constant.fields import ConstantField
 from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
 
-PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
-
 #########################################
 
 class StatusObjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = trilby_models.Status
-        fields = (
-                'id',
-                'type',
-                'summary',
-                'inReplyTo',
-                'published',
-                'url',
-                'attributedTo',
-                'to',
-                'cc',
-                'sensitive',
-                'content',
-                'contentMap',
-                'attachment',
-                'tag',
-                'replies',
-                )
 
-class StatusActivitySerializer(serializers.ModelSerializer):
+    def to_representation(self, status):
 
-    class Meta:
-        model = trilby_models.Status
+        replies = [
+                StatusObjectSerializer(x).data()
+                for x in status.replies.all()]
 
-    def _object_field_for_create(self, status,
-            to, cc, replies):
         return {
                 'id': status.url,
                 'url': status.url,
@@ -57,8 +37,8 @@ class StatusActivitySerializer(serializers.ModelSerializer):
                 'inReplyTo': status.in_reply_to,
                 'published': status.created_at,
                 'attributedTo': status.account.url,
-                'to': to,
-                'cc': cc,
+                'to': status.to,
+                'cc': status.cc,
                 'sensitive': status.sensitive,
                 'conversation': status.conversation,
                 'content': status.content,
@@ -70,13 +50,12 @@ class StatusActivitySerializer(serializers.ModelSerializer):
                 'replies': replies,
                 }
 
-    def _object_field_for_reblog(self, status):
-        return status.reblog_of.url
+class StatusActivitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = trilby_models.Status
 
     def to_representation(self, status):
-
-        to = [PUBLIC] # FIXME
-        cc = [] # FIXME
 
         replies = [
                 self.to_representation(x)
@@ -84,19 +63,18 @@ class StatusActivitySerializer(serializers.ModelSerializer):
 
         if status.reblog_of is None:
             type_field = 'Create'
-            object_field = self._object_field_for_create(status,
-                    to=to, cc=cc, replies=replies)
+            object_field = StatusObjectSerializer(status).data
         else:
             type_field = 'Announce'
-            object_field = self._object_field_for_reblog(status)
+            object_field = status.reblog_of.url
 
         return {
                 'id': status.activity_url,
                 'type': type_field,
                 'actor': status.account.url,
                 'published': status.created_at,
-                'to': to,
-                'cc': cc,
+                'to': status.to,
+                'cc': status.cc,
                 'object': object_field,
                }
 
