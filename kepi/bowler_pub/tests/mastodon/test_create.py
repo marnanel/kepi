@@ -315,7 +315,6 @@ class Tests(Create_TestCase):
                 msg = 'status is in the same conversation',
                 )
 
-    @skip("Mentions are not yet implemented")
     @httpretty.activate
     def test_with_mentions(self):
 
@@ -327,7 +326,7 @@ class Tests(Create_TestCase):
             'tag': [
               {
                 'type': 'Mention',
-                'href': self._fred.id,
+                'href': self._fred.url,
               },
             ],
           }
@@ -341,7 +340,7 @@ class Tests(Create_TestCase):
 
         self.assertIn(
                 self._fred,
-                status.mentions,
+                status.tags,
                 msg = 'status mentions self._fred',
                 )
 
