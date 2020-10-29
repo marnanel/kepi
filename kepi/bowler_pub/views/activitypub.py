@@ -435,7 +435,7 @@ class CollectionView(generics.GenericAPIView):
                 )
 
     def _modify_list_item(self, item):
-        serializer = bowler_serializers.CreateActivitySerializer(
+        serializer = bowler_serializers.StatusActivitySerializer(
                 item,
                 )
         return serializer.data

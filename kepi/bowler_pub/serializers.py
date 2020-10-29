@@ -17,6 +17,8 @@ from rest_framework_constant.fields import ConstantField
 from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
 
+PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
+
 #########################################
 
 class StatusObjectSerializer(serializers.ModelSerializer):
@@ -40,36 +42,63 @@ class StatusObjectSerializer(serializers.ModelSerializer):
                 'replies',
                 )
 
-class CreateActivitySerializer(serializers.ModelSerializer):
+class StatusActivitySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = trilby_models.Status
-        fields = (
-                'type',
-                'actor',
-                'published',
-                'to',
-                'cc',
-                'object',
-                )
 
-    type = ConstantField(
-            value="Create",
-            )
-    actor = serializers.CharField(
-            source = "account",
-            )
-    published = serializers.DateTimeField(
-            source = "created_at",
-            )
-    to = ConstantField(
-            value="FIXME", # FIXME
-            )
-    cc = ConstantField(
-            value="FIXME", # FIXME
-            )
-    object = ConstantField(
-            value="FIXME", # FIXME
-            )
+    def _object_field_for_create(self, status,
+            to, cc, replies):
+        return {
+                'id': status.url,
+                'url': status.url,
+                'type': 'Note',
+                'summary': status.spoiler_text,
+                'inReplyTo': status.in_reply_to,
+                'published': status.created_at,
+                'attributedTo': status.account.url,
+                'to': to,
+                'cc': cc,
+                'sensitive': status.sensitive,
+                'conversation': status.conversation,
+                'content': status.content,
+                'contentMap': {
+                    status.language: status.content,
+                    },
+                'attachment': status.media_attachments,
+                'tag': status.tags,
+                'replies': replies,
+                }
+
+    def _object_field_for_reblog(self, status):
+        return status.reblog_of.url
+
+    def to_representation(self, status):
+
+        to = [PUBLIC] # FIXME
+        cc = [] # FIXME
+
+        replies = [
+                self.to_representation(x)
+                for x in status.replies.all()]
+
+        if status.reblog_of is None:
+            type_field = 'Create'
+            object_field = self._object_field_for_create(status,
+                    to=to, cc=cc, replies=replies)
+        else:
+            type_field = 'Announce'
+            object_field = self._object_field_for_reblog(status)
+
+        return {
+                'id': status.activity_url,
+                'type': type_field,
+                'actor': status.account.url,
+                'published': status.created_at,
+                'to': to,
+                'cc': cc,
+                'object': object_field,
+               }
 
 class ImageField(serializers.Field):
 
