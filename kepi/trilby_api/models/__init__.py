@@ -3,6 +3,7 @@ from .status import *
 from .notification import *
 from .like import *
 from .follow import *
+from .mention import *
 
 __all__ = [
         'TrilbyUser',
@@ -13,4 +14,5 @@ __all__ = [
         'Notification',
         'Like',
         'Follow',
+        'Mention',
         ]
