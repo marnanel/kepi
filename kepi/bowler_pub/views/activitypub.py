@@ -96,9 +96,6 @@ class KepiView(django.views.View):
         if '@context' not in data:
             data['@context'] = ATSIGN_CONTEXT
 
-        if 'former_type' in data:
-            data['type'] = 'Tombstone'
-
         result = JsonResponse(
                 data=data,
                 json_dumps_params={
@@ -197,10 +194,19 @@ class PersonView(KepiView):
         return result
 
     def _render_object(self, something):
-        serializer = bowler_serializers.PersonSerializer(
-                something
-                )
-        return super()._render_object(serializer.data)
+        if something.gone:
+            result = {
+                    'type': 'Tombstone',
+                    'former_type': 'Person',
+                    'id': something.url,
+                    }
+        else:
+            serializer = bowler_serializers.PersonSerializer(
+                    something
+                    )
+            result = serializer.data
+
+        return super()._render_object(result)
 
 class FollowingView(KepiView):
 

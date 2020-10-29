@@ -122,7 +122,6 @@ class Tests(TestCase):
             )
 
 
-@skip("Tombstones are not supported in this version")
 class TestTombstone(TestCase):
 
     def setUp(self):
@@ -146,7 +145,8 @@ class TestTombstone(TestCase):
                 _response_to_dict(response),
                 )
 
-        queen_anne.entomb()
+        queen_anne.gone = True
+        queen_anne.save()
 
         response = c.get('/users/queen_anne')
 
@@ -156,7 +156,6 @@ class TestTombstone(TestCase):
                     'id': 'https://testserver/users/queen_anne',
                     'type': 'Tombstone',
                     'former_type': 'Person',
-                    'name': 'queen_anne',
                     },
                 _response_to_dict(response),
                 )
