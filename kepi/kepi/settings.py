@@ -43,6 +43,7 @@ KEPI = {
         'USER_LINK': '/users/%(username)s',
         'COLLECTION_LINK': '/users/%(username)s/%(listname)s',
         'STATUS_LINK': '/users/%(username)s/%(id)s',
+        'STATUS_ACTIVITY_LINK': '/users/%(username)s/%(id)s/activity',
         'STATUS_FEED_LINK': '/users/%(username)s/feed/%(id)s',
         'USER_FEED_LINK': '/users/%(username)s/feed',
         'USER_WEBFINGER_LINK': '/.well-known/webfinger?resource=acct:%(username)s@%(hostname)s',

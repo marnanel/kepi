@@ -194,6 +194,18 @@ class Status(PolymorphicModel):
                 })
 
     @property
+    def activity_url(self):
+        if self.remote_url is not None:
+            raise ValueError(
+                    "Activity URL is not stored for remote statuses",
+                    )
+
+        return uri_to_url(settings.KEPI['STATUS_ACTIVITY_LINK'] % {
+                'username': self.account.username,
+                'id': self.id,
+                })
+
+    @property
     def ancestors(self):
 
         result = []
