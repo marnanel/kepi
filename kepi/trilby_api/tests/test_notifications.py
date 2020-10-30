@@ -4,6 +4,7 @@ from kepi.trilby_api.tests import *
 from kepi.trilby_api.models import *
 from django.conf import settings
 import logging
+from unittest import skip
 
 # Tests for notifications. API docs are here:
 # https://docs.joinmastodon.org/methods/notifications/
@@ -120,11 +121,14 @@ class TestNotifications(TrilbyTestCase):
                 content[0]['status'],
                 )
 
+    @skip("to be implemented later")
     def test_get_single(self):
         raise NotImplementedError()
 
+    @skip("to be implemented later")
     def test_clear(self):
         raise NotImplementedError()
 
+    @skip("to be implemented later")
     def test_clear_single(self):
         raise NotImplementedError()

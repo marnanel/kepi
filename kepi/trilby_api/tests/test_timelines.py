@@ -12,6 +12,7 @@ from kepi.trilby_api.views import *
 from kepi.trilby_api.tests import *
 from kepi.trilby_api.models import *
 from django.conf import settings
+from unittest import skip
 
 # Tests for timelines. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
@@ -127,15 +128,16 @@ class TestTimelines(TrilbyTestCase):
             as_user = self._alice,
             )
 
+    @skip("to be implemented later")
     def test_hashtag(self):
         raise NotImplementedError()
-        pass
 
+    @skip("to be implemented later")
     def test_account_statuses(self):
         # Special case: this isn't considered a timeline method
         # in the API, but it's similar enough that we test it here
         raise NotImplementedError()
-        pass
 
+    @skip("to be implemented later")
     def test_list(self):
         raise NotImplementedError()

@@ -5,6 +5,7 @@ from kepi.trilby_api.models import *
 from kepi.bowler_pub.tests import create_remote_person
 from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
+from unittest import skip
 import httpretty
 
 # Tests for statuses. API docs are here:
@@ -546,23 +547,30 @@ class TestStatus(TrilbyTestCase):
                 self._alice_status,
                 expect_result = 404)
 
+
+    @skip("to be implemented later")
     def test_bookmark(self):
         raise NotImplementedError() 
 
+    @skip("to be implemented later")
     def test_unbookmark(self):
         raise NotImplementedError()
 
+    @skip("to be implemented later")
     def test_mute(self):
         raise NotImplementedError()
 
+    @skip("to be implemented later")
     def test_unmute(self):
        raise NotImplementedError() 
 
+    @skip("to be implemented later")
     def test_pin(self):
-        self.fail("Test not yet implemented")
+       raise NotImplementedError()
 
+    @skip("to be implemented later")
     def test_unpin(self):
-        self.fail("Test not yet implemented")
+       raise NotImplementedError()
 
     def test_post_status(self):
 
