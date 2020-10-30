@@ -21,12 +21,6 @@ class TestInstance(TrilbyTestCase):
                 ]:
             self.assertIn(k, content)
 
-    def test_list_peers(self):
-        raise NotImplementedError()
-
-    def test_list_weekly_activity(self):
-        raise NotImplementedError()
-
     def test_get_emojis(self):
 
         content = self.get(
