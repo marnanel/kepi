@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.test import TestCase, Client
 from kepi.trilby_api.tests import create_local_person
-from kepi.trilby_api.models import Status
 import kepi.trilby_api.utils as trilby_utils
+import kepi.trilby_api.models as trilby_models
 import httpretty
 import logging
 import json
@@ -26,7 +26,7 @@ class Tests(TestCase):
 
         keys = json.load(open('kepi/bowler_pub/tests/keys/keys-0001.json', 'r'))
 
-        self._example_user = create_local_person(
+        self._alice = create_local_person(
                 name='alice',
                 publicKey=keys['public'],
                 privateKey=keys['private'],
@@ -79,8 +79,8 @@ class Tests(TestCase):
             linkname = 'next'
 
     def _add_Victoria_Wood_post(self):
-        result = Status(
-                account = self._example_user,
+        result = trilby_models.Status(
+                account = self._alice,
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
                 content = "<p>Victoria Wood parodying Peter Skellern. I laughed so much at this, though you might have to know both singers&apos; work in order to find it quite as funny.</p><p>- love song<br />- self-doubt<br />- refs to northern England<br />- preamble<br />- piano solo<br />- brass band<br />- choir backing<br />- love is cosy<br />- heavy rhotic vowels</p><p><a href=\"https://youtu.be/782hqdmnq7g\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">youtu.be/782hqdmnq7g</span><span class=\"invisible\"></span></a></p>",
                  )
@@ -109,8 +109,8 @@ class Tests(TestCase):
 
         victoria_wood = self._add_Victoria_Wood_post()
 
-        boost = Status(
-                account = self._example_user,
+        boost = trilby_models.Status(
+                account = self._alice,
                 reblog_of = victoria_wood,
                  )
         boost.save()
@@ -120,3 +120,41 @@ class Tests(TestCase):
         self.assertEqual(
                 [x['type'] for x in contents],
                 ['Create', 'Announce'])
+
+    def test_following_and_followers(self):
+
+        bob = create_local_person('bob')
+        charlie = create_local_person('charlie')
+
+        trilby_models.Follow(follower=self._alice, following=bob).save()
+
+        self.assertEqual(
+            sorted(self._get_collection(
+                url = '/users/alice/following',
+                )),
+            [bob.url],
+            )
+
+        self.assertEqual(
+            sorted(self._get_collection(
+                url = '/users/alice/followers',
+                )),
+            [],
+            )
+
+        trilby_models.Follow(follower=self._alice, following=charlie).save()
+        trilby_models.Follow(follower=charlie, following=self._alice).save()
+
+        self.assertEqual(
+            sorted(self._get_collection(
+                url = '/users/alice/following',
+                )),
+            [bob.url, charlie.url],
+            )
+
+        self.assertEqual(
+            sorted(self._get_collection(
+                url = '/users/alice/followers',
+                )),
+            [charlie.url],
+            )

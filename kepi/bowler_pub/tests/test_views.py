@@ -120,7 +120,6 @@ class Tests(TestCase):
             result,
             )
 
-
 class TestTombstone(TestCase):
 
     def setUp(self):

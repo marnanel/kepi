@@ -208,40 +208,6 @@ class PersonView(KepiView):
 
         return super()._render_object(result)
 
-class FollowingView(KepiView):
-
-    def activity_get(self, request, *args, **kwargs):
-
-        logger.debug('Finding following of %s:', kwargs['username'])
-
-        user = configured_url('USER_LINK',
-                username = kwargs['username'],
-                )
-
-        return trilby_models.Follow.objects.filter(
-                follower=user,
-                pending=False)
-
-    def _modify_list_item(self, obj):
-        return obj.following
-
-class FollowersView(KepiView):
-
-    def activity_get(self, request, *args, **kwargs):
-
-        logger.debug('Finding followers of %s:', kwargs['username'])
-
-        user = configured_url('USER_LINK',
-                username = kwargs['username'],
-                )
-
-        return trilby_models.Follow.objects.filter(
-                following=user,
-                pending=False)
-
-    def _modify_list_item(self, obj):
-        return obj.follower
-
 class AllUsersView(KepiView):
 
     def activity_get(self, request, *args, **kwargs):
@@ -530,3 +496,17 @@ class FeaturedView(CollectionView):
                 item,
                 )
         return serializer.data
+
+class FollowingView(CollectionView):
+
+    listname = 'following'
+
+    def _modify_list_item(self, item):
+        return item.url
+
+class FollowersView(CollectionView):
+
+    listname = 'followers'
+
+    def _modify_list_item(self, item):
+        return item.url
