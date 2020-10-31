@@ -613,6 +613,12 @@ class LocalPerson(Person):
             rel_following__following = self,
             )
 
+    def get_followers_collection(self):
+        return self.followers
+
+    def get_following_collection(self):
+        return self.following
+
     @property
     def inbox_url(self):
         return uri_to_url(settings.KEPI['USER_INBOX_LINK'] % {
