@@ -20,3 +20,12 @@ but there will be.
 
 * [bowler-heavy](docs/bowler-heavy.md) was a historical course change that may still affect the state of the codebase.
 * [Why the name?](docs/name.md)
+
+## Licence
+
+kepi is distributed under version 2 of the GNU General Public License.
+
+Some Mastodon-based tests are included in the source distribution. These are copyright (C) 2016-2019 Eugen Rochko & other Mastodon contributors. They are released under the GNU Affero General Public License, version 3.
+
+The base template is based on the Clean Blog template by Start Bootstrap. This is copyright (c) 2013-2020 Start Bootstrap LLC. It's distributed under the MIT license.
+

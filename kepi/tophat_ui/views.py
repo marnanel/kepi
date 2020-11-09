@@ -9,6 +9,7 @@ logger = logging.getLogger(name='kepi')
 
 from django.views import View
 from django.shortcuts import render
+from django.conf import settings
 
 class RootPageView(View):
 
@@ -19,7 +20,10 @@ class RootPageView(View):
         result = render(
                 request=request,
                 template_name='root-page.html',
-                content_type='text/html',
+                context = {
+                    'title': settings.KEPI['INSTANCE_NAME'],
+                    'subtitle': settings.KEPI['INSTANCE_DESCRIPTION'],
+                    },
                 )
 
         return result
