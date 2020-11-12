@@ -15,6 +15,7 @@ urlpatterns = [
         path('login/', django.contrib.auth.views.LoginView.as_view(
             extra_context = {
                 'next': '/',
+                'title': 'Log in',
                 },
             )),
 
