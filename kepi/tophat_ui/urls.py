@@ -12,6 +12,10 @@ import kepi.tophat_ui.forms as tophat_forms
 urlpatterns = [
         path('', tophat_views.RootPage.as_view()),
 
-        path('login/', django.contrib.auth.views.LoginView.as_view()),
+        path('login/', django.contrib.auth.views.LoginView.as_view(
+            extra_context = {
+                'next': '/',
+                },
+            )),
 
         ]
