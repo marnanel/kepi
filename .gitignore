@@ -7,7 +7,7 @@ __pycache__
 *.sqlite3
 build/
 dist/
-static
-examples/
+examples
+kepi/static
 kepi/kepi/local_config.py
 kepi/media
