@@ -7,7 +7,6 @@
 from django.urls import path, re_path
 import django.contrib.auth.views
 import kepi.tophat_ui.views as tophat_views
-import kepi.tophat_ui.forms as tophat_forms
 
 urlpatterns = [
         path('', tophat_views.RootPage.as_view()),
