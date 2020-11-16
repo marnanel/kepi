@@ -112,6 +112,12 @@ class Person(PolymorphicModel):
             )
 
     @property
+    def followers(self):
+        return Person.objects.filter(
+            rel_following__following = self,
+            )
+
+    @property
     def fields(self):
         return [] # FIXME
 
@@ -271,10 +277,21 @@ class RemotePerson(Person):
 
     @property
     def followers(self):
+        return self._get_remote_collection(
+                self.followers_url,
+                )
+
+    @property
+    def following(self):
+        return self._get_remote_collection(
+                self.following_url,
+                )
+
+    def _get_remote_collection(self, url):
         from kepi.sombrero_sendpub.fetch import fetch
         from kepi.sombrero_sendpub.collections import Collection
 
-        class RemotePersonFollowers(object):
+        class RemotePersonCollection(object):
             def __init__(self, address):
                 logger.debug(
                         "%s RemotePerson: initialising",
@@ -311,13 +328,13 @@ class RemotePerson(Person):
 
             def __next__(self):
 
-                logger.debug("%s RemotePerson: finding next follower...",
+                logger.debug("%s RemotePerson: finding next...",
                         self.address,
                         )
 
                 url = self.collection.__next__()
 
-                logger.debug("%s RemotePerson: next follower is at %s",
+                logger.debug("%s RemotePerson: next is at %s",
                         self.address,
                         url,
                         )
@@ -334,8 +351,8 @@ class RemotePerson(Person):
 
                 return person
 
-        result = RemotePersonFollowers(
-                self.followers_url,
+        result = RemotePersonCollection(
+                url,
                 )
 
         return result
@@ -606,12 +623,6 @@ class LocalPerson(Person):
                 )
 
         return result
-
-    @property
-    def followers(self):
-        return Person.objects.filter(
-            rel_following__following = self,
-            )
 
     def get_followers_collection(self):
         return self.followers
