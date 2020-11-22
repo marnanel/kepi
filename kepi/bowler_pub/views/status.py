@@ -6,6 +6,7 @@ import django.views
 import logging
 import kepi.bowler_pub.views.activitypub as ap
 import kepi.trilby_api.models.status as status
+import kepi.bowler_pub.serializers as bowler_serializers
 
 logger = logging.getLogger(name='kepi')
 
@@ -48,3 +49,11 @@ class StatusView(ap.KepiView):
             return None
 
         return result
+
+    def _render_object(self, something):
+        serializer = bowler_serializers.StatusObjectSerializer(
+                something
+                )
+        result = serializer.data
+
+        return super()._render_object(result)
