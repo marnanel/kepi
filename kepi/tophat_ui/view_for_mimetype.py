@@ -18,6 +18,19 @@ def view_for_mimetype(
         default = None,
         ):
     """
+    Returns a Django view function which can route requests
+    to other view functions based on the incoming Accept header.
+
+    Params:
+      views - a list of (type, subtype, view) triplets
+        e.g. ('text', 'html', HelloWorldView)
+
+      default - the default to return if the Accept header
+        can't otherwise be satisfied.
+
+    If you don't give a default, the view function returns
+    a new HttpResponse with status_code==406, i.e. "Not Acceptable".
+    See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
     """
 
     def _view_for_mimetype_inner(
