@@ -19,6 +19,7 @@ import kepi.bowler_pub.utils as bowler_utils
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
+import markdown
 
 class Person(PolymorphicModel):
 
@@ -124,6 +125,10 @@ class Person(PolymorphicModel):
     @property
     def emojis(self):
         return [] # FIXME
+
+    @property
+    def note_as_html(self):
+        return markdown.markdown(self.note)
 
     def has_liked(self, status):
         from kepi.trilby_api.models.like import Like

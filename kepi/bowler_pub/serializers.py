@@ -33,7 +33,7 @@ class StatusObjectSerializer(serializers.ModelSerializer):
                 'id': status.url,
                 'url': status.url,
                 'type': 'Note',
-                'summary': status.spoiler_text,
+                'summary': status.spoiler_text_as_html,
                 'inReplyTo': status.in_reply_to,
                 'published': status.created_at,
                 'attributedTo': status.account.url,
@@ -41,7 +41,7 @@ class StatusObjectSerializer(serializers.ModelSerializer):
                 'cc': status.cc,
                 'sensitive': status.sensitive,
                 'conversation': status.conversation,
-                'content': status.content,
+                'content': status.content_as_html,
                 'contentMap': {
                     status.language: status.content,
                     },
@@ -174,7 +174,7 @@ class PersonSerializer(serializers.ModelSerializer):
             )
 
     summary = serializers.CharField(
-            source = "note",
+            source = "note_as_html",
             )
 
     manuallyApprovesFollowers = serializers.BooleanField(

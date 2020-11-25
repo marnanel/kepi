@@ -18,6 +18,7 @@ import kepi.trilby_api.signals as trilby_signals
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from polymorphic.models import PolymorphicModel
+import markdown
 
 PUBLIC = "https://www.w3.org/ns/activitystreams#Public"
 
@@ -354,3 +355,15 @@ class Status(PolymorphicModel):
     @property
     def is_local(self):
         return self.remote_url is None
+
+    @property
+    def content_as_html(self):
+        if not self.content:
+            return '<p></p>'
+        return markdown.markdown(self.content)
+
+    @property
+    def spoiler_text_as_html(self):
+        if not self.spoiler_text:
+            return '<p></p>'
+        return markdown.markdown(self.spoiler_text)
