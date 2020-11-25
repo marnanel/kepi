@@ -35,6 +35,18 @@ CONTEXT_URL = "https://www.w3.org/ns/activitystreams"
 
 logger = logging.getLogger(name='kepi')
 
+MIME_TYPE = 'application/activity+json'
+
+class BowlerClient(django.test.Client):
+
+    def get(self, *args, **kwargs):
+
+        result = super().get(*args, **kwargs,
+                HTTP_ACCEPT = MIME_TYPE,
+                )
+
+        return result
+
 class DummyMessage(object):
 
     fields = None
@@ -276,7 +288,7 @@ def post_test_message(
         ):
 
     if client is None:
-        client = django.test.Client()
+        client = BowlerClient()
 
     body, headers = test_message_body_and_headers(
             secret = secret,

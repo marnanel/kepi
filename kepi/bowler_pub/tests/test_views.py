@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import TestCase
 from . import *
 from kepi.trilby_api.tests import create_local_person, create_local_status
 import logging
@@ -7,6 +7,7 @@ import json
 logger = logging.getLogger(name='kepi')
 
 ALICE_SUMMARY = 'Remember Alice? It\'s a song about Alice.'
+ALICE_SUMMARY_HTML = f'<p>{ALICE_SUMMARY}</p>'
 
 def _response_to_dict(response):
 
@@ -32,7 +33,7 @@ class Tests(TestCase):
                 note = ALICE_SUMMARY,
                 )
 
-        c = Client()
+        c = BowlerClient()
         response = c.get('/users/alice')
         self.assertEqual(response.status_code, 200)
         result = _response_to_dict(response)
@@ -74,7 +75,7 @@ class Tests(TestCase):
                         'BfTLbe/QMcssQ5rHv9oAMy/hWHGyaES3vbxzqT2qMxI5bIJRpOJfDlTpAY5AVqrn\n'
                         '8sYx/1XA9YJOKFkQIQIDAQAB\n'
                         '-----END PUBLIC KEY-----'},
-                    'summary': ALICE_SUMMARY,
+                    'summary': ALICE_SUMMARY_HTML,
                     'tag': [],
                     'type': 'Person',
                     'url': 'https://testserver/users/alice',
@@ -90,7 +91,7 @@ class Tests(TestCase):
                 posted_by = alice,
                 )
 
-        c = Client()
+        c = BowlerClient()
         response = c.get('/users/alice/featured')
         self.assertEqual(response.status_code, 200)
         result = _response_to_dict(response)
@@ -130,7 +131,7 @@ class TestTombstone(TestCase):
 
         queen_anne = create_local_person('queen_anne')
 
-        c = Client()
+        c = BowlerClient()
         response = c.get('/users/queen_anne')
 
         self.assertEqual(response.status_code, 200)
