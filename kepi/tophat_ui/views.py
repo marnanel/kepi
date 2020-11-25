@@ -11,6 +11,8 @@ from django.views import View
 from django.shortcuts import render
 from django.conf import settings
 
+import kepi.trilby_api.models as trilby_models
+
 class RootPage(View):
 
     def get(self, request, *args, **kwargs):
@@ -23,6 +25,46 @@ class RootPage(View):
                 context = {
                     'title': settings.KEPI['INSTANCE_NAME'],
                     'subtitle': settings.KEPI['INSTANCE_DESCRIPTION'],
+                    },
+                )
+
+        return result
+
+class StatusPage(View):
+
+    def get(self, request,
+            username,
+            status,
+            *args, **kwargs):
+
+        logger.info("Serving status page for %s/%s",
+                username,
+                status,
+                )
+
+        stat = trilby_models.Status.objects.get(
+                remote_url = None, # we can only serve local statuses
+                id = status,
+                )
+
+        user = stat.account
+
+        if not user.is_local:
+            logger.info("  -- not posted by a local user; 404")
+            raise Http404()
+
+        if user.username != username:
+            logger.info("  -- which was actually posted by %s; 404",
+                    user.username)
+            raise Http404()
+
+        result = render(
+                request=request,
+                template_name='status-page.html',
+                context = {
+                    'title': stat.account.username,
+                    'subtitle': '',
+                    'status': stat,
                     },
                 )
 
