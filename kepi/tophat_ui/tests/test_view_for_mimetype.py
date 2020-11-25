@@ -112,3 +112,31 @@ class Tests(TestCase):
                 vfm(DummyRequest('image/jpeg'), '123'),
                 'df123',
                 )
+
+    def test_passing_None(self):
+
+        def th():
+            pass
+
+        def aj():
+            pass
+
+        def df():
+            pass
+
+        vfm = view_for_mimetype(
+                [
+                    ('text', 'html', th),
+                    ('application', 'json', aj),
+                    ],
+                default = df,
+                )
+
+        self.assertEqual(
+                vfm(None),
+                [
+                    ('text', 'html', th),
+                    ('application', 'json', aj),
+                    (None, None, df),
+                    ],
+                )

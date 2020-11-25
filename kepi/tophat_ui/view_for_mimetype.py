@@ -31,12 +31,23 @@ def view_for_mimetype(
     If you don't give a default, the view function returns
     a new HttpResponse with status_code==406, i.e. "Not Acceptable".
     See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
+
+    As a special case, if request is None, returns the list of views.
+    A default value will be at the end, with type and subtype set to None.
     """
 
     def _view_for_mimetype_inner(
             request,
             *args, **kwargs,
             ):
+
+        if request is None:
+            result = views.copy()
+
+            if default is not None:
+                result.append((None, None, default))
+
+            return result
 
         accept_header = request.headers.get('Accept', '')
         accept_parsed = parse_accept_header(accept_header)
