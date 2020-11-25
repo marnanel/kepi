@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.conf import settings
 from kepi.trilby_api.utils import *
 
-class TestUtils(TestCase):
+class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
@@ -32,12 +32,6 @@ class TestUtils(TestCase):
                 )
 
         self.assertEqual(
-                view.func.__name__,
-                "PersonView",
-                msg = "URL for local user view gets the correct view",
-                )
-
-        self.assertEqual(
                 view.kwargs['username'],
                 "fred",
                 msg = "URL for local user view gets the correct username",
@@ -48,12 +42,6 @@ class TestUtils(TestCase):
         self.assertIsNotNone(
                 view,
                 msg = "URL for local followers view is found",
-                )
-
-        self.assertEqual(
-                view.func.__name__,
-                "FollowersView",
-                msg = "URL for local followers view gets the correct view",
                 )
 
         self.assertEqual(

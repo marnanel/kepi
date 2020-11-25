@@ -64,7 +64,36 @@ def find_local_view(url,
         result = None
 
     if result is not None and which_views is not None:
-        if result.func.__name__ not in which_views:
-            result = None
+
+        name = result.func.__name__
+
+        if name=='_view_for_mimetype_inner':
+
+            # Special case if this is view_for_mimetype.
+            # The actual views behind VFM can be accessed
+            # by passing None as a parameter.
+
+            have_views = set([
+                    x[2].__name__ for x in result.func(None)
+                    ])
+
+            logger.debug("Checking whether the views %s match %s",
+                    have_views, which_views)
+
+            if not have_views.intersection(set(which_views)):
+                logger.debug("  -- no")
+                result = None
+
+        else:
+
+            # it's an ordinary view function, so the answer
+            # is much easier
+
+            logger.debug("Checking whether the view %s matches %s",
+                    name, which_views)
+
+            if name not in which_views:
+                logger.debug("  -- no")
+                result = None
 
     return result
