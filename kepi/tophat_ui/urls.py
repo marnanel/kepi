@@ -12,6 +12,16 @@ from kepi.tophat_ui.view_for_mimetype import view_for_mimetype
 
 urlpatterns = [
         path('', tophat_views.RootPage.as_view()),
+
+        path('users/<str:username>',
+             view_for_mimetype(
+                 [
+                     ('application', 'activity+json',
+                     bowler_views.PersonView.as_view()),
+                     ],
+                 default = tophat_views.UserPage.as_view(),
+                 )),
+
         path('users/<str:username>/<int:status>',
              view_for_mimetype(
                  [
