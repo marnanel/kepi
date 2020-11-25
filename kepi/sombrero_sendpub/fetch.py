@@ -127,6 +127,10 @@ def _fetch_local_by_url(address, wanted):
         as an ACTIVITY_GET method.
         """
 
+        headers = {
+                'Accept': 'application/activity+json',
+                }
+
         def __init__(self, path):
             super().__init__()
 
