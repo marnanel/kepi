@@ -35,12 +35,14 @@ def view_for_mimetype(
 
     def _view_for_mimetype_inner(
             request,
+            *args, **kwargs,
             ):
 
         accept_header = request.headers.get('Accept', '')
         accept_parsed = parse_accept_header(accept_header)
 
         logger.debug("Accept=%s -> %s", accept_header, accept_parsed)
+        logger.debug("Views: %s", views)
 
         for want_type, want_subtype, params, q in accept_parsed:
 
@@ -55,14 +57,18 @@ def view_for_mimetype(
                 logger.debug('  -- found %s/%s: %s',
                         have_type, have_subtype, view)
 
-                result = view(request)
+                result = view(request,
+                        *args, **kwargs,
+                        )
                 return result
 
         if default is not None:
             logger.debug('  -- using default: %s',
                     have_type, have_subtype, view)
 
-            result = default(request)
+            result = default(request,
+                        *args, **kwargs,
+                        )
             return result
         else:
             logger.debug('  -- none found; 406')
