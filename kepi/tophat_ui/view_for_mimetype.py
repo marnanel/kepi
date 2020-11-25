@@ -64,7 +64,7 @@ def view_for_mimetype(
 
         if default is not None:
             logger.debug('  -- using default: %s',
-                    have_type, have_subtype, view)
+                    view)
 
             result = default(request,
                         *args, **kwargs,
