@@ -13,9 +13,9 @@ from kepi.bowler_pub.utils import uri_to_url
 from django.conf import settings
 from unittest import skip
 
-MIME_TYPE = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+MIME_TYPE = 'application/activity+json'
 
-class TestHeaders(TestCase):
+class Tests(TestCase):
 
     def setUp(self):
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
