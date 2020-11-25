@@ -30,6 +30,32 @@ class RootPage(View):
 
         return result
 
+class UserPage(View):
+
+    def get(self, request,
+            username,
+            *args, **kwargs):
+
+        logger.info("Serving user page for %s",
+                username,
+                )
+
+        user = trilby_models.LocalPerson.objects.get(
+                local_user__username = username,
+                )
+
+        result = render(
+                request=request,
+                template_name='user-page.html',
+                context = {
+                    'title': user.username,
+                    'subtitle': user.display_name,
+                    'bio': user.note,
+                    },
+                )
+
+        return result
+
 class StatusPage(View):
 
     def get(self, request,
@@ -62,7 +88,7 @@ class StatusPage(View):
                 request=request,
                 template_name='status-page.html',
                 context = {
-                    'title': stat.account.username,
+                    'title': user.username,
                     'subtitle': '',
                     'status': stat,
                     },
