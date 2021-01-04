@@ -25,6 +25,7 @@ class RootPage(View):
                 context = {
                     'title': settings.KEPI['INSTANCE_NAME'],
                     'subtitle': settings.KEPI['INSTANCE_DESCRIPTION'],
+                    'blurb': settings.KEPI['INSTANCE_BLURB'],
                     },
                 )
 

@@ -59,6 +59,7 @@ KEPI = {
 
         'INSTANCE_NAME': 'kepi server',
         'INSTANCE_DESCRIPTION': 'this is a test server',
+        'INSTANCE_BLURB': 'Welcome to this kepi instance. It\'s not properly set up yet.',
         'CONTACT_ACCOUNT': 'marnanel',
         'CONTACT_EMAIL': 'marnanel@example.com',
         'LANGUAGES': [LANGUAGE_CODE],
