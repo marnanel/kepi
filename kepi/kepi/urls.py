@@ -25,11 +25,7 @@ oauth2_endpoint_views = [
 
 urlpatterns = [
         path(r'admin/', admin.site.urls),
-
-        # auth
-        path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
-        path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-        path('oauth/', include((oauth2_endpoint_views, 'oauth2_provider'), namespace="oauth2_provider")),
+        path(r'accounts/', include('django.contrib.auth.urls')),
 
         # kepi's own stuff
         path(r'', include(kepi.tophat_ui.urls)),

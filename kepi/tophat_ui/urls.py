@@ -31,11 +31,4 @@ urlpatterns = [
                  default = tophat_views.StatusPage.as_view(),
                  )),
 
-        path('login/', django.contrib.auth.views.LoginView.as_view(
-            extra_context = {
-                'next': '/',
-                'title': 'Log in',
-                },
-            )),
-
         ]
