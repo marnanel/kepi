@@ -4,11 +4,14 @@
         </li>
         {% if user.is_authenticated %}
         <li class="nav-item">
-                <a class="nav-link" href="/accounts/login/">&#x1f452;{{ user.usernme }}</a>
+                <a class="nav-link" href="/home">&#x1f452;{{ user.username }}</a>
+        </li>
+        <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
         </li>
         {% else %}
         <li class="nav-item">
-                <a class="nav-link" href="/accounts/login/">Login</a>
+                <a class="nav-link" href="{% url 'login' %}">Login</a>
         </li>
         {% endif %}
 </ul>
