@@ -211,6 +211,7 @@ REST_FRAMEWORK = {
         }
 
 AUTH_USER_MODEL = 'trilby_api.TrilbyUser'
+LOGIN_REDIRECT_URL = '/'
 
 try:
     from .local_config import *
