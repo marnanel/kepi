@@ -2,8 +2,14 @@
         <li class="nav-item">
                 <a class="nav-link" href="/">Home</a>
         </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+                <a class="nav-link" href="/accounts/login/">&#x1f452;{{ user.usernme }}</a>
+        </li>
+        {% else %}
         <li class="nav-item">
                 <a class="nav-link" href="/accounts/login/">Login</a>
         </li>
+        {% endif %}
 </ul>
 
