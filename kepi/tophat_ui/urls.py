@@ -31,4 +31,8 @@ urlpatterns = [
                  default = tophat_views.StatusPage.as_view(),
                  )),
 
+        path('home',
+            tophat_views.HomePage.as_view(),
+            ),
+
         ]

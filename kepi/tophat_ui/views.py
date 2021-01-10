@@ -10,7 +10,8 @@ logger = logging.getLogger(name='kepi')
 from django.views import View
 from django.shortcuts import render
 from django.conf import settings
-
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 import kepi.trilby_api.models as trilby_models
 
 class RootPage(View):
@@ -92,6 +93,24 @@ class StatusPage(View):
                     'title': user.username,
                     'subtitle': '',
                     'status': stat,
+                    },
+                )
+
+        return result
+
+class HomePage(View):
+
+    @method_decorator(login_required)
+    def get(self, request,
+            *args, **kwargs):
+
+        logger.info("Serving home page for current user",
+                )
+
+        result = render(
+                request=request,
+                template_name='home-page.html',
+                context = {
                     },
                 )
 
