@@ -1,7 +1,7 @@
-# views.py
+# trilby_api/views/statuses.py
 #
 # Part of kepi.
-# Copyright (c) 2018-2020 Marnanel Thurman.
+# Copyright (c) 2018-2021 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
 import logging
@@ -20,7 +20,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
 import kepi.trilby_api.models as trilby_models
 import kepi.trilby_api.utils as trilby_utils
-from .serializers import *
+from kepi.trilby_api.serializers import *
 from rest_framework import generics, response, mixins
 from rest_framework.permissions import IsAuthenticated, \
         IsAuthenticatedOrReadOnly
@@ -31,25 +31,6 @@ from kepi.bowler_pub.utils import uri_to_url
 import json
 import re
 import random
-
-###########################
-
-class Instance(View):
-
-    def get(self, request, *args, **kwargs):
-
-        result = {
-            'uri': 'http://127.0.0.1',
-            'title': settings.KEPI['INSTANCE_NAME'],
-            'description': settings.KEPI['INSTANCE_DESCRIPTION'],
-            'email': settings.KEPI['CONTACT_EMAIL'],
-            'version': '1.0.0', # of the protocol
-            'urls': {},
-            'languages': settings.KEPI['LANGUAGES'],
-            'contact_account': settings.KEPI['CONTACT_ACCOUNT'],
-            }
-
-        return JsonResponse(result)
 
 ###########################
 
@@ -313,149 +294,6 @@ class Unfollow(DoSomethingWithPerson):
             logger.info('  -- not unfollowing; they weren\'t following '+\
                     'in the first place')
 
-class UpdateCredentials(generics.GenericAPIView):
-
-    def patch(self, request, *args, **kwargs):
-
-        if request.user is None:
-            logger.debug('  -- user not logged in')
-            return error_response(401, 'Not logged in')
-
-        who = request.user.localperson
-
-        # The Mastodon spec doesn't say what to do
-        # if the user submits field names which don't
-        # exist!
-
-        unknown_fields = []
-
-        # FIXME: the data in "v" needs cleaning.
-
-        logger.info('-- updating user: %s', who)
-
-        for f,v in request.data.items():
-
-            logger.info('  -- setting %s = %s', f, v)
-
-            if f=='discoverable':
-                raise Http404("discoverable is not yet supported")
-            elif f=='bot':
-                who.bot = v
-            elif f=='display_name':
-                who.display_name = v
-            elif f=='note':
-                who.note = v
-            elif f=='avatar':
-                raise Http404("images are not yet supported")
-            elif f=='header':
-                raise Http404("images are not yet supported")
-            elif f=='locked':
-                who.locked = v
-            elif f=='source[privacy]':
-                who.default_visibility = v
-            elif f=='source[sensitive]':
-                who.default_sensitive = v
-            elif f=='source[language]':
-                who.language = v
-            elif f=='fields_attributes':
-                raise Http404("fields are not yet supported")
-            else:
-                logger.info('    -- field does not exist')
-                unknown_fields.append(f)
-
-        if unknown_fields:
-            logger.info('  -- aborting because of unknown fields')
-            raise Http404(f"some fields do not exist: {unknown_fields}")
-
-        who.save()
-        logger.info('  -- done.')
-
-        serializer = UserSerializerWithSource(
-                who,
-                context = {
-                    'request': request,
-                    },
-                )
-
-        return JsonResponse(
-                serializer.data,
-                status = 200,
-                reason = 'Done',
-                )
-
-###########################
-
-def fix_oauth2_redirects():
-    """
-    Called from kepi.kepi.urls to fix a silly oversight
-    in oauth2_provider. This isn't elegant.
-
-    oauth2_provider.http.OAuth2ResponseRedirect checks the
-    URL it's redirecting to, and raises DisallowedRedirect
-    if it's not a recognised protocol. But this breaks apps
-    like Tusky, which registers its own protocol with Android
-    and then redirects to that in order to bring itself
-    back once authentication's done.
-
-    There's no way to fix this as a user of that package.
-    Hence, we have to monkey-patch that class.
-    """
-
-    def fake_validate_redirect(not_self, redirect_to):
-        return True
-
-    from oauth2_provider.http import OAuth2ResponseRedirect as OA2RR
-    OA2RR.validate_redirect = fake_validate_redirect
-    logger.info("Monkey-patched %s.", OA2RR)
-
-###########################
-
-class Apps(View):
-
-    def post(self, request, *args, **kwargs):
-
-        new_app = Application(
-            name = request.POST['client_name'],
-            redirect_uris = request.POST['redirect_uris'],
-            client_type = 'confidential',
-            authorization_grant_type = 'authorization-code',
-            user = None, # don't need to be logged in
-            )
-
-        new_app.save()
-
-        result = {
-            'id': new_app.id,
-            'client_id': new_app.client_id,
-            'client_secret': new_app.client_secret,
-            }
-
-        return JsonResponse(result)
-
-class Verify_Credentials(generics.GenericAPIView):
-
-    queryset = TrilbyUser.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        serializer = UserSerializerWithSource(request.user.localperson)
-        return JsonResponse(serializer.data)
-
-class User(generics.GenericAPIView):
-
-    queryset = trilby_models.Person.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        try:
-            whoever = get_object_or_404(
-                    self.get_queryset(),
-                    id = int(kwargs['user']),
-                    )
-        except ValueError:
-            return error_response(404, 'Non-decimal ID')
-
-        serializer = UserSerializer(whoever)
-        return JsonResponse(serializer.data)
-
 class SpecificStatus(generics.GenericAPIView):
 
     queryset = trilby_models.Status.objects.filter(remote_url=None)
@@ -646,145 +484,9 @@ class StatusRebloggedBy(generics.ListCreateAPIView):
                 safe=False, # it's a list
                 )
 
-class AbstractTimeline(generics.ListAPIView):
-
-    serializer_class = StatusSerializer
-    permission_classes = [
-            IsAuthenticated,
-            ]
-
-    def get_queryset(self, request):
-        raise NotImplementedError("cannot query abstract timeline")
-
-    def get(self, request):
-        queryset = self.get_queryset(request)
-        serializer = self.serializer_class(queryset,
-                many = True,
-                context = {
-                    'request': request,
-                    })
-        return Response(serializer.data)
-
-PUBLIC_TIMELINE_SLICE_LENGTH = 20
-
-class PublicTimeline(AbstractTimeline):
-
-    permission_classes = ()
-
-    def get_queryset(self, request):
-
-        result = trilby_models.Status.objects.filter(
-                visibility = trilby_utils.VISIBILITY_PUBLIC,
-                )[:PUBLIC_TIMELINE_SLICE_LENGTH]
-
-        return result
-
-class HomeTimeline(AbstractTimeline):
-
-    permission_classes = [
-            IsAuthenticated,
-            ]
-
-    def get_queryset(self, request):
-
-        result = request.user.localperson.inbox
-
-        logger.debug("Home timeline is %s",
-                result)
-
-        return result
-
 ########################################
 
 # TODO stub
-class AccountsSearch(generics.ListAPIView):
-
-    queryset = trilby_models.Person.objects.all()
-    serializer_class = UserSerializer
-
-    permission_classes = [
-            IsAuthenticated,
-            ]
-
-########################################
-
-# TODO stub
-class Search(View):
-
-    permission_classes = [
-            IsAuthenticated,
-            ]
-
-    def get(self, request, *args, **kwargs):
-
-        result = {
-                'accounts': [],
-                'statuses': [],
-                'hashtags': [],
-            }
-
-        return JsonResponse(result)
-
-########################################
-
-class UserFeed(View):
-
-    permission_classes = ()
-
-    def get(self, request, username, *args, **kwargs):
-
-        try:
-            the_person = get_object_or_404(
-                    self.get_queryset(),
-                    id = int(kwargs['user']),
-                    )
-        except ValueError:
-            return error_response(404, 'Non-decimal ID')
-
-        context = {
-                'self': request.build_absolute_uri(),
-                'user': the_person,
-                'statuses': the_person.outbox,
-                'server_name': settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-            }
-
-        result = render(
-                request=request,
-                template_name='account.atom.xml',
-                context=context,
-                content_type='application/atom+xml',
-                )
-
-        links = ', '.join(
-                [ '<{}>; rel="{}"; type="{}"'.format(
-                    settings.KEPI[uri].format(
-                        hostname = settings.KEPI['LOCAL_OBJECT_HOSTNAME'],
-                        username = the_person.id[1:],
-                        ),
-                    rel, mimetype)
-                    for uri, rel, mimetype in
-                    [
-                        ('USER_WEBFINGER_URLS',
-                            'lrdd',
-                            'application/xrd+xml',
-                            ),
-
-                        ('USER_FEED_URLS',
-                            'alternate',
-                            'application/atom+xml',
-                            ),
-
-                        ('USER_FEED_URLS',
-                            'alternate',
-                            'application/activity+json',
-                            ),
-                        ]
-                    ])
-
-        result['Link'] = links
-
-        return result
-
 ########################################
 
 class Notifications(generics.ListAPIView):
@@ -802,77 +504,3 @@ class Notifications(generics.ListAPIView):
 
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
-
-########################################
-
-class Emojis(View):
-    # FIXME
-    def get(self, request, *args, **kwargs):
-        return JsonResponse([],
-                safe=False)
-
-class Filters(View):
-    # FIXME
-    def get(self, request, *args, **kwargs):
-        return JsonResponse([],
-                safe=False)
-
-########################################
-
-class Followers_or_Following(generics.GenericAPIView):
-    serializer_class = UserSerializer
-    queryset = trilby_models.Person.objects.all()
-
-    def get(self, request, *args, **kwargs):
-
-        params = request.data
-
-        if request.user.localperson is None:
-            logger.debug('  -- user not logged in')
-            return error_response(401, 'Not logged in')
-
-        try:
-            the_person = get_object_or_404(
-                    self.get_queryset(),
-                    id = int(kwargs['user']),
-                    )
-        except ValueError:
-            return error_response(404, 'Non-decimal ID')
-
-        queryset = self._get_list_for(the_person)
-
-        if 'max_id' in params:
-            queryset = queryset.filter(
-                    id__le = params['max_id'],
-                    )
-
-        if 'since_id' in params:
-            queryset = queryset.filter(
-                    id__gt = params['since_id'],
-                    )
-
-        if 'limit' in params:
-            queryset = queryset[:params['limit']]
-
-        serializer = UserSerializer(
-                queryset,
-                many = True,
-                context = {
-                    'request': request,
-                    },
-                )
-
-        return JsonResponse(
-                serializer.data,
-                safe = False, # it's a list
-                status = 200,
-                reason = 'Done',
-                )
-
-class Followers(Followers_or_Following):
-    def _get_list_for(self, the_person):
-        return the_person.followers
-
-class Following(Followers_or_Following):
-    def _get_list_for(self, the_person):
-        return the_person.following

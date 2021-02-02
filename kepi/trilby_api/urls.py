@@ -13,7 +13,7 @@ urlpatterns = [
     path('api/v1/instance/', Instance.as_view()), # keep tootstream happy
     path('api/v1/apps', Apps.as_view()),
 
-    path('api/v1/accounts/verify_credentials', Verify_Credentials.as_view()),
+    path('api/v1/accounts/verify_credentials', VerifyCredentials.as_view()),
     path('api/v1/accounts/update_credentials',
         UpdateCredentials.as_view()),
 
