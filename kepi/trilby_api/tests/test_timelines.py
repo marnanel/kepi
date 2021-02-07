@@ -17,58 +17,21 @@ from unittest import skip
 # Tests for timelines. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
 
-TIMELINE_DATA = [
-        # Visibility is:
-        #   A=public: visible to anyone, and in public timelines
-        #   U=unlisted: visible to anyone, but not in public timelines
-        #   X=private: visible to followers and anyone tagged
-        #   D=direct: visible only to those who are tagged
-
-        # We haven't yet implemented:
-        #   - (user) tags
-        #   - hashtags
-        #   - user lists
-        #   - following users but hiding reblogs
-        # and when we do, these tests will need updating.
-        #
-        # All statuses are posted by alice.
-        #
-        # id   visibility  visible in
-        ( 'A', 'A',
-            ['public', 'follower', 'stranger', 'home', ], ),
-        ( 'B', 'U',
-            ['follower', 'stranger', 'home', ], ),
-        ( 'C', 'X',
-            ['follower', 'home',], ),
-        ( 'D', 'D',
-            ['home', ], ),
-
-        ]
-
 class TestTimelines(TrilbyTestCase):
 
-    def _set_up(self):
+    def add_status(self, source, visibility, content):
+        status = Status(
+                account = source,
+                content = content,
+                visibility = visibility,
+                )
+        status.save()
 
-        self._alice = create_local_person("alice")
+        logger.info("Created status: %s", status)
 
-        for (id, visibility, visible_in) in TIMELINE_DATA:
-            status = Status(
-                    account = self._alice,
-                    content = id,
-                    visibility = visibility,
-                    )
-            status.save()
-
-    def _check_timelines(self,
-            situation,
+    def timeline_contents(self,
             path,
             as_user):
-
-        expected = []
-        for (id, visibility, visible_in) in TIMELINE_DATA:
-            if situation in visible_in:
-                expected.append(f'<p>{id}</p>')
-        expected = sorted(expected)
 
         details = sorted([x['content'] \
                 for x in self.get(
@@ -76,56 +39,113 @@ class TestTimelines(TrilbyTestCase):
                 as_user = as_user,
                 )])
 
-        self.assertListEqual(
-                expected,
-                details,
-                msg = f"Visibility in '{situation}' mismatch: "+\
-                        f"expected {expected}, but got {details}.",
-                        )
+        result = ''
+        for detail in details:
 
-    def test_public(self):
-        self._set_up()
+            if detail.startswith('<p>') and detail.endswith('</p>'):
+                detail = detail[3:-4]
 
-        self._check_timelines(
-            situation = 'public',
-            path = '/api/v1/timelines/public',
-            as_user = None,
+            result += detail
+
+        logger.info("Timeline contents for %s as %s...",
+                path,
+                as_user)
+        logger.info("   ...are %s",
+                result)
+
+        return result
+
+    def test_public_as_anon(self):
+
+        alice = create_local_person("alice")
+
+        self.add_status(source=alice, content='A', visibility='A')
+        self.add_status(source=alice, content='B', visibility='U')
+        self.add_status(source=alice, content='C', visibility='X')
+        self.add_status(source=alice, content='D', visibility='D')
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/public',
+                as_user = None,
+                ),
+            'A',
             )
 
-    def test_follower(self):
-        self._set_up()
-        self._george = create_local_person("george")
+    def test_public_as_user(self):
+
+        alice = create_local_person("alice")
+
+        self.add_status(source=alice, content='A', visibility='A')
+        self.add_status(source=alice, content='B', visibility='U')
+        self.add_status(source=alice, content='C', visibility='X')
+        self.add_status(source=alice, content='D', visibility='D')
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/public',
+                as_user = alice,
+                ),
+            'A',
+            )
+
+    def test_public_as_follower(self):
+
+        alice = create_local_person("alice")
+        george = create_local_person("george")
 
         follow = Follow(
-                follower = self._george,
-                following = self._alice,
+                follower = george,
+                following = alice,
                 offer = None,
                 )
         follow.save()
 
-        self._check_timelines(
-            situation = 'public',
-            path = '/api/v1/timelines/public',
-            as_user = self._george,
+        self.add_status(source=alice, content='A', visibility='A')
+        self.add_status(source=alice, content='B', visibility='U')
+        self.add_status(source=alice, content='C', visibility='X')
+        self.add_status(source=alice, content='D', visibility='D')
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/public',
+                as_user = george,
+                ),
+            'AC',
             )
 
-    def test_stranger(self):
-        self._set_up()
-        self._henry = create_local_person("henry")
+    def test_public_as_stranger(self):
 
-        self._check_timelines(
-            situation = 'public',
-            path = '/api/v1/timelines/public',
-            as_user = self._henry,
+        alice = create_local_person("alice")
+        henry = create_local_person("henry")
+
+        self.add_status(source=alice, content='A', visibility='A')
+        self.add_status(source=alice, content='B', visibility='U')
+        self.add_status(source=alice, content='C', visibility='X')
+        self.add_status(source=alice, content='D', visibility='D')
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/public',
+                as_user = henry,
+                ),
+            'A',
             )
 
-    def test_home(self):
-        self._set_up()
+    def test_home_as_user(self):
+        alice = create_local_person("alice")
 
-        self._check_timelines(
-            situation = 'home',
-            path = '/api/v1/timelines/home',
-            as_user = self._alice,
+        self.add_status(source=alice, content='A', visibility='A')
+        self.add_status(source=alice, content='B', visibility='U')
+        self.add_status(source=alice, content='C', visibility='X')
+        self.add_status(source=alice, content='D', visibility='D')
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home',
+                as_user = alice,
+                ),
+            'ABCD',
             )
 
     @skip("to be implemented later")
