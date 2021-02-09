@@ -19,7 +19,7 @@ import httpretty
 # Tests for timelines. API docs are here:
 # https://docs.joinmastodon.org/methods/statuses/
 
-class TestTimelines(TrilbyTestCase):
+class TimelineTestCase(TrilbyTestCase):
 
     def add_status(self, source, visibility, content):
         status = Status(
@@ -60,7 +60,9 @@ class TestTimelines(TrilbyTestCase):
 
         return result
 
-    def test_public_as_anon(self):
+class TestPublicTimeline(TimelineTestCase):
+
+    def test_as_anon(self):
 
         alice = create_local_person("alice")
 
@@ -77,7 +79,7 @@ class TestTimelines(TrilbyTestCase):
             'A',
             )
 
-    def test_public_as_user(self):
+    def test_as_user(self):
 
         alice = create_local_person("alice")
 
@@ -94,7 +96,7 @@ class TestTimelines(TrilbyTestCase):
             'A',
             )
 
-    def test_public_as_follower(self):
+    def test_as_follower(self):
 
         alice = create_local_person("alice")
         george = create_local_person("george")
@@ -119,7 +121,7 @@ class TestTimelines(TrilbyTestCase):
             'AC',
             )
 
-    def test_public_as_stranger(self):
+    def test_as_stranger(self):
 
         alice = create_local_person("alice")
         henry = create_local_person("henry")
@@ -138,7 +140,7 @@ class TestTimelines(TrilbyTestCase):
             )
 
     @httpretty.activate()
-    def test_public_local_and_remote(self):
+    def test_local_and_remote(self):
 
         alice = create_local_person("alice")
         peter = create_remote_person(
@@ -194,7 +196,7 @@ class TestTimelines(TrilbyTestCase):
             '',
             )
 
-    def test_public_only_media(self):
+    def test_only_media(self):
 
         # We don't support added media at present anyway,
         # so turning this on will always get the empty set
@@ -213,7 +215,7 @@ class TestTimelines(TrilbyTestCase):
             '',
             )
 
-    def test_public_max_since_and_min(self):
+    def test_max_since_and_min(self):
 
         alice = create_local_person("alice")
 
@@ -245,7 +247,7 @@ class TestTimelines(TrilbyTestCase):
             'CD',
             )
 
-    def test_public_limit(self):
+    def test_limit(self):
 
         alice = create_local_person("alice")
 
@@ -275,9 +277,9 @@ class TestTimelines(TrilbyTestCase):
             message = 'default is 20',
             )
 
-    ###### home timeline
+class TestHomeTimeline(TimelineTestCase):
 
-    def test_home_as_user(self):
+    def test_as_user(self):
         alice = create_local_person("alice")
 
         self.add_status(source=alice, content='A', visibility='A')
