@@ -279,22 +279,187 @@ class TestPublicTimeline(TimelineTestCase):
 
 class TestHomeTimeline(TimelineTestCase):
 
-    def test_as_user(self):
-        alice = create_local_person("alice")
+    def add_standard_statuses(self):
+        self.alice = create_local_person("alice")
+        self.bob = create_local_person("bob")
+        self.carol = create_local_person("carol")
 
-        self.add_status(source=alice, content='A', visibility='A')
-        self.add_status(source=alice, content='B', visibility='U')
-        self.add_status(source=alice, content='C', visibility='X')
-        self.add_status(source=alice, content='D', visibility='D')
+        self.add_status(source=self.bob, content='A', visibility='A')
+        self.add_status(source=self.carol, content='B', visibility='A')
+        self.add_status(source=self.carol, content='C', visibility='A')
+        self.add_status(source=self.bob, content='D', visibility='A')
+
+        Follow(
+                follower=self.alice,
+                following=self.bob,
+                offer=None).save()
+
+    def follow_carol(self):
+        Follow(
+                follower=self.alice,
+                following=self.carol,
+                offer=None).save()
+
+    def test_not_anon(self):
+        found = self.get(
+                path = '/api/v1/timelines/home',
+                as_user = None,
+                expect_result = 401,
+                )
+
+    def test_simple(self):
+
+        self.add_standard_statuses()
 
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/home',
-                as_user = alice,
+                as_user = self.alice,
+                ),
+            'AD',
+            )
+
+        self.follow_carol()
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home',
+                as_user = self.alice,
                 ),
             'ABCD',
             )
 
+    def test_max_since_and_min(self):
+
+        self.add_standard_statuses()
+
+        c_id = '3' # FIXME hack
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home?since='+c_id,
+                as_user = self.alice,
+                ),
+            'D',
+            )
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home?max_id='+c_id,
+                as_user = self.alice,
+                ),
+            'A',
+            )
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home?min_id='+c_id,
+                as_user = self.alice,
+                ),
+            'D',
+            )
+
+        self.follow_carol()
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home?since='+c_id,
+                as_user = self.alice,
+                ),
+            'D',
+            )
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home?max_id='+c_id,
+                as_user = self.alice,
+                ),
+            'ABC',
+            )
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home?min_id='+c_id,
+                as_user = self.alice,
+                ),
+            'CD',
+            )
+
+    def test_limit(self):
+
+        self.alice = create_local_person("alice")
+        self.bob = create_local_person("bob")
+        self.carol = create_local_person("carol")
+
+        alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+        for i in range(len(alphabet)):
+            self.add_status(
+                    source=self.bob,
+                    content=alphabet[i],
+                    visibility='A',
+                    )
+
+            self.add_status(
+                    source=self.carol,
+                    content=alphabet[i].lower(),
+                    visibility='A',
+                    )
+
+        for i in range(len(alphabet)):
+            self.assertEqual(
+                self.timeline_contents(
+                    path = '/api/v1/timelines/home?limit='+str(i),
+                    as_user = self.alice,
+                    ),
+                alphabet[:i],
+                )
+
+        # the default is specified as 20
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home',
+                as_user = self.alice,
+                ),
+            alphabet[:20],
+            message = 'default is 20',
+            )
+
+    @httpretty.activate()
+    def test_local(self):
+
+        self.add_standard_statuses()
+
+        self.peter = create_remote_person(
+                remote_url = "https://example.com/users/peter",
+                name = "peter",
+                auto_fetch = True,
+                )
+        self.add_status(source=self.peter, content='P', visibility='A')
+        self.add_status(source=self.peter, content='Q', visibility='A')
+        Follow(
+                follower = self.alice,
+                following = self.peter,
+                offer = None,
+                ).save()
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home',
+                as_user = self.alice,
+                ),
+            'ABCDPQ',
+            )
+
+        self.assertEqual(
+                self.timeline_contents(
+                    path = '/api/v1/timelines/home?local=true',
+                    as_user = self.alice,
+                    ),
+                'ABCD',
+                )
+
+class TestTimelinesNotImplemented(TimelineTestCase):
     @skip("to be implemented later")
     def test_hashtag(self):
         raise NotImplementedError()
