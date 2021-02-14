@@ -278,7 +278,7 @@ class Status(PolymorphicModel):
                 trilby_signals.reblogged.send(sender=self)
 
     def __str__(self):
-        return '[Status %s: %s]' % (
+        return '%s: %s' % (
                 self.id,
                 self.content,
                 )
