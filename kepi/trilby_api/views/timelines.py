@@ -31,6 +31,7 @@ import json
 import re
 import random
 
+DEFAULT_TIMELINE_SLICE_LENGTH = 20
 
 class AbstractTimeline(generics.ListAPIView):
 
@@ -39,29 +40,76 @@ class AbstractTimeline(generics.ListAPIView):
             IsAuthenticated,
             ]
 
-    def get_queryset(self, request):
+    def get_queryset(self):
         raise NotImplementedError("cannot query abstract timeline")
 
-    def get(self, request):
-        queryset = self.get_queryset(request)
-        serializer = self.serializer_class(queryset,
-                many = True,
-                context = {
-                    'request': request,
-                    })
-        return Response(serializer.data)
+    def filter_queryset(self, queryset,
+            min_id = None,
+            max_id = None,
+            since_id = None,
+            local = False,
+            remote = False,
+            limit = DEFAULT_TIMELINE_SLICE_LENGTH,
+            *args, **kwargs,
+            ):
 
-PUBLIC_TIMELINE_SLICE_LENGTH = 20
+        logger.debug("Timeline queryset: %s", queryset)
+
+        if 'min_id' in self.request.query_params:
+            queryset = queryset.filter(
+                    id__ge = int(self.request.query_params['min_id']),
+                    )
+            logger.debug("  -- after min_id: %s", queryset)
+
+        if 'max_id' in self.request.query_params:
+            queryset = queryset.filter(
+                    id__le = int(self.request.query_params['max_id']),
+                    )
+            logger.debug("  -- after max_id: %s", queryset)
+
+        if 'since_id' in self.request.query_params:
+            queryset = queryset.filter(
+                    id__gt = int(self.request.query_params['since_id']),
+                    )
+            logger.debug("  -- after since_id: %s", queryset)
+
+        if 'local' in self.request.query_params:
+            queryset = queryset.filter(
+                    local = bool(self.request.query_params['local']),
+                    )
+            logger.debug("  -- after local: %s", queryset)
+
+        if 'remote' in self.request.query_params:
+            queryset = queryset.filter(
+                    remote = bool(self.request.query_params['remote']),
+                    )
+            logger.debug("  -- after remote: %s", queryset)
+
+        # Slicing the queryset must be done last,
+        # since running operations on a sliced queryset
+        # causes evaluation.
+        limit = int(self.request.query_params.get('limit',
+                default = DEFAULT_TIMELINE_SLICE_LENGTH,
+                ))
+
+        queryset = queryset[:limit]
+
+        logger.debug("  -- after slice of %d: %s",
+                limit,
+                queryset,
+                )
+
+        return queryset
 
 class PublicTimeline(AbstractTimeline):
 
     permission_classes = ()
 
-    def get_queryset(self, request):
+    def get_queryset(self):
 
         result = trilby_models.Status.objects.filter(
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
-                )[:PUBLIC_TIMELINE_SLICE_LENGTH]
+                )
 
         return result
 
@@ -71,16 +119,14 @@ class HomeTimeline(AbstractTimeline):
             IsAuthenticated,
             ]
 
-    def get_queryset(self, request):
+    def get_queryset(self):
 
-        result = request.user.localperson.inbox
+        result = self.request.user.localperson.inbox
 
         logger.debug("Home timeline is %s",
                 result)
 
         return result
-
-########################################
 
 ########################################
 
