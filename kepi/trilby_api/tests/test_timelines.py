@@ -35,12 +35,14 @@ class TimelineTestCase(TrilbyTestCase):
 
     def timeline_contents(self,
             path,
+            data = None,
             as_user = None,
             ):
 
         details = sorted([x['content'] \
                 for x in self.get(
                 path = path,
+                data = data,
                 as_user = as_user,
                 )])
 
@@ -163,35 +165,40 @@ class TestPublicTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?local=true',
+                path = '/api/v1/timelines/public',
+                data = {'local': True},
                 ),
             'AC',
             )
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?local=false',
+                path = '/api/v1/timelines/public',
+                data = {'local': False},
                 ),
             'ABCD',
             )
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?remote=true',
+                path = '/api/v1/timelines/public',
+                data = {'remote': True},
                 ),
             'BD',
             )
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?remote=false',
+                path = '/api/v1/timelines/public',
+                data = {'remote': False},
                 ),
             'ABCD',
             )
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?local=true&remote=true',
+                path = '/api/v1/timelines/public',
+                data = {'local': True, 'remote': True},
                 ),
             '',
             )
@@ -210,7 +217,8 @@ class TestPublicTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?only_media=true',
+                path = '/api/v1/timelines/public',
+                data = {'only_media': True},
                 ),
             '',
             )
@@ -228,21 +236,24 @@ class TestPublicTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?since='+c_id,
+                path = '/api/v1/timelines/public',
+                data = {'since': status_c.id},
                 ),
             'D',
             )
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?max_id='+c_id,
+                path = '/api/v1/timelines/public',
+                data = {'max_id': status_c.id},
                 ),
             'ABC',
             )
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/public?min_id='+c_id,
+                path = '/api/v1/timelines/public',
+                data = {'min_id': status_c.id},
                 ),
             'CD',
             )
@@ -260,10 +271,11 @@ class TestPublicTimeline(TimelineTestCase):
                     visibility='A',
                     )
 
-        for i in range(len(alphabet)):
+        for i in range(1, len(alphabet)):
             self.assertEqual(
                 self.timeline_contents(
-                    path = '/api/v1/timelines/public?limit='+str(i),
+                    path = '/api/v1/timelines/public',
+                    data = {'limit': i},
                     ),
                 alphabet[:i],
                 )
@@ -274,7 +286,7 @@ class TestPublicTimeline(TimelineTestCase):
                 path = '/api/v1/timelines/public',
                 ),
             alphabet[:20],
-            message = 'default is 20',
+            msg = 'default is 20',
             )
 
 class TestHomeTimeline(TimelineTestCase):
@@ -307,7 +319,7 @@ class TestHomeTimeline(TimelineTestCase):
                 expect_result = 401,
                 )
 
-    def test_simple(self):
+    def test_0_simple(self):
 
         self.add_standard_statuses()
 
@@ -337,7 +349,8 @@ class TestHomeTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/home?since='+c_id,
+                path = '/api/v1/timelines/home',
+                data = {'since': c_id},
                 as_user = self.alice,
                 ),
             'D',
@@ -345,7 +358,8 @@ class TestHomeTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/home?max_id='+c_id,
+                path = '/api/v1/timelines/home',
+                data = {'max_id': c_id},
                 as_user = self.alice,
                 ),
             'A',
@@ -353,7 +367,8 @@ class TestHomeTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/home?min_id='+c_id,
+                path = '/api/v1/timelines/home',
+                data = {'min_id': c_id},
                 as_user = self.alice,
                 ),
             'D',
@@ -363,7 +378,8 @@ class TestHomeTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/home?since='+c_id,
+                path = '/api/v1/timelines/home',
+                data = {'since': c_id},
                 as_user = self.alice,
                 ),
             'D',
@@ -371,7 +387,8 @@ class TestHomeTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/home?max_id='+c_id,
+                path = '/api/v1/timelines/home',
+                data = {'max_id': c_id},
                 as_user = self.alice,
                 ),
             'ABC',
@@ -379,7 +396,8 @@ class TestHomeTimeline(TimelineTestCase):
 
         self.assertEqual(
             self.timeline_contents(
-                path = '/api/v1/timelines/home?min_id='+c_id,
+                path = '/api/v1/timelines/home',
+                data = {'min_id': c_id},
                 as_user = self.alice,
                 ),
             'CD',
@@ -390,6 +408,11 @@ class TestHomeTimeline(TimelineTestCase):
         self.alice = create_local_person("alice")
         self.bob = create_local_person("bob")
         self.carol = create_local_person("carol")
+
+        Follow(
+                follower=self.alice,
+                following=self.bob,
+                offer=None).save()
 
         alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
@@ -406,10 +429,11 @@ class TestHomeTimeline(TimelineTestCase):
                     visibility='A',
                     )
 
-        for i in range(len(alphabet)):
+        for i in range(1, len(alphabet)):
             self.assertEqual(
                 self.timeline_contents(
-                    path = '/api/v1/timelines/home?limit='+str(i),
+                    path = '/api/v1/timelines/home',
+                    data = {'limit': i},
                     as_user = self.alice,
                     ),
                 alphabet[:i],
@@ -422,7 +446,7 @@ class TestHomeTimeline(TimelineTestCase):
                 as_user = self.alice,
                 ),
             alphabet[:20],
-            message = 'default is 20',
+            msg = 'default is 20',
             )
 
     @httpretty.activate()
@@ -453,7 +477,8 @@ class TestHomeTimeline(TimelineTestCase):
 
         self.assertEqual(
                 self.timeline_contents(
-                    path = '/api/v1/timelines/home?local=true',
+                    path = '/api/v1/timelines/home',
+                    data = {'local': True},
                     as_user = self.alice,
                     ),
                 'ABCD',
