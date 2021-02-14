@@ -606,7 +606,7 @@ class LocalPerson(Person):
 
         all_your_friends_public_posts = trilby_models.Status.objects.filter(
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
-                account__rel_following__following = self,
+                account__rel_followers__follower = self,
                 )
 
         logger.debug("%s.inbox: all friends' public: %s",
