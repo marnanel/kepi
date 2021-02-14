@@ -74,11 +74,11 @@ class TrilbyTestCase(TestCase):
         return result
 
     def request(self, verb, path,
-            data={},
+            data = None,
             as_user=None,
             expect_result=200,
             parse_result=True,
-            *args, **kwargs,
+            **extra,
             ):
 
         c = APIClient()
@@ -92,8 +92,7 @@ class TrilbyTestCase(TestCase):
                 path=path,
                 data=data,
                 format='json',
-                *args,
-                **kwargs,
+                extra=extra,
                 )
 
         if expect_result is not None:
