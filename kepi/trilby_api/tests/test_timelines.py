@@ -472,7 +472,7 @@ class TestHomeTimeline(TimelineTestCase):
                 path = '/api/v1/timelines/home',
                 as_user = self.alice,
                 ),
-            'ABCDPQ',
+            'ADPQ',
             )
 
         self.assertEqual(
@@ -481,7 +481,7 @@ class TestHomeTimeline(TimelineTestCase):
                     data = {'local': True},
                     as_user = self.alice,
                     ),
-                'ABCD',
+                'AD',
                 )
 
 class TestTimelinesNotImplemented(TimelineTestCase):
