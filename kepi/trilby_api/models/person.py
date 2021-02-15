@@ -9,6 +9,7 @@ logger = logging.getLogger(name='kepi')
 
 from polymorphic.models import PolymorphicModel
 from django.db import models
+from django.db.models import Q
 from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
@@ -591,41 +592,30 @@ class LocalPerson(Person):
 
         import kepi.trilby_api.models as trilby_models
 
-        # tags aren't implemented; FIXME
-        everything_youre_tagged_in = trilby_models.Status.objects.none()
+        # "Everything you're tagged in":
+        #   tags aren't implemented; FIXME
 
-        logger.debug("%s.inbox: tagged in: %s",
-                self, everything_youre_tagged_in)
+        all_your_posts = Q(account = self)
 
-        all_your_posts = trilby_models.Status.objects.filter(
-                account = self,
-                )
-
-        logger.debug("%s.inbox: all your posts: %s",
-                self, all_your_posts)
-
-        all_your_friends_public_posts = trilby_models.Status.objects.filter(
+        all_your_friends_public_posts = Q(
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
                 account__rel_followers__follower = self,
                 )
 
-        logger.debug("%s.inbox: all friends' public: %s",
-                self, all_your_friends_public_posts)
-
-        all_your_mutuals_private_posts = trilby_models.Status.objects.filter(
+        all_your_mutuals_private_posts = Q(
                 visibility = trilby_utils.VISIBILITY_PRIVATE,
                 account__rel_following__following = self,
                 account__rel_followers__follower = self,
                 )
 
-        logger.debug("%s.inbox: all mutuals' private: %s",
-                self, all_your_mutuals_private_posts)
+        result = trilby_models.Status.objects.filter(
+                all_your_posts | \
+                        all_your_friends_public_posts | \
+                        all_your_mutuals_private_posts
+                        )
 
-        result = everything_youre_tagged_in.union(
-                all_your_posts,
-                all_your_friends_public_posts,
-                all_your_mutuals_private_posts,
-                )
+        logger.debug("%s.inbox: contains %s",
+                self, result)
 
         return result
 
