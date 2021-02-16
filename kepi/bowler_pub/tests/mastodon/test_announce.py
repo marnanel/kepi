@@ -125,7 +125,7 @@ class Tests(TestCase):
                 )
 
         self.assertEqual(
-                original_status.content,
+                original_status.content_source,
                 'Hello world',
                 msg = 'the status was reblogged at the end',
                 )

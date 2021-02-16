@@ -1,8 +1,17 @@
+# trilby_api/tests/__init__.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2021 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
 from django.test import TestCase, Client
 from rest_framework.test import force_authenticate, APIClient
 from kepi.trilby_api.models import *
 from django.conf import settings
 import json
+
+import logging
+logger = logging.getLogger(name='kepi')
 
 ACCOUNT_EXPECTED = {
         'username': 'alice',
@@ -154,7 +163,7 @@ def create_local_status(
     result = Status(
         remote_url = None,
         account = posted_by,
-        content = content,
+        content_source = content,
         **kwargs,
         )
 

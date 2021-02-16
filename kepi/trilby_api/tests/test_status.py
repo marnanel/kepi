@@ -685,7 +685,7 @@ class TestGetStatus(TrilbyTestCase):
                 remote_url = "https://example.org/people/bob/status/100",
                 account = self._bob,
                 in_reply_to = self._alice_status,
-                content = "Buttercups our gold.",
+                content_source = "Buttercups our gold.",
                 )
         self._bob_status.save()
 

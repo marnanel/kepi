@@ -24,7 +24,7 @@ class TimelineTestCase(TrilbyTestCase):
     def add_status(self, source, visibility, content):
         status = Status(
                 account = source,
-                content = content,
+                content_source = content,
                 visibility = visibility,
                 )
         status.save()
@@ -39,12 +39,22 @@ class TimelineTestCase(TrilbyTestCase):
             as_user = None,
             ):
 
-        details = sorted([x['content'] \
-                for x in self.get(
+        logger.info("Timeline contents for %s as %s...",
+                path,
+                as_user)
+
+        found = self.get(
                 path = path,
                 data = data,
                 as_user = as_user,
-                )])
+                )
+
+        logger.info("  -- retrieved")
+
+        details = sorted([x['content'] for x in found])
+
+        logger.debug("   -- sorted as %s",
+                details)
 
         result = ''
         for detail in details:
@@ -54,10 +64,7 @@ class TimelineTestCase(TrilbyTestCase):
 
             result += detail
 
-        logger.info("Timeline contents for %s as %s...",
-                path,
-                as_user)
-        logger.info("   ...are %s",
+        logger.info("   -- contents are %s",
                 result)
 
         return result
@@ -448,6 +455,49 @@ class TestHomeTimeline(TimelineTestCase):
             alphabet[:20],
             msg = 'default is 20',
             )
+
+    def temp_general_test_limit(self, count):
+        # XXX temp
+
+        self.alice = create_local_person("alice")
+        self.bob = create_local_person("bob")
+        self.carol = create_local_person("carol")
+
+        Follow(
+                follower=self.alice,
+                following=self.bob,
+                offer=None).save()
+
+        for i in range(100):
+            self.add_status(
+                    source=self.bob,
+                    content=str(i),
+                    visibility='A',
+                    )
+
+            self.add_status(
+                    source=self.carol,
+                    content=str(i),
+                    visibility='A',
+                    )
+
+        LOOP_COUNT = 50
+        for j in range(LOOP_COUNT):
+            logger.info("----------- Loop: %d of %d", j, LOOP_COUNT)
+            for i in [count]:
+                self.assertIsNotNone(
+                    self.timeline_contents(
+                        path = '/api/v1/timelines/home',
+                        data = {'limit': i},
+                        as_user = self.alice,
+                        ),
+                    )
+
+    def xxx_test_1(self):
+        self.temp_general_test_limit(1)
+
+    def xxx_test_100(self):
+        self.temp_general_test_limit(100)
 
     @httpretty.activate()
     def test_local(self):
