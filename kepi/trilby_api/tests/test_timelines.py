@@ -21,11 +21,13 @@ import httpretty
 
 class TimelineTestCase(TrilbyTestCase):
 
-    def add_status(self, source, visibility, content):
+    def add_status(self, source, visibility, content,
+            remote_url = None):
         status = Status(
                 account = source,
                 content_source = content,
                 visibility = visibility,
+                remote_url = remote_url,
                 )
         status.save()
 
@@ -159,9 +161,11 @@ class TestPublicTimeline(TimelineTestCase):
                 )
 
         self.add_status(source=alice, content='A', visibility='A')
-        self.add_status(source=peter, content='B', visibility='A')
+        self.add_status(source=peter, content='B', visibility='A',
+                remote_url = 'https://example.com/users/peter/B')
         self.add_status(source=alice, content='C', visibility='A')
-        self.add_status(source=peter, content='D', visibility='A')
+        self.add_status(source=peter, content='D', visibility='A',
+                remote_url = 'https://example.com/users/peter/D')
 
         self.assertEqual(
             self.timeline_contents(
@@ -509,8 +513,15 @@ class TestHomeTimeline(TimelineTestCase):
                 name = "peter",
                 auto_fetch = True,
                 )
-        self.add_status(source=self.peter, content='P', visibility='A')
-        self.add_status(source=self.peter, content='Q', visibility='A')
+
+        for letter in 'PQ':
+            self.add_status(source=self.peter,
+                    remote_url = 'https://example.com/users/peter/{}'.format(
+                        letter,
+                        ),
+                    content=letter,
+                    visibility='A')
+
         Follow(
                 follower = self.alice,
                 following = self.peter,
