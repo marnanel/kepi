@@ -57,13 +57,13 @@ class AbstractTimeline(generics.ListAPIView):
 
         if 'min_id' in self.request.query_params:
             queryset = queryset.filter(
-                    id__ge = int(self.request.query_params['min_id']),
+                    id__gte = int(self.request.query_params['min_id']),
                     )
             logger.debug("  -- after min_id: %s", queryset)
 
         if 'max_id' in self.request.query_params:
             queryset = queryset.filter(
-                    id__le = int(self.request.query_params['max_id']),
+                    id__lte = int(self.request.query_params['max_id']),
                     )
             logger.debug("  -- after max_id: %s", queryset)
 
