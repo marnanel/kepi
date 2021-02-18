@@ -87,6 +87,12 @@ class AbstractTimeline(generics.ListAPIView):
                     )
             logger.debug("  -- after remote: %s", queryset)
 
+        if 'only_media' in self.request.query_params:
+            # We don't support media at present, so this will give us
+            # the empty set
+            queryset = queryset.none()
+            logger.debug("  -- after only_media: %s", queryset)
+
         # Slicing the queryset must be done last,
         # since running operations on a sliced queryset
         # causes evaluation.
