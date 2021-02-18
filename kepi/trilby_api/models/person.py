@@ -597,10 +597,26 @@ class LocalPerson(Person):
 
         all_your_posts = Q(account = self)
 
+        # note: querysets don't get evaluated unless used,
+        # so the debug logging doesn't cause a db hit
+        # unless it's actually turned on.
+
+        logger.debug("%s.inbox: your own posts: %s",
+                self,
+                trilby_models.Status.objects.filter(
+                    all_your_posts
+                    ))
+
         all_your_friends_public_posts = Q(
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
                 account__rel_followers__follower = self,
                 )
+
+        logger.debug("%s.inbox: your friends' public posts: %s",
+                self,
+                trilby_models.Status.objects.filter(
+                    all_your_friends_public_posts
+                    ))
 
         all_your_mutuals_private_posts = Q(
                 visibility = trilby_utils.VISIBILITY_PRIVATE,
@@ -608,13 +624,19 @@ class LocalPerson(Person):
                 account__rel_followers__follower = self,
                 )
 
+        logger.debug("%s.inbox: your mutuals' private posts: %s",
+                self,
+                trilby_models.Status.objects.filter(
+                    all_your_mutuals_private_posts
+                    ))
+
         result = trilby_models.Status.objects.filter(
                 all_your_posts | \
                         all_your_friends_public_posts | \
                         all_your_mutuals_private_posts
                         )
 
-        logger.debug("%s.inbox: contains %s",
+        logger.info("%s.inbox: contains %s",
                 self, result)
 
         return result
