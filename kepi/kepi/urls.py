@@ -16,16 +16,19 @@ from . import settings
 fix_oauth2_redirects()
 
 oauth2_endpoint_views = [
-    path('authorize', oauth2_views.AuthorizationView.as_view(), name="authorize"),
-    path('token', oauth2_views.TokenView.as_view(), name="token"),
-    path('revoke-token', oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
+    url(r'authorize/$', oauth2_views.AuthorizationView.as_view(), name="authorize"),
+    url(r'token/$', oauth2_views.TokenView.as_view(), name="token"),
+    url(r'revoke-token/$', oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
 ]
+
+oauth2_patterns = (oauth2_endpoint_views, "oauth2_provider")
 
 ##################################################
 
 urlpatterns = [
         path(r'admin/', admin.site.urls),
         path(r'accounts/', include('django.contrib.auth.urls')),
+        path(r'oauth2/', include(oauth2_patterns)),
 
         # kepi's own stuff
         path(r'', include(kepi.tophat_ui.urls)),
