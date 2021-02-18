@@ -73,17 +73,15 @@ class AbstractTimeline(generics.ListAPIView):
                     )
             logger.debug("  -- after since_id: %s", queryset)
 
-        if 'local' in self.request.query_params:
+        if self.request.query_params.get('local', '')=='true':
             queryset = queryset.filter(
-                    remote_url__isnull = \
-                            bool(self.request.query_params['local']),
+                    remote_url__isnull = True,
                     )
             logger.debug("  -- after local: %s", queryset)
 
-        if 'remote' in self.request.query_params:
+        if self.request.query_params.get('remote', '')=='true':
             queryset = queryset.filter(
-                    remote_url__isnull = \
-                            not bool(self.request.query_params['remote']),
+                    remote_url__isnull = False,
                     )
             logger.debug("  -- after remote: %s", queryset)
 

@@ -154,7 +154,7 @@ class TestPublicTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/public',
-                data = {'local': True},
+                data = {'local': 'true'},
                 ),
             'AC',
             )
@@ -162,7 +162,7 @@ class TestPublicTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/public',
-                data = {'local': False},
+                data = {'local': 'false'},
                 ),
             'ABCD',
             )
@@ -170,7 +170,7 @@ class TestPublicTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/public',
-                data = {'remote': True},
+                data = {'remote': 'true'},
                 ),
             'BD',
             )
@@ -178,7 +178,7 @@ class TestPublicTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/public',
-                data = {'remote': False},
+                data = {'remote': 'false'},
                 ),
             'ABCD',
             )
@@ -186,7 +186,7 @@ class TestPublicTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/public',
-                data = {'local': True, 'remote': True},
+                data = {'local': 'true', 'remote': 'true'},
                 ),
             '',
             )
@@ -206,7 +206,7 @@ class TestPublicTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/public',
-                data = {'only_media': True},
+                data = {'only_media': 'true'},
                 ),
             '',
             )
@@ -473,7 +473,7 @@ class TestHomeTimeline(TimelineTestCase):
         self.assertEqual(
                 self.timeline_contents(
                     path = '/api/v1/timelines/home',
-                    data = {'local': True},
+                    data = {'local': 'true'},
                     as_user = self.alice,
                     ),
                 'AD',
