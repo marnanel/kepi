@@ -59,7 +59,15 @@ class Status(PolymorphicModel):
             blank = True,
             )
 
-    content = models.TextField(
+    content_source = models.TextField(
+            help_text = 'Text of the status, as entered',
+        )
+
+    content_as_html_denormed = models.TextField(
+            help_text = 'HTML rendering of content_source. Do not edit!',
+            editable = False, 
+            null = True,
+            default = None,
         )
 
     created_at = models.DateTimeField(
@@ -72,11 +80,18 @@ class Status(PolymorphicModel):
             default = False,
             )
 
-    spoiler_text = models.CharField(
+    spoiler_source = models.CharField(
             max_length = 255,
             null = True,
             blank = True,
             default = '',
+            )
+
+    spoiler_as_html_denormed = models.CharField(
+            max_length = 255,
+            null = True,
+            editable = False,
+            default = None,
             )
 
     visibility = models.CharField(
@@ -106,6 +121,44 @@ class Status(PolymorphicModel):
             null = True,
             default = None,
             )
+
+    @property
+    def content_as_html(self):
+        """
+        Returns an HTML rendition of content_source.
+        The return value will be cached.
+        Saving the record will clear this cache.
+        """
+
+        if self.content_as_html_denormed is not None:
+            return self.content_as_html_denormed
+
+        if self.content_source is None:
+            result = '<p></p>'
+        else:
+            result = markdown.markdown(self.content_source)
+
+        self.content_as_html_denormed = result
+        return result
+
+    @property
+    def spoiler_as_html(self):
+        """
+        Returns an HTML rendition of spoiler_source.
+        The return value will be cached.
+        Saving the record will clear this cache.
+        """
+
+        if self.spoiler_as_html_denormed is not None:
+            return self.spoiler_as_html_denormed
+
+        if self.spoiler_source is None:
+            result = '<p></p>'
+        else:
+            result = markdown.markdown(self.spoiler_source)
+
+        self.spoiler_as_html_denormed = result
+        return result
 
     @property
     def emojis(self):
@@ -268,6 +321,19 @@ class Status(PolymorphicModel):
         if self.in_reply_to == self:
             raise ValueError("Status can't be a reply to itself")
 
+        if not newly_made:
+            old = self.__class__.objects.get(pk=self.pk)
+
+            if self.content_source != old.content_source:
+                logger.debug("%s: content changed; flushing HTML cache",
+                        self)
+                self.content_as_html_denormed = None
+
+            if self.spoiler_source != old.spoiler_source:
+                logger.debug("%s: spoiler changed; flushing HTML cache",
+                        self)
+                self.spoiler_as_html_denormed = None
+
         super().save(*args, **kwargs)
 
         if send_signal and newly_made:
@@ -278,9 +344,9 @@ class Status(PolymorphicModel):
                 trilby_signals.reblogged.send(sender=self)
 
     def __str__(self):
-        return '[Status %s: %s]' % (
+        return '%s: %s' % (
                 self.id,
-                self.content,
+                self.content_source,
                 )
 
     @classmethod
@@ -350,20 +416,8 @@ class Status(PolymorphicModel):
         # HTML and one is plain text. But the docs don't
         # seem to be forthcoming on this point, so we'll
         # just have to wait until we find out.
-        return self.content
+        return self.content_source
 
     @property
     def is_local(self):
         return self.remote_url is None
-
-    @property
-    def content_as_html(self):
-        if not self.content:
-            return '<p></p>'
-        return markdown.markdown(self.content)
-
-    @property
-    def spoiler_text_as_html(self):
-        if not self.spoiler_text:
-            return '<p></p>'
-        return markdown.markdown(self.spoiler_text)

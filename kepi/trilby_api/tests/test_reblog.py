@@ -23,7 +23,7 @@ class TestReblog(TestCase):
                 )
 
         reblog = create_local_status(
-                content = original.content,
+                content = original.content_source,
                 posted_by = bob,
                 reblog_of = original,
                 )
@@ -48,7 +48,7 @@ class TestReblog(TestCase):
                 )
 
         reblog = create_local_status(
-                content = original.content,
+                content = original.content_source,
                 posted_by = bob,
                 reblog_of = original,
                 )
@@ -87,7 +87,7 @@ class TestReblog(TestCase):
         for i in range(1, 20):
 
             reblog = create_local_status(
-                    content = original.content,
+                    content = original.content_source,
                     posted_by = bob,
                     reblog_of = original,
                     )

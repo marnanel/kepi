@@ -231,9 +231,9 @@ def on_note(fields, address):
             remote_url = fields['id'],
             account = poster,
             in_reply_to = in_reply_to,
-            content = fields['content'],
+            content_source = fields['content'],
             sensitive = is_sensitive,
-            spoiler_text = spoiler_text,
+            spoiler_source = spoiler_text,
             visibility = visibility,
             language = language,
                 )

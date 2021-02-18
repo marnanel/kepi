@@ -135,18 +135,18 @@ class Reblog(DoSomethingWithStatus):
         # https://github.com/tootsuite/mastodon/issues/13479
         # For now, I'm assuming that you can.
 
-        content = 'RT {}'.format(the_status.content)
+        content_source = 'RT {}'.format(the_status.content_source)
 
         new_status = trilby_models.Status(
 
                 # Fields which are different in a reblog:
                 account = request.user.localperson,
-                content = content,
+                content_source = content_source,
                 reblog_of = the_status,
 
                 # Fields which are just copied in:
                 sensitive = the_status.sensitive,
-                spoiler_text = the_status.spoiler_text,
+                spoiler_source = the_status.spoiler_source,
                 visibility = the_status.visibility,
                 language = the_status.language,
                 in_reply_to = the_status.in_reply_to,
@@ -397,9 +397,9 @@ class Statuses(generics.ListCreateAPIView,
 
         status = trilby_models.Status(
                 account = request.user.localperson,
-                content = data.get('status', ''),
+                content_source = data.get('status', ''),
                 sensitive = data.get('sensitive', False),
-                spoiler_text = data.get('spoiler_text', ''),
+                spoiler_source = data.get('spoiler_text', ''),
                 visibility = data.get('visibility', 'public'),
                 language = data.get('language',
                     settings.KEPI['LANGUAGES'][0]),

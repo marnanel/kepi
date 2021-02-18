@@ -208,26 +208,24 @@ class StatusSerializer(serializers.ModelSerializer):
 
     # "content" is read-only for HTML;
     # "status" is write-only for text (or Markdown)
-    content = serializers.SerializerMethodField(
+    content = serializers.CharField(
+            source='content_as_html',
             read_only = True)
 
     status = serializers.CharField(
-            source='source_text',
+            source='content_source',
             write_only = True)
-
-    def get_content(self, status):
-        result = markdown.markdown(status.content)
-        return result
 
     created_at = serializers.DateTimeField(
             required = False,
             read_only = True)
 
-   # TODO Media
+    # TODO Media
 
     sensitive = serializers.BooleanField(
             required = False)
     spoiler_text = serializers.CharField(
+            source='spoiler_source',
             allow_blank = True,
             required = False)
 

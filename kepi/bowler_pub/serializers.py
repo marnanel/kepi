@@ -33,7 +33,7 @@ class StatusObjectSerializer(serializers.ModelSerializer):
                 'id': status.url,
                 'url': status.url,
                 'type': 'Note',
-                'summary': status.spoiler_text_as_html,
+                'summary': status.spoiler_as_html,
                 'inReplyTo': status.in_reply_to,
                 'published': status.created_at,
                 'attributedTo': status.account.url,
@@ -43,7 +43,7 @@ class StatusObjectSerializer(serializers.ModelSerializer):
                 'conversation': status.conversation,
                 'content': status.content_as_html,
                 'contentMap': {
-                    status.language: status.content,
+                    status.language: status.content_source,
                     },
                 'attachment': status.media_attachments,
                 'tag': status.tags,

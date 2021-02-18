@@ -59,7 +59,7 @@ def on_posted(sender, **kwargs):
                 "object": {
                     "type": "Note",
                     "id": sender.url,
-                    "content": sender.content,
+                    "content": sender.content_as_html,
                     }
                 },
             sender = sender.account,

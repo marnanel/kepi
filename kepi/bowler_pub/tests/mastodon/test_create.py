@@ -69,7 +69,7 @@ class Tests(Create_TestCase):
         import kepi.trilby_api.models as trilby_models
 
         result = trilby_models.Status.objects.filter(
-                content = content,
+                content_source = content,
                 )
 
         if result:

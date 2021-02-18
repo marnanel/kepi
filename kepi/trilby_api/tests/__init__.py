@@ -1,8 +1,17 @@
+# trilby_api/tests/__init__.py
+#
+# Part of kepi.
+# Copyright (c) 2018-2021 Marnanel Thurman.
+# Licensed under the GNU Public License v2.
+
 from django.test import TestCase, Client
 from rest_framework.test import force_authenticate, APIClient
 from kepi.trilby_api.models import *
 from django.conf import settings
 import json
+
+import logging
+logger = logging.getLogger(name='kepi')
 
 ACCOUNT_EXPECTED = {
         'username': 'alice',
@@ -74,11 +83,11 @@ class TrilbyTestCase(TestCase):
         return result
 
     def request(self, verb, path,
-            data={},
+            data = None,
             as_user=None,
             expect_result=200,
             parse_result=True,
-            *args, **kwargs,
+            **extra,
             ):
 
         c = APIClient()
@@ -92,8 +101,7 @@ class TrilbyTestCase(TestCase):
                 path=path,
                 data=data,
                 format='json',
-                *args,
-                **kwargs,
+                extra=extra,
                 )
 
         if expect_result is not None:
@@ -155,7 +163,7 @@ def create_local_status(
     result = Status(
         remote_url = None,
         account = posted_by,
-        content = content,
+        content_source = content,
         **kwargs,
         )
 

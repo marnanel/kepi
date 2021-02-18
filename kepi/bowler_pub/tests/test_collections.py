@@ -82,8 +82,22 @@ class Tests(TestCase):
         result = trilby_models.Status(
                 account = self._alice,
                 visibility = trilby_utils.VISIBILITY_PUBLIC,
-                content = "<p>Victoria Wood parodying Peter Skellern. I laughed so much at this, though you might have to know both singers&apos; work in order to find it quite as funny.</p><p>- love song<br />- self-doubt<br />- refs to northern England<br />- preamble<br />- piano solo<br />- brass band<br />- choir backing<br />- love is cosy<br />- heavy rhotic vowels</p><p><a href=\"https://youtu.be/782hqdmnq7g\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">youtu.be/782hqdmnq7g</span><span class=\"invisible\"></span></a></p>",
-                 )
+                content_source = """Victoria Wood parodying Peter Skellern.
+I laughed so much at this, though you might have to know both singers' work
+in order to find it quite as funny:
+
+- love song
+- self-doubt
+- refs to northern England
+- preamble
+- piano solo
+- brass band
+- choir backing
+- love is cosy
+- heavy rhotic vowels
+
+https://youtu.be/782hqdmnq7g""",
+            )
 
         result.save()
         return result
