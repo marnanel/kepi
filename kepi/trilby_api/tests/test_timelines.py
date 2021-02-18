@@ -1,7 +1,7 @@
 # test_timelines.py
 #
 # Part of kepi.
-# Copyright (c) 2018-2020 Marnanel Thurman.
+# Copyright (c) 2018-2021 Marnanel Thurman.
 # Licensed under the GNU Public License v2.
 
 import logging
@@ -16,8 +16,10 @@ from django.conf import settings
 from unittest import skip
 import httpretty
 
-# Tests for timelines. API docs are here:
-# https://docs.joinmastodon.org/methods/statuses/
+"""
+Tests for timelines. API docs are here:
+https://docs.joinmastodon.org/methods/timelines/
+"""
 
 class TimelineTestCase(TrilbyTestCase):
 
@@ -105,31 +107,6 @@ class TestPublicTimeline(TimelineTestCase):
                 as_user = alice,
                 ),
             'A',
-            )
-
-    def test_as_follower(self):
-
-        alice = create_local_person("alice")
-        george = create_local_person("george")
-
-        follow = Follow(
-                follower = george,
-                following = alice,
-                offer = None,
-                )
-        follow.save()
-
-        self.add_status(source=alice, content='A', visibility='A')
-        self.add_status(source=alice, content='B', visibility='U')
-        self.add_status(source=alice, content='C', visibility='X')
-        self.add_status(source=alice, content='D', visibility='D')
-
-        self.assertEqual(
-            self.timeline_contents(
-                path = '/api/v1/timelines/public',
-                as_user = george,
-                ),
-            'AC',
             )
 
     def test_as_stranger(self):
@@ -248,7 +225,7 @@ class TestPublicTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/public',
-                data = {'since': status_c.id},
+                data = {'since_id': status_c.id},
                 ),
             'D',
             )
@@ -361,7 +338,7 @@ class TestHomeTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/home',
-                data = {'since': c_id},
+                data = {'since_id': c_id},
                 as_user = self.alice,
                 ),
             'D',
@@ -390,7 +367,7 @@ class TestHomeTimeline(TimelineTestCase):
         self.assertEqual(
             self.timeline_contents(
                 path = '/api/v1/timelines/home',
-                data = {'since': c_id},
+                data = {'since_id': c_id},
                 as_user = self.alice,
                 ),
             'D',
@@ -460,49 +437,6 @@ class TestHomeTimeline(TimelineTestCase):
             msg = 'default is 20',
             )
 
-    def temp_general_test_limit(self, count):
-        # XXX temp
-
-        self.alice = create_local_person("alice")
-        self.bob = create_local_person("bob")
-        self.carol = create_local_person("carol")
-
-        Follow(
-                follower=self.alice,
-                following=self.bob,
-                offer=None).save()
-
-        for i in range(100):
-            self.add_status(
-                    source=self.bob,
-                    content=str(i),
-                    visibility='A',
-                    )
-
-            self.add_status(
-                    source=self.carol,
-                    content=str(i),
-                    visibility='A',
-                    )
-
-        LOOP_COUNT = 50
-        for j in range(LOOP_COUNT):
-            logger.info("----------- Loop: %d of %d", j, LOOP_COUNT)
-            for i in [count]:
-                self.assertIsNotNone(
-                    self.timeline_contents(
-                        path = '/api/v1/timelines/home',
-                        data = {'limit': i},
-                        as_user = self.alice,
-                        ),
-                    )
-
-    def xxx_test_1(self):
-        self.temp_general_test_limit(1)
-
-    def xxx_test_100(self):
-        self.temp_general_test_limit(100)
-
     @httpretty.activate()
     def test_local(self):
 
@@ -544,6 +478,46 @@ class TestHomeTimeline(TimelineTestCase):
                     ),
                 'AD',
                 )
+
+    def test_as_follower(self):
+
+        alice = create_local_person("alice")
+        george = create_local_person("george")
+
+        follow = Follow(
+                follower = george,
+                following = alice,
+                offer = None,
+                )
+        follow.save()
+
+        self.add_status(source=alice, content='A', visibility='A')
+        self.add_status(source=alice, content='B', visibility='U')
+        self.add_status(source=alice, content='C', visibility='X')
+        self.add_status(source=alice, content='D', visibility='D')
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home',
+                as_user = george,
+                ),
+            'A',
+            )
+
+        follow = Follow(
+                follower = alice,
+                following = george,
+                offer = None,
+                )
+        follow.save() # they are now mutuals
+
+        self.assertEqual(
+            self.timeline_contents(
+                path = '/api/v1/timelines/home',
+                as_user = george,
+                ),
+            'AC',
+            )
 
 class TestTimelinesNotImplemented(TimelineTestCase):
     @skip("to be implemented later")
