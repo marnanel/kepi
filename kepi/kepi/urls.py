@@ -16,9 +16,9 @@ from . import settings
 fix_oauth2_redirects()
 
 oauth2_endpoint_views = [
-    url(r'authorize/$', oauth2_views.AuthorizationView.as_view(), name="authorize"),
-    url(r'token/$', oauth2_views.TokenView.as_view(), name="token"),
-    url(r'revoke-token/$', oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
+    path(r'authorize/', oauth2_views.AuthorizationView.as_view(), name="authorize"),
+    path(r'token/', oauth2_views.TokenView.as_view(), name="token"),
+    path(r'revoke-token/', oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
 ]
 
 oauth2_patterns = (oauth2_endpoint_views, "oauth2_provider")
