@@ -1,7 +1,5 @@
 import os
-import djcelery
 import logging
-djcelery.setup_loader()
 
 logger = logging.Logger(name='kepi')
 
@@ -84,7 +82,6 @@ INSTALLED_APPS = (
         'django.contrib.messages',
         'django.contrib.staticfiles',
 
-        'djcelery',
         'django_celery_results',
 
         'rest_framework',
@@ -141,8 +138,6 @@ LOGGING = {
                 },
             },
         }
-
-TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 
 TIME_ZONE = 'UTC'
 
