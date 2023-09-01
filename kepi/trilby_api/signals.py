@@ -9,33 +9,9 @@ logger = logging.getLogger(name='kepi')
 
 from django.dispatch import Signal
 
-liked = Signal(
-        providing_args=[
-            'liker',
-            'liked',
-            ])
-
-unliked = Signal(
-        providing_args=[
-            'liker',
-            'liked',
-            ])
-
-followed = Signal(
-        providing_args=[
-            'follower',
-            'followed',
-            ])
-
-unfollowed = Signal(
-        providing_args=[
-            'follower',
-            'followed',
-            ])
-
-posted = Signal(
-        providing_args=[
-            ])
-
-reblogged = Signal(
-    )
+liked = Signal()
+unliked = Signal()
+followed = Signal()
+unfollowed = Signal()
+posted = Signal()
+reblogged = Signal()
