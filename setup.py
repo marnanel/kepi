@@ -37,5 +37,10 @@ setup(
         'Framework :: Django',
         'Topic :: Communications :: Conferencing',
     ],
+    entry_points = {
+        'console_scripts': [
+            'kepi = kepi:__main__.main',
+            ],
+        },
 )
 
