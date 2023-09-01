@@ -1,7 +1,10 @@
+from kepi.daemon import Daemon
+
 import sys
 import os
 import argparse
 import logging
+import json
 
 logger = logging.getLogger('kepi')
 
@@ -31,9 +34,9 @@ def daemonise(stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
         i = open(f, mode, buffering)
         os.dup2(i.fileno( ), f.fileno( ))
 
-    logger.info("Daemon ready %s", os.getpid())
+    logger.info("Running at PID %s", os.getpid())
 
-def parse():
+def get_config():
     parser = argparse.ArgumentParser(
             description='send or receive ActivityPub messages')
     parser.add_argument(
@@ -55,19 +58,25 @@ def parse():
             ),
             )
     args = parser.parse_args()
-    return args
 
-def main():
-    args = parse()
-    print(args)
     if args.input=='-':
         f = sys.stdin
     else:
         f = open(args.input, 'r')
 
-    message = json.load(f)
+    result = dict(args._get_kwargs())
+    result['message'] = json.load(f)
 
-    print(message)
+    return result
+
+def main():
+    config = get_config()
+
+    daemon = Daemon(
+            config = config,
+            )
+
+    logger.info("Process ended normally.")
 
 if __name__=='__main__':
     main()
