@@ -1,0 +1,49 @@
+Incoming messages go to INBOX or UNVERIFIED, depending on whether we
+have the relevant keys in cache.
+
+All messages have a local ID formed of eight hex digits (such as "1234ABCD").
+Messages generated locally have a message ID based on the local ID.
+The only messages which might not have a message ID are the ones in ERRORS
+(because they might be malformed). Messages can be looked up by their
+local ID or their message ID.
+
+States of a message:
+    - UNVERIFIED
+        The message has arrived, but we haven't managed to verify it yet.
+        In order to verify it, we need to have copies of some public keys,
+        which we don't currently have cached.
+
+        When we receive a key, we check to see which messages are waiting
+        on it. If any of them are waiting on no other keys, then we
+        run verification.
+
+    - INBOX
+        The incoming message is verified, and is currently running
+        through hooks.
+
+    - RECEIVED
+        The incoming message has been delivered, but we're keeping a copy in
+        the vault.
+
+    - ERRORS
+        Something went wrong with the message. The message might be
+        an incoming message that failed verification, an outgoing
+        message to a user that doesn't exist, a malformed message, and so on.
+        The wrapper dict will have an extra key "error" containing
+        a machine-readable explanation of why the message is in ERRORS.
+
+    - OUTBOX
+        The message is going to be sent, or at least we intend so,
+        but we need some remote items which we don't currently have cached.
+
+        When we receive an item, we check to see which messages are
+        waiting on it. If any of them are waiting on no other items,
+        we sign the message and send it.
+
+    - SENT
+        The message has been sent successfully.
+
+    - GONE
+        Anything in here represents a message that did exist, and has
+        been deleted, but we didn't want to forget about it completely.
+        They may have a "tombstone" key for the web server's benefit.
