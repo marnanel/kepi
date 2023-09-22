@@ -8,12 +8,12 @@ import logging
 logger = logging.getLogger(name="kepi")
 
 from unittest import skip
-from django.test import TestCase
 from django.conf import settings
 from kepi.sombrero_sendpub.fetch import fetch
 from kepi.trilby_api.models import RemotePerson, Person, Status
 from kepi.trilby_api.tests import create_local_person
 from kepi.sombrero_sendpub.collections import Collection
+from kepi.kepi.testing import KepiTestCase
 from . import suppress_thread_exceptions
 import httpretty
 import requests
@@ -166,7 +166,7 @@ EXAMPLE_COMPLEX_COLLECTION_PAGE_2 = """{
         EXAMPLE_COMPLEX_COLLECTION_URL,
         )
 
-class TestFetchRemoteUser(TestCase):
+class TestFetchRemoteUser(KepiTestCase):
 
     @httpretty.activate
     def test_fetch(self):
@@ -527,9 +527,10 @@ class TestFetchRemoteUser(TestCase):
                 len(EXAMPLE_COMPLEX_COLLECTION_MEMBERS),
                 msg="Collection has a length")
 
-class TestFetchLocalUser(TestCase):
+class TestFetchLocalUser(KepiTestCase):
 
     def setUp(self):
+        super().setUp()
         self._alice = create_local_person(
                 name = 'alice',
                 )
@@ -588,5 +589,5 @@ class TestFetchLocalUser(TestCase):
                 None,
                 )
 
-class TestFetchStatus(TestCase):
+class TestFetchStatus(KepiTestCase):
     pass

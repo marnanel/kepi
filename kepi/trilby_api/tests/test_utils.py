@@ -1,10 +1,12 @@
 from django.test import TestCase
 from django.conf import settings
 from kepi.trilby_api.utils import *
+from kepi.kepi.testing import KepiTestCase
 
-class Tests(TestCase):
+class Tests(KepiTestCase):
 
     def setUp(self):
+        super().setUp()
         settings.KEPI['LOCAL_OBJECT_HOSTNAME'] = 'testserver'
 
     def test_is_local_user_url(self):
