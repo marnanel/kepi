@@ -1,73 +1,38 @@
-# trilby_api/views/__init__.py
-#
-# Part of kepi.
-# Copyright (c) 2018-2021 Marnanel Thurman.
-# Licensed under the GNU Public License v2.
-
-from .other import \
-        Instance, \
-        Emojis, \
-        Filters, \
-        Search, \
-        AccountsSearch
-
-from .statuses import \
-        Favourite, Unfavourite, \
-        Reblog, Unreblog, \
-        SpecificStatus, \
-        Statuses, \
-        StatusContext, \
-        StatusFavouritedBy, \
-        StatusRebloggedBy, \
-        Notifications
-
-from .persons import \
-        Follow, Unfollow, \
-        UpdateCredentials, \
-        VerifyCredentials,\
-        User, \
-        Followers, Following
-
-from .oauth import \
-        Apps, \
-        fix_oauth2_redirects
-
-from .timelines import \
-        PublicTimeline, \
-        HomeTimeline, \
-        UserFeed
+from .oauth import *
+from .other import *
+from .persons import *
+from .statuses import *
+from .timelines import *
 
 __all__ = [
-        # other
-        'Instance',
-        'Emojis',
-        'Filters',
-        'Search',
+        'AbstractTimeline',
         'AccountsSearch',
-
-        # statuses
-        'Favourite', 'Unfavourite',
-        'Reblog', 'Unreblog',
+        'Apps',
+        'DoSomethingWithPerson',
+        'DoSomethingWithStatus',
+        'Emojis',
+        'Favourite',
+        'Filters',
+        'FollowUser',
+        'Followers',
+        'Followers_or_Following',
+        'Following',
+        'HomeTimeline',
+        'Instance',
+        'Notifications',
+        'PublicTimeline',
+        'Reblog',
+        'Search',
         'SpecificStatus',
-        'Statuses',
         'StatusContext',
+        'Statuses',
         'StatusFavouritedBy',
         'StatusRebloggedBy',
-        'Notifications',
-
-        # persons
-        'Follow', 'Unfollow',
+        'Unfavourite',
+        'UnfollowUser',
+        'Unreblog',
         'UpdateCredentials',
-        'VerifyCredentials',
         'User',
-        'Followers', 'Following',
-        
-        # oauth
-        'Apps',
-        'fix_oauth2_redirects',
-
-        # timelines
-        'PublicTimeline',
-        'HomeTimeline',
         'UserFeed',
+        'VerifyCredentials',
         ]

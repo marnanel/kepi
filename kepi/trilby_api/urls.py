@@ -5,48 +5,48 @@
 # Licensed under the GNU Public License v2.
 
 from django.urls import path
-from .views import *
+import kepi.trilby_api.views as views
 
 urlpatterns = [
 
-    path('api/v1/instance', Instance.as_view()),
-    path('api/v1/instance/', Instance.as_view()), # keep tootstream happy
-    path('api/v1/apps', Apps.as_view()),
+    path('api/v1/instance', views.Instance.as_view()),
+    path('api/v1/instance/', views.Instance.as_view()), # keep tootstream happy
+    path('api/v1/apps', views.Apps.as_view()),
 
-    path('api/v1/accounts/verify_credentials', VerifyCredentials.as_view()),
+    path('api/v1/accounts/verify_credentials', views.VerifyCredentials.as_view()),
     path('api/v1/accounts/update_credentials',
-        UpdateCredentials.as_view()),
+        views.UpdateCredentials.as_view()),
 
-    path('api/v1/accounts/search', AccountsSearch.as_view()),
+    path('api/v1/accounts/search', views.AccountsSearch.as_view()),
 
-    path('api/v1/accounts/<user>', User.as_view()),
-    path('api/v1/accounts/<user>/statuses', Statuses.as_view()),
-    path('api/v1/accounts/<user>/following', Following.as_view()),
-    path('api/v1/accounts/<user>/followers', Followers.as_view()),
-    path('api/v1/accounts/<user>/follow', Follow.as_view()),
-    path('api/v1/accounts/<user>/unfollow', Unfollow.as_view()),
+    path('api/v1/accounts/<user>', views.User.as_view()),
+    path('api/v1/accounts/<user>/statuses', views.Statuses.as_view()),
+    path('api/v1/accounts/<user>/following', views.Following.as_view()),
+    path('api/v1/accounts/<user>/followers', views.Followers.as_view()),
+    path('api/v1/accounts/<user>/follow', views.FollowUser.as_view()),
+    path('api/v1/accounts/<user>/unfollow', views.UnfollowUser.as_view()),
 
-    path('api/v1/statuses', Statuses.as_view()),
-    path('api/v1/statuses/<status>', SpecificStatus.as_view()),
-    path('api/v1/statuses/<status>/context', StatusContext.as_view()),
+    path('api/v1/statuses', views.Statuses.as_view()),
+    path('api/v1/statuses/<status>', views.SpecificStatus.as_view()),
+    path('api/v1/statuses/<status>/context', views.StatusContext.as_view()),
 
     # Favourite, aka like
-    path('api/v1/statuses/<status>/favourite', Favourite.as_view()),
-    path('api/v1/statuses/<status>/unfavourite', Unfavourite.as_view()),
-    path('api/v1/statuses/<status>/favourited_by', StatusFavouritedBy.as_view()),
+    path('api/v1/statuses/<status>/favourite', views.Favourite.as_view()),
+    path('api/v1/statuses/<status>/unfavourite', views.Unfavourite.as_view()),
+    path('api/v1/statuses/<status>/favourited_by', views.StatusFavouritedBy.as_view()),
 
     # Reblog, aka boost
-    path('api/v1/statuses/<status>/reblog', Reblog.as_view()),
-    path('api/v1/statuses/<status>/unreblog', Unreblog.as_view()),
-    path('api/v1/statuses/<status>/reblogged_by', StatusRebloggedBy.as_view()),
+    path('api/v1/statuses/<status>/reblog', views.Reblog.as_view()),
+    path('api/v1/statuses/<status>/unreblog', views.Unreblog.as_view()),
+    path('api/v1/statuses/<status>/reblogged_by', views.StatusRebloggedBy.as_view()),
 
-    path('api/v1/notifications', Notifications.as_view()),
-    path('api/v1/filters', Filters.as_view()),
-    path('api/v1/custom_emojis', Emojis.as_view()),
-    path('api/v1/timelines/public', PublicTimeline.as_view()),
-    path('api/v1/timelines/home', HomeTimeline.as_view()),
+    path('api/v1/notifications', views.Notifications.as_view()),
+    path('api/v1/filters', views.Filters.as_view()),
+    path('api/v1/custom_emojis', views.Emojis.as_view()),
+    path('api/v1/timelines/public', views.PublicTimeline.as_view()),
+    path('api/v1/timelines/home', views.HomeTimeline.as_view()),
 
-    path('api/v1/search', Search.as_view()),
+    path('api/v1/search', views.Search.as_view()),
 
-    path('users/<username>/feed', UserFeed.as_view()),
+    path('users/<username>/feed', views.UserFeed.as_view()),
     ]
